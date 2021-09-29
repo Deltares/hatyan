@@ -27,8 +27,8 @@ Install hatyan OPTION 1: Create a separate python environment and install from g
 - download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
 - install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
 - open command window (or anaconda prompt)
-- ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
-- ``conda activate hatyan_env``
+- optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
+- optional: ``conda activate hatyan_env``
 - ``python -m pip install git+https://github.com/deltares/hatyan`` (this command installs hatyan and all required packages)
 - to update hatyan: ``python -m pip install --upgrade git+https://github.com/deltares/hatyan``
 - ``conda deactivate``
