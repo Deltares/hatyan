@@ -10,7 +10,7 @@
 set -e
 
 #for h6
-HATYANROOTFOLDER=~/hatyan_python
+HATYANROOTFOLDER=~/hatyan_github
 RPMTOPDIR=/u/veenstra/rpmbuild #(cannot contain ~ character) is default location on h6 so not per se necessary here
 
 HATYANENVDIR=~/hatyan_env

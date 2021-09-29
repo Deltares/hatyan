@@ -14,7 +14,7 @@ set -e
 #RPMTOPDIR=%system.teamcity.build.workingDir%/rpmbuild #(cannot contain ~ character)
 
 #for h6
-HATYANROOTFOLDER=~/hatyan_python
+HATYANROOTFOLDER=~/hatyan_github
 RPMTOPDIR=/u/veenstra/rpmbuild #(cannot contain ~ character) is default location on h6 so not per se necessary here
 
 rm -rf ${RPMTOPDIR} #to be sure all RPM's are removed, so quering version number only results in one number
