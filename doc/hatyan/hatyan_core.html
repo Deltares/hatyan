@@ -1,0 +1,2262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>hatyan.hatyan_core API documentation</title>
+<meta name="description" content="hatyan_core.py contains definitions with data for the hatyan constituents …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hatyan.hatyan_core</code></h1>
+</header>
+<section id="section-intro">
+<p>hatyan_core.py contains definitions with data for the hatyan constituents.</p>
+<p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
+Copyright (C) 2019-2020 Rijkswaterstaat.
+Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
+Source code available at: <a href="https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan">https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan</a></p>
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the
+GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License
+along with this program.
+If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># - * - coding: utf - 8 - * - 
+&#34;&#34;&#34;
+hatyan_core.py contains definitions with data for the hatyan constituents.
+
+hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
+Copyright (C) 2019-2020 Rijkswaterstaat.
+Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
+Source code available at: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
+&#34;&#34;&#34;
+
+
+import os
+import pandas as pd
+file_path = os.path.realpath(__file__)
+file_pkl = os.path.join(os.path.dirname(file_path),&#39;data_components_hatyan.pkl&#39;)
+v0uf_allT_frompkl = pd.read_pickle(file_pkl)
+v0uf_calculatewrite = False #master switch to determine whether the doodson table is calculated+written with calcwrite_baseforv0uf() or read from data_components_hatyan.pkl. The default is False.
+
+def get_v0uf_sel(const_list):
+    &#34;&#34;&#34;
+    get_v0uf_sel
+
+    Parameters
+    ----------
+    const_list : TYPE
+        DESCRIPTION.
+    
+    Returns
+    -------
+    v0uf_sel : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    if v0uf_calculatewrite:
+        v0uf_allT = calcwrite_baseforv0uf()
+    else:
+        v0uf_allT = v0uf_allT_frompkl
+    
+    const_list_pd = pd.Series(const_list,index=const_list)
+    const_list_avaibool = const_list_pd.isin(v0uf_allT.index)
+    
+    if not const_list_avaibool.all():
+        const_list_notavailable = const_list_avaibool.loc[~const_list_avaibool]
+        raise Exception(&#39;ERROR: not all requested constituents are available:\n%s&#39;%(const_list_notavailable))
+    else:
+        v0uf_sel = v0uf_allT.loc[const_list]
+    
+    return v0uf_sel
+
+
+
+
+
+
+def get_const_list_hatyan(listtype, return_listoptions=False):
+    &#34;&#34;&#34;
+    Definition of several hatyan components lists, taken from the tidegui initializetide.m code, often originating from corresponcence with Koos Doekes
+
+    Parameters
+    ----------
+    listtype : str
+        The type of the components list to be retrieved, options:
+            - &#39;all&#39;: all available components in hatyan_python
+            - &#39;all_originalorder&#39;: all 195 hatyan components in original hatyan-FORTRAN order
+            - &#39;year&#39;: default list of 94 hatyan components
+            - &#39;halfyear&#39;: list of 88 components to be used when analyzing approximately half a year of data
+            - &#39;month&#39;: list of 21 components to be used when analyzing one month of data. If desired, the K1 component can be splitted in P1/K1, N2 in N2/Nu2, S2 in T2/S2/K2 and 2MN2 in Labda2/2MN2.
+            - &#39;month_deepwater&#39;: list of 21 components to be used when analyzing one month of data for deep water (from tidegui).
+            - &#39;springneap&#39;: list of 14 components to be used when analyzing one spring neap period (approximately 15 days) of data
+            - &#39;day&#39;: list of 10 components to be used when analyzing one day
+            - &#39;day_tidegui&#39;: list of 5 components to be used when analyzing one day ir two tidal cycles (from tidegui)
+            - &#39;tidalcycle&#39;: list of 6 components to be used when analyzing one tidal cycle (approximately 12 hours and 25 minutes)
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    const_list_hatyan : list of str
+        A list of component names.
+
+    &#34;&#34;&#34;
+    const_list_all = v0uf_allT_frompkl.index.tolist()
+    
+    const_lists_dict = {&#39;all&#39;:
+                            #alle binnen hatyan beschikbare componenten
+                            #A0 en 195 componenten (plus potentially added components)
+                            const_list_all,
+                        &#39;all_originalorder&#39;:
+                            #alle binnen hatyan beschikbare componenten
+                            #A0 en 195 componenten
+                            [&#39;A0&#39;,&#39;SA&#39;,&#39;SSA&#39;,&#39;MSM&#39;,&#39;MM&#39;,&#39;MSF&#39;,&#39;SM&#39;,&#39;MF&#39;,&#39;SNU2&#39;,&#39;SN&#39;,&#39;MFM&#39;,&#39;2SM&#39;,&#39;2SMN&#39;,
+                            &#39;2Q1&#39;,&#39;NJ1&#39;,&#39;SIGMA1&#39;,&#39;NUJ1&#39;,&#39;Q1&#39;,&#39;RO1&#39;,&#39;NUK1&#39;,&#39;O1&#39;,&#39;TAU1&#39;,&#39;MP1&#39;,&#39;M1B&#39;,&#39;M1C&#39;,&#39;M1D&#39;,&#39;M1A&#39;,&#39;M1&#39;,&#39;NO1&#39;,&#39;CHI1&#39;,&#39;LP1&#39;,&#39;PI1&#39;,&#39;TK1&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,&#39;PSI1&#39;,&#39;RP1&#39;,&#39;FI1&#39;,&#39;KP1&#39;,&#39;THETA1&#39;,&#39;LABDAO1&#39;,&#39;J1&#39;,
+                            &#39;2PO1&#39;,&#39;SO1&#39;,&#39;OO1&#39;,&#39;KQ1&#39;,&#39;3MKS2&#39;,&#39;3MS2&#39;,&#39;OQ2&#39;,&#39;MNK2&#39;,&#39;MNS2&#39;,&#39;2ML2S2&#39;,&#39;2MS2K2&#39;,&#39;NLK2&#39;,&#39;2N2&#39;,&#39;MU2&#39;,&#39;2MS2&#39;,&#39;SNK2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;2KN2S2&#39;,&#39;OP2&#39;,&#39;MSK2&#39;,&#39;MPS2&#39;,&#39;M2&#39;,&#39;MSP2&#39;,&#39;MKS2&#39;,&#39;M2(KS)2&#39;,&#39;2SN(MK)2&#39;,&#39;LABDA2&#39;,&#39;2MN2&#39;,&#39;L2&#39;,&#39;L2A&#39;,&#39;L2B&#39;,&#39;2SK2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;R2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;ETA2&#39;,&#39;KJ2&#39;,&#39;MKN2&#39;,&#39;2KM(SN)2&#39;,&#39;2SM2&#39;,&#39;SKM2&#39;,&#39;2SNU2&#39;,&#39;3(SM)N2&#39;,&#39;2SN2&#39;,&#39;SKN2&#39;,
+                            &#39;MQ3&#39;,&#39;NO3&#39;,&#39;MO3&#39;,&#39;2MK3&#39;,&#39;2MP3&#39;,&#39;M3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;2MQ3&#39;,&#39;SP3&#39;,&#39;SK3&#39;,&#39;K3&#39;,&#39;2SO3&#39;,
+                            &#39;4MS4&#39;,&#39;2MNS4&#39;,&#39;3MK4&#39;,&#39;MNLK4&#39;,&#39;3MS4&#39;,&#39;MSNK4&#39;,&#39;MN4&#39;,&#39;2MLS4&#39;,&#39;2MSK4&#39;,&#39;M4&#39;,&#39;2MKS4&#39;,&#39;SN4&#39;,&#39;3MN4&#39;,&#39;2SMK4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;2SNM4&#39;,&#39;2MSN4&#39;,&#39;SL4&#39;,&#39;S4&#39;,&#39;SK4&#39;,&#39;2SMN4&#39;,&#39;3SM4&#39;,&#39;2SKM4&#39;,
+                            &#39;MNO5&#39;,&#39;3MK5&#39;,&#39;3MP5&#39;,&#39;M5&#39;,&#39;MNK5&#39;,&#39;2MP5&#39;,&#39;3MO5&#39;,&#39;MSK5&#39;,&#39;3KM5&#39;,
+                            &#39;2(MN)S6&#39;,&#39;3MNS6&#39;,&#39;2NM6&#39;,&#39;4MS6&#39;,&#39;2MSNK6&#39;,&#39;2MN6&#39;,&#39;2MNU6&#39;,&#39;3MSK6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;4MN6&#39;,&#39;MNK6&#39;,&#39;MKNU6&#39;,&#39;2(MS)K6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;2SN6&#39;,&#39;3MSN6&#39;,&#39;MKL6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,&#39;S6&#39;,
+                            &#39;2MNO7&#39;,&#39;2NMK7&#39;,&#39;M7&#39;,&#39;2MSO7&#39;,&#39;MSKO7&#39;,
+                            &#39;2(MN)8&#39;,&#39;3MN8&#39;,&#39;3MNKS8&#39;,&#39;M8&#39;,&#39;2MSN8&#39;,&#39;2MNK8&#39;,&#39;3MS8&#39;,&#39;3MK8&#39;,&#39;2SNM8&#39;,&#39;MSNK8&#39;,&#39;2(MS)8&#39;,&#39;2MSK8&#39;,&#39;3SM8&#39;,&#39;2SMK8&#39;,&#39;S8&#39;,
+                            &#39;2(MN)K9&#39;,&#39;3MNK9&#39;,&#39;4MK9&#39;,&#39;3MSK9&#39;,
+                            &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;2MNSK10&#39;,&#39;3M2S10&#39;,
+                            &#39;4MSK11&#39;,
+                            &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;3MNKS12&#39;,&#39;4M2S12&#39;],
+                    
+                        &#39;year&#39;:
+                            #Bij analyse van een jaar wordt gebruik gemaakt
+                            #van de &#39;standaardset&#39; van 94 componenten aanbevolen
+                            #Althans voor data van de Noordzee en omgeving.
+                            #A0 en 94 componenten
+                            #of which shallow water components: [&#39;2MS6&#39;, &#39;2SM2&#39;, &#39;3MS4&#39;, &#39;3MS8&#39;, &#39;4MS10&#39;, &#39;M4&#39;, &#39;M6&#39;, &#39;M8&#39;, &#39;MS4&#39;]
+                            [&#39;A0&#39;,&#39;SA&#39;,&#39;SM&#39;,
+                            &#39;Q1&#39;,&#39;O1&#39;,&#39;M1C&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,
+                            &#39;3MKS2&#39;,&#39;3MS2&#39;,&#39;OQ2&#39;,&#39;MNS2&#39;,&#39;2ML2S2&#39;,&#39;NLK2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;MSK2&#39;,&#39;MPS2&#39;,&#39;M2&#39;,&#39;MSP2&#39;,&#39;MKS2&#39;,&#39;LABDA2&#39;,&#39;2MN2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;2SM2&#39;,&#39;SKM2&#39;,
+                            &#39;NO3&#39;,&#39;2MK3&#39;,&#39;2MP3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;SK3&#39;,
+                            &#39;4MS4&#39;,&#39;2MNS4&#39;,&#39;3MS4&#39;,&#39;MN4&#39;,&#39;2MLS4&#39;,&#39;2MSK4&#39;,&#39;M4&#39;,&#39;3MN4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;2MSN4&#39;,&#39;S4&#39;,
+                            &#39;MNO5&#39;,&#39;3MK5&#39;,&#39;2MP5&#39;,&#39;3MO5&#39;,&#39;MSK5&#39;,&#39;3KM5&#39;,
+                            &#39;3MNS6&#39;,&#39;2NM6&#39;,&#39;4MS6&#39;,&#39;2MN6&#39;,&#39;2MNU6&#39;,&#39;3MSK6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;MKNU6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;3MSN6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,
+                            &#39;2MNO7&#39;,&#39;M7&#39;,&#39;2MSO7&#39;,
+                            &#39;2(MN)8&#39;,&#39;3MN8&#39;,&#39;M8&#39;,&#39;2MSN8&#39;,&#39;2MNK8&#39;,&#39;3MS8&#39;,&#39;3MK8&#39;,&#39;2(MS)8&#39;,&#39;2MSK8&#39;,
+                            &#39;3MNK9&#39;,&#39;4MK9&#39;,&#39;3MSK9&#39;,
+                            &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;3M2S10&#39;,
+                            &#39;4MSK11&#39;,
+                            &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;4M2S12&#39;],
+                    
+                        &#39;halfyear&#39;:
+                            #Bij analyse van een halfjaar wordt 
+                            #aanbevolen 88 componenten te gebruiken, 
+                            #nl. de standaardset minus
+                            #S1, MSK2, MPS2, MSP2, MKS2, en T2.
+                            #Hierbij nog enkele opmerkingen :
+                            #De middelste vier componenten geven 
+                            #eigenlijk de seizoensmodulatie van M2
+                            #weer. Het is daarom logischer om bij
+                            #analyse op een half jaar ook MSK2 en
+                            #MKS2 weg te laten. 
+                            #De schatting van de jaarlijkse component
+                            #Sa is zo natuurlijk onbetrouwbaar, maar
+                            #nauwelijks onbetrouwbaarder dan bij
+                            #analyse op een jaar.
+                            #Toepassing van componentsplitsing bij
+                            #analyse op een half jaar geeft geheel
+                            #onjuiste resultaten.
+                            #Als de beschikbare periode korter is
+                            #dan een half jaar, is het aan te bevelen
+                            #deze in perioden van 1 maand op te splitsen. 
+                            #A0 en 88 componenten
+                            [&#39;A0&#39;,&#39;SA&#39;,&#39;SM&#39;,
+                            &#39;Q1&#39;,&#39;O1&#39;,&#39;M1C&#39;,&#39;P1&#39;,
+                            &#39;K1&#39;,&#39;3MKS2&#39;,&#39;3MS2&#39;,&#39;OQ2&#39;,&#39;MNS2&#39;,&#39;2ML2S2&#39;,&#39;NLK2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;M2&#39;,&#39;LABDA2&#39;,&#39;2MN2&#39;,&#39;S2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;2SM2&#39;,&#39;SKM2&#39;,
+                            &#39;NO3&#39;,&#39;2MK3&#39;,&#39;2MP3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;SK3&#39;,
+                            &#39;4MS4&#39;,&#39;2MNS4&#39;,&#39;3MS4&#39;,&#39;MN4&#39;,&#39;2MLS4&#39;,&#39;2MSK4&#39;,&#39;M4&#39;,&#39;3MN4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;2MSN4&#39;,&#39;S4&#39;,
+                            &#39;MNO5&#39;,&#39;3MK5&#39;,&#39;2MP5&#39;,&#39;3MO5&#39;,&#39;MSK5&#39;,&#39;3KM5&#39;,
+                            &#39;3MNS6&#39;,&#39;2NM6&#39;,&#39;4MS6&#39;,&#39;2MN6&#39;,&#39;2MNU6&#39;,&#39;3MSK6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;MKNU6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;3MSN6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,
+                            &#39;2MNO7&#39;,&#39;M7&#39;,&#39;2MSO7&#39;,
+                            &#39;2(MN)8&#39;,&#39;3MN8&#39;,&#39;M8&#39;,&#39;2MSN8&#39;,&#39;2MNK8&#39;,&#39;3MS8&#39;,&#39;3MK8&#39;,&#39;2(MS)8&#39;,&#39;2MSK8&#39;,
+                            &#39;3MNK9&#39;,&#39;4MK9&#39;,&#39;3MSK9&#39;,
+                            &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;3M2S10&#39;,
+                            &#39;4MSK11&#39;,
+                            &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;4M2S12&#39;],
+                    
+                        &#39;month&#39;:
+                            #Bij analyse van 1 maand zijn de aanbevolen componenten:
+                            #Q1, O1, K1
+                            #3MS2, MNS2, Mu2, N2, M2, 2MN2, S2, 2SM2
+                            #3MS4, MN4, M4, MS4
+                            #2MN6, M6, 2MS6
+                            #M8, 3MS8
+                            #4MS10
+                            #Als er in het programma een functie voor componentsplitsing is ingebouwd, kan
+                            #men hiermee K1 splitsen in P1/K1, N2 in N2/Nu2, S2 in T2/S2/K2 en 2MN2 in Labda2/2MN2.
+                            #A0 en 21 componenten
+                            [&#39;A0&#39;,&#39;Q1&#39;, &#39;O1&#39;, &#39;K1&#39;,
+                            &#39;3MS2&#39;, &#39;MNS2&#39;, &#39;MU2&#39;, &#39;N2&#39;, &#39;M2&#39;, &#39;2MN2&#39;, &#39;S2&#39;, &#39;2SM2&#39;,
+                            &#39;3MS4&#39;, &#39;MN4&#39;, &#39;M4&#39;, &#39;MS4&#39;,
+                            &#39;2MN6&#39;, &#39;M6&#39;, &#39;2MS6&#39;,
+                            &#39;M8&#39;, &#39;3MS8&#39;,
+                            &#39;4MS10&#39;],
+                            
+                        &#39;month_deepwater&#39;:
+                            # for deep water L2 is better connected than 2MN2 to LABDA2
+                            [&#39;A0&#39;,&#39;Q1&#39;, &#39;O1&#39;, &#39;K1&#39;,
+                            &#39;3MS2&#39;, &#39;MNS2&#39;, &#39;MU2&#39;, &#39;N2&#39;, &#39;M2&#39;, &#39;L2&#39;, &#39;S2&#39;, &#39;2SM2&#39;,
+                            &#39;3MS4&#39;, &#39;MN4&#39;, &#39;M4&#39;, &#39;MS4&#39;,
+                            &#39;2MN6&#39;, &#39;M6&#39;, &#39;2MS6&#39;,
+                            &#39;M8&#39;, &#39;3MS8&#39;,
+                            &#39;4MS10&#39;],
+                    
+                        &#39;springneap&#39;:
+                            #Bij analyse van 1 spring-doodtijcyclus zijn de aanbevolen componenten:
+                            #O1, K1
+                            #Mu2, M2, S2, 2SM2
+                            #3MS4, M4, MS4
+                            #M6, 2MS6
+                            #M8, 3MS8
+                            #4MS10
+                            #De resultaten bij analyse van 15 dagen zijn
+                            #erg pover. Men kan zo niet eens N2, en de
+                            #samenstellingen daarvan als MN4 etc.,
+                            #afsplitsen, zodat de schattingen van M2 en
+                            #S2 onbetrouwbaar zijn. 
+                            #A0 en 14 componenten
+                            [&#39;A0&#39;,&#39;O1&#39;,&#39;K1&#39;,
+                            &#39;MU2&#39;,&#39;M2&#39;,&#39;S2&#39;,&#39;2SM2&#39;,
+                            &#39;3MS4&#39;,&#39;M4&#39;,&#39;MS4&#39;,
+                            &#39;M6&#39;,&#39;2MS6&#39;,
+                            &#39;M8&#39;,&#39;3MS8&#39;,
+                            &#39;4MS10&#39;],
+                            
+                        &#39;day&#39;:
+                            #harmonic constituents for 1-day analysis
+                            #i.e. 2 tidal periods [&#39;A0&#39;,&#39;M2&#39;,&#39;M4&#39;,&#39;M6&#39;,&#39;M8&#39;,&#39;O1&#39;],
+                            #A0 en 10 componenten
+                            [&#39;A0&#39;,&#39;M1&#39;,&#39;M2&#39;,&#39;M3&#39;,&#39;M4&#39;,&#39;M5&#39;,&#39;M6&#39;,&#39;M7&#39;,&#39;M8&#39;,&#39;M10&#39;,&#39;M12&#39;],
+                            
+                        &#39;tidalcycle&#39;:
+                            #harmonic constituents for 1-tide analysis
+                            #A0 en 6 componenten
+                            [&#39;A0&#39;,&#39;M2&#39;,&#39;M4&#39;,&#39;M6&#39;,&#39;M8&#39;,&#39;M10&#39;,&#39;M12&#39;]
+                            }
+        
+    const_list_options = const_lists_dict.keys()
+    if listtype in const_list_options:
+        const_list_hatyan = const_lists_dict[listtype]
+    else:
+        raise Exception(&#39;ERROR: listtype %s is not implemented in get_const_list_hatyan, choose from: %s&#39;%(str(listtype),const_list_options))
+        
+    if return_listoptions:
+        return const_list_hatyan, const_list_options
+    else:
+        return const_list_hatyan
+
+
+
+
+
+def get_doodson_eqvals(dood_date, mode=None):
+    &#34;&#34;&#34;
+    Berekent de doodson waardes T, S, H, P, N en P1 voor het opgegeven tijdstip.
+
+    Parameters
+    ----------
+    dood_date : datetime.datetime or pandas.DateTimeIndex
+        Date(s) on which the doodson values should be calculated.
+    mode : str, optional
+        Calculate doodson values with Schureman (hatyan default) or Sea Level Science by Pugh. The default is False.
+
+    Returns
+    -------
+    dood_T_rad : TYPE
+        Bij hatyan 180+, maar in docs niet. In hatyan fortran code is +/-90 in v ook vaak omgedraaid in vergelijking met documentation.
+    dood_S_rad : TYPE
+        Middelbare lengte van de maan. Mean longitude of moon
+    dood_H_rad : TYPE
+        Middelbare lengte van de zon. mean longitude of sun
+    dood_P_rad : TYPE
+        Middelbare lengte van het perieum van de maan. Longitude of lunar perigee
+    dood_N_rad : TYPE
+        Afstand van de klimmende knoop van de maan tot het lentepunt. Longitude of moons node
+    dood_P1_rad : TYPE
+        Middelbare lengte van het perieum van de zon. Longitude of solar perigee
+
+    &#34;&#34;&#34;
+    import datetime as dt
+    import numpy as np
+    
+    DNUJE = 24*36525
+    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
+    dood_Tj = (dood_tstart_hr+12)/(24*36525) #DTIJJE, #Aantal Juliaanse eeuwen ( = 36525 dagen) die zijn verstreken sinds 31 december 1899 12.00 uur GMT. Number of Julian centuries (36525 days) with respect to Greenwich mean noon, 31 December 1899 (Gregorian calendar)
+    if mode==&#39;freq&#39;:
+        #speed in radians per hour, de afgeleiden van onderstaande functies
+        dood_T_rad = np.array(len(dood_Tj)*[np.deg2rad(15)]) #360/24=15 degrees of earth rotation per hour
+        dood_S_rad  = (8399.7092745 + 0.0000346*dood_Tj*2)/DNUJE
+        dood_H_rad  = ( 628.3319500 + 0.0000052*dood_Tj*2)/DNUJE
+        dood_P_rad  = (  71.0180412 - 0.0001801*dood_Tj*2)/DNUJE
+        dood_N_rad  = np.array([np.nan])
+        dood_P1_rad = (   0.0300053 + 0.0000079*dood_Tj*2)/DNUJE
+    else: #for everything else
+        #hatyan documentation. Zie ook p162 of Schureman book
+        dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
+        dood_S_rad =  (4.7200089 + 8399.7092745*dood_Tj + 0.0000346*dood_Tj**2)
+        dood_H_rad =  (4.8816280 + 628.3319500*dood_Tj  + 0.0000052*dood_Tj**2)
+        dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
+        dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
+        dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
+    
+    return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad
+
+
+
+
+
+
+
+
+
+def get_hatyan_constants(dood_date):
+    &#34;&#34;&#34;
+    get_hatyan_constants
+
+    Parameters
+    ----------
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    DOMEGA : TYPE
+        DESCRIPTION.
+    DIKL : TYPE
+        DESCRIPTION.
+    DC1681 : TYPE
+        DESCRIPTION.
+    DC5023 : TYPE
+        DESCRIPTION.
+    DC0365 : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    import datetime as dt
+    import numpy as np
+    
+    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
+    dood_Tj = (dood_tstart_hr+12)/(24*36525)
+    
+    #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
+    #327932: ratio of mass of sun to combined mass of earth and moon
+    #81.53: ratio of mass of earth to mass of moon
+    DAGC = 0.01657                            #A/C &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean lunar parallax in respect to mean radius [rad]
+    DAGC1 = 0.00004261                        #A/C1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean solar parallax in respect to mean radius [rad]
+    DE = 0.054900489                          #E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of moons orbit
+    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
+    DMGE = 1./81.53                           #M/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of moon /mass of earth
+    DSGE = 82.53/81.53*327932                 #S/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of sun / mass of earth
+    
+    DU = DMGE*DAGC**3                         #U &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, basic factor
+    DU1 = DSGE*DAGC1**3                       #U1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar coefficient
+    DSACCE = DU1/DU                           #S&#39; &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar factor
+    DOMEGA = np.deg2rad(23+27./60.+8.26/3600) #OMEGA &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Obliquity of the Ecliptic, epoch 1 Jan 1900, 23.45229 graden [rad]
+    DIKL = np.deg2rad(5+8./60.+43.3546/3600)  #i &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Inclination of moons orbit to plane of ecliptic, epoch 1 Jan 1900 (?), 5.1453762 graden [rad]
+    
+    DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
+
+    DC0365 = DCOFSI*np.sin(DOMEGA)**2
+    DC1681 = DCOFSI*np.sin(2*DOMEGA)
+    DC5023 = 0.5+0.75*DE*DE
+    
+    return DOMEGA, DIKL, DC1681, DC5023, DC0365
+
+
+
+
+
+def calcwrite_baseforv0uf():
+    &#34;&#34;&#34;
+    Calculate and write table for all constituents. Alternatively (faster), this data can be read from data_components_hatyan.pkl. Whether to calculate or read the table is controlled with the v0uf_calculatewrite boolean in the top of this script 
+
+    Returns
+    -------
+    v0uf_all : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    import pandas as pd
+    # in solar days T=Cs=w0 (s is van solar, er is ook een Cl=w1=ia for lunar), S=w2=ib, H=w3=ic, P=w4=id, N=w5=ie, P1=w6=if, EDN=ExtendedDoodsonNumber
+    # N zit is hier altijd 0 (regression of moons node), want dat wordt apart als knoopfactor gedaan
+                              #comp      T, S, H, P, N,P1,EDN,     u eqs                    f eqs 73-79           f M1 K1 L2 K2 M1C feqsstr          #comparison of v0 columns with lunar conversion to SLS and IHO
+    v0uf_base = pd.DataFrame({&#39;A0&#39;:     [0, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  0
+                              &#39;SA&#39;:     [0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  1 #SA 2nd option from IHO
+                              &#39;SA_IHO1&#39;:[0, 0, 1, 0, 0,-1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: SA 1st option from IHO (used in SLS and t_tide). Nulpunt v0 ligt dicht bij jaarwisseling (2015,1,3,21,50,0)
+                              &#39;SA_IHO2&#39;:[0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: SA 2nd option from IHO (used in hatyan). Nulpunt v0 ligt dicht bij equinox/lentepunt (2015,3,22,19,50,0)
+                              &#39;SSA&#39;:    [0, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  2
+                              &#39;MSM&#39;:    [0, 1,-2, 1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND73&#39;]],  #  3 #not in SLS. IHO also called MNum
+                              &#39;MM&#39;:     [0, 1, 0,-1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND73&#39;]],  #  4 #not in SLS
+                              &#39;MSF&#39;:    [0, 2,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND73&#39;]],  #  5 #not in SLS
+                              &#39;MF&#39;:     [0, 2, 0, 0, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND74&#39;]],  #  7 
+                              &#39;MFM&#39;:    [0, 3, 0,-1, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND74&#39;]],  # 10 #corresponds to MTM in FES2014?
+                              &#39;MSQM&#39;:   [0, 4,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: MSQM from IHO, unsure about nodal factor
+                              &#39;2Q1&#39;:    [1,-4, 1, 2, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 13
+                              &#39;SIGMA1&#39;: [1,-4, 3, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 15
+                              &#39;Q1&#39;:     [1,-3, 1, 1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 17
+                              &#39;RO1&#39;:    [1,-3, 3,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 18 #also called RHO1
+                              &#39;O1&#39;:     [1,-2, 1, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 20
+                              &#39;TAU1&#39;:   [1,-2, 3, 0, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 21 #not in SLS
+                              &#39;M1B&#39;:    [1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 23 #not in SLS. M1B 2nd option from IHO
+                             &#39;M1B_IHO1&#39;:[1,-1, 1,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  #    #newly added: M1B 1st option from IHO
+                             &#39;M1B_IHO2&#39;:[1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  #    #newly added: M1B 2nd option from IHO (used in hatyan)
+                              &#39;M1C&#39;:    [1,-1, 1, 0, 0, 0,  0,     1,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1,[&#39;DFM1C&#39;]],  # 24 #not in SLS
+                              &#39;M1D&#39;:    [1,-1, 1, 0, 0, 0,-90,     1,-1, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  # 25 #not in SLS
+                              &#39;M1A&#39;:    [1,-1, 1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 26 #not in SLS
+                              &#39;M1&#39;:     [1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  # 27 #M1 3rd option from IHO
+                              &#39;M1_IHO1&#39;:[1,-1, 1, 0, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  #    #newly added: M1 1st option from IHO
+                              &#39;M1_IHO2&#39;:[1,-1, 1, 0, 0, 0,180,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  #    #newly added: M1 2nd option from IHO (used in SLS
+                              &#39;M1_IHO3&#39;:[1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  #    #newly added: M1 3rd option from IHO (used in hatyan)
+                              &#39;CHI1&#39;:   [1,-1, 3,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 29 #lunar conversion EDN different than SLS
+                              &#39;PI1&#39;:    [1, 0,-2, 0, 0, 1, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 31
+                              &#39;P1&#39;:     [1, 0,-1, 0, 0, 0, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 33
+                              &#39;S1&#39;:     [1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 34 #S1 1st option from IHO
+                              &#39;S1_IHO1&#39;:[1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 1st option from IHO (used in hatyan)
+                              &#39;S1_IHO2&#39;:[1, 0, 0, 0, 0, 0,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 2nd option from IHO 
+                              &#39;S1_IHO3&#39;:[1, 0, 0, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 3rd option from IHO (used in SLS)
+                              &#39;K1&#39;:     [1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,[&#39;DFK1&#39; ]],  # 35 #S=w2=ib is 0 instead of 1 in SLS (mistake in SLS?). K1 2nd option from IHO. 
+                              &#39;K1_IHO1&#39;:[1, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,[&#39;DFK1&#39; ]],  #    #newly added: K1 1st option from IHO
+                              &#39;K1_IHO2&#39;:[1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,[&#39;DFK1&#39; ]],  #    #newly added: K1 2nd option from IHO (used in hatyan)
+                              &#39;PSI1&#39;:   [1, 0, 2, 0, 0,-1,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 36 #EDN 270 instead of 90 in SLS (mistake in SLS?)
+                              &#39;FI1&#39;:    [1, 0, 3, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 38 #EDN 270 instead of 90 in SLS (mistake in SLS?). IHO also called PHI1
+                              &#39;THETA1&#39;: [1, 1,-1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 40 #EDN 0 instead of 90 in SLS (mistake in SLS?).
+                              &#39;J1&#39;:     [1, 1, 1,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 42 #EDN 270 instead of 90 in SLS (mistake in SLS?).
+                              &#39;OO1&#39;:    [1, 2, 1, 0, 0, 0,-90,    -2,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1, 0, 0,     0, 0, 0, 0, 0,[&#39;DND77&#39;]],  # 45
+                              &#39;EPS2&#39;:   [2,-5, 4, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  #    #newly added: EPS2 (same v0/freq as MNS2 and same u/f as M2)
+                              &#39;2N2&#39;:    [2,-4, 2, 2, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 55
+                              &#39;MU2&#39;:    [2,-4, 4, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 56
+                              &#39;N2&#39;:     [2,-3, 2, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 59
+                              &#39;NU2&#39;:    [2,-3, 4,-1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 60
+                              &#39;MA2&#39;:    [2,-2, 1, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  #    #newly added from IHO table: MA2, α2, H1. Corresponds to MPS2 (except for EDN)
+                              &#39;M2&#39;:     [2,-2, 2, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 65
+                              &#39;MB2&#39;:    [2,-2, 3, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  #    #newly added from IHO table: MB2, β2, H2, Ma2 and MA2*. Corresponds to MSP2 (except for EDN)
+                              &#39;LABDA2&#39;: [2,-1, 0, 1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 70 IHO also called LAMBDA2, FES2014 calls it LA2
+                              &#39;L2&#39;:     [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0,-1, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0,[&#39;DFL2&#39; ]],  # 72
+                              &#39;L2A&#39;:    [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 73 #not in SLS
+                              &#39;L2B&#39;:    [2,-1, 2, 1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,[&#39;DND79&#39;]],  # 74 #not in SLS
+                              &#39;T2&#39;:     [2, 0,-1, 0, 0, 1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 76
+                              &#39;S2&#39;:     [2, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 77
+                              &#39;R2&#39;:     [2, 0, 1, 0, 0,-1,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 78
+                              &#39;K2&#39;:     [2, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0,[&#39;DFK2&#39; ]],  # 79
+                              &#39;ETA2&#39;:   [2, 1, 2,-1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,[&#39;DND79&#39;]],  # 81 #not in SLS
+                              &#39;M3&#39;:     [3,-3, 3, 0, 0, 0,  0,     3,-3, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,1.5,0,     0, 0, 0, 0, 0,[&#39;78f1p5&#39;]]})# 96 #EDN 180 instead of 0 in SLS and IHO (mistake in hatyan?)
+    index_v0 =  [&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]
+    index_u =   [&#39;DKSI&#39;,&#39;DNU&#39;,&#39;DQ&#39;,&#39;DQU&#39;,&#39;DR&#39;,&#39;DUK1&#39;,&#39;DUK2&#39;]
+    index_f =   [&#39;DND73&#39;,&#39;DND74&#39;,&#39;DND75&#39;,&#39;DND76&#39;,&#39;DND77&#39;,&#39;DND78&#39;,&#39;DND79&#39;,
+                 &#39;DFM1&#39;,&#39;DFK1&#39;,&#39;DFL2&#39;,&#39;DFK2&#39;,&#39;DFM1C&#39;]
+    index_fstr =[&#39;f_eqs&#39;]
+    v0uf_base.index = index_v0 + index_u + index_f + index_fstr
+    v0uf_base = v0uf_base.loc[index_v0 + index_u + index_f].astype(float)
+    
+    #conversion to lunar for comparison with SLS and IHO
+    def get_lunarSLSIHO_fromsolar(v0uf_base):
+        v0uf_baseT_solar = v0uf_base.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]].T
+        v0uf_baseT_lunar = v0uf_baseT_solar.copy()
+        v0uf_baseT_lunar[&#39;S&#39;] = v0uf_baseT_solar[&#39;S&#39;] + v0uf_baseT_solar[&#39;T&#39;] #ib with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+        v0uf_baseT_lunar[&#39;H&#39;] = v0uf_baseT_solar[&#39;H&#39;] - v0uf_baseT_solar[&#39;T&#39;] #ic with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+        #lunar IHO (compare to Sea Level Science book from Woodsworth and Pugh)
+        v0uf_baseT_lunar_SLS = v0uf_baseT_lunar.copy()
+        v0uf_baseT_lunar_SLS[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
+        #lunar IHO (compare to c
+        v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
+        v0uf_baseT_lunar_IHO[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]/90+5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
+        v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO[&#39;EDN&#39;]==3,&#39;EDN&#39;] = 7 # convert -180 (3) to +180 (7)
+        v0uf_baseT_lunar_IHO[[&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;]] += 5
+        return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO
+    
+    v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_base)
+    
+    #v0uf_test = pd.DataFrame([[0,4,-2,0,0,0,0]],columns=[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;],index=[&#39;MSQM&#39;]).T #solar hatyan convention
+    #v0uf_testT_lunar, v0uf_testT_lunar_SLS, v0uf_testT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_test)
+    
+    #shallow water components
+    shallow_eqs = {&#39;SM&#39;: &#39;S2 - M2&#39;,                        #[ 6]      
+                   &#39;SNU2&#39;: &#39;S2 - NU2&#39;,                     #[ 8]      
+                   &#39;SN&#39;: &#39;S2 - N2&#39;,                        #[ 9]      
+                   &#39;2SM&#39;: &#39;2*S2 - 2*M2&#39;,                   #[ 11]     
+                   &#39;2SMN&#39;: &#39;2*S2 - M2 - N2&#39;,               #[ 12]     
+                   &#39;NJ1&#39;: &#39;N2 - J1&#39;,                       #[ 14]     
+                   &#39;NUJ1&#39;: &#39;NU2 - J1&#39;,                     #[ 16]     
+                   &#39;NUK1&#39;: &#39;NU2 - K1&#39;,                     #[ 19]     
+                   &#39;MP1&#39;: &#39;M2 - P1&#39;,                       #[ 22]     
+                   &#39;NO1&#39;: &#39;N2 - O1&#39;,                       #[ 28]     
+                   &#39;LP1&#39;: &#39;L2 - P1&#39;,                       #[ 30]     
+                   &#39;TK1&#39;: &#39;T2 - K1&#39;,                       #[ 32]     
+                   &#39;RP1&#39;: &#39;R2 - P1&#39;,                       #[ 37]     
+                   &#39;KP1&#39;: &#39;K2 - P1&#39;,                       #[ 39]     
+                   &#39;LABDAO1&#39;: &#39;LABDA2 - O1&#39;,               #[ 41]     
+                   &#39;2PO1&#39;: &#39;P1 + P1 - O1&#39;,                 #[ 43]     
+                   &#39;SO1&#39;: &#39;S2 - O1&#39;,                       #[ 44]     
+                   &#39;KQ1&#39;: &#39;K2 - Q1&#39;,                       #[ 46]     
+                   &#39;3MKS2&#39;: &#39;3*M2 - K2 - S2&#39;,              #[ 47]     
+                   &#39;3MS2&#39;: &#39;3*M2 - 2*S2&#39;,                  #[ 48]     
+                   &#39;OQ2&#39;: &#39;O1 + Q1&#39;,                       #[ 49]     
+                   &#39;MNK2&#39;: &#39;M2 + N2 - K2&#39;,                 #[ 50]     
+                   &#39;MNS2&#39;: &#39;M2 + N2 - S2&#39;,                 #[ 51]     
+                   &#39;2ML2S2&#39;: &#39;2*M2 + L2 - 2*S2&#39;,           #[ 52]     
+                   &#39;2MS2K2&#39;: &#39;2*M2 + S2 - 2*K2&#39;,           #[ 53]     
+                   &#39;NLK2&#39;: &#39;N2 + L2 - K2&#39;,                 #[ 54]     
+                   &#39;2MS2&#39;: &#39;2*M2 - S2&#39;,                    #[ 57]     
+                   &#39;SNK2&#39;: &#39;S2 + N2 - K2&#39;,                 #[ 58]     
+                   &#39;2KN2S2&#39;: &#39;2*K2 + N2 - 2*S2&#39;,           #[ 61]     
+                   &#39;OP2&#39;: &#39;O1 + P1&#39;,                       #[ 62]     
+                   &#39;MSK2&#39;: &#39;M2 + S2 - K2&#39;,                 #[ 63]     
+                   &#39;MPS2&#39;: &#39;M2 + P1 - S1&#39;,                 #[ 64]     
+                   &#39;MSP2&#39;: &#39;M2 - P1 + S1&#39;,                 #[ 66]     
+                   &#39;MKS2&#39;: &#39;M2 + K2 - S2&#39;,                 #[ 67]     
+                   &#39;M2(KS)2&#39;: &#39;M2 + 2*K2 - 2*S2&#39;,            #[ 68]     
+                   &#39;2SN(MK)2&#39;: &#39;2*S2 + N2 - (M2 + K2)&#39;,      #[ 69]     
+                   &#39;2MN2&#39;: &#39;2*M2 - N2&#39;,                    #[ 71]     
+                   &#39;2SK2&#39;: &#39;2*S2 - K2&#39;,                    #[ 75]     
+                   &#39;MSN2&#39;: &#39;M2 + S2 - N2&#39;,                 #[ 80]     
+                   &#39;KJ2&#39;: &#39;K1 + J1&#39;,                       #[ 82]     
+                   &#39;MKN2&#39;: &#39;M2 + K2 - N2&#39;,                 #[ 83]     
+                   &#39;2KM(SN)2&#39;: &#39;2*K2 + M2 - (S2 + N2)&#39;,      #[ 84]     
+                   &#39;2SM2&#39;: &#39;2*S2 - M2&#39;,                    #[ 85]     
+                   &#39;SKM2&#39;: &#39;S2 + K2 - M2&#39;,                 #[ 86]     
+                   &#39;2SNU2&#39;: &#39;2*S2 - NU2&#39;,                  #[ 87]     
+                   &#39;3(SM)N2&#39;: &#39;3*S2 + N2 - 3*M2&#39;,            #[ 88]     
+                   &#39;2SN2&#39;: &#39;2*S2 - N2&#39;,                    #[ 89]     
+                   &#39;SKN2&#39;: &#39;S2 + K2 - N2&#39;,                 #[ 90]     
+                   &#39;MQ3&#39;: &#39;M2 + Q1&#39;,                       #[ 91]     
+                   &#39;NO3&#39;: &#39;N2 + O1&#39;,                       #[ 92]     
+                   &#39;MO3&#39;: &#39;M2 + O1&#39;,                       #[ 93]     
+                   &#39;2MK3&#39;: &#39;2*M2 - K1&#39;,                    #[ 94]     
+                   &#39;2MP3&#39;: &#39;2*M2 - P1&#39;,                    #[ 95]     
+                   &#39;SO3&#39;: &#39;S2 + O1&#39;,                       #[ 97]     
+                   &#39;MK3&#39;: &#39;M2 + K1&#39;,                       #[ 98]     
+                   &#39;2MQ3&#39;: &#39;2*M2 - Q1&#39;,                    #[ 99]     
+                   &#39;SP3&#39;: &#39;S2 + P1&#39;,                       #[100]     
+                   &#39;SK3&#39;: &#39;S2 + K1&#39;,                       #[101]     
+                   &#39;K3&#39;: &#39;K2 + K1&#39;,                        #[102]     
+                   &#39;2SO3&#39;: &#39;2*S2 - O1&#39;,                    #[103]     
+                   &#39;4MS4&#39;: &#39;4*M2 - 2*S2&#39;,                  #[104]     
+                   &#39;2MNS4&#39;: &#39;2*M2 + N2 - S2&#39;,              #[105]     
+                   &#39;3MK4&#39;: &#39;3*M2 - K2&#39;,                    #[106]     
+                   &#39;MNLK4&#39;: &#39;M2 + N2 + L2 - K2&#39;,           #[107]     
+                   &#39;3MS4&#39;: &#39;3*M2 - S2&#39;,                    #[108]     
+                   &#39;MSNK4&#39;: &#39;M2 + S2 + N2 - K2&#39;,           #[109]     
+                   &#39;MN4&#39;: &#39;M2 + N2&#39;,                       #[110]     
+                   &#39;2MLS4&#39;: &#39;2*M2 + L2 - S2&#39;,              #[111]     
+                   &#39;2MSK4&#39;: &#39;2*M2 + S2 - K2&#39;,              #[112]     
+                   &#39;M4&#39;: &#39;2*M2&#39;,                           #[113]     
+                   &#39;2MKS4&#39;: &#39;2*M2 + K2 - S2&#39;,              #[114]     
+                   &#39;SN4&#39;: &#39;S2 + N2&#39;,                       #[115]     
+                   &#39;3MN4&#39;: &#39;3*M2 - N2&#39;,                    #[116]     
+                   &#39;2SMK4&#39;: &#39;2*S2 + M2 - K2&#39;,              #[117]     
+                   &#39;MS4&#39;: &#39;M2 + S2&#39;,                       #[118]     
+                   &#39;MK4&#39;: &#39;M2 + K2&#39;,                       #[119]     
+                   &#39;2SNM4&#39;: &#39;2*S2 + N2 - M2&#39;,              #[120]     
+                   &#39;2MSN4&#39;: &#39;2*M2 + S2 - N2&#39;,              #[121]     
+                   &#39;SL4&#39;: &#39;S2 + L2&#39;,                       #[122]     
+                   &#39;S4&#39;: &#39;2*S2&#39;,                           #[123]     
+                   &#39;SK4&#39;: &#39;S2 + K2&#39;,                       #[124]     
+                   &#39;2SMN4&#39;: &#39;2*S2 + M2 - N2&#39;,              #[125]     
+                   &#39;3SM4&#39;: &#39;3*S2 - M2&#39;,                    #[126]     
+                   &#39;2SKM4&#39;: &#39;2*S2 + K2 - M2&#39;,              #[127]     
+                   &#39;MNO5&#39;: &#39;M2 + N2 + O1&#39;,                 #[128]     
+                   &#39;3MK5&#39;: &#39;3*M2 - K1&#39;,                    #[129]     
+                   &#39;3MP5&#39;: &#39;3*M2 - P1&#39;,                    #[130]     
+                   &#39;M5&#39;: &#39;2*M2 + M1&#39;,                      #[131]     
+                   &#39;MNK5&#39;: &#39;M2 + N2 + K1&#39;,                 #[132]     
+                   &#39;2MP5&#39;: &#39;2*M2 + P1&#39;,                    #[133]     
+                   &#39;3MO5&#39;: &#39;3*M2 - O1&#39;,                    #[134]     
+                   &#39;MSK5&#39;: &#39;M2 + S2 + K1&#39;,                 #[135]     
+                   &#39;3KM5&#39;: &#39;3*K1 + M2&#39;,                    #[136]     
+                   &#39;2(MN)S6&#39;: &#39;2*M2 + 2*N2 - S2&#39;,            #[137]     
+                   &#39;3MNS6&#39;: &#39;3*M2 + N2 - S2&#39;,              #[138]     
+                   &#39;2NM6&#39;: &#39;2*N2 + M2&#39;,                    #[139]     
+                   &#39;4MS6&#39;: &#39;4*M2 - S2&#39;,                    #[140]     
+                   &#39;2MSNK6&#39;: &#39;2*M2 + S2 + N2 - K2&#39;,        #[141]     
+                   &#39;2MN6&#39;: &#39;2*M2 + N2&#39;,                    #[142]     
+                   &#39;2MNU6&#39;: &#39;2*M2 + NU2&#39;,                  #[143]     
+                   &#39;3MSK6&#39;: &#39;3*M2 + S2 - K2&#39;,              #[144]     
+                   &#39;M6&#39;: &#39;3*M2&#39;,                           #[145]     
+                   &#39;MSN6&#39;: &#39;M2 + S2 + N2&#39;,                 #[146]     
+                   &#39;4MN6&#39;: &#39;4*M2 - N2&#39;,                    #[147]     
+                   &#39;MNK6&#39;: &#39;M2 + N2 + K2&#39;,                 #[148]     
+                   &#39;MKNU6&#39;: &#39;M2 + K2 + NU2&#39;,               #[149]     
+                   &#39;2(MS)K6&#39;: &#39;2*M2 + 2*S2 - K2&#39;,            #[150]     
+                   &#39;2MS6&#39;: &#39;2*M2 + S2&#39;,                    #[151]     
+                   &#39;2MK6&#39;: &#39;2*M2 + K2&#39;,                    #[152]     
+                   &#39;2SN6&#39;: &#39;2*S2 + N2&#39;,                    #[153]     
+                   &#39;3MSN6&#39;: &#39;3*M2 + S2 - N2&#39;,              #[154]     
+                   &#39;MKL6&#39;: &#39;M2 + K2 + L2&#39;,                 #[155]     
+                   &#39;2SM6&#39;: &#39;2*S2 + M2&#39;,                    #[156]     
+                   &#39;MSK6&#39;: &#39;M2 + S2 + K2&#39;,                 #[157]     
+                   &#39;S6&#39;: &#39;3*S2&#39;,                           #[158]     
+                   &#39;2MNO7&#39;: &#39;2*M2 + N2 + O1&#39;,              #[159]     
+                   &#39;2NMK7&#39;: &#39;2*N2 + M2 + K1&#39;,              #[160]     
+                   &#39;M7&#39;: &#39;3*M2 + M1&#39;,                      #[161]     
+                   &#39;2MSO7&#39;: &#39;2*M2 + S2 + O1&#39;,              #[162]     
+                   &#39;MSKO7&#39;: &#39;M2 + S2 + K2 + O1&#39;,           #[163]     
+                   &#39;2(MN)8&#39;: &#39;2*M2 + 2*N2&#39;,                  #[164]     
+                   &#39;3MN8&#39;: &#39;3*M2 + N2&#39;,                    #[165]     
+                   &#39;3MNKS8&#39;: &#39;3*M2 + N2 + K2 - S2&#39;,        #[166]     
+                   &#39;M8&#39;: &#39;4*M2&#39;,                           #[167]     
+                   &#39;2MSN8&#39;: &#39;2*M2 + S2 + N2&#39;,              #[168]     
+                   &#39;2MNK8&#39;: &#39;2*M2 + N2 + K2&#39;,              #[169]     
+                   &#39;3MS8&#39;: &#39;3*M2 + S2&#39;,                    #[170]     
+                   &#39;3MK8&#39;: &#39;3*M2 + K2&#39;,                    #[171]     
+                   &#39;2SNM8&#39;: &#39;M2 + 2*S2 + N2&#39;,              #[172]     
+                   &#39;MSNK8&#39;: &#39;M2 + S2 + N2 + K2&#39;,           #[173]     
+                   &#39;2(MS)8&#39;: &#39;2*M2 + 2*S2&#39;,                  #[174]     
+                   &#39;2MSK8&#39;: &#39;2*M2 + S2 + K2&#39;,              #[175]     
+                   &#39;3SM8&#39;: &#39;3*S2 + M2&#39;,                    #[176]     
+                   &#39;2SMK8&#39;: &#39;2*S2 + M2 + K2&#39;,              #[177]     
+                   &#39;S8&#39;: &#39;3*S2 + S2&#39;,                      #[178]     
+                   &#39;2(MN)K9&#39;: &#39;2*M2 + 2*N2 + K1&#39;,            #[179]     
+                   &#39;3MNK9&#39;: &#39;3*M2 + N2 + K1&#39;,              #[180]     
+                   &#39;4MK9&#39;: &#39;4*M2 + K1&#39;,                    #[181]     
+                   &#39;3MSK9&#39;: &#39;3*M2 + S2 + K1&#39;,              #[182]     
+                   &#39;4MN10&#39;: &#39;4*M2 + N2&#39;,                   #[183]     
+                   &#39;M10&#39;: &#39;5*M2&#39;,                          #[184]     
+                   &#39;3MSN10&#39;: &#39;3*M2 + S2 + N2&#39;,             #[185]     
+                   &#39;4MS10&#39;: &#39;4*M2 + S2&#39;,                   #[186]     
+                   &#39;2(MS)N10&#39;: &#39;2*M2 + 2*S2 + N2&#39;,           #[187]     
+                   &#39;2MNSK10&#39;: &#39;2*M2 + N2 + S2 + K2&#39;,       #[188]     
+                   &#39;3M2S10&#39;: &#39;3*M2 + 2*S2&#39;,                #[189]     
+                   &#39;4MSK11&#39;: &#39;4*M2 + S2 + K1&#39;,             #[190]     
+                   &#39;M12&#39;: &#39;5*M2 + M2&#39;,                     #[191]     
+                   &#39;4MSN12&#39;: &#39;4*M2 + S2 + N2&#39;,             #[192]     
+                   &#39;5MS12&#39;: &#39;5*M2 + S2&#39;,                   #[193]     
+                   &#39;3MNKS12&#39;: &#39;3*M2 + N2 + K2 + S2&#39;,       #[194]     
+                   &#39;4M2S12&#39;: &#39;4*M2 + 2*S2&#39;,                #[195]   
+                   &#39;N4&#39;: &#39;2*N2&#39;,                           #extra added   
+                   }
+
+    shallow_eqs_pd = pd.Series(shallow_eqs)
+    
+    v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
+    v0uf_base_forf = v0uf_base.loc[index_f,:].astype(float)
+    shallow_eqs_sel = shallow_eqs_pd#[const_list_shallow_sel]
+    shallow_eqs_sel_str = &#39;\n&#39;.join(&#39;comp_%s = %s&#39;%(key.replace(&#39;(&#39;,&#39;&#39;).replace(&#39;)&#39;,&#39;&#39;), val) for key, val in shallow_eqs_sel.iteritems()) #brackets are temporarily removed in order to evaluate functions
+    v0uf_base_forv0u.eval(shallow_eqs_sel_str, inplace=True)
+    v0uf_base_forf.eval(shallow_eqs_sel_str.replace(&#39;-&#39;,&#39;+&#39;), inplace=True) #for f only multiplication is applied, never division
+
+    if 1:
+        v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
+    else: #option does not work at f definition yet
+        v0uf_base_forfstr = v0uf_base.loc[index_fstr,:]
+        shallow_eqs_sel_str_nomult = shallow_eqs_sel_str[:]
+        for mult in [2,3,4,5,6]:
+            for comp in [&#39;M2&#39;,&#39;N2&#39;,&#39;K2&#39;,&#39;K1&#39;,&#39;S2&#39;]:
+                shallow_eqs_sel_str_nomult = shallow_eqs_sel_str_nomult.replace(&#39;%i*%s&#39;%(mult,comp),&#39;+&#39;.join(mult*[comp]))
+        v0uf_base_forfstr.eval(shallow_eqs_sel_str_nomult.replace(&#39;-&#39;,&#39;+&#39;), inplace=True) #for f only multiplication is applied, never division
+        v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forfstr])
+
+    #remove component_ prefix and restore brackets in component names (was necessary since equation cannot start with number)
+    new_cols = [x.replace(&#39;comp_&#39;,&#39;&#39;) for x in v0uf_all.columns]
+    for comp in [&#39;M2(KS)2&#39;,&#39;2SN(MK)2&#39;,&#39;2KM(SN)2&#39;,&#39;3(SM)N2&#39;,&#39;2(MN)S6&#39;,&#39;2(MS)K6&#39;,&#39;2(MN)8&#39;,&#39;2(MS)8&#39;,&#39;2(MN)K9&#39;,&#39;2(MS)N10&#39;]:
+        new_cols = [x.replace(comp.replace(&#39;(&#39;,&#39;&#39;).replace(&#39;)&#39;,&#39;&#39;),comp) for x in new_cols]
+    v0uf_all.columns.values[:] = new_cols
+
+    if 1:
+        v0uf_allT = v0uf_all.T
+    else: #option does not work at f definition yet
+        v0uf_allT_obj = v0uf_all.T
+        v0uf_allT = v0uf_allT_obj.loc[:,index_v0+index_u].astype(int)
+        v0uf_allT[index_fstr] = v0uf_allT_obj.loc[:,index_fstr]
+    
+    v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
+
+    pd.to_pickle(v0uf_allT,file_pkl)
+    
+    return v0uf_allT
+
+
+
+
+
+
+
+
+
+
+def get_hatyan_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw=False):
+    &#34;&#34;&#34;
+    Returns the frequencies of the requested list of constituents. Source: beromg.f
+
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    t_const_freq : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import pandas as pd
+    import numpy as np
+    import datetime as dt
+    
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
+    elif type(const_list) is not list:
+        const_list = const_list.tolist()
+
+    const_list_hatyan195, const_listoptions = get_const_list_hatyan(&#39;all&#39;, return_listoptions=True)
+    
+    if dood_date is None:
+        dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
+    
+    T_rad_freq, S_rad_freq, H_rad_freq, P_rad_freq, N_rad_freq, P1_rad_freq = get_doodson_eqvals(dood_date=dood_date, mode=&#39;freq&#39;) #N is not used here
+    multiply_variables = np.stack([T_rad_freq,S_rad_freq, H_rad_freq, P_rad_freq, P1_rad_freq])
+    
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_sel_freq = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
+    
+    DOMEGA_speed = np.dot(v0uf_sel_freq.values,multiply_variables)
+
+    t_const_speed = DOMEGA_speed[:,0]
+    t_const_freq = t_const_speed/(2*np.pi) #aantal rotaties per uur, freq
+    np.seterr(divide=&#39;ignore&#39;) #suppress divide by 0 warning
+    t_const_perds = 1/t_const_freq #period [hr]
+    t_const_angfreqs = 360/t_const_perds #angfreq [deg/hr]
+    freq_pd = pd.DataFrame({&#39;freq&#39;:t_const_freq, &#39;angvelo [rad/hr]&#39;:t_const_speed, &#39;period [hr]&#39;:t_const_perds, &#39;angfreq [deg/hr]&#39;:t_const_angfreqs}, index=const_list)
+    if sort_onfreq:
+        freq_pd = freq_pd.sort_values(by=&#39;freq&#39;)
+    
+    if return_allraw:
+        return freq_pd, DOMEGA_speed
+    else:
+        return freq_pd
+
+
+
+
+
+
+
+def get_hatyan_v0(const_list, dood_date):
+    &#34;&#34;&#34;
+    Returns the v-values of the requested list of constituents for the requested date(s)
+    
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    v_0i_rad : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    
+    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date) #N is not used here
+    multiply_variables = np.stack([T_rad,S_rad, H_rad, P_rad, P1_rad])
+
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_sel_v = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
+    
+    DV0 = np.dot(v0uf_sel_v.values,multiply_variables) + np.deg2rad(v0uf_sel[&#39;EDN&#39;]).values[np.newaxis].T
+    
+    DV0_pd = pd.DataFrame(DV0)
+    DV0_pd.index = const_list
+    
+    return DV0_pd
+
+
+
+
+
+
+def get_hatyan_u(const_list, dood_date):
+    &#34;&#34;&#34;
+    Returns the u-values of the requested list of constituents for the requested date(s)
+
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    u_i_rad_HAT : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    
+    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
+        const_list = const_list.tolist()
+    
+    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
+    #list of dependencies for U (only P and N are used here)
+    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_hatyan_constants(dood_date)
+    DHOMI = (DOMEGA-DIKL)*0.5
+    DHOPI = (DOMEGA+DIKL)*0.5
+    
+    
+    DTHN = np.tan(N_rad*0.5)
+    DATC = np.arctan2(np.cos(DHOMI)*DTHN,np.cos(DHOPI))
+    DATS = np.arctan2(np.sin(DHOMI)*DTHN,np.sin(DHOPI))
+    DIH = np.arccos(np.cos(DIKL)*np.cos(DOMEGA)-np.sin(DIKL)*np.sin(DOMEGA)*np.cos(N_rad))
+    DKSI = (N_rad-DATC-DATS)
+    DNU = DATC-DATS
+    DPMKSI = P_rad-DKSI
+    DC2PMK = np.cos(DPMKSI+DPMKSI)
+    DS2PMK = np.sin(DPMKSI+DPMKSI)
+    DCIH = np.cos(DIH)
+    DSIH = np.sin(DIH)
+    DCHIH = np.cos(DIH*0.5)
+    DCTHIH = 1./np.tan(DIH*0.5)
+    DS2IH = np.sin(DIH+DIH)
+    DQU = np.arctan2(DS2PMK,(3*DCIH/(DCHIH*DCHIH)+DC2PMK))
+    DQ = np.arctan2((5*DCIH-1)*np.tan(DPMKSI),(7*DCIH+1))
+    DNUACC = np.arctan2(DS2IH*np.sin(DNU),(DS2IH*np.cos(DNU)+DC1681/DC5023))
+    DR = np.arctan2(DS2PMK,(DCTHIH*DCTHIH/6.-DC2PMK))
+    D2NU2A = np.arctan2(DSIH**2*np.sin(2*DNU),(DSIH**2*np.cos(2*DNU)+DC0365/DC5023))
+    DUK1   = -DNUACC 
+    DUK2   = -D2NU2A
+    multiply_variables = np.stack([DKSI, DNU, DQ, DQU, DR, DUK1, DUK2])
+    
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_sel_u = v0uf_sel[[&#39;DKSI&#39;,&#39;DNU&#39;, &#39;DQ&#39;, &#39;DQU&#39;, &#39;DR&#39;, &#39;DUK1&#39;, &#39;DUK2&#39;]]
+
+    DU = np.dot(v0uf_sel_u.values,multiply_variables)
+    DU += np.pi
+    DU = np.remainder(DU,2*np.pi)
+    DU -= np.pi
+
+    #create dataframe
+    DU_pd = pd.DataFrame(DU)
+    DU_pd.index = const_list
+    
+    return DU_pd
+
+
+
+
+def get_hatyan_f(const_list, dood_date, xfac):
+    &#34;&#34;&#34;
+    Returns the f-values of the requested list of constituents for the requested date(s)
+
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    f_i_HAT : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    
+    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
+        const_list = const_list.tolist()
+
+    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
+
+    #list of dependencies F (only P and N are used here)
+    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_hatyan_constants(dood_date)
+    DHOMI = (DOMEGA-DIKL)*0.5
+    DHOPI = (DOMEGA+DIKL)*0.5
+    DSOMEG = np.sin(DOMEGA)
+    DSIKL = np.sin(DIKL)
+    DTHN = np.tan(N_rad*0.5)
+    DATC = np.arctan2(np.cos(DHOMI)*DTHN,np.cos(DHOPI))
+    DATS = np.arctan2(np.sin(DHOMI)*DTHN,np.sin(DHOPI))
+    DIH = np.arccos(np.cos(DIKL)*np.cos(DOMEGA)-DSIKL*DSOMEG*np.cos(N_rad))
+    DKSI = (N_rad-DATC-DATS)%(2*np.pi)
+    DNU = DATC-DATS#
+    DCHOM = np.cos(DOMEGA*0.5) 
+    DSHOM = np.sin(DOMEGA*0.5) 
+    DSOM2 = DSOMEG*DSOMEG
+    DCHOM2 = DCHOM*DCHOM 
+    DSHOM2 = DSHOM*DSHOM 
+    DCHIKL = np.cos(DIKL*0.5)  
+    DCHIK4 = DCHIKL*DCHIKL*DCHIKL*DCHIKL
+    D132S2 = 1-3./2.*DSIKL*DSIKL 
+    DMOF65 = (2./3.-DSOM2)*D132S2  
+    DMOF66 = DSOM2*DCHIK4
+    DMOF67 = DSOMEG*DCHOM2*DCHIK4
+    DMOF68 = np.sin(DOMEGA+DOMEGA)*D132S2
+    DMOF69 = DSOMEG*DSHOM2*DCHIK4
+    DMOF70 = DCHOM2*DCHOM2*DCHIK4
+    DMOF71 = DSOM2*D132S2
+    DSIH = np.sin(DIH)#
+    DCHIH = np.cos(DIH*0.5)
+    DSHIH = np.sin(DIH*0.5)
+    DS2IH = np.sin(DIH+DIH)
+    DTHIH2 = DSHIH**2/DCHIH**2
+    DIGHI2 = np.cos(DIH)/DCHIH**2  
+    DPMKSI = P_rad-DKSI
+    DC2PMK = np.cos(DPMKSI+DPMKSI)
+    DQA = 1./np.sqrt(0.25+1.5*DIGHI2*DC2PMK+2.25*DIGHI2*DIGHI2)
+    DRA = 1./np.sqrt(1-12*DTHIH2*DC2PMK+36*DTHIH2*DTHIH2)
+    
+    #actual values used in the component list below (12 uniques)
+    DND73 = (2./3.-DSIH**2)/DMOF65
+    DND74 = DSIH**2/DMOF66 
+    DND75 = DSIH*DCHIH**2/DMOF67 #DFQ1/DFO1
+    DND76 = DS2IH/DMOF68 #DFJ1
+    DND77 = DSIH*DSHIH**2/DMOF69 
+    DND78 = DCHIH**2*DCHIH**2/DMOF70 #DFN2/DFNU2/DFM2/DFLAB2
+    DND79 = DSIH**2/DMOF71 
+    DFM1 = DND75/DQA #DFO1/DQA
+    DFK1 = np.sqrt(DC5023*DC5023*DS2IH*DS2IH+2*DC5023*DC1681*DS2IH*np.cos(DNU)+DC1681*DC1681)/(DC5023*DMOF68+DC1681) 
+    DFL2 = DND78/DRA #DFM2/DRA
+    DFK2 = np.sqrt(DC5023*DC5023*DSIH**2*DSIH**2+2*DC5023*DC0365*DSIH**2*np.cos(DNU+DNU)+DC0365*DC0365)/(DC5023*DMOF71+DC0365)
+    DFM1C = (1-10*DSHIH**2+15*DSHIH**2*DSHIH**2)*DCHIH**2/((1-10*DSHOM2+15*DSHOM2*DSHOM2)*DCHOM2)
+    
+    multiply_variables = np.stack([DND73,DND74,DND75,DND76,DND77,DND78,DND79,DFM1,DFK1,DFL2,DFK2,DFM1C])
+    sel_cols = [&#39;DND73&#39;,&#39;DND74&#39;,&#39;DND75&#39;,&#39;DND76&#39;,&#39;DND77&#39;,&#39;DND78&#39;,&#39;DND79&#39;,&#39;DFM1&#39;,&#39;DFK1&#39;,&#39;DFL2&#39;,&#39;DFK2&#39;,&#39;DFM1C&#39;]
+    
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    f_i = np.ones(shape=(len(const_list), len(dood_date)))
+    for variable, colname in zip(multiply_variables, sel_cols): #this loop is faster than array multiplications, since it only calculates the necessary factors (saves a lot of overhead)
+        power = v0uf_sel[colname].values
+        idnozero = power!=0
+        f_i[idnozero,:] *= variable**power[idnozero][np.newaxis].T
+    
+    v0uf_M2 = get_v0uf_sel(const_list=[&#39;M2&#39;])
+    f_i_M2 = np.ones(shape=(len([&#39;M2&#39;]), len(dood_date)))
+    for variable, colname in zip(multiply_variables, sel_cols): 
+        power = v0uf_M2[colname].values
+        idnozero = power!=0
+        f_i_M2[idnozero,:] *= variable**power[idnozero][np.newaxis].T
+    
+    #create dataframe
+    f_i_pd = pd.DataFrame(f_i)
+    f_i_pd.index = const_list
+    f_i_M2_pd = pd.DataFrame(f_i_M2)
+    f_i_M2_pd.index = [&#39;M2&#39;]
+    
+    if xfac: #if variable is not: None, False, 0, more?
+        f_i_pd = correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac=xfac)
+    
+    return f_i_pd
+    
+    
+
+
+
+
+def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
+    &#34;&#34;&#34;
+    Correct f-values with xfactor, this definition is only ran when xfac=True.
+
+    Parameters
+    ----------
+    f_i_pd : TYPE
+        DESCRIPTION.
+    f_i_M2_pd : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    f_i_pd : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    const_list = f_i_pd.index.tolist()
+    if isinstance(xfac,dict):
+        print(&#39;xfac dictionary provided: %s&#39;%(xfac))
+        xfac_values = xfac
+    else: #use default xfactor values
+        xfac_values = {&#39;MU2&#39;: 0.00, # 0 betekent knoopfactor uit, 1 is helemaal aan
+                       &#39;N2&#39;:  0.00,
+                       &#39;NU2&#39;: 0.80,
+                       &#39;M2&#39;:  0.53,
+                       &#39;2MN2&#39;:0.20,
+                       &#39;S2&#39;: -0.82,
+                       &#39;M4&#39;:  0.70,
+                       &#39;MS4&#39;: 0.00,
+                       &#39;M6&#39;:  0.75,
+                       &#39;2MS6&#39;:0.20,
+                       &#39;M8&#39;:  0.70,
+                       &#39;3MS8&#39;:0.60}
+    
+    for xfac_const in xfac_values.keys():
+        #print(xfac_const)
+        if xfac_const in const_list:
+            if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
+                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[[&#39;M2&#39;],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
+            else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
+                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
+
+    return f_i_pd
+    </code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hatyan.hatyan_core.get_v0uf_sel"><code class="name flex">
+<span>def <span class="ident">get_v0uf_sel</span></span>(<span>const_list)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_v0uf_sel</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>const_list</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>v0uf_sel</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_v0uf_sel(const_list):
+    &#34;&#34;&#34;
+    get_v0uf_sel
+
+    Parameters
+    ----------
+    const_list : TYPE
+        DESCRIPTION.
+    
+    Returns
+    -------
+    v0uf_sel : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    if v0uf_calculatewrite:
+        v0uf_allT = calcwrite_baseforv0uf()
+    else:
+        v0uf_allT = v0uf_allT_frompkl
+    
+    const_list_pd = pd.Series(const_list,index=const_list)
+    const_list_avaibool = const_list_pd.isin(v0uf_allT.index)
+    
+    if not const_list_avaibool.all():
+        const_list_notavailable = const_list_avaibool.loc[~const_list_avaibool]
+        raise Exception(&#39;ERROR: not all requested constituents are available:\n%s&#39;%(const_list_notavailable))
+    else:
+        v0uf_sel = v0uf_allT.loc[const_list]
+    
+    return v0uf_sel</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_const_list_hatyan"><code class="name flex">
+<span>def <span class="ident">get_const_list_hatyan</span></span>(<span>listtype, return_listoptions=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Definition of several hatyan components lists, taken from the tidegui initializetide.m code, often originating from corresponcence with Koos Doekes</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>listtype</code></strong> :&ensp;<code>str</code></dt>
+<dd>The type of the components list to be retrieved, options:
+- 'all': all available components in hatyan_python
+- 'all_originalorder': all 195 hatyan components in original hatyan-FORTRAN order
+- 'year': default list of 94 hatyan components
+- 'halfyear': list of 88 components to be used when analyzing approximately half a year of data
+- 'month': list of 21 components to be used when analyzing one month of data. If desired, the K1 component can be splitted in P1/K1, N2 in N2/Nu2, S2 in T2/S2/K2 and 2MN2 in Labda2/2MN2.
+- 'month_deepwater': list of 21 components to be used when analyzing one month of data for deep water (from tidegui).
+- 'springneap': list of 14 components to be used when analyzing one spring neap period (approximately 15 days) of data
+- 'day': list of 10 components to be used when analyzing one day
+- 'day_tidegui': list of 5 components to be used when analyzing one day ir two tidal cycles (from tidegui)
+- 'tidalcycle': list of 6 components to be used when analyzing one tidal cycle (approximately 12 hours and 25 minutes)</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>const_list_hatyan</code></strong> :&ensp;<code>list</code> of <code>str</code></dt>
+<dd>A list of component names.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_const_list_hatyan(listtype, return_listoptions=False):
+    &#34;&#34;&#34;
+    Definition of several hatyan components lists, taken from the tidegui initializetide.m code, often originating from corresponcence with Koos Doekes
+
+    Parameters
+    ----------
+    listtype : str
+        The type of the components list to be retrieved, options:
+            - &#39;all&#39;: all available components in hatyan_python
+            - &#39;all_originalorder&#39;: all 195 hatyan components in original hatyan-FORTRAN order
+            - &#39;year&#39;: default list of 94 hatyan components
+            - &#39;halfyear&#39;: list of 88 components to be used when analyzing approximately half a year of data
+            - &#39;month&#39;: list of 21 components to be used when analyzing one month of data. If desired, the K1 component can be splitted in P1/K1, N2 in N2/Nu2, S2 in T2/S2/K2 and 2MN2 in Labda2/2MN2.
+            - &#39;month_deepwater&#39;: list of 21 components to be used when analyzing one month of data for deep water (from tidegui).
+            - &#39;springneap&#39;: list of 14 components to be used when analyzing one spring neap period (approximately 15 days) of data
+            - &#39;day&#39;: list of 10 components to be used when analyzing one day
+            - &#39;day_tidegui&#39;: list of 5 components to be used when analyzing one day ir two tidal cycles (from tidegui)
+            - &#39;tidalcycle&#39;: list of 6 components to be used when analyzing one tidal cycle (approximately 12 hours and 25 minutes)
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    const_list_hatyan : list of str
+        A list of component names.
+
+    &#34;&#34;&#34;
+    const_list_all = v0uf_allT_frompkl.index.tolist()
+    
+    const_lists_dict = {&#39;all&#39;:
+                            #alle binnen hatyan beschikbare componenten
+                            #A0 en 195 componenten (plus potentially added components)
+                            const_list_all,
+                        &#39;all_originalorder&#39;:
+                            #alle binnen hatyan beschikbare componenten
+                            #A0 en 195 componenten
+                            [&#39;A0&#39;,&#39;SA&#39;,&#39;SSA&#39;,&#39;MSM&#39;,&#39;MM&#39;,&#39;MSF&#39;,&#39;SM&#39;,&#39;MF&#39;,&#39;SNU2&#39;,&#39;SN&#39;,&#39;MFM&#39;,&#39;2SM&#39;,&#39;2SMN&#39;,
+                            &#39;2Q1&#39;,&#39;NJ1&#39;,&#39;SIGMA1&#39;,&#39;NUJ1&#39;,&#39;Q1&#39;,&#39;RO1&#39;,&#39;NUK1&#39;,&#39;O1&#39;,&#39;TAU1&#39;,&#39;MP1&#39;,&#39;M1B&#39;,&#39;M1C&#39;,&#39;M1D&#39;,&#39;M1A&#39;,&#39;M1&#39;,&#39;NO1&#39;,&#39;CHI1&#39;,&#39;LP1&#39;,&#39;PI1&#39;,&#39;TK1&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,&#39;PSI1&#39;,&#39;RP1&#39;,&#39;FI1&#39;,&#39;KP1&#39;,&#39;THETA1&#39;,&#39;LABDAO1&#39;,&#39;J1&#39;,
+                            &#39;2PO1&#39;,&#39;SO1&#39;,&#39;OO1&#39;,&#39;KQ1&#39;,&#39;3MKS2&#39;,&#39;3MS2&#39;,&#39;OQ2&#39;,&#39;MNK2&#39;,&#39;MNS2&#39;,&#39;2ML2S2&#39;,&#39;2MS2K2&#39;,&#39;NLK2&#39;,&#39;2N2&#39;,&#39;MU2&#39;,&#39;2MS2&#39;,&#39;SNK2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;2KN2S2&#39;,&#39;OP2&#39;,&#39;MSK2&#39;,&#39;MPS2&#39;,&#39;M2&#39;,&#39;MSP2&#39;,&#39;MKS2&#39;,&#39;M2(KS)2&#39;,&#39;2SN(MK)2&#39;,&#39;LABDA2&#39;,&#39;2MN2&#39;,&#39;L2&#39;,&#39;L2A&#39;,&#39;L2B&#39;,&#39;2SK2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;R2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;ETA2&#39;,&#39;KJ2&#39;,&#39;MKN2&#39;,&#39;2KM(SN)2&#39;,&#39;2SM2&#39;,&#39;SKM2&#39;,&#39;2SNU2&#39;,&#39;3(SM)N2&#39;,&#39;2SN2&#39;,&#39;SKN2&#39;,
+                            &#39;MQ3&#39;,&#39;NO3&#39;,&#39;MO3&#39;,&#39;2MK3&#39;,&#39;2MP3&#39;,&#39;M3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;2MQ3&#39;,&#39;SP3&#39;,&#39;SK3&#39;,&#39;K3&#39;,&#39;2SO3&#39;,
+                            &#39;4MS4&#39;,&#39;2MNS4&#39;,&#39;3MK4&#39;,&#39;MNLK4&#39;,&#39;3MS4&#39;,&#39;MSNK4&#39;,&#39;MN4&#39;,&#39;2MLS4&#39;,&#39;2MSK4&#39;,&#39;M4&#39;,&#39;2MKS4&#39;,&#39;SN4&#39;,&#39;3MN4&#39;,&#39;2SMK4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;2SNM4&#39;,&#39;2MSN4&#39;,&#39;SL4&#39;,&#39;S4&#39;,&#39;SK4&#39;,&#39;2SMN4&#39;,&#39;3SM4&#39;,&#39;2SKM4&#39;,
+                            &#39;MNO5&#39;,&#39;3MK5&#39;,&#39;3MP5&#39;,&#39;M5&#39;,&#39;MNK5&#39;,&#39;2MP5&#39;,&#39;3MO5&#39;,&#39;MSK5&#39;,&#39;3KM5&#39;,
+                            &#39;2(MN)S6&#39;,&#39;3MNS6&#39;,&#39;2NM6&#39;,&#39;4MS6&#39;,&#39;2MSNK6&#39;,&#39;2MN6&#39;,&#39;2MNU6&#39;,&#39;3MSK6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;4MN6&#39;,&#39;MNK6&#39;,&#39;MKNU6&#39;,&#39;2(MS)K6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;2SN6&#39;,&#39;3MSN6&#39;,&#39;MKL6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,&#39;S6&#39;,
+                            &#39;2MNO7&#39;,&#39;2NMK7&#39;,&#39;M7&#39;,&#39;2MSO7&#39;,&#39;MSKO7&#39;,
+                            &#39;2(MN)8&#39;,&#39;3MN8&#39;,&#39;3MNKS8&#39;,&#39;M8&#39;,&#39;2MSN8&#39;,&#39;2MNK8&#39;,&#39;3MS8&#39;,&#39;3MK8&#39;,&#39;2SNM8&#39;,&#39;MSNK8&#39;,&#39;2(MS)8&#39;,&#39;2MSK8&#39;,&#39;3SM8&#39;,&#39;2SMK8&#39;,&#39;S8&#39;,
+                            &#39;2(MN)K9&#39;,&#39;3MNK9&#39;,&#39;4MK9&#39;,&#39;3MSK9&#39;,
+                            &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;2MNSK10&#39;,&#39;3M2S10&#39;,
+                            &#39;4MSK11&#39;,
+                            &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;3MNKS12&#39;,&#39;4M2S12&#39;],
+                    
+                        &#39;year&#39;:
+                            #Bij analyse van een jaar wordt gebruik gemaakt
+                            #van de &#39;standaardset&#39; van 94 componenten aanbevolen
+                            #Althans voor data van de Noordzee en omgeving.
+                            #A0 en 94 componenten
+                            #of which shallow water components: [&#39;2MS6&#39;, &#39;2SM2&#39;, &#39;3MS4&#39;, &#39;3MS8&#39;, &#39;4MS10&#39;, &#39;M4&#39;, &#39;M6&#39;, &#39;M8&#39;, &#39;MS4&#39;]
+                            [&#39;A0&#39;,&#39;SA&#39;,&#39;SM&#39;,
+                            &#39;Q1&#39;,&#39;O1&#39;,&#39;M1C&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,
+                            &#39;3MKS2&#39;,&#39;3MS2&#39;,&#39;OQ2&#39;,&#39;MNS2&#39;,&#39;2ML2S2&#39;,&#39;NLK2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;MSK2&#39;,&#39;MPS2&#39;,&#39;M2&#39;,&#39;MSP2&#39;,&#39;MKS2&#39;,&#39;LABDA2&#39;,&#39;2MN2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;2SM2&#39;,&#39;SKM2&#39;,
+                            &#39;NO3&#39;,&#39;2MK3&#39;,&#39;2MP3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;SK3&#39;,
+                            &#39;4MS4&#39;,&#39;2MNS4&#39;,&#39;3MS4&#39;,&#39;MN4&#39;,&#39;2MLS4&#39;,&#39;2MSK4&#39;,&#39;M4&#39;,&#39;3MN4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;2MSN4&#39;,&#39;S4&#39;,
+                            &#39;MNO5&#39;,&#39;3MK5&#39;,&#39;2MP5&#39;,&#39;3MO5&#39;,&#39;MSK5&#39;,&#39;3KM5&#39;,
+                            &#39;3MNS6&#39;,&#39;2NM6&#39;,&#39;4MS6&#39;,&#39;2MN6&#39;,&#39;2MNU6&#39;,&#39;3MSK6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;MKNU6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;3MSN6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,
+                            &#39;2MNO7&#39;,&#39;M7&#39;,&#39;2MSO7&#39;,
+                            &#39;2(MN)8&#39;,&#39;3MN8&#39;,&#39;M8&#39;,&#39;2MSN8&#39;,&#39;2MNK8&#39;,&#39;3MS8&#39;,&#39;3MK8&#39;,&#39;2(MS)8&#39;,&#39;2MSK8&#39;,
+                            &#39;3MNK9&#39;,&#39;4MK9&#39;,&#39;3MSK9&#39;,
+                            &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;3M2S10&#39;,
+                            &#39;4MSK11&#39;,
+                            &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;4M2S12&#39;],
+                    
+                        &#39;halfyear&#39;:
+                            #Bij analyse van een halfjaar wordt 
+                            #aanbevolen 88 componenten te gebruiken, 
+                            #nl. de standaardset minus
+                            #S1, MSK2, MPS2, MSP2, MKS2, en T2.
+                            #Hierbij nog enkele opmerkingen :
+                            #De middelste vier componenten geven 
+                            #eigenlijk de seizoensmodulatie van M2
+                            #weer. Het is daarom logischer om bij
+                            #analyse op een half jaar ook MSK2 en
+                            #MKS2 weg te laten. 
+                            #De schatting van de jaarlijkse component
+                            #Sa is zo natuurlijk onbetrouwbaar, maar
+                            #nauwelijks onbetrouwbaarder dan bij
+                            #analyse op een jaar.
+                            #Toepassing van componentsplitsing bij
+                            #analyse op een half jaar geeft geheel
+                            #onjuiste resultaten.
+                            #Als de beschikbare periode korter is
+                            #dan een half jaar, is het aan te bevelen
+                            #deze in perioden van 1 maand op te splitsen. 
+                            #A0 en 88 componenten
+                            [&#39;A0&#39;,&#39;SA&#39;,&#39;SM&#39;,
+                            &#39;Q1&#39;,&#39;O1&#39;,&#39;M1C&#39;,&#39;P1&#39;,
+                            &#39;K1&#39;,&#39;3MKS2&#39;,&#39;3MS2&#39;,&#39;OQ2&#39;,&#39;MNS2&#39;,&#39;2ML2S2&#39;,&#39;NLK2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;M2&#39;,&#39;LABDA2&#39;,&#39;2MN2&#39;,&#39;S2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;2SM2&#39;,&#39;SKM2&#39;,
+                            &#39;NO3&#39;,&#39;2MK3&#39;,&#39;2MP3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;SK3&#39;,
+                            &#39;4MS4&#39;,&#39;2MNS4&#39;,&#39;3MS4&#39;,&#39;MN4&#39;,&#39;2MLS4&#39;,&#39;2MSK4&#39;,&#39;M4&#39;,&#39;3MN4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;2MSN4&#39;,&#39;S4&#39;,
+                            &#39;MNO5&#39;,&#39;3MK5&#39;,&#39;2MP5&#39;,&#39;3MO5&#39;,&#39;MSK5&#39;,&#39;3KM5&#39;,
+                            &#39;3MNS6&#39;,&#39;2NM6&#39;,&#39;4MS6&#39;,&#39;2MN6&#39;,&#39;2MNU6&#39;,&#39;3MSK6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;MKNU6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;3MSN6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,
+                            &#39;2MNO7&#39;,&#39;M7&#39;,&#39;2MSO7&#39;,
+                            &#39;2(MN)8&#39;,&#39;3MN8&#39;,&#39;M8&#39;,&#39;2MSN8&#39;,&#39;2MNK8&#39;,&#39;3MS8&#39;,&#39;3MK8&#39;,&#39;2(MS)8&#39;,&#39;2MSK8&#39;,
+                            &#39;3MNK9&#39;,&#39;4MK9&#39;,&#39;3MSK9&#39;,
+                            &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;3M2S10&#39;,
+                            &#39;4MSK11&#39;,
+                            &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;4M2S12&#39;],
+                    
+                        &#39;month&#39;:
+                            #Bij analyse van 1 maand zijn de aanbevolen componenten:
+                            #Q1, O1, K1
+                            #3MS2, MNS2, Mu2, N2, M2, 2MN2, S2, 2SM2
+                            #3MS4, MN4, M4, MS4
+                            #2MN6, M6, 2MS6
+                            #M8, 3MS8
+                            #4MS10
+                            #Als er in het programma een functie voor componentsplitsing is ingebouwd, kan
+                            #men hiermee K1 splitsen in P1/K1, N2 in N2/Nu2, S2 in T2/S2/K2 en 2MN2 in Labda2/2MN2.
+                            #A0 en 21 componenten
+                            [&#39;A0&#39;,&#39;Q1&#39;, &#39;O1&#39;, &#39;K1&#39;,
+                            &#39;3MS2&#39;, &#39;MNS2&#39;, &#39;MU2&#39;, &#39;N2&#39;, &#39;M2&#39;, &#39;2MN2&#39;, &#39;S2&#39;, &#39;2SM2&#39;,
+                            &#39;3MS4&#39;, &#39;MN4&#39;, &#39;M4&#39;, &#39;MS4&#39;,
+                            &#39;2MN6&#39;, &#39;M6&#39;, &#39;2MS6&#39;,
+                            &#39;M8&#39;, &#39;3MS8&#39;,
+                            &#39;4MS10&#39;],
+                            
+                        &#39;month_deepwater&#39;:
+                            # for deep water L2 is better connected than 2MN2 to LABDA2
+                            [&#39;A0&#39;,&#39;Q1&#39;, &#39;O1&#39;, &#39;K1&#39;,
+                            &#39;3MS2&#39;, &#39;MNS2&#39;, &#39;MU2&#39;, &#39;N2&#39;, &#39;M2&#39;, &#39;L2&#39;, &#39;S2&#39;, &#39;2SM2&#39;,
+                            &#39;3MS4&#39;, &#39;MN4&#39;, &#39;M4&#39;, &#39;MS4&#39;,
+                            &#39;2MN6&#39;, &#39;M6&#39;, &#39;2MS6&#39;,
+                            &#39;M8&#39;, &#39;3MS8&#39;,
+                            &#39;4MS10&#39;],
+                    
+                        &#39;springneap&#39;:
+                            #Bij analyse van 1 spring-doodtijcyclus zijn de aanbevolen componenten:
+                            #O1, K1
+                            #Mu2, M2, S2, 2SM2
+                            #3MS4, M4, MS4
+                            #M6, 2MS6
+                            #M8, 3MS8
+                            #4MS10
+                            #De resultaten bij analyse van 15 dagen zijn
+                            #erg pover. Men kan zo niet eens N2, en de
+                            #samenstellingen daarvan als MN4 etc.,
+                            #afsplitsen, zodat de schattingen van M2 en
+                            #S2 onbetrouwbaar zijn. 
+                            #A0 en 14 componenten
+                            [&#39;A0&#39;,&#39;O1&#39;,&#39;K1&#39;,
+                            &#39;MU2&#39;,&#39;M2&#39;,&#39;S2&#39;,&#39;2SM2&#39;,
+                            &#39;3MS4&#39;,&#39;M4&#39;,&#39;MS4&#39;,
+                            &#39;M6&#39;,&#39;2MS6&#39;,
+                            &#39;M8&#39;,&#39;3MS8&#39;,
+                            &#39;4MS10&#39;],
+                            
+                        &#39;day&#39;:
+                            #harmonic constituents for 1-day analysis
+                            #i.e. 2 tidal periods [&#39;A0&#39;,&#39;M2&#39;,&#39;M4&#39;,&#39;M6&#39;,&#39;M8&#39;,&#39;O1&#39;],
+                            #A0 en 10 componenten
+                            [&#39;A0&#39;,&#39;M1&#39;,&#39;M2&#39;,&#39;M3&#39;,&#39;M4&#39;,&#39;M5&#39;,&#39;M6&#39;,&#39;M7&#39;,&#39;M8&#39;,&#39;M10&#39;,&#39;M12&#39;],
+                            
+                        &#39;tidalcycle&#39;:
+                            #harmonic constituents for 1-tide analysis
+                            #A0 en 6 componenten
+                            [&#39;A0&#39;,&#39;M2&#39;,&#39;M4&#39;,&#39;M6&#39;,&#39;M8&#39;,&#39;M10&#39;,&#39;M12&#39;]
+                            }
+        
+    const_list_options = const_lists_dict.keys()
+    if listtype in const_list_options:
+        const_list_hatyan = const_lists_dict[listtype]
+    else:
+        raise Exception(&#39;ERROR: listtype %s is not implemented in get_const_list_hatyan, choose from: %s&#39;%(str(listtype),const_list_options))
+        
+    if return_listoptions:
+        return const_list_hatyan, const_list_options
+    else:
+        return const_list_hatyan</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_doodson_eqvals"><code class="name flex">
+<span>def <span class="ident">get_doodson_eqvals</span></span>(<span>dood_date, mode=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Berekent de doodson waardes T, S, H, P, N en P1 voor het opgegeven tijdstip.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dood_date</code></strong> :&ensp;<code>datetime.datetime</code> or <code>pandas.DateTimeIndex</code></dt>
+<dd>Date(s) on which the doodson values should be calculated.</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Calculate doodson values with Schureman (hatyan default) or Sea Level Science by Pugh. The default is False.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dood_T_rad</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>Bij hatyan 180+, maar in docs niet. In hatyan fortran code is +/-90 in v ook vaak omgedraaid in vergelijking met documentation.</dd>
+<dt><strong><code>dood_S_rad</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>Middelbare lengte van de maan. Mean longitude of moon</dd>
+<dt><strong><code>dood_H_rad</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>Middelbare lengte van de zon. mean longitude of sun</dd>
+<dt><strong><code>dood_P_rad</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>Middelbare lengte van het perieum van de maan. Longitude of lunar perigee</dd>
+<dt><strong><code>dood_N_rad</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>Afstand van de klimmende knoop van de maan tot het lentepunt. Longitude of moons node</dd>
+<dt><strong><code>dood_P1_rad</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>Middelbare lengte van het perieum van de zon. Longitude of solar perigee</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_doodson_eqvals(dood_date, mode=None):
+    &#34;&#34;&#34;
+    Berekent de doodson waardes T, S, H, P, N en P1 voor het opgegeven tijdstip.
+
+    Parameters
+    ----------
+    dood_date : datetime.datetime or pandas.DateTimeIndex
+        Date(s) on which the doodson values should be calculated.
+    mode : str, optional
+        Calculate doodson values with Schureman (hatyan default) or Sea Level Science by Pugh. The default is False.
+
+    Returns
+    -------
+    dood_T_rad : TYPE
+        Bij hatyan 180+, maar in docs niet. In hatyan fortran code is +/-90 in v ook vaak omgedraaid in vergelijking met documentation.
+    dood_S_rad : TYPE
+        Middelbare lengte van de maan. Mean longitude of moon
+    dood_H_rad : TYPE
+        Middelbare lengte van de zon. mean longitude of sun
+    dood_P_rad : TYPE
+        Middelbare lengte van het perieum van de maan. Longitude of lunar perigee
+    dood_N_rad : TYPE
+        Afstand van de klimmende knoop van de maan tot het lentepunt. Longitude of moons node
+    dood_P1_rad : TYPE
+        Middelbare lengte van het perieum van de zon. Longitude of solar perigee
+
+    &#34;&#34;&#34;
+    import datetime as dt
+    import numpy as np
+    
+    DNUJE = 24*36525
+    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
+    dood_Tj = (dood_tstart_hr+12)/(24*36525) #DTIJJE, #Aantal Juliaanse eeuwen ( = 36525 dagen) die zijn verstreken sinds 31 december 1899 12.00 uur GMT. Number of Julian centuries (36525 days) with respect to Greenwich mean noon, 31 December 1899 (Gregorian calendar)
+    if mode==&#39;freq&#39;:
+        #speed in radians per hour, de afgeleiden van onderstaande functies
+        dood_T_rad = np.array(len(dood_Tj)*[np.deg2rad(15)]) #360/24=15 degrees of earth rotation per hour
+        dood_S_rad  = (8399.7092745 + 0.0000346*dood_Tj*2)/DNUJE
+        dood_H_rad  = ( 628.3319500 + 0.0000052*dood_Tj*2)/DNUJE
+        dood_P_rad  = (  71.0180412 - 0.0001801*dood_Tj*2)/DNUJE
+        dood_N_rad  = np.array([np.nan])
+        dood_P1_rad = (   0.0300053 + 0.0000079*dood_Tj*2)/DNUJE
+    else: #for everything else
+        #hatyan documentation. Zie ook p162 of Schureman book
+        dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
+        dood_S_rad =  (4.7200089 + 8399.7092745*dood_Tj + 0.0000346*dood_Tj**2)
+        dood_H_rad =  (4.8816280 + 628.3319500*dood_Tj  + 0.0000052*dood_Tj**2)
+        dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
+        dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
+        dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
+    
+    return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_hatyan_constants"><code class="name flex">
+<span>def <span class="ident">get_hatyan_constants</span></span>(<span>dood_date)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_hatyan_constants</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dood_date</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>DOMEGA</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DIKL</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DC1681</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DC5023</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DC0365</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_hatyan_constants(dood_date):
+    &#34;&#34;&#34;
+    get_hatyan_constants
+
+    Parameters
+    ----------
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    DOMEGA : TYPE
+        DESCRIPTION.
+    DIKL : TYPE
+        DESCRIPTION.
+    DC1681 : TYPE
+        DESCRIPTION.
+    DC5023 : TYPE
+        DESCRIPTION.
+    DC0365 : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    import datetime as dt
+    import numpy as np
+    
+    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
+    dood_Tj = (dood_tstart_hr+12)/(24*36525)
+    
+    #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
+    #327932: ratio of mass of sun to combined mass of earth and moon
+    #81.53: ratio of mass of earth to mass of moon
+    DAGC = 0.01657                            #A/C &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean lunar parallax in respect to mean radius [rad]
+    DAGC1 = 0.00004261                        #A/C1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean solar parallax in respect to mean radius [rad]
+    DE = 0.054900489                          #E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of moons orbit
+    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
+    DMGE = 1./81.53                           #M/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of moon /mass of earth
+    DSGE = 82.53/81.53*327932                 #S/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of sun / mass of earth
+    
+    DU = DMGE*DAGC**3                         #U &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, basic factor
+    DU1 = DSGE*DAGC1**3                       #U1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar coefficient
+    DSACCE = DU1/DU                           #S&#39; &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar factor
+    DOMEGA = np.deg2rad(23+27./60.+8.26/3600) #OMEGA &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Obliquity of the Ecliptic, epoch 1 Jan 1900, 23.45229 graden [rad]
+    DIKL = np.deg2rad(5+8./60.+43.3546/3600)  #i &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Inclination of moons orbit to plane of ecliptic, epoch 1 Jan 1900 (?), 5.1453762 graden [rad]
+    
+    DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
+
+    DC0365 = DCOFSI*np.sin(DOMEGA)**2
+    DC1681 = DCOFSI*np.sin(2*DOMEGA)
+    DC5023 = 0.5+0.75*DE*DE
+    
+    return DOMEGA, DIKL, DC1681, DC5023, DC0365</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.calcwrite_baseforv0uf"><code class="name flex">
+<span>def <span class="ident">calcwrite_baseforv0uf</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate and write table for all constituents. Alternatively (faster), this data can be read from data_components_hatyan.pkl. Whether to calculate or read the table is controlled with the v0uf_calculatewrite boolean in the top of this script </p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>v0uf_all</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calcwrite_baseforv0uf():
+    &#34;&#34;&#34;
+    Calculate and write table for all constituents. Alternatively (faster), this data can be read from data_components_hatyan.pkl. Whether to calculate or read the table is controlled with the v0uf_calculatewrite boolean in the top of this script 
+
+    Returns
+    -------
+    v0uf_all : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    import pandas as pd
+    # in solar days T=Cs=w0 (s is van solar, er is ook een Cl=w1=ia for lunar), S=w2=ib, H=w3=ic, P=w4=id, N=w5=ie, P1=w6=if, EDN=ExtendedDoodsonNumber
+    # N zit is hier altijd 0 (regression of moons node), want dat wordt apart als knoopfactor gedaan
+                              #comp      T, S, H, P, N,P1,EDN,     u eqs                    f eqs 73-79           f M1 K1 L2 K2 M1C feqsstr          #comparison of v0 columns with lunar conversion to SLS and IHO
+    v0uf_base = pd.DataFrame({&#39;A0&#39;:     [0, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  0
+                              &#39;SA&#39;:     [0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  1 #SA 2nd option from IHO
+                              &#39;SA_IHO1&#39;:[0, 0, 1, 0, 0,-1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: SA 1st option from IHO (used in SLS and t_tide). Nulpunt v0 ligt dicht bij jaarwisseling (2015,1,3,21,50,0)
+                              &#39;SA_IHO2&#39;:[0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: SA 2nd option from IHO (used in hatyan). Nulpunt v0 ligt dicht bij equinox/lentepunt (2015,3,22,19,50,0)
+                              &#39;SSA&#39;:    [0, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  2
+                              &#39;MSM&#39;:    [0, 1,-2, 1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND73&#39;]],  #  3 #not in SLS. IHO also called MNum
+                              &#39;MM&#39;:     [0, 1, 0,-1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND73&#39;]],  #  4 #not in SLS
+                              &#39;MSF&#39;:    [0, 2,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND73&#39;]],  #  5 #not in SLS
+                              &#39;MF&#39;:     [0, 2, 0, 0, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND74&#39;]],  #  7 
+                              &#39;MFM&#39;:    [0, 3, 0,-1, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND74&#39;]],  # 10 #corresponds to MTM in FES2014?
+                              &#39;MSQM&#39;:   [0, 4,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: MSQM from IHO, unsure about nodal factor
+                              &#39;2Q1&#39;:    [1,-4, 1, 2, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 13
+                              &#39;SIGMA1&#39;: [1,-4, 3, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 15
+                              &#39;Q1&#39;:     [1,-3, 1, 1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 17
+                              &#39;RO1&#39;:    [1,-3, 3,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 18 #also called RHO1
+                              &#39;O1&#39;:     [1,-2, 1, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 20
+                              &#39;TAU1&#39;:   [1,-2, 3, 0, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 21 #not in SLS
+                              &#39;M1B&#39;:    [1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  # 23 #not in SLS. M1B 2nd option from IHO
+                             &#39;M1B_IHO1&#39;:[1,-1, 1,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  #    #newly added: M1B 1st option from IHO
+                             &#39;M1B_IHO2&#39;:[1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND75&#39;]],  #    #newly added: M1B 2nd option from IHO (used in hatyan)
+                              &#39;M1C&#39;:    [1,-1, 1, 0, 0, 0,  0,     1,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1,[&#39;DFM1C&#39;]],  # 24 #not in SLS
+                              &#39;M1D&#39;:    [1,-1, 1, 0, 0, 0,-90,     1,-1, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  # 25 #not in SLS
+                              &#39;M1A&#39;:    [1,-1, 1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 26 #not in SLS
+                              &#39;M1&#39;:     [1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  # 27 #M1 3rd option from IHO
+                              &#39;M1_IHO1&#39;:[1,-1, 1, 0, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  #    #newly added: M1 1st option from IHO
+                              &#39;M1_IHO2&#39;:[1,-1, 1, 0, 0, 0,180,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  #    #newly added: M1 2nd option from IHO (used in SLS
+                              &#39;M1_IHO3&#39;:[1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,[&#39;DFM1&#39; ]],  #    #newly added: M1 3rd option from IHO (used in hatyan)
+                              &#39;CHI1&#39;:   [1,-1, 3,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 29 #lunar conversion EDN different than SLS
+                              &#39;PI1&#39;:    [1, 0,-2, 0, 0, 1, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 31
+                              &#39;P1&#39;:     [1, 0,-1, 0, 0, 0, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 33
+                              &#39;S1&#39;:     [1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 34 #S1 1st option from IHO
+                              &#39;S1_IHO1&#39;:[1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 1st option from IHO (used in hatyan)
+                              &#39;S1_IHO2&#39;:[1, 0, 0, 0, 0, 0,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 2nd option from IHO 
+                              &#39;S1_IHO3&#39;:[1, 0, 0, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 3rd option from IHO (used in SLS)
+                              &#39;K1&#39;:     [1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,[&#39;DFK1&#39; ]],  # 35 #S=w2=ib is 0 instead of 1 in SLS (mistake in SLS?). K1 2nd option from IHO. 
+                              &#39;K1_IHO1&#39;:[1, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,[&#39;DFK1&#39; ]],  #    #newly added: K1 1st option from IHO
+                              &#39;K1_IHO2&#39;:[1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,[&#39;DFK1&#39; ]],  #    #newly added: K1 2nd option from IHO (used in hatyan)
+                              &#39;PSI1&#39;:   [1, 0, 2, 0, 0,-1,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 36 #EDN 270 instead of 90 in SLS (mistake in SLS?)
+                              &#39;FI1&#39;:    [1, 0, 3, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 38 #EDN 270 instead of 90 in SLS (mistake in SLS?). IHO also called PHI1
+                              &#39;THETA1&#39;: [1, 1,-1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 40 #EDN 0 instead of 90 in SLS (mistake in SLS?).
+                              &#39;J1&#39;:     [1, 1, 1,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,[&#39;DND76&#39;]],  # 42 #EDN 270 instead of 90 in SLS (mistake in SLS?).
+                              &#39;OO1&#39;:    [1, 2, 1, 0, 0, 0,-90,    -2,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1, 0, 0,     0, 0, 0, 0, 0,[&#39;DND77&#39;]],  # 45
+                              &#39;EPS2&#39;:   [2,-5, 4, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  #    #newly added: EPS2 (same v0/freq as MNS2 and same u/f as M2)
+                              &#39;2N2&#39;:    [2,-4, 2, 2, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 55
+                              &#39;MU2&#39;:    [2,-4, 4, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 56
+                              &#39;N2&#39;:     [2,-3, 2, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 59
+                              &#39;NU2&#39;:    [2,-3, 4,-1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 60
+                              &#39;MA2&#39;:    [2,-2, 1, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  #    #newly added from IHO table: MA2, α2, H1. Corresponds to MPS2 (except for EDN)
+                              &#39;M2&#39;:     [2,-2, 2, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 65
+                              &#39;MB2&#39;:    [2,-2, 3, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  #    #newly added from IHO table: MB2, β2, H2, Ma2 and MA2*. Corresponds to MSP2 (except for EDN)
+                              &#39;LABDA2&#39;: [2,-1, 0, 1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 70 IHO also called LAMBDA2, FES2014 calls it LA2
+                              &#39;L2&#39;:     [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0,-1, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0,[&#39;DFL2&#39; ]],  # 72
+                              &#39;L2A&#39;:    [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,[&#39;DND78&#39;]],  # 73 #not in SLS
+                              &#39;L2B&#39;:    [2,-1, 2, 1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,[&#39;DND79&#39;]],  # 74 #not in SLS
+                              &#39;T2&#39;:     [2, 0,-1, 0, 0, 1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 76
+                              &#39;S2&#39;:     [2, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 77
+                              &#39;R2&#39;:     [2, 0, 1, 0, 0,-1,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 78
+                              &#39;K2&#39;:     [2, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0,[&#39;DFK2&#39; ]],  # 79
+                              &#39;ETA2&#39;:   [2, 1, 2,-1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,[&#39;DND79&#39;]],  # 81 #not in SLS
+                              &#39;M3&#39;:     [3,-3, 3, 0, 0, 0,  0,     3,-3, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,1.5,0,     0, 0, 0, 0, 0,[&#39;78f1p5&#39;]]})# 96 #EDN 180 instead of 0 in SLS and IHO (mistake in hatyan?)
+    index_v0 =  [&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]
+    index_u =   [&#39;DKSI&#39;,&#39;DNU&#39;,&#39;DQ&#39;,&#39;DQU&#39;,&#39;DR&#39;,&#39;DUK1&#39;,&#39;DUK2&#39;]
+    index_f =   [&#39;DND73&#39;,&#39;DND74&#39;,&#39;DND75&#39;,&#39;DND76&#39;,&#39;DND77&#39;,&#39;DND78&#39;,&#39;DND79&#39;,
+                 &#39;DFM1&#39;,&#39;DFK1&#39;,&#39;DFL2&#39;,&#39;DFK2&#39;,&#39;DFM1C&#39;]
+    index_fstr =[&#39;f_eqs&#39;]
+    v0uf_base.index = index_v0 + index_u + index_f + index_fstr
+    v0uf_base = v0uf_base.loc[index_v0 + index_u + index_f].astype(float)
+    
+    #conversion to lunar for comparison with SLS and IHO
+    def get_lunarSLSIHO_fromsolar(v0uf_base):
+        v0uf_baseT_solar = v0uf_base.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]].T
+        v0uf_baseT_lunar = v0uf_baseT_solar.copy()
+        v0uf_baseT_lunar[&#39;S&#39;] = v0uf_baseT_solar[&#39;S&#39;] + v0uf_baseT_solar[&#39;T&#39;] #ib with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+        v0uf_baseT_lunar[&#39;H&#39;] = v0uf_baseT_solar[&#39;H&#39;] - v0uf_baseT_solar[&#39;T&#39;] #ic with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+        #lunar IHO (compare to Sea Level Science book from Woodsworth and Pugh)
+        v0uf_baseT_lunar_SLS = v0uf_baseT_lunar.copy()
+        v0uf_baseT_lunar_SLS[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
+        #lunar IHO (compare to c
+        v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
+        v0uf_baseT_lunar_IHO[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]/90+5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
+        v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO[&#39;EDN&#39;]==3,&#39;EDN&#39;] = 7 # convert -180 (3) to +180 (7)
+        v0uf_baseT_lunar_IHO[[&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;]] += 5
+        return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO
+    
+    v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_base)
+    
+    #v0uf_test = pd.DataFrame([[0,4,-2,0,0,0,0]],columns=[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;],index=[&#39;MSQM&#39;]).T #solar hatyan convention
+    #v0uf_testT_lunar, v0uf_testT_lunar_SLS, v0uf_testT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_test)
+    
+    #shallow water components
+    shallow_eqs = {&#39;SM&#39;: &#39;S2 - M2&#39;,                        #[ 6]      
+                   &#39;SNU2&#39;: &#39;S2 - NU2&#39;,                     #[ 8]      
+                   &#39;SN&#39;: &#39;S2 - N2&#39;,                        #[ 9]      
+                   &#39;2SM&#39;: &#39;2*S2 - 2*M2&#39;,                   #[ 11]     
+                   &#39;2SMN&#39;: &#39;2*S2 - M2 - N2&#39;,               #[ 12]     
+                   &#39;NJ1&#39;: &#39;N2 - J1&#39;,                       #[ 14]     
+                   &#39;NUJ1&#39;: &#39;NU2 - J1&#39;,                     #[ 16]     
+                   &#39;NUK1&#39;: &#39;NU2 - K1&#39;,                     #[ 19]     
+                   &#39;MP1&#39;: &#39;M2 - P1&#39;,                       #[ 22]     
+                   &#39;NO1&#39;: &#39;N2 - O1&#39;,                       #[ 28]     
+                   &#39;LP1&#39;: &#39;L2 - P1&#39;,                       #[ 30]     
+                   &#39;TK1&#39;: &#39;T2 - K1&#39;,                       #[ 32]     
+                   &#39;RP1&#39;: &#39;R2 - P1&#39;,                       #[ 37]     
+                   &#39;KP1&#39;: &#39;K2 - P1&#39;,                       #[ 39]     
+                   &#39;LABDAO1&#39;: &#39;LABDA2 - O1&#39;,               #[ 41]     
+                   &#39;2PO1&#39;: &#39;P1 + P1 - O1&#39;,                 #[ 43]     
+                   &#39;SO1&#39;: &#39;S2 - O1&#39;,                       #[ 44]     
+                   &#39;KQ1&#39;: &#39;K2 - Q1&#39;,                       #[ 46]     
+                   &#39;3MKS2&#39;: &#39;3*M2 - K2 - S2&#39;,              #[ 47]     
+                   &#39;3MS2&#39;: &#39;3*M2 - 2*S2&#39;,                  #[ 48]     
+                   &#39;OQ2&#39;: &#39;O1 + Q1&#39;,                       #[ 49]     
+                   &#39;MNK2&#39;: &#39;M2 + N2 - K2&#39;,                 #[ 50]     
+                   &#39;MNS2&#39;: &#39;M2 + N2 - S2&#39;,                 #[ 51]     
+                   &#39;2ML2S2&#39;: &#39;2*M2 + L2 - 2*S2&#39;,           #[ 52]     
+                   &#39;2MS2K2&#39;: &#39;2*M2 + S2 - 2*K2&#39;,           #[ 53]     
+                   &#39;NLK2&#39;: &#39;N2 + L2 - K2&#39;,                 #[ 54]     
+                   &#39;2MS2&#39;: &#39;2*M2 - S2&#39;,                    #[ 57]     
+                   &#39;SNK2&#39;: &#39;S2 + N2 - K2&#39;,                 #[ 58]     
+                   &#39;2KN2S2&#39;: &#39;2*K2 + N2 - 2*S2&#39;,           #[ 61]     
+                   &#39;OP2&#39;: &#39;O1 + P1&#39;,                       #[ 62]     
+                   &#39;MSK2&#39;: &#39;M2 + S2 - K2&#39;,                 #[ 63]     
+                   &#39;MPS2&#39;: &#39;M2 + P1 - S1&#39;,                 #[ 64]     
+                   &#39;MSP2&#39;: &#39;M2 - P1 + S1&#39;,                 #[ 66]     
+                   &#39;MKS2&#39;: &#39;M2 + K2 - S2&#39;,                 #[ 67]     
+                   &#39;M2(KS)2&#39;: &#39;M2 + 2*K2 - 2*S2&#39;,            #[ 68]     
+                   &#39;2SN(MK)2&#39;: &#39;2*S2 + N2 - (M2 + K2)&#39;,      #[ 69]     
+                   &#39;2MN2&#39;: &#39;2*M2 - N2&#39;,                    #[ 71]     
+                   &#39;2SK2&#39;: &#39;2*S2 - K2&#39;,                    #[ 75]     
+                   &#39;MSN2&#39;: &#39;M2 + S2 - N2&#39;,                 #[ 80]     
+                   &#39;KJ2&#39;: &#39;K1 + J1&#39;,                       #[ 82]     
+                   &#39;MKN2&#39;: &#39;M2 + K2 - N2&#39;,                 #[ 83]     
+                   &#39;2KM(SN)2&#39;: &#39;2*K2 + M2 - (S2 + N2)&#39;,      #[ 84]     
+                   &#39;2SM2&#39;: &#39;2*S2 - M2&#39;,                    #[ 85]     
+                   &#39;SKM2&#39;: &#39;S2 + K2 - M2&#39;,                 #[ 86]     
+                   &#39;2SNU2&#39;: &#39;2*S2 - NU2&#39;,                  #[ 87]     
+                   &#39;3(SM)N2&#39;: &#39;3*S2 + N2 - 3*M2&#39;,            #[ 88]     
+                   &#39;2SN2&#39;: &#39;2*S2 - N2&#39;,                    #[ 89]     
+                   &#39;SKN2&#39;: &#39;S2 + K2 - N2&#39;,                 #[ 90]     
+                   &#39;MQ3&#39;: &#39;M2 + Q1&#39;,                       #[ 91]     
+                   &#39;NO3&#39;: &#39;N2 + O1&#39;,                       #[ 92]     
+                   &#39;MO3&#39;: &#39;M2 + O1&#39;,                       #[ 93]     
+                   &#39;2MK3&#39;: &#39;2*M2 - K1&#39;,                    #[ 94]     
+                   &#39;2MP3&#39;: &#39;2*M2 - P1&#39;,                    #[ 95]     
+                   &#39;SO3&#39;: &#39;S2 + O1&#39;,                       #[ 97]     
+                   &#39;MK3&#39;: &#39;M2 + K1&#39;,                       #[ 98]     
+                   &#39;2MQ3&#39;: &#39;2*M2 - Q1&#39;,                    #[ 99]     
+                   &#39;SP3&#39;: &#39;S2 + P1&#39;,                       #[100]     
+                   &#39;SK3&#39;: &#39;S2 + K1&#39;,                       #[101]     
+                   &#39;K3&#39;: &#39;K2 + K1&#39;,                        #[102]     
+                   &#39;2SO3&#39;: &#39;2*S2 - O1&#39;,                    #[103]     
+                   &#39;4MS4&#39;: &#39;4*M2 - 2*S2&#39;,                  #[104]     
+                   &#39;2MNS4&#39;: &#39;2*M2 + N2 - S2&#39;,              #[105]     
+                   &#39;3MK4&#39;: &#39;3*M2 - K2&#39;,                    #[106]     
+                   &#39;MNLK4&#39;: &#39;M2 + N2 + L2 - K2&#39;,           #[107]     
+                   &#39;3MS4&#39;: &#39;3*M2 - S2&#39;,                    #[108]     
+                   &#39;MSNK4&#39;: &#39;M2 + S2 + N2 - K2&#39;,           #[109]     
+                   &#39;MN4&#39;: &#39;M2 + N2&#39;,                       #[110]     
+                   &#39;2MLS4&#39;: &#39;2*M2 + L2 - S2&#39;,              #[111]     
+                   &#39;2MSK4&#39;: &#39;2*M2 + S2 - K2&#39;,              #[112]     
+                   &#39;M4&#39;: &#39;2*M2&#39;,                           #[113]     
+                   &#39;2MKS4&#39;: &#39;2*M2 + K2 - S2&#39;,              #[114]     
+                   &#39;SN4&#39;: &#39;S2 + N2&#39;,                       #[115]     
+                   &#39;3MN4&#39;: &#39;3*M2 - N2&#39;,                    #[116]     
+                   &#39;2SMK4&#39;: &#39;2*S2 + M2 - K2&#39;,              #[117]     
+                   &#39;MS4&#39;: &#39;M2 + S2&#39;,                       #[118]     
+                   &#39;MK4&#39;: &#39;M2 + K2&#39;,                       #[119]     
+                   &#39;2SNM4&#39;: &#39;2*S2 + N2 - M2&#39;,              #[120]     
+                   &#39;2MSN4&#39;: &#39;2*M2 + S2 - N2&#39;,              #[121]     
+                   &#39;SL4&#39;: &#39;S2 + L2&#39;,                       #[122]     
+                   &#39;S4&#39;: &#39;2*S2&#39;,                           #[123]     
+                   &#39;SK4&#39;: &#39;S2 + K2&#39;,                       #[124]     
+                   &#39;2SMN4&#39;: &#39;2*S2 + M2 - N2&#39;,              #[125]     
+                   &#39;3SM4&#39;: &#39;3*S2 - M2&#39;,                    #[126]     
+                   &#39;2SKM4&#39;: &#39;2*S2 + K2 - M2&#39;,              #[127]     
+                   &#39;MNO5&#39;: &#39;M2 + N2 + O1&#39;,                 #[128]     
+                   &#39;3MK5&#39;: &#39;3*M2 - K1&#39;,                    #[129]     
+                   &#39;3MP5&#39;: &#39;3*M2 - P1&#39;,                    #[130]     
+                   &#39;M5&#39;: &#39;2*M2 + M1&#39;,                      #[131]     
+                   &#39;MNK5&#39;: &#39;M2 + N2 + K1&#39;,                 #[132]     
+                   &#39;2MP5&#39;: &#39;2*M2 + P1&#39;,                    #[133]     
+                   &#39;3MO5&#39;: &#39;3*M2 - O1&#39;,                    #[134]     
+                   &#39;MSK5&#39;: &#39;M2 + S2 + K1&#39;,                 #[135]     
+                   &#39;3KM5&#39;: &#39;3*K1 + M2&#39;,                    #[136]     
+                   &#39;2(MN)S6&#39;: &#39;2*M2 + 2*N2 - S2&#39;,            #[137]     
+                   &#39;3MNS6&#39;: &#39;3*M2 + N2 - S2&#39;,              #[138]     
+                   &#39;2NM6&#39;: &#39;2*N2 + M2&#39;,                    #[139]     
+                   &#39;4MS6&#39;: &#39;4*M2 - S2&#39;,                    #[140]     
+                   &#39;2MSNK6&#39;: &#39;2*M2 + S2 + N2 - K2&#39;,        #[141]     
+                   &#39;2MN6&#39;: &#39;2*M2 + N2&#39;,                    #[142]     
+                   &#39;2MNU6&#39;: &#39;2*M2 + NU2&#39;,                  #[143]     
+                   &#39;3MSK6&#39;: &#39;3*M2 + S2 - K2&#39;,              #[144]     
+                   &#39;M6&#39;: &#39;3*M2&#39;,                           #[145]     
+                   &#39;MSN6&#39;: &#39;M2 + S2 + N2&#39;,                 #[146]     
+                   &#39;4MN6&#39;: &#39;4*M2 - N2&#39;,                    #[147]     
+                   &#39;MNK6&#39;: &#39;M2 + N2 + K2&#39;,                 #[148]     
+                   &#39;MKNU6&#39;: &#39;M2 + K2 + NU2&#39;,               #[149]     
+                   &#39;2(MS)K6&#39;: &#39;2*M2 + 2*S2 - K2&#39;,            #[150]     
+                   &#39;2MS6&#39;: &#39;2*M2 + S2&#39;,                    #[151]     
+                   &#39;2MK6&#39;: &#39;2*M2 + K2&#39;,                    #[152]     
+                   &#39;2SN6&#39;: &#39;2*S2 + N2&#39;,                    #[153]     
+                   &#39;3MSN6&#39;: &#39;3*M2 + S2 - N2&#39;,              #[154]     
+                   &#39;MKL6&#39;: &#39;M2 + K2 + L2&#39;,                 #[155]     
+                   &#39;2SM6&#39;: &#39;2*S2 + M2&#39;,                    #[156]     
+                   &#39;MSK6&#39;: &#39;M2 + S2 + K2&#39;,                 #[157]     
+                   &#39;S6&#39;: &#39;3*S2&#39;,                           #[158]     
+                   &#39;2MNO7&#39;: &#39;2*M2 + N2 + O1&#39;,              #[159]     
+                   &#39;2NMK7&#39;: &#39;2*N2 + M2 + K1&#39;,              #[160]     
+                   &#39;M7&#39;: &#39;3*M2 + M1&#39;,                      #[161]     
+                   &#39;2MSO7&#39;: &#39;2*M2 + S2 + O1&#39;,              #[162]     
+                   &#39;MSKO7&#39;: &#39;M2 + S2 + K2 + O1&#39;,           #[163]     
+                   &#39;2(MN)8&#39;: &#39;2*M2 + 2*N2&#39;,                  #[164]     
+                   &#39;3MN8&#39;: &#39;3*M2 + N2&#39;,                    #[165]     
+                   &#39;3MNKS8&#39;: &#39;3*M2 + N2 + K2 - S2&#39;,        #[166]     
+                   &#39;M8&#39;: &#39;4*M2&#39;,                           #[167]     
+                   &#39;2MSN8&#39;: &#39;2*M2 + S2 + N2&#39;,              #[168]     
+                   &#39;2MNK8&#39;: &#39;2*M2 + N2 + K2&#39;,              #[169]     
+                   &#39;3MS8&#39;: &#39;3*M2 + S2&#39;,                    #[170]     
+                   &#39;3MK8&#39;: &#39;3*M2 + K2&#39;,                    #[171]     
+                   &#39;2SNM8&#39;: &#39;M2 + 2*S2 + N2&#39;,              #[172]     
+                   &#39;MSNK8&#39;: &#39;M2 + S2 + N2 + K2&#39;,           #[173]     
+                   &#39;2(MS)8&#39;: &#39;2*M2 + 2*S2&#39;,                  #[174]     
+                   &#39;2MSK8&#39;: &#39;2*M2 + S2 + K2&#39;,              #[175]     
+                   &#39;3SM8&#39;: &#39;3*S2 + M2&#39;,                    #[176]     
+                   &#39;2SMK8&#39;: &#39;2*S2 + M2 + K2&#39;,              #[177]     
+                   &#39;S8&#39;: &#39;3*S2 + S2&#39;,                      #[178]     
+                   &#39;2(MN)K9&#39;: &#39;2*M2 + 2*N2 + K1&#39;,            #[179]     
+                   &#39;3MNK9&#39;: &#39;3*M2 + N2 + K1&#39;,              #[180]     
+                   &#39;4MK9&#39;: &#39;4*M2 + K1&#39;,                    #[181]     
+                   &#39;3MSK9&#39;: &#39;3*M2 + S2 + K1&#39;,              #[182]     
+                   &#39;4MN10&#39;: &#39;4*M2 + N2&#39;,                   #[183]     
+                   &#39;M10&#39;: &#39;5*M2&#39;,                          #[184]     
+                   &#39;3MSN10&#39;: &#39;3*M2 + S2 + N2&#39;,             #[185]     
+                   &#39;4MS10&#39;: &#39;4*M2 + S2&#39;,                   #[186]     
+                   &#39;2(MS)N10&#39;: &#39;2*M2 + 2*S2 + N2&#39;,           #[187]     
+                   &#39;2MNSK10&#39;: &#39;2*M2 + N2 + S2 + K2&#39;,       #[188]     
+                   &#39;3M2S10&#39;: &#39;3*M2 + 2*S2&#39;,                #[189]     
+                   &#39;4MSK11&#39;: &#39;4*M2 + S2 + K1&#39;,             #[190]     
+                   &#39;M12&#39;: &#39;5*M2 + M2&#39;,                     #[191]     
+                   &#39;4MSN12&#39;: &#39;4*M2 + S2 + N2&#39;,             #[192]     
+                   &#39;5MS12&#39;: &#39;5*M2 + S2&#39;,                   #[193]     
+                   &#39;3MNKS12&#39;: &#39;3*M2 + N2 + K2 + S2&#39;,       #[194]     
+                   &#39;4M2S12&#39;: &#39;4*M2 + 2*S2&#39;,                #[195]   
+                   &#39;N4&#39;: &#39;2*N2&#39;,                           #extra added   
+                   }
+
+    shallow_eqs_pd = pd.Series(shallow_eqs)
+    
+    v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
+    v0uf_base_forf = v0uf_base.loc[index_f,:].astype(float)
+    shallow_eqs_sel = shallow_eqs_pd#[const_list_shallow_sel]
+    shallow_eqs_sel_str = &#39;\n&#39;.join(&#39;comp_%s = %s&#39;%(key.replace(&#39;(&#39;,&#39;&#39;).replace(&#39;)&#39;,&#39;&#39;), val) for key, val in shallow_eqs_sel.iteritems()) #brackets are temporarily removed in order to evaluate functions
+    v0uf_base_forv0u.eval(shallow_eqs_sel_str, inplace=True)
+    v0uf_base_forf.eval(shallow_eqs_sel_str.replace(&#39;-&#39;,&#39;+&#39;), inplace=True) #for f only multiplication is applied, never division
+
+    if 1:
+        v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
+    else: #option does not work at f definition yet
+        v0uf_base_forfstr = v0uf_base.loc[index_fstr,:]
+        shallow_eqs_sel_str_nomult = shallow_eqs_sel_str[:]
+        for mult in [2,3,4,5,6]:
+            for comp in [&#39;M2&#39;,&#39;N2&#39;,&#39;K2&#39;,&#39;K1&#39;,&#39;S2&#39;]:
+                shallow_eqs_sel_str_nomult = shallow_eqs_sel_str_nomult.replace(&#39;%i*%s&#39;%(mult,comp),&#39;+&#39;.join(mult*[comp]))
+        v0uf_base_forfstr.eval(shallow_eqs_sel_str_nomult.replace(&#39;-&#39;,&#39;+&#39;), inplace=True) #for f only multiplication is applied, never division
+        v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forfstr])
+
+    #remove component_ prefix and restore brackets in component names (was necessary since equation cannot start with number)
+    new_cols = [x.replace(&#39;comp_&#39;,&#39;&#39;) for x in v0uf_all.columns]
+    for comp in [&#39;M2(KS)2&#39;,&#39;2SN(MK)2&#39;,&#39;2KM(SN)2&#39;,&#39;3(SM)N2&#39;,&#39;2(MN)S6&#39;,&#39;2(MS)K6&#39;,&#39;2(MN)8&#39;,&#39;2(MS)8&#39;,&#39;2(MN)K9&#39;,&#39;2(MS)N10&#39;]:
+        new_cols = [x.replace(comp.replace(&#39;(&#39;,&#39;&#39;).replace(&#39;)&#39;,&#39;&#39;),comp) for x in new_cols]
+    v0uf_all.columns.values[:] = new_cols
+
+    if 1:
+        v0uf_allT = v0uf_all.T
+    else: #option does not work at f definition yet
+        v0uf_allT_obj = v0uf_all.T
+        v0uf_allT = v0uf_allT_obj.loc[:,index_v0+index_u].astype(int)
+        v0uf_allT[index_fstr] = v0uf_allT_obj.loc[:,index_fstr]
+    
+    v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
+
+    pd.to_pickle(v0uf_allT,file_pkl)
+    
+    return v0uf_allT</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_hatyan_freqs"><code class="name flex">
+<span>def <span class="ident">get_hatyan_freqs</span></span>(<span>const_list, dood_date=None, sort_onfreq=True, return_allraw=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the frequencies of the requested list of constituents. Source: beromg.f</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>const_list</code></strong> :&ensp;<code>list</code> or <code>pandas.Series</code></dt>
+<dd>contains the tidal constituent names.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>t_const_freq</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_hatyan_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw=False):
+    &#34;&#34;&#34;
+    Returns the frequencies of the requested list of constituents. Source: beromg.f
+
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    t_const_freq : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import pandas as pd
+    import numpy as np
+    import datetime as dt
+    
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
+    elif type(const_list) is not list:
+        const_list = const_list.tolist()
+
+    const_list_hatyan195, const_listoptions = get_const_list_hatyan(&#39;all&#39;, return_listoptions=True)
+    
+    if dood_date is None:
+        dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
+    
+    T_rad_freq, S_rad_freq, H_rad_freq, P_rad_freq, N_rad_freq, P1_rad_freq = get_doodson_eqvals(dood_date=dood_date, mode=&#39;freq&#39;) #N is not used here
+    multiply_variables = np.stack([T_rad_freq,S_rad_freq, H_rad_freq, P_rad_freq, P1_rad_freq])
+    
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_sel_freq = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
+    
+    DOMEGA_speed = np.dot(v0uf_sel_freq.values,multiply_variables)
+
+    t_const_speed = DOMEGA_speed[:,0]
+    t_const_freq = t_const_speed/(2*np.pi) #aantal rotaties per uur, freq
+    np.seterr(divide=&#39;ignore&#39;) #suppress divide by 0 warning
+    t_const_perds = 1/t_const_freq #period [hr]
+    t_const_angfreqs = 360/t_const_perds #angfreq [deg/hr]
+    freq_pd = pd.DataFrame({&#39;freq&#39;:t_const_freq, &#39;angvelo [rad/hr]&#39;:t_const_speed, &#39;period [hr]&#39;:t_const_perds, &#39;angfreq [deg/hr]&#39;:t_const_angfreqs}, index=const_list)
+    if sort_onfreq:
+        freq_pd = freq_pd.sort_values(by=&#39;freq&#39;)
+    
+    if return_allraw:
+        return freq_pd, DOMEGA_speed
+    else:
+        return freq_pd</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_hatyan_v0"><code class="name flex">
+<span>def <span class="ident">get_hatyan_v0</span></span>(<span>const_list, dood_date)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the v-values of the requested list of constituents for the requested date(s)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>const_list</code></strong> :&ensp;<code>list</code> or <code>pandas.Series</code></dt>
+<dd>contains the tidal constituent names.</dd>
+<dt><strong><code>dood_date</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>v_0i_rad</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_hatyan_v0(const_list, dood_date):
+    &#34;&#34;&#34;
+    Returns the v-values of the requested list of constituents for the requested date(s)
+    
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    v_0i_rad : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    
+    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date) #N is not used here
+    multiply_variables = np.stack([T_rad,S_rad, H_rad, P_rad, P1_rad])
+
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_sel_v = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
+    
+    DV0 = np.dot(v0uf_sel_v.values,multiply_variables) + np.deg2rad(v0uf_sel[&#39;EDN&#39;]).values[np.newaxis].T
+    
+    DV0_pd = pd.DataFrame(DV0)
+    DV0_pd.index = const_list
+    
+    return DV0_pd</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_hatyan_u"><code class="name flex">
+<span>def <span class="ident">get_hatyan_u</span></span>(<span>const_list, dood_date)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the u-values of the requested list of constituents for the requested date(s)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>const_list</code></strong> :&ensp;<code>list</code> or <code>pandas.Series</code></dt>
+<dd>contains the tidal constituent names.</dd>
+<dt><strong><code>dood_date</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>u_i_rad_HAT</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_hatyan_u(const_list, dood_date):
+    &#34;&#34;&#34;
+    Returns the u-values of the requested list of constituents for the requested date(s)
+
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    u_i_rad_HAT : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    
+    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
+        const_list = const_list.tolist()
+    
+    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
+    #list of dependencies for U (only P and N are used here)
+    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_hatyan_constants(dood_date)
+    DHOMI = (DOMEGA-DIKL)*0.5
+    DHOPI = (DOMEGA+DIKL)*0.5
+    
+    
+    DTHN = np.tan(N_rad*0.5)
+    DATC = np.arctan2(np.cos(DHOMI)*DTHN,np.cos(DHOPI))
+    DATS = np.arctan2(np.sin(DHOMI)*DTHN,np.sin(DHOPI))
+    DIH = np.arccos(np.cos(DIKL)*np.cos(DOMEGA)-np.sin(DIKL)*np.sin(DOMEGA)*np.cos(N_rad))
+    DKSI = (N_rad-DATC-DATS)
+    DNU = DATC-DATS
+    DPMKSI = P_rad-DKSI
+    DC2PMK = np.cos(DPMKSI+DPMKSI)
+    DS2PMK = np.sin(DPMKSI+DPMKSI)
+    DCIH = np.cos(DIH)
+    DSIH = np.sin(DIH)
+    DCHIH = np.cos(DIH*0.5)
+    DCTHIH = 1./np.tan(DIH*0.5)
+    DS2IH = np.sin(DIH+DIH)
+    DQU = np.arctan2(DS2PMK,(3*DCIH/(DCHIH*DCHIH)+DC2PMK))
+    DQ = np.arctan2((5*DCIH-1)*np.tan(DPMKSI),(7*DCIH+1))
+    DNUACC = np.arctan2(DS2IH*np.sin(DNU),(DS2IH*np.cos(DNU)+DC1681/DC5023))
+    DR = np.arctan2(DS2PMK,(DCTHIH*DCTHIH/6.-DC2PMK))
+    D2NU2A = np.arctan2(DSIH**2*np.sin(2*DNU),(DSIH**2*np.cos(2*DNU)+DC0365/DC5023))
+    DUK1   = -DNUACC 
+    DUK2   = -D2NU2A
+    multiply_variables = np.stack([DKSI, DNU, DQ, DQU, DR, DUK1, DUK2])
+    
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_sel_u = v0uf_sel[[&#39;DKSI&#39;,&#39;DNU&#39;, &#39;DQ&#39;, &#39;DQU&#39;, &#39;DR&#39;, &#39;DUK1&#39;, &#39;DUK2&#39;]]
+
+    DU = np.dot(v0uf_sel_u.values,multiply_variables)
+    DU += np.pi
+    DU = np.remainder(DU,2*np.pi)
+    DU -= np.pi
+
+    #create dataframe
+    DU_pd = pd.DataFrame(DU)
+    DU_pd.index = const_list
+    
+    return DU_pd</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_hatyan_f"><code class="name flex">
+<span>def <span class="ident">get_hatyan_f</span></span>(<span>const_list, dood_date, xfac)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the f-values of the requested list of constituents for the requested date(s)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>const_list</code></strong> :&ensp;<code>list</code> or <code>pandas.Series</code></dt>
+<dd>contains the tidal constituent names.</dd>
+<dt><strong><code>dood_date</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>f_i_HAT</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_hatyan_f(const_list, dood_date, xfac):
+    &#34;&#34;&#34;
+    Returns the f-values of the requested list of constituents for the requested date(s)
+
+    Parameters
+    ----------
+    const_list : list or pandas.Series
+        contains the tidal constituent names.
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    f_i_HAT : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    
+    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
+        const_list = const_list.tolist()
+
+    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
+
+    #list of dependencies F (only P and N are used here)
+    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_hatyan_constants(dood_date)
+    DHOMI = (DOMEGA-DIKL)*0.5
+    DHOPI = (DOMEGA+DIKL)*0.5
+    DSOMEG = np.sin(DOMEGA)
+    DSIKL = np.sin(DIKL)
+    DTHN = np.tan(N_rad*0.5)
+    DATC = np.arctan2(np.cos(DHOMI)*DTHN,np.cos(DHOPI))
+    DATS = np.arctan2(np.sin(DHOMI)*DTHN,np.sin(DHOPI))
+    DIH = np.arccos(np.cos(DIKL)*np.cos(DOMEGA)-DSIKL*DSOMEG*np.cos(N_rad))
+    DKSI = (N_rad-DATC-DATS)%(2*np.pi)
+    DNU = DATC-DATS#
+    DCHOM = np.cos(DOMEGA*0.5) 
+    DSHOM = np.sin(DOMEGA*0.5) 
+    DSOM2 = DSOMEG*DSOMEG
+    DCHOM2 = DCHOM*DCHOM 
+    DSHOM2 = DSHOM*DSHOM 
+    DCHIKL = np.cos(DIKL*0.5)  
+    DCHIK4 = DCHIKL*DCHIKL*DCHIKL*DCHIKL
+    D132S2 = 1-3./2.*DSIKL*DSIKL 
+    DMOF65 = (2./3.-DSOM2)*D132S2  
+    DMOF66 = DSOM2*DCHIK4
+    DMOF67 = DSOMEG*DCHOM2*DCHIK4
+    DMOF68 = np.sin(DOMEGA+DOMEGA)*D132S2
+    DMOF69 = DSOMEG*DSHOM2*DCHIK4
+    DMOF70 = DCHOM2*DCHOM2*DCHIK4
+    DMOF71 = DSOM2*D132S2
+    DSIH = np.sin(DIH)#
+    DCHIH = np.cos(DIH*0.5)
+    DSHIH = np.sin(DIH*0.5)
+    DS2IH = np.sin(DIH+DIH)
+    DTHIH2 = DSHIH**2/DCHIH**2
+    DIGHI2 = np.cos(DIH)/DCHIH**2  
+    DPMKSI = P_rad-DKSI
+    DC2PMK = np.cos(DPMKSI+DPMKSI)
+    DQA = 1./np.sqrt(0.25+1.5*DIGHI2*DC2PMK+2.25*DIGHI2*DIGHI2)
+    DRA = 1./np.sqrt(1-12*DTHIH2*DC2PMK+36*DTHIH2*DTHIH2)
+    
+    #actual values used in the component list below (12 uniques)
+    DND73 = (2./3.-DSIH**2)/DMOF65
+    DND74 = DSIH**2/DMOF66 
+    DND75 = DSIH*DCHIH**2/DMOF67 #DFQ1/DFO1
+    DND76 = DS2IH/DMOF68 #DFJ1
+    DND77 = DSIH*DSHIH**2/DMOF69 
+    DND78 = DCHIH**2*DCHIH**2/DMOF70 #DFN2/DFNU2/DFM2/DFLAB2
+    DND79 = DSIH**2/DMOF71 
+    DFM1 = DND75/DQA #DFO1/DQA
+    DFK1 = np.sqrt(DC5023*DC5023*DS2IH*DS2IH+2*DC5023*DC1681*DS2IH*np.cos(DNU)+DC1681*DC1681)/(DC5023*DMOF68+DC1681) 
+    DFL2 = DND78/DRA #DFM2/DRA
+    DFK2 = np.sqrt(DC5023*DC5023*DSIH**2*DSIH**2+2*DC5023*DC0365*DSIH**2*np.cos(DNU+DNU)+DC0365*DC0365)/(DC5023*DMOF71+DC0365)
+    DFM1C = (1-10*DSHIH**2+15*DSHIH**2*DSHIH**2)*DCHIH**2/((1-10*DSHOM2+15*DSHOM2*DSHOM2)*DCHOM2)
+    
+    multiply_variables = np.stack([DND73,DND74,DND75,DND76,DND77,DND78,DND79,DFM1,DFK1,DFL2,DFK2,DFM1C])
+    sel_cols = [&#39;DND73&#39;,&#39;DND74&#39;,&#39;DND75&#39;,&#39;DND76&#39;,&#39;DND77&#39;,&#39;DND78&#39;,&#39;DND79&#39;,&#39;DFM1&#39;,&#39;DFK1&#39;,&#39;DFL2&#39;,&#39;DFK2&#39;,&#39;DFM1C&#39;]
+    
+    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    f_i = np.ones(shape=(len(const_list), len(dood_date)))
+    for variable, colname in zip(multiply_variables, sel_cols): #this loop is faster than array multiplications, since it only calculates the necessary factors (saves a lot of overhead)
+        power = v0uf_sel[colname].values
+        idnozero = power!=0
+        f_i[idnozero,:] *= variable**power[idnozero][np.newaxis].T
+    
+    v0uf_M2 = get_v0uf_sel(const_list=[&#39;M2&#39;])
+    f_i_M2 = np.ones(shape=(len([&#39;M2&#39;]), len(dood_date)))
+    for variable, colname in zip(multiply_variables, sel_cols): 
+        power = v0uf_M2[colname].values
+        idnozero = power!=0
+        f_i_M2[idnozero,:] *= variable**power[idnozero][np.newaxis].T
+    
+    #create dataframe
+    f_i_pd = pd.DataFrame(f_i)
+    f_i_pd.index = const_list
+    f_i_M2_pd = pd.DataFrame(f_i_M2)
+    f_i_M2_pd.index = [&#39;M2&#39;]
+    
+    if xfac: #if variable is not: None, False, 0, more?
+        f_i_pd = correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac=xfac)
+    
+    return f_i_pd</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.correct_fwith_xfac"><code class="name flex">
+<span>def <span class="ident">correct_fwith_xfac</span></span>(<span>f_i_pd, f_i_M2_pd, xfac)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Correct f-values with xfactor, this definition is only ran when xfac=True.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>f_i_pd</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>f_i_M2_pd</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>f_i_pd</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
+    &#34;&#34;&#34;
+    Correct f-values with xfactor, this definition is only ran when xfac=True.
+
+    Parameters
+    ----------
+    f_i_pd : TYPE
+        DESCRIPTION.
+    f_i_M2_pd : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    f_i_pd : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    const_list = f_i_pd.index.tolist()
+    if isinstance(xfac,dict):
+        print(&#39;xfac dictionary provided: %s&#39;%(xfac))
+        xfac_values = xfac
+    else: #use default xfactor values
+        xfac_values = {&#39;MU2&#39;: 0.00, # 0 betekent knoopfactor uit, 1 is helemaal aan
+                       &#39;N2&#39;:  0.00,
+                       &#39;NU2&#39;: 0.80,
+                       &#39;M2&#39;:  0.53,
+                       &#39;2MN2&#39;:0.20,
+                       &#39;S2&#39;: -0.82,
+                       &#39;M4&#39;:  0.70,
+                       &#39;MS4&#39;: 0.00,
+                       &#39;M6&#39;:  0.75,
+                       &#39;2MS6&#39;:0.20,
+                       &#39;M8&#39;:  0.70,
+                       &#39;3MS8&#39;:0.60}
+    
+    for xfac_const in xfac_values.keys():
+        #print(xfac_const)
+        if xfac_const in const_list:
+            if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
+                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[[&#39;M2&#39;],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
+            else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
+                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
+
+    return f_i_pd</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hatyan" href="index.html">hatyan</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="hatyan.hatyan_core.get_v0uf_sel" href="#hatyan.hatyan_core.get_v0uf_sel">get_v0uf_sel</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_const_list_hatyan" href="#hatyan.hatyan_core.get_const_list_hatyan">get_const_list_hatyan</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_doodson_eqvals" href="#hatyan.hatyan_core.get_doodson_eqvals">get_doodson_eqvals</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_hatyan_constants" href="#hatyan.hatyan_core.get_hatyan_constants">get_hatyan_constants</a></code></li>
+<li><code><a title="hatyan.hatyan_core.calcwrite_baseforv0uf" href="#hatyan.hatyan_core.calcwrite_baseforv0uf">calcwrite_baseforv0uf</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_hatyan_freqs" href="#hatyan.hatyan_core.get_hatyan_freqs">get_hatyan_freqs</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_hatyan_v0" href="#hatyan.hatyan_core.get_hatyan_v0">get_hatyan_v0</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_hatyan_u" href="#hatyan.hatyan_core.get_hatyan_u">get_hatyan_u</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_hatyan_f" href="#hatyan.hatyan_core.get_hatyan_f">get_hatyan_f</a></code></li>
+<li><code><a title="hatyan.hatyan_core.correct_fwith_xfac" href="#hatyan.hatyan_core.correct_fwith_xfac">correct_fwith_xfac</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

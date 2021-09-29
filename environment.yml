@@ -1,0 +1,12 @@
+name: hatyan_env
+dependencies:
+  - python=3.6.12
+  - pip>=19.2.3
+  - pip:
+    - pytest>=5.0.1
+    - bump2version>=0.5.11
+    - pytest-cov
+    - teamcity-messages
+    - pyqt5
+    - pdoc3
+    - pandoc

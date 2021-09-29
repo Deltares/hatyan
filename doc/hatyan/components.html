@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>hatyan.components API documentation</title>
+<meta name="description" content="components.py contains all the definitions related to hatyan components …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hatyan.components</code></h1>
+</header>
+<section id="section-intro">
+<p>components.py contains all the definitions related to hatyan components.</p>
+<p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
+Copyright (C) 2019-2020 Rijkswaterstaat.
+Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
+Source code available at: <a href="https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan">https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan</a></p>
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the
+GNU General Public License for more details.</p>
+<p>You should have received a copy of the GNU General Public License
+along with this program.
+If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+components.py contains all the definitions related to hatyan components.
+
+hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
+Copyright (C) 2019-2020 Rijkswaterstaat.
+Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
+Source code available at: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
+&#34;&#34;&#34;
+
+
+
+def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=True):
+    &#34;&#34;&#34;
+    Create a plot with the provided analysis results
+
+    Parameters
+    ----------
+    comp : TYPE
+        DESCRIPTION.
+    comp_allyears : TYPE, optional
+        DESCRIPTION. The default is None.
+    comp_validation : TYPE, optional
+        DESCRIPTION. The default is None.
+    sort_freqs : BOOL, optional
+        Whether to sort the component list on frequency or not, without sorting it is possible to plot components that are not available in hatyan. The default is True.
+    
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The generated figure handle, with which the figure can be adapted and saved.
+    axs : (tuple of) matplotlib.axes._subplots.AxesSubplot
+        The generated axis handle, whith which the figure can be adapted.
+
+    &#34;&#34;&#34;
+    
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    
+    from hatyan.hatyan_core import get_hatyan_freqs
+    
+    COMP = comp.copy()
+    if comp_allyears is not None:
+        comp_allyears = comp_allyears.copy()
+    if comp_validation is not None:
+        COMPval = comp_validation.rename(columns={&#34;A&#34;: &#34;A_validation&#34;, &#34;phi_deg&#34;: &#34;phi_deg_validation&#34;})
+        COMP = pd.concat([COMP,COMPval],axis=1)
+        COMP[&#39;A_diff&#39;] = COMP[&#39;A&#39;]-COMP[&#39;A_validation&#39;]
+        COMP[&#39;phi_deg_diff&#39;] = (COMP[&#39;phi_deg&#39;]-COMP[&#39;phi_deg_validation&#39;]+180)%360-180
+    
+    const_list = COMP.index.tolist() #is combined const_list
+    if sort_freqs:
+        t_const_freq_pd = get_hatyan_freqs(const_list)
+        COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
+        COMP = COMP.sort_values(by=&#39;freq&#39;)
+        const_list = COMP.index.tolist() #now in correct order
+    
+    size_figure = (15,9)
+    size_line_ts = 0.7
+    size_line_comp = 1.2
+    size_marker_comp = 4
+    
+    fig, (ax1, ax2) = plt.subplots(2,1,figsize=size_figure, sharex=True)
+    ax1.set_title(&#39;Amplitudes and Phases per component&#39;)
+    ax1.plot([0,len(const_list)],[0,0],&#39;-k&#39;,linewidth=size_line_ts)
+    if comp_allyears is not None: #and COMP_validation is None:
+        ax1.plot(comp_allyears[&#39;A&#39;].values,&#39;o-&#39;,color=&#39;gray&#39;,linewidth=size_line_comp,markersize=size_marker_comp, label=&#39;separate years&#39;)
+    ax1.plot(COMP[&#39;A&#39;],&#39;-o&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp&#39;)
+    if comp_validation is not None:
+        ax1.plot(COMP[&#39;A_validation&#39;],&#39;o-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp_validation&#39;)
+        ax1.plot(COMP[&#39;A_diff&#39;],&#39;go-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;difference&#39;)
+    ax1.grid(axis=&#39;y&#39;)#, which=&#39;major&#39;)
+    ax1.set_xlim(-0.5,len(const_list)+0.5)
+    from matplotlib.ticker import MaxNLocator
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax1.set_ylim(-.05,1)
+    ax1.set_ylabel(&#39;amplitudes [m]&#39;)
+    ax1.legend(loc=&#39;lower right&#39;)
+    ax2.plot([0,len(const_list)],[0,0],&#39;-k&#39;,linewidth=size_line_ts)
+    if comp_allyears is not None:
+        ax2.plot(comp_allyears[&#39;phi_deg&#39;],&#39;o-&#39;,color=&#39;gray&#39;,linewidth=size_line_comp,markersize=size_marker_comp, label=&#39;separate years&#39;)
+    ax2.plot(COMP[&#39;phi_deg&#39;],&#39;-o&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp&#39;)
+    if comp_validation is not None:
+        ax2.plot(COMP[&#39;phi_deg_validation&#39;],&#39;o-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp_validation&#39;)
+        ax2.plot(COMP[&#39;phi_deg_diff&#39;],&#39;go-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;difference&#39;)
+    ax2.grid(axis=&#39;y&#39;)#, which=&#39;major&#39;)
+    ax2.set_xlim(-0.5,len(const_list)-0.5)
+    #ax2.set_xticklabels([]) #remove major xtick labels
+    ax2.set_xticks(np.arange(len(const_list)))#,minor=True) #set minor xticks to 1 (create tick for each constituent, but no grid)
+    ax2.set_xticklabels(const_list,rotation=90)#,minor=True) #set minor xticklabels, each constituent
+    ax2.set_xlabel(&#39;constituents&#39;)
+    ax2.set_ylim(-5,360+5)
+    ax2.set_yticks(np.arange(0,360+.001,90))
+    ax2.set_ylabel(&#39;phases [degrees]&#39;)
+    ax2.legend(loc=&#39;lower right&#39;)
+    fig.tight_layout()
+    
+    axs = (ax1,ax2)
+    return fig, axs
+    
+
+
+
+    
+    
+def write_components(comp, filename, metadata=None):
+    &#34;&#34;&#34;
+    Writes the provided analysis results to a file
+
+    Parameters
+    ----------
+    comp : TYPE
+        DESCRIPTION.
+    filename : TYPE
+        DESCRIPTION.
+    metadata : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    
+    from hatyan.hatyan_core import get_const_list_hatyan, get_hatyan_freqs
+
+    COMP = comp.copy()
+    
+    t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
+    COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
+    COMP = COMP.sort_values(by=&#39;freq&#39;)
+
+    const_list_hatyan195_orig = get_const_list_hatyan(&#39;all_originalorder&#39;)
+    const_no = [const_list_hatyan195_orig.index(x) for x in COMP.index]
+    const_speed = t_const_freq_pd[&#39;freq&#39;].values*360
+    
+    with open(filename,&#39;w&#39;) as f:
+        if metadata is None:
+            f.write(&#39;* no metadata available\n&#39;)
+        else:
+            for key in metadata.keys():
+                f.write(&#39;* %-20s: %s\n&#39;%(key, metadata[key]))
+
+        if &#39;A0&#39; in COMP.index.tolist():
+            f.write(&#39;MIDD   %.2f cm\n&#39;%(COMP.loc[&#39;A0&#39;,&#39;A&#39;]*100))
+        else:
+            f.write(&#39;MIDD   %.2f cm\n&#39;%(np.nan))
+        f.write(&#39;NCOM   %i\n&#39;%(len(COMP.index)))
+        for iC, compname in enumerate(COMP.index.tolist()):
+            f.write(&#34;COMP %4i %12.6f %9.3f %7.2f  %-12s\n&#34; % (const_no[iC], const_speed[iC], COMP.loc[compname,&#39;A&#39;]*100, COMP.loc[compname,&#39;phi_deg&#39;]%360, compname))
+
+
+
+
+
+def merge_componentgroups(comp_main, comp_sec, comp_sec_list=[&#39;SA&#39;,&#39;SM&#39;]):
+    &#34;&#34;&#34;
+    Merges the provided component groups into one
+
+    Parameters
+    ----------
+    comp_main : TYPE
+        DESCRIPTION.
+    comp_sec : TYPE
+        DESCRIPTION.
+    comp_sec_list : TYPE, optional
+        DESCRIPTION. The default is [&#39;SA&#39;,&#39;SM&#39;].
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    COMP_merged : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    from hatyan.hatyan_core import get_hatyan_freqs
+    
+    COMP_merged = comp_main.copy()
+    
+    comp_sec_list_sel = [comp for iC,comp in enumerate(COMP_merged.index) if comp in comp_sec_list]
+    if comp_sec_list_sel != []:
+        COMP_merged = COMP_merged.drop(comp_sec_list_sel)
+    COMP_merged = comp_sec.loc[comp_sec_list].append(COMP_merged)
+
+    t_const_freq = get_hatyan_freqs(COMP_merged.index.tolist())
+    COMP_merged[&#39;freq&#39;] = t_const_freq[&#39;freq&#39;]
+    COMP_merged = COMP_merged.sort_values(by=&#39;freq&#39;)
+    
+    return COMP_merged
+
+
+
+
+
+
+def read_components(filename, get_metadata=False):
+    &#34;&#34;&#34;
+    Reads analysis results from a file.
+
+    Parameters
+    ----------
+    filename : TYPE
+        DESCRIPTION.
+    get_metadata : TYPE, optional
+        DESCRIPTION. The default is False.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import datetime as dt
+    import pandas as pd
+    
+    print(&#39;reading file: %s&#39;%(filename))
+
+    file = open(filename)
+    line_compstart = None
+    for i, line in enumerate(file):
+        if line.startswith(&#39;STAT&#39;):
+            station_fromfile = line.split()[1]
+            print(&#39;retrieving data from components file for station %s&#39;%(station_fromfile))
+            file_vertref = line.split()[3]
+            print(&#39;the vertical reference level in the imported file is: %s&#39;%(file_vertref))
+        elif line.startswith(&#39;PERD&#39;):
+            dateline = line.split()
+            times_compfile_ext = [dt.datetime.strptime(dateline[1]+dateline[2],&#39;%Y%m%d%H%M&#39;),dt.datetime.strptime(dateline[3]+dateline[4],&#39;%Y%m%d%H%M&#39;)]
+            times_compfile_step = int(dateline[5])
+        elif line.startswith(&#39;MIDD&#39;):
+            A0_cm = float(line.split()[1])
+        elif line.startswith(&#39;COMP&#39;):
+            line_compstart = i
+            break #break because last line before actual data
+    #retrieve raw data
+    if line_compstart is None:
+        raise Exception(&#39;invalid file, no line that starts with COMP&#39;)
+    Aphi_datapd_raw_noA0 = pd.read_csv(filename, delimiter=r&#34;\s+&#34;, header=line_compstart-1, names=[&#39;COMP&#39;, &#39;hat_id&#39;, &#39;freq&#39;, &#39;A&#39;, &#39;phi&#39;, &#39;name&#39;])
+    
+    Aphi_datapd_A0line = pd.DataFrame({&#39;A&#39;: [A0_cm], &#39;phi&#39;: [0], &#39;name&#39;: [&#39;A0&#39;]})
+    Aphi_datapd_raw = Aphi_datapd_A0line.append(Aphi_datapd_raw_noA0,ignore_index=True)
+    COMP_pd = pd.DataFrame({&#39;A&#39;: Aphi_datapd_raw[&#39;A&#39;].values/100, &#39;phi_deg&#39;: Aphi_datapd_raw[&#39;phi&#39;].values}, index=Aphi_datapd_raw[&#39;name&#39;].values)
+    if get_metadata:
+        meta = {&#39;station&#39;: station_fromfile, &#39;times_ext&#39;: times_compfile_ext, &#39;times_stepmin&#39;: times_compfile_step, &#39;origin&#39;:&#39;import&#39;, &#39;vertref&#39;:file_vertref}#, &#39;usedxfac&#39;:None}
+        return COMP_pd, meta
+    else:
+        return COMP_pd
+
+
+
+
+
+
+def components_timeshift(comp,hours):
+    import datetime as dt
+    import pandas as pd
+    import numpy as np
+    
+    from hatyan.hatyan_core import get_hatyan_v0
+    
+    comp_out = comp.copy()
+    
+    refdate = dt.datetime(2000,1,1)
+    corrdate = refdate+dt.timedelta(hours=hours)
+    
+    v0_twodates = get_hatyan_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
+    hourcorr_v0_deg = np.rad2deg(v0_twodates[1]-v0_twodates[0])#%360
+    
+    comp_out[&#39;phi_deg&#39;] = (comp_out[&#39;phi_deg&#39;]+hourcorr_v0_deg)%360
+    
+    return comp_out</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hatyan.components.plot_components"><code class="name flex">
+<span>def <span class="ident">plot_components</span></span>(<span>comp, comp_allyears=None, comp_validation=None, sort_freqs=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a plot with the provided analysis results</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>comp</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>comp_allyears</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is None.</dd>
+<dt><strong><code>comp_validation</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is None.</dd>
+<dt><strong><code>sort_freqs</code></strong> :&ensp;<code>BOOL</code>, optional</dt>
+<dd>Whether to sort the component list on frequency or not, without sorting it is possible to plot components that are not available in hatyan. The default is True.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>fig</code></strong> :&ensp;<code>matplotlib.figure.Figure</code></dt>
+<dd>The generated figure handle, with which the figure can be adapted and saved.</dd>
+<dt><strong><code>axs</code></strong> :&ensp;<code>(tuple of) matplotlib.axes._subplots.AxesSubplot</code></dt>
+<dd>The generated axis handle, whith which the figure can be adapted.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=True):
+    &#34;&#34;&#34;
+    Create a plot with the provided analysis results
+
+    Parameters
+    ----------
+    comp : TYPE
+        DESCRIPTION.
+    comp_allyears : TYPE, optional
+        DESCRIPTION. The default is None.
+    comp_validation : TYPE, optional
+        DESCRIPTION. The default is None.
+    sort_freqs : BOOL, optional
+        Whether to sort the component list on frequency or not, without sorting it is possible to plot components that are not available in hatyan. The default is True.
+    
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The generated figure handle, with which the figure can be adapted and saved.
+    axs : (tuple of) matplotlib.axes._subplots.AxesSubplot
+        The generated axis handle, whith which the figure can be adapted.
+
+    &#34;&#34;&#34;
+    
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    
+    from hatyan.hatyan_core import get_hatyan_freqs
+    
+    COMP = comp.copy()
+    if comp_allyears is not None:
+        comp_allyears = comp_allyears.copy()
+    if comp_validation is not None:
+        COMPval = comp_validation.rename(columns={&#34;A&#34;: &#34;A_validation&#34;, &#34;phi_deg&#34;: &#34;phi_deg_validation&#34;})
+        COMP = pd.concat([COMP,COMPval],axis=1)
+        COMP[&#39;A_diff&#39;] = COMP[&#39;A&#39;]-COMP[&#39;A_validation&#39;]
+        COMP[&#39;phi_deg_diff&#39;] = (COMP[&#39;phi_deg&#39;]-COMP[&#39;phi_deg_validation&#39;]+180)%360-180
+    
+    const_list = COMP.index.tolist() #is combined const_list
+    if sort_freqs:
+        t_const_freq_pd = get_hatyan_freqs(const_list)
+        COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
+        COMP = COMP.sort_values(by=&#39;freq&#39;)
+        const_list = COMP.index.tolist() #now in correct order
+    
+    size_figure = (15,9)
+    size_line_ts = 0.7
+    size_line_comp = 1.2
+    size_marker_comp = 4
+    
+    fig, (ax1, ax2) = plt.subplots(2,1,figsize=size_figure, sharex=True)
+    ax1.set_title(&#39;Amplitudes and Phases per component&#39;)
+    ax1.plot([0,len(const_list)],[0,0],&#39;-k&#39;,linewidth=size_line_ts)
+    if comp_allyears is not None: #and COMP_validation is None:
+        ax1.plot(comp_allyears[&#39;A&#39;].values,&#39;o-&#39;,color=&#39;gray&#39;,linewidth=size_line_comp,markersize=size_marker_comp, label=&#39;separate years&#39;)
+    ax1.plot(COMP[&#39;A&#39;],&#39;-o&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp&#39;)
+    if comp_validation is not None:
+        ax1.plot(COMP[&#39;A_validation&#39;],&#39;o-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp_validation&#39;)
+        ax1.plot(COMP[&#39;A_diff&#39;],&#39;go-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;difference&#39;)
+    ax1.grid(axis=&#39;y&#39;)#, which=&#39;major&#39;)
+    ax1.set_xlim(-0.5,len(const_list)+0.5)
+    from matplotlib.ticker import MaxNLocator
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax1.set_ylim(-.05,1)
+    ax1.set_ylabel(&#39;amplitudes [m]&#39;)
+    ax1.legend(loc=&#39;lower right&#39;)
+    ax2.plot([0,len(const_list)],[0,0],&#39;-k&#39;,linewidth=size_line_ts)
+    if comp_allyears is not None:
+        ax2.plot(comp_allyears[&#39;phi_deg&#39;],&#39;o-&#39;,color=&#39;gray&#39;,linewidth=size_line_comp,markersize=size_marker_comp, label=&#39;separate years&#39;)
+    ax2.plot(COMP[&#39;phi_deg&#39;],&#39;-o&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp&#39;)
+    if comp_validation is not None:
+        ax2.plot(COMP[&#39;phi_deg_validation&#39;],&#39;o-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;comp_validation&#39;)
+        ax2.plot(COMP[&#39;phi_deg_diff&#39;],&#39;go-&#39;,linewidth=size_line_comp,markersize=size_marker_comp,label=&#39;difference&#39;)
+    ax2.grid(axis=&#39;y&#39;)#, which=&#39;major&#39;)
+    ax2.set_xlim(-0.5,len(const_list)-0.5)
+    #ax2.set_xticklabels([]) #remove major xtick labels
+    ax2.set_xticks(np.arange(len(const_list)))#,minor=True) #set minor xticks to 1 (create tick for each constituent, but no grid)
+    ax2.set_xticklabels(const_list,rotation=90)#,minor=True) #set minor xticklabels, each constituent
+    ax2.set_xlabel(&#39;constituents&#39;)
+    ax2.set_ylim(-5,360+5)
+    ax2.set_yticks(np.arange(0,360+.001,90))
+    ax2.set_ylabel(&#39;phases [degrees]&#39;)
+    ax2.legend(loc=&#39;lower right&#39;)
+    fig.tight_layout()
+    
+    axs = (ax1,ax2)
+    return fig, axs</code></pre>
+</details>
+</dd>
+<dt id="hatyan.components.write_components"><code class="name flex">
+<span>def <span class="ident">write_components</span></span>(<span>comp, filename, metadata=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Writes the provided analysis results to a file</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>comp</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>filename</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>metadata</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write_components(comp, filename, metadata=None):
+    &#34;&#34;&#34;
+    Writes the provided analysis results to a file
+
+    Parameters
+    ----------
+    comp : TYPE
+        DESCRIPTION.
+    filename : TYPE
+        DESCRIPTION.
+    metadata : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    
+    from hatyan.hatyan_core import get_const_list_hatyan, get_hatyan_freqs
+
+    COMP = comp.copy()
+    
+    t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
+    COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
+    COMP = COMP.sort_values(by=&#39;freq&#39;)
+
+    const_list_hatyan195_orig = get_const_list_hatyan(&#39;all_originalorder&#39;)
+    const_no = [const_list_hatyan195_orig.index(x) for x in COMP.index]
+    const_speed = t_const_freq_pd[&#39;freq&#39;].values*360
+    
+    with open(filename,&#39;w&#39;) as f:
+        if metadata is None:
+            f.write(&#39;* no metadata available\n&#39;)
+        else:
+            for key in metadata.keys():
+                f.write(&#39;* %-20s: %s\n&#39;%(key, metadata[key]))
+
+        if &#39;A0&#39; in COMP.index.tolist():
+            f.write(&#39;MIDD   %.2f cm\n&#39;%(COMP.loc[&#39;A0&#39;,&#39;A&#39;]*100))
+        else:
+            f.write(&#39;MIDD   %.2f cm\n&#39;%(np.nan))
+        f.write(&#39;NCOM   %i\n&#39;%(len(COMP.index)))
+        for iC, compname in enumerate(COMP.index.tolist()):
+            f.write(&#34;COMP %4i %12.6f %9.3f %7.2f  %-12s\n&#34; % (const_no[iC], const_speed[iC], COMP.loc[compname,&#39;A&#39;]*100, COMP.loc[compname,&#39;phi_deg&#39;]%360, compname))</code></pre>
+</details>
+</dd>
+<dt id="hatyan.components.merge_componentgroups"><code class="name flex">
+<span>def <span class="ident">merge_componentgroups</span></span>(<span>comp_main, comp_sec, comp_sec_list=['SA', 'SM'])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Merges the provided component groups into one</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>comp_main</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>comp_sec</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>comp_sec_list</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is ['SA','SM'].</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>COMP_merged</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def merge_componentgroups(comp_main, comp_sec, comp_sec_list=[&#39;SA&#39;,&#39;SM&#39;]):
+    &#34;&#34;&#34;
+    Merges the provided component groups into one
+
+    Parameters
+    ----------
+    comp_main : TYPE
+        DESCRIPTION.
+    comp_sec : TYPE
+        DESCRIPTION.
+    comp_sec_list : TYPE, optional
+        DESCRIPTION. The default is [&#39;SA&#39;,&#39;SM&#39;].
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    COMP_merged : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    from hatyan.hatyan_core import get_hatyan_freqs
+    
+    COMP_merged = comp_main.copy()
+    
+    comp_sec_list_sel = [comp for iC,comp in enumerate(COMP_merged.index) if comp in comp_sec_list]
+    if comp_sec_list_sel != []:
+        COMP_merged = COMP_merged.drop(comp_sec_list_sel)
+    COMP_merged = comp_sec.loc[comp_sec_list].append(COMP_merged)
+
+    t_const_freq = get_hatyan_freqs(COMP_merged.index.tolist())
+    COMP_merged[&#39;freq&#39;] = t_const_freq[&#39;freq&#39;]
+    COMP_merged = COMP_merged.sort_values(by=&#39;freq&#39;)
+    
+    return COMP_merged</code></pre>
+</details>
+</dd>
+<dt id="hatyan.components.read_components"><code class="name flex">
+<span>def <span class="ident">read_components</span></span>(<span>filename, get_metadata=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reads analysis results from a file.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>filename</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>get_metadata</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is False.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_components(filename, get_metadata=False):
+    &#34;&#34;&#34;
+    Reads analysis results from a file.
+
+    Parameters
+    ----------
+    filename : TYPE
+        DESCRIPTION.
+    get_metadata : TYPE, optional
+        DESCRIPTION. The default is False.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import datetime as dt
+    import pandas as pd
+    
+    print(&#39;reading file: %s&#39;%(filename))
+
+    file = open(filename)
+    line_compstart = None
+    for i, line in enumerate(file):
+        if line.startswith(&#39;STAT&#39;):
+            station_fromfile = line.split()[1]
+            print(&#39;retrieving data from components file for station %s&#39;%(station_fromfile))
+            file_vertref = line.split()[3]
+            print(&#39;the vertical reference level in the imported file is: %s&#39;%(file_vertref))
+        elif line.startswith(&#39;PERD&#39;):
+            dateline = line.split()
+            times_compfile_ext = [dt.datetime.strptime(dateline[1]+dateline[2],&#39;%Y%m%d%H%M&#39;),dt.datetime.strptime(dateline[3]+dateline[4],&#39;%Y%m%d%H%M&#39;)]
+            times_compfile_step = int(dateline[5])
+        elif line.startswith(&#39;MIDD&#39;):
+            A0_cm = float(line.split()[1])
+        elif line.startswith(&#39;COMP&#39;):
+            line_compstart = i
+            break #break because last line before actual data
+    #retrieve raw data
+    if line_compstart is None:
+        raise Exception(&#39;invalid file, no line that starts with COMP&#39;)
+    Aphi_datapd_raw_noA0 = pd.read_csv(filename, delimiter=r&#34;\s+&#34;, header=line_compstart-1, names=[&#39;COMP&#39;, &#39;hat_id&#39;, &#39;freq&#39;, &#39;A&#39;, &#39;phi&#39;, &#39;name&#39;])
+    
+    Aphi_datapd_A0line = pd.DataFrame({&#39;A&#39;: [A0_cm], &#39;phi&#39;: [0], &#39;name&#39;: [&#39;A0&#39;]})
+    Aphi_datapd_raw = Aphi_datapd_A0line.append(Aphi_datapd_raw_noA0,ignore_index=True)
+    COMP_pd = pd.DataFrame({&#39;A&#39;: Aphi_datapd_raw[&#39;A&#39;].values/100, &#39;phi_deg&#39;: Aphi_datapd_raw[&#39;phi&#39;].values}, index=Aphi_datapd_raw[&#39;name&#39;].values)
+    if get_metadata:
+        meta = {&#39;station&#39;: station_fromfile, &#39;times_ext&#39;: times_compfile_ext, &#39;times_stepmin&#39;: times_compfile_step, &#39;origin&#39;:&#39;import&#39;, &#39;vertref&#39;:file_vertref}#, &#39;usedxfac&#39;:None}
+        return COMP_pd, meta
+    else:
+        return COMP_pd</code></pre>
+</details>
+</dd>
+<dt id="hatyan.components.components_timeshift"><code class="name flex">
+<span>def <span class="ident">components_timeshift</span></span>(<span>comp, hours)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def components_timeshift(comp,hours):
+    import datetime as dt
+    import pandas as pd
+    import numpy as np
+    
+    from hatyan.hatyan_core import get_hatyan_v0
+    
+    comp_out = comp.copy()
+    
+    refdate = dt.datetime(2000,1,1)
+    corrdate = refdate+dt.timedelta(hours=hours)
+    
+    v0_twodates = get_hatyan_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
+    hourcorr_v0_deg = np.rad2deg(v0_twodates[1]-v0_twodates[0])#%360
+    
+    comp_out[&#39;phi_deg&#39;] = (comp_out[&#39;phi_deg&#39;]+hourcorr_v0_deg)%360
+    
+    return comp_out</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hatyan" href="index.html">hatyan</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="hatyan.components.plot_components" href="#hatyan.components.plot_components">plot_components</a></code></li>
+<li><code><a title="hatyan.components.write_components" href="#hatyan.components.write_components">write_components</a></code></li>
+<li><code><a title="hatyan.components.merge_componentgroups" href="#hatyan.components.merge_componentgroups">merge_componentgroups</a></code></li>
+<li><code><a title="hatyan.components.read_components" href="#hatyan.components.read_components">read_components</a></code></li>
+<li><code><a title="hatyan.components.components_timeshift" href="#hatyan.components.components_timeshift">components_timeshift</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,5 +1,5 @@
-# hatyan
-
+# -*- coding: utf-8 -*-
+"""
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
 Copyright (C) 2019-2020 Rijkswaterstaat.
 Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
@@ -148,3 +148,9 @@ Generate RPM (RHEL/CentOS installer):
 - the required Python libraries are documented in requirements_dev.txt: these are fixed, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
 - additionally, the library pyqt5==5.7.1 (specfile) is for interative QT5 plots. There is a newer version but it requires glibc >2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
 - to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.
+
+"""
+
+__author__ = """Jelmer Veenstra"""
+__email__ = 'jelmer.veenstra@deltares.nl'
+__version__ = '2.2.85'
