@@ -22,19 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 Installation
 --------
 
-Install hatyan OPTION 1: get and install RPM on CentOS/RHEL
-
-- get the latest rpm file (see developer information for building procedure)
-- install hatyan on CentOS: ``rpm -i hatyan_python-2.2.30-1.x86_64.rpm``
-- upgrade hatyan on CentOS: ``rpm -U hatyan_python-2.2.31-1.x86_64.rpm``
-- installing the RPM results in a hatyan command in linux, this activates a Python virtual environment and sets necessary Qt environment variables. It creates a folder with a python environment hatyan_env, doc en tests (/opt/hatyan_python/hatyan_env/) and a file that provides the hatyan command (/usr/bin/hatyan)
-- check version: ``hatyan --version``
-- test installation: ``hatyan /opt/hatyan_python/tests/configfiles/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py``
-- this should result in several interactive figures popping up, described in chapter 5 (Quick start guide) of the hatyan user manual (gebruikershandleiding).
-- if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.
-- the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings > Configuration > X11)
-
-Install hatyan OPTION 2: Create a separate python environment hatyan_env and install from github (later maybe also via PyPI):
+Install hatyan OPTION 1: Create a separate python environment and install from github (later maybe also via PyPI):
 
 - download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
 - install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
@@ -46,11 +34,17 @@ Install hatyan OPTION 2: Create a separate python environment hatyan_env and ins
 - ``conda deactivate``
 - to remove venv when necessary: ``conda remove -n hatyan_env --all``
 
-Install hatyan OPTION 3: no hatyan installation, use existing checkout (this example is only possible on the Deltares network):
+Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 
-- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
-- install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
-- add to the top of your script ``sys.path.append(r'n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python')``
+- get the latest rpm file (see developer information for building procedure)
+- install hatyan on CentOS: ``rpm -i hatyan_python-2.2.30-1.x86_64.rpm``
+- upgrade hatyan on CentOS: ``rpm -U hatyan_python-2.2.31-1.x86_64.rpm``
+- installing the RPM results in a hatyan command in linux, this activates a Python virtual environment and sets necessary Qt environment variables. It creates a folder with a python environment hatyan_env, doc en tests (/opt/hatyan_python/hatyan_env/) and a file that provides the hatyan command (/usr/bin/hatyan)
+- check version: ``hatyan --version``
+- test installation: ``hatyan /opt/hatyan_python/tests/configfiles/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py``
+- this should result in several interactive figures popping up, described in chapter 5 (Quick start guide) of the hatyan user manual (gebruikershandleiding).
+- if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.
+- the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings > Configuration > X11)
 
 
 Example usage
