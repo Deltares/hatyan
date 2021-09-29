@@ -3,9 +3,9 @@
 wrapper_RWS.py contains wrapper functions around the hatyan process for RWS related calculations.
 
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2020 Rijkswaterstaat.
-Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
-Source code available at: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan
+Copyright (C) 2019-2021 Rijkswaterstaat.
+Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
+Source code available at: https://github.com/Deltares/hatyan
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
