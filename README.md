@@ -3,7 +3,7 @@
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
 Copyright (C) 2019-2021 Rijkswaterstaat.
 Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://github.com/Deltares/Hatyan
+Source code available at: https://github.com/Deltares/hatyan
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@ Install hatyan OPTION 1: Create a separate python environment and install from g
 - open command window (or anaconda prompt)
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
-- ``python -m pip install git+https://github.com/deltares/hatyan`` (this command installs hatyan and all required packages)
-- to update hatyan: ``python -m pip install --upgrade git+https://github.com/deltares/hatyan``
+- ``python -m pip install git+https://github.com/Deltares/hatyan`` (this command installs hatyan and all required packages)
+- to update hatyan: ``python -m pip install --upgrade git+https://github.com/Deltares/hatyan``
 - ``conda deactivate``
 - to remove venv when necessary: ``conda remove -n hatyan_env --all``
 
@@ -47,10 +47,10 @@ Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 - the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings > Configuration > X11)
 
 
-Example usage
+Getting started
 --------
 
-Copy the code below to your own script to get started.
+Documentation is available on https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html and in the doc folder on github. Copy the code below to your own script to get started.
 ```python
 import os, sys
 sys.path.append(r'n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python')
@@ -100,11 +100,11 @@ Create a python environment hatyan_env and install hatyan as developer:
 - install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
 - Download git from https://git-scm.com/download/win, install with default settings
 - open command window in a folder where you want to clone the hatyan github repo, e.g. C:\\DATA
-- ``git clone https://github.com/deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the master branch)
+- ``git clone https://github.com/Deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the master branch)
 - open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
 - ``git config --global user.email [emailaddress]``
 - ``git config --global user.name [username]`` (this is outdated since Personal Access Tokens are now required)
-- create a branch called work_yourname on https://github.com/deltares/hatyan
+- create a branch called work_yourname on https://github.com/Deltares/hatyan
 - open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
 - ``git remote update origin --prune`` (update local branch list)
 - ``git checkout work_yourname`` (checkout your branch, never do anything while the master is selected)

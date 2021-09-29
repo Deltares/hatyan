@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+# hatyan
+
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2020 Rijkswaterstaat.
+Copyright (C) 2019-2021 Rijkswaterstaat.
 Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan
+Source code available at: https://github.com/Deltares/hatyan
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,14 +17,26 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 Installation
 --------
 
-Install hatyan OPTION 1: get and install RPM on CentOS/RHEL
+Install hatyan OPTION 1: Create a separate python environment and install from github (later maybe also via PyPI):
+
+- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
+- install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
+- open command window (or anaconda prompt)
+- optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
+- optional: ``conda activate hatyan_env``
+- ``python -m pip install git+https://github.com/Deltares/hatyan`` (this command installs hatyan and all required packages)
+- to update hatyan: ``python -m pip install --upgrade git+https://github.com/Deltares/hatyan``
+- ``conda deactivate``
+- to remove venv when necessary: ``conda remove -n hatyan_env --all``
+
+Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 
 - get the latest rpm file (see developer information for building procedure)
 - install hatyan on CentOS: ``rpm -i hatyan_python-2.2.30-1.x86_64.rpm``
@@ -34,29 +48,11 @@ Install hatyan OPTION 1: get and install RPM on CentOS/RHEL
 - if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.
 - the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings > Configuration > X11)
 
-Install hatyan OPTION 2: no hatyan installation, use existing checkout (this example is only possible on the Deltares network):
 
-- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
-- install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
-- add to the top of your script ``sys.path.append(r'n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python')``
-
-Install hatyan OPTION 3: Create a separate python environment hatyan_env and install from github or even PyPI (not yet possible, this is just an example):
-
-- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
-- install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
-- open command window (or anaconda prompt)
-- ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
-- ``conda activate hatyan_env``
-- ``python -m pip install git+https://github.com/openearth/hatyan.git`` (this command installs hatyan and all required packages)
-- to update hatyan: ``python -m pip install --upgrade git+https://github.com/openearth/hatyan.git``
-- ``conda deactivate``
-- to remove venv when necessary: ``conda remove -n hatyan_env --all``
-
-
-Example usage
+Getting started
 --------
 
-Copy the code below to your own script to get started.
+Documentation is available on https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html and in the doc folder on github. Copy the code below to your own script to get started.
 ```python
 import os, sys
 sys.path.append(r'n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python')
@@ -104,8 +100,17 @@ Create a python environment hatyan_env and install hatyan as developer:
 
 - download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
 - install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
-- checkout the hatyan_python folder from the lib_tide repository in a local folder, e.g. ``C:\\DATA\\hatyan_python``: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- Download git from https://git-scm.com/download/win, install with default settings
+- open command window in a folder where you want to clone the hatyan github repo, e.g. C:\\DATA
+- ``git clone https://github.com/Deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the master branch)
+- open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
+- ``git config --global user.email [emailaddress]``
+- ``git config --global user.name [username]`` (this is outdated since Personal Access Tokens are now required)
+- create a branch called work_yourname on https://github.com/Deltares/hatyan
+- open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
+- ``git remote update origin --prune`` (update local branch list)
+- ``git checkout work_yourname`` (checkout your branch, never do anything while the master is selected)
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
 - ``conda activate hatyan_env``
@@ -115,14 +120,14 @@ Create a python environment hatyan_env and install hatyan as developer:
 
 Increase the hatyan version number:
 
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``bumpversion major`` or ``bumpversion minor`` or ``bumpversion patch``
 - the hatyan version number of all relevant files will be updated, as stated in setup.cfg
 
 Running the testbank:
 
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``pytest``
 - ``pytest -m acceptance``
@@ -134,7 +139,7 @@ Running the testbank:
 Generate html and pdf documentation:
 
 - in order to generate pdf documentation, miktex needs to be installed and its packages should be updated from its console.
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``python scripts/generate_documentation.py``
 

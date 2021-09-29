@@ -74,9 +74,9 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
     Calculates extremes (high and low waters) for the provided timeseries. 
     This definition uses scipy.signal.find_peaks() with arguments &#39;distance&#39; and &#39;prominence&#39;. 
     The minimal &#39;distance&#39; between two high or low water peaks is based on the M2 period: 12.42/1.5=8.28 hours for HW and 12.42/1.7=7.30 hours for LW (larger because of aggers). 
-    Based on tests with several stations the &#39;prominence&#39; is set to 0.1 to avoid local dips around high water to be seen as low waters.
     The prominence for local extremes is set to 0.01m, to filter out very minor dips in the timeseries.
     If there are two equal high or low water values, the first one is taken. 
+    There are no main high/low waters calculated within 6 hours of the start/end of the timeseries (keyword buffer_hr), since these can be invalid.
     This function can deal with gaps. Since scipy.signal.find_peaks() warns about nan values, those are removed first.
     
     Parameters
@@ -105,6 +105,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
 
     &#34;&#34;&#34;
     import numpy as np
+    import datetime as dt
     import scipy.signal as ssig
 
     from hatyan.hatyan_core import get_hatyan_freqs
@@ -133,26 +134,32 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
                                                         prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
         HWid_all, HWid_all_properties = ssig.find_peaks(ts[&#39;values&#39;].values, distance=None, #takes first value of two equal peaks
                                                         prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
-        LWid_all_toindex = ts.index[LWid_all]
-        HWid_all_toindex = ts.index[HWid_all]
-        data_pd_HWLW.loc[LWid_all_toindex,&#39;HWLWcode&#39;] = 22 #all LW
-        data_pd_HWLW.loc[HWid_all_toindex,&#39;HWLWcode&#39;] = 11 #all HW
+        data_pd_HWLW.loc[LWid_all,&#39;HWLWcode&#39;] = 22 #all LW
+        data_pd_HWLW.loc[HWid_all,&#39;HWLWcode&#39;] = 11 #all HW
 
 
     #get HWLW (extremes per tidal period)
-    LWid_main,LWid_main_properties = ssig.find_peaks(-ts[&#39;values&#39;].values, distance=M2period_numsteps/1.7, #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002)
-                                                     prominence=(0.1,None), width=(None,None)) #prominence van 0.1 om de echte piek te isoleren
-    HWid_main,HWid_main_properties = ssig.find_peaks(ts[&#39;values&#39;].values, distance=M2period_numsteps/1.5, #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002)
-                                                     prominence=(0.1,None), width=(None,None)) #prominence van 0.1 om de echte piek te isoleren
-    LWid_main_toindex = ts.index[LWid_main]
-    HWid_main_toindex = ts.index[HWid_main]
-    data_pd_HWLW.loc[LWid_main_toindex,&#39;HWLWcode&#39;] = 2
-    data_pd_HWLW.loc[HWid_main_toindex,&#39;HWLWcode&#39;] = 1
+    LWid_main_raw,LWid_main_properties = ssig.find_peaks(-ts[&#39;values&#39;].values, distance=M2period_numsteps/1.7, #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
+                                                     prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
+    HWid_main_raw,HWid_main_properties = ssig.find_peaks(ts[&#39;values&#39;].values, distance=M2period_numsteps/1.9, #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
+                                                     prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
+    #remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
+    buffer_hr = 6
+    LWid_main_validbool = (data_pd_HWLW.loc[LWid_main_raw,&#39;times&#39;]&gt;=ts[&#39;times&#39;].iloc[0]+dt.timedelta(hours=buffer_hr)) &amp; (data_pd_HWLW.loc[LWid_main_raw,&#39;times&#39;]&lt;=ts[&#39;times&#39;].iloc[-1]-dt.timedelta(hours=buffer_hr))
+    HWid_main_validbool = (data_pd_HWLW.loc[HWid_main_raw,&#39;times&#39;]&gt;=ts[&#39;times&#39;].iloc[0]+dt.timedelta(hours=buffer_hr)) &amp; (data_pd_HWLW.loc[HWid_main_raw,&#39;times&#39;]&lt;=ts[&#39;times&#39;].iloc[-1]-dt.timedelta(hours=buffer_hr))
+    LWid_main = LWid_main_raw[LWid_main_validbool]
+    HWid_main = HWid_main_raw[HWid_main_validbool]
+    for key in LWid_main_properties.keys():
+        LWid_main_properties[key] = LWid_main_properties[key][LWid_main_validbool]
+        HWid_main_properties[key] = HWid_main_properties[key][HWid_main_validbool]
+    #use valid values to continue process
+    data_pd_HWLW.loc[LWid_main,&#39;HWLWcode&#39;] = 2
+    data_pd_HWLW.loc[HWid_main,&#39;HWLWcode&#39;] = 1
     data_pd_HWLW = data_pd_HWLW[-data_pd_HWLW[&#39;HWLWcode&#39;].isnull()] #minus: not nan
     
     #convert HWLWcode column to integers
     data_pd_HWLW[&#39;HWLWcode&#39;] = data_pd_HWLW[&#39;HWLWcode&#39;].astype(int)
-    
+
     if debug: #debug statistics
         prop_list = [&#39;prominences&#39;,&#39;widths&#39;]
         for prop in prop_list:
@@ -174,23 +181,20 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
             for prop in prop_list:
                 data_pd_HWLW.loc[data_pd_HWLW[&#39;HWLWcode&#39;]==11,prop] = HWid_all_properties[prop][HW_local_bool]
             print(&#39;HW_local values:\n%s\n&#39;%(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==11]))
-        
-    if not (data_pd_HWLW[&#39;HWLWcode&#39;].iloc[[0,-1]] == 1).all():
-        print(&#39;WARNING: ts does not start and end with HW (HWLWcode=1), HW very close to start/end of ts might be missed because of too low prominence and 1stLW/agger/2ndLW is not calculated if not between two HWs (if calc_HWLW345=True). Check if begin/end HWLWcodes are correct and extend ts if necessary:\n%s&#39;%(data_pd_HWLW))
 
+    
+    
     if calc_HWLW345: #recalculate local LW/HWs between two main HWs to firstLW/agger/secondLW
-        print(&#39;calculating 1stLW/agger/2ndLW for all tidalperiods...&#39;)
+        print(&#39;calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...&#39;)
         for iTide, dummy in enumerate(HWid_main[:-1]):
             data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
             
-            if 0: #remove only HW (not local values around HW)
-                data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide.iloc[1:-1]
-            else: #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
-                data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide[&#39;HWLWcode&#39;]==1,[&#39;values&#39;]].min()[0]
-                data_pd_HWLW_1tide_min = data_pd_HWLW_1tide[&#39;values&#39;].min()
-                data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
-                bool_LWs = data_pd_HWLW_1tide[&#39;values&#39;]&lt;data_pd_HWLW_1tide_mid
-                data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide[bool_LWs]
+            #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
+            data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide[&#39;HWLWcode&#39;]==1,[&#39;values&#39;]].min()[0]
+            data_pd_HWLW_1tide_min = data_pd_HWLW_1tide[&#39;values&#39;].min()
+            data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
+            bool_LWs = data_pd_HWLW_1tide[&#39;values&#39;]&lt;data_pd_HWLW_1tide_mid
+            data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide[bool_LWs]
             
             if len(data_pd_HWLW_1tide_noHWs) &gt; 3: #(attempt to) reduce to three values between two HWs
                 print(&#39;WARNING: more than 3 values between HWs, removing part of them&#39;)
@@ -210,19 +214,22 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
                     raise Exception(&#39;Only 1 LW value but does not have HWLWcode 2&#39;)
             elif len(data_pd_HWLW_1tide_noHWs) == 3:
                 if not data_pd_HWLW_1tide_noHWs[&#39;values&#39;].argmax() == 1:
-                    raise Exception(&#39;3 values between two HW values, but center one is not the largest:\n%s&#39;%(data_pd_HWLW_1tide_noHWs))
+                    raise Exception(&#39;3 values between two HW values, but center one is not the largest:\n%s&#39;%(data_pd_HWLW_1tide))
                 agger345_loc = data_pd_HWLW_1tide_noHWs.index
                 if not (data_pd_HWLW.loc[agger345_loc[0],&#39;HWLWcode&#39;] in [2,22] and data_pd_HWLW.loc[agger345_loc[1],&#39;HWLWcode&#39;] in [11] and data_pd_HWLW.loc[agger345_loc[2],&#39;HWLWcode&#39;] in [2,22]):
-                    raise Exception(&#39;3 values between two HW values, but do not correspond to LW/agger/LW:\n%s&#39;%(data_pd_HWLW_1tide_noHWs))
+                    raise Exception(&#39;3 values between two HW values, but do not correspond to LW/agger/LW:\n%s&#39;%(data_pd_HWLW_1tide))
                 data_pd_HWLW.loc[agger345_loc,&#39;HWLWcode&#39;] = [3,4,5]
+            elif len(data_pd_HWLW_1tide_noHWs) == 2:
+                print(&#39;WARNING: 2 values left between two HWs (slightly unexpected):\n%s&#39;%(data_pd_HWLW_1tide))
             else:
-                raise Exception(&#39;unexpected number of values between two HWs (0, 2 or more than 3):\n%s&#39;%(data_pd_HWLW_1tide_noHWs))
+                raise Exception(&#39;unexpected number of values between two HWs (0 or more than 3):\n%s&#39;%(data_pd_HWLW_1tide))
                 
         #remove remaining 11 and 22 values from array
         if calc_HWLW345_cleanup1122:
             data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==11].index)
             data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==22].index)
         print(&#39;finished calculating 1stLW/agger/2ndLW for all tidalperiods&#39;)
+    
     #return to normal time-index
     data_pd_HWLW = data_pd_HWLW.set_index(&#39;times&#39;)
     return data_pd_HWLW
@@ -904,8 +911,54 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
 
 
 
+def writets_noos(ts, filename, metadata=None):
+    &#34;&#34;&#34;
+    Writes the timeseries to a noos file
 
-def crop_timeseries(ts, times_ext):
+    Parameters
+    ----------
+    ts : pandas.DataFrame
+        The DataFrame should contain a &#39;values&#39; column and a pd.DatetimeIndex as index, it contains the timeseries.
+    filename : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import datetime as dt
+    import pandas as pd
+    
+    timestamp = dt.datetime.now().strftime(&#39;%c&#39;)
+    ts_out = pd.DataFrame({&#39;times&#39;:ts.index.strftime(&#39;%Y%m%d%H%M&#39;),&#39;values&#39;:ts[&#39;values&#39;]})
+    
+    if metadata is None:
+        header_txt = f&#34;&#34;&#34;------------------------------------------------------
+        Timeseries written by hatyan
+        Created at {timestamp}
+        ------------------------------------------------------
+        Location    : None
+        Position    : None
+        Source      : None
+        Unit        : waterlevel
+        Analyse time: 000000000000
+        Timezone    : None
+        ------------------------------------------------------&#34;&#34;&#34;
+    else:
+        header_txt = f&#34;&#34;&#34;------------------------------------------------------\nTimeseries written by hatyan\nCreated at {timestamp}\n------------------------------------------------------\n&#34;&#34;&#34;
+        for key in metadata.keys():
+            header_txt = header_txt+(&#39;%-12s: %s\n&#39;%(key, metadata[key]))
+        header_txt = header_txt+&#39;------------------------------------------------------&#39;
+    np.savetxt(filename,ts_out,fmt=&#39;%s %7.4f&#39;,header=header_txt)
+    
+    
+    
+    
+
+
+def crop_timeseries(ts, times_ext, onlyfull=True):
     &#34;&#34;&#34;
     Crops the provided timeseries
 
@@ -934,8 +987,12 @@ def crop_timeseries(ts, times_ext):
     if not times_ext[0]&lt;times_ext[1]:
         raise Exception(&#39;ERROR: the two times times_ext should be increasing, but they are not: %s.&#39;%(times_ext))
     if (times_ext[0] &lt; ts_pd_in.index[0]) or (times_ext[-1] &gt; ts_pd_in.index[-1]):
-        raise Exception(&#39;ERROR: imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s\nNOTE: if te requested period does not correspond with the one provided in the configfile, try setting analysis_peryear=None&#39;%(times_ext[0],times_ext[-1],ts_pd_in.index.iloc[0],ts_pd_in.index.iloc[-1]))
-    
+        message = &#39;imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s&#39;%(times_ext[0],times_ext[-1],ts_pd_in.index[0],ts_pd_in.index[-1])
+        if onlyfull:
+            raise Exception(&#39;ERROR: %s&#39;%(message))
+        else:
+            print(&#39;WARNING: %s&#39;%(message))
+            
     times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
@@ -946,9 +1003,9 @@ def crop_timeseries(ts, times_ext):
 
 
 
-def resample_timeseries(ts, timestep_min):
+def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     &#34;&#34;&#34;
-    resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation
+    resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation. with tstart/tstop it is possible to extend the timeseries with NaN values.
 
     Parameters
     ----------
@@ -956,6 +1013,10 @@ def resample_timeseries(ts, timestep_min):
         The DataFrame should contain a &#39;values&#39; and &#39;HWLW_code&#39; column and a pd.DatetimeIndex as index, it contains the timeseries to be resampled.
     timestep_min : int
         the amount of minutes with which to resample the timeseries.
+    tstart : dt.datetime, optional
+        the start date for the resampled timeseries, the default is None which results in using the start date of the input ts.
+    tstop : dt.datetime, optional
+        the stop date for the resampled timeseries, the default is None which results in using the stop date of the input ts.
 
     Returns
     -------
@@ -969,12 +1030,17 @@ def resample_timeseries(ts, timestep_min):
     
     print(&#39;-&#39;*100)
     print(&#39;resampling timeseries to %i mintues&#39;%(timestep_min))
-    data_pd_resample = pd.DataFrame({},index=pd.date_range(ts.index[0],ts.index[-1],freq=&#39;%dmin&#39;%(timestep_min)))
-    data_pd_resample[&#39;values&#39;] = np.nan
-    id_allinmeas = ts.index.isin(data_pd_resample.index)
-    id_measinall = data_pd_resample.index.isin(ts.index)
-    data_pd_resample.loc[id_measinall,&#39;values&#39;] = ts.loc[id_allinmeas,&#39;values&#39;].values
     
+    bool_duplicated_index = ts.index.duplicated()
+    if bool_duplicated_index.sum()&gt;0:
+        raise Exception(&#39;there are duplicated values in the ts DatetimeIndex, this is not supported by Timeseries.resample_timeseries(). Try &#34;ts_nodupl = ts[~ts.index.duplicated()]&#34;&#39;)
+    
+    if tstart is None:
+        tstart = ts.index[0]
+    if tstop is None:
+        tstop = ts.index[-1]
+    data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq=&#39;%dmin&#39;%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
+    data_pd_resample[&#39;values&#39;] = ts[&#39;values&#39;] #put measurements into this timeseries, matches to correct index automatically
     
     check_ts(data_pd_resample)
     return data_pd_resample
@@ -1015,18 +1081,25 @@ def check_ts(ts):
         timesteps_incr_print = &#39;all timesteps are in increasing order and are never equal&#39;
     else:
         timesteps_incr_print = &#39;the times-order of ts is not always increasing (duplicate values or wrong order)&#39;
-        
-    list_statements = [&#39;timeseries contents:\n%s&#39;%(ts),
-                       &#39;timeseries # unique timesteps: %i&#39;%(len(timesteps_min)),
-                       &#39;timeseries unique timesteps (minutes):\n%s&#39;%(timesteps_min_print),
-                       &#39;timeseries validity: %s&#39;%(timesteps_incr_print),
-                       &#39;timeseries length: %i&#39;%(len(ts)),
-                       &#39;timeseries # nonan: %i&#39;%(ts[&#39;values&#39;].count()),
-                       &#39;timeseries %% nonan: %.1f%%&#39;%(ts[&#39;values&#39;].count()/len(ts)*100),
-                       &#39;timeseries # nan: %i&#39;%(len(ts)-ts[&#39;values&#39;].count()),
-                       &#39;timeseries %% nan: %.1f%%&#39;%((len(ts)-ts[&#39;values&#39;].count())/len(ts)*100)]
-    print_statement = &#39;\n&#39;.join(list_statements)
-    print(print_statement)
+    
+    ntimes_nonan = ts[&#39;values&#39;].count()
+    ntimes = len(ts)
+    ntimesteps_uniq = len(timesteps_min)
+    if len(ts)==0:
+        print_statement = &#39;timeseries contents:\n%s&#39;%(ts)
+        print(print_statement)
+    else:
+        list_statements = [&#39;timeseries contents:\n%s&#39;%(ts),
+                           &#39;timeseries # unique timesteps: %i&#39;%(ntimesteps_uniq),
+                           &#39;timeseries unique timesteps (minutes):\n%s&#39;%(timesteps_min_print),
+                           &#39;timeseries validity: %s&#39;%(timesteps_incr_print),
+                           &#39;timeseries length: %i&#39;%(ntimes),
+                           &#39;timeseries # nonan: %i&#39;%(ntimes_nonan),
+                           &#39;timeseries %% nonan: %.1f%%&#39;%(ntimes_nonan/ntimes*100),
+                           &#39;timeseries # nan: %i&#39;%(ntimes-ntimes_nonan),
+                           &#39;timeseries %% nan: %.1f%%&#39;%((ntimes-ntimes_nonan)/ntimes*100)]
+        print_statement = &#39;\n&#39;.join(list_statements)
+        print(print_statement)
     
     return print_statement
     
@@ -1170,8 +1243,10 @@ def get_diablocks(filename):
                     if not isinstance(file_vertref,str): #in case of nan value
                         raise Exception(&#39;ERROR: the imported file does not have a vertical reference in the metadata&#39;)
                 elif get_content_sel in [&#39;TYD&#39;]:
-                    datestart = dt.datetime.strptime(data_meta_pd.loc[id_mincontent,1:2].str.cat(), &#34;%Y%m%d%H%M&#34;)
-                    datestop = dt.datetime.strptime(data_meta_pd.loc[id_mincontent,3:4].str.cat(), &#34;%Y%m%d%H%M&#34;)
+                    data_timeext_raw = data_meta_pd.loc[id_mincontent,1:4]
+                    data_timeext = data_timeext_raw.astype(str).str.replace(&#39;.0&#39;,&#39;&#39;,regex=False) #to make sure there are no floats
+                    datestart = dt.datetime.strptime(data_timeext.loc[:2].str.cat(), &#34;%Y%m%d%H%M&#34;)
+                    datestop = dt.datetime.strptime(data_timeext.loc[3:].str.cat(), &#34;%Y%m%d%H%M&#34;)
                     timestep_value_raw = data_meta_pd.loc[id_mincontent,5]
                     if isinstance(timestep_value_raw,str): #if equidistant timeseries
                         timestep_value = int(timestep_value_raw)
@@ -1477,9 +1552,9 @@ def readts_noos(filename, datetime_format=&#39;%Y%m%d%H%M&#39;, na_values=None):
 <div class="desc"><p>Calculates extremes (high and low waters) for the provided timeseries.
 This definition uses scipy.signal.find_peaks() with arguments 'distance' and 'prominence'.
 The minimal 'distance' between two high or low water peaks is based on the M2 period: 12.42/1.5=8.28 hours for HW and 12.42/1.7=7.30 hours for LW (larger because of aggers).
-Based on tests with several stations the 'prominence' is set to 0.1 to avoid local dips around high water to be seen as low waters.
 The prominence for local extremes is set to 0.01m, to filter out very minor dips in the timeseries.
 If there are two equal high or low water values, the first one is taken.
+There are no main high/low waters calculated within 6 hours of the start/end of the timeseries (keyword buffer_hr), since these can be invalid.
 This function can deal with gaps. Since scipy.signal.find_peaks() warns about nan values, those are removed first.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -1515,9 +1590,9 @@ When first/second low waters and aggers are calculated, the local extremes aroun
     Calculates extremes (high and low waters) for the provided timeseries. 
     This definition uses scipy.signal.find_peaks() with arguments &#39;distance&#39; and &#39;prominence&#39;. 
     The minimal &#39;distance&#39; between two high or low water peaks is based on the M2 period: 12.42/1.5=8.28 hours for HW and 12.42/1.7=7.30 hours for LW (larger because of aggers). 
-    Based on tests with several stations the &#39;prominence&#39; is set to 0.1 to avoid local dips around high water to be seen as low waters.
     The prominence for local extremes is set to 0.01m, to filter out very minor dips in the timeseries.
     If there are two equal high or low water values, the first one is taken. 
+    There are no main high/low waters calculated within 6 hours of the start/end of the timeseries (keyword buffer_hr), since these can be invalid.
     This function can deal with gaps. Since scipy.signal.find_peaks() warns about nan values, those are removed first.
     
     Parameters
@@ -1546,6 +1621,7 @@ When first/second low waters and aggers are calculated, the local extremes aroun
 
     &#34;&#34;&#34;
     import numpy as np
+    import datetime as dt
     import scipy.signal as ssig
 
     from hatyan.hatyan_core import get_hatyan_freqs
@@ -1574,26 +1650,32 @@ When first/second low waters and aggers are calculated, the local extremes aroun
                                                         prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
         HWid_all, HWid_all_properties = ssig.find_peaks(ts[&#39;values&#39;].values, distance=None, #takes first value of two equal peaks
                                                         prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
-        LWid_all_toindex = ts.index[LWid_all]
-        HWid_all_toindex = ts.index[HWid_all]
-        data_pd_HWLW.loc[LWid_all_toindex,&#39;HWLWcode&#39;] = 22 #all LW
-        data_pd_HWLW.loc[HWid_all_toindex,&#39;HWLWcode&#39;] = 11 #all HW
+        data_pd_HWLW.loc[LWid_all,&#39;HWLWcode&#39;] = 22 #all LW
+        data_pd_HWLW.loc[HWid_all,&#39;HWLWcode&#39;] = 11 #all HW
 
 
     #get HWLW (extremes per tidal period)
-    LWid_main,LWid_main_properties = ssig.find_peaks(-ts[&#39;values&#39;].values, distance=M2period_numsteps/1.7, #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002)
-                                                     prominence=(0.1,None), width=(None,None)) #prominence van 0.1 om de echte piek te isoleren
-    HWid_main,HWid_main_properties = ssig.find_peaks(ts[&#39;values&#39;].values, distance=M2period_numsteps/1.5, #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002)
-                                                     prominence=(0.1,None), width=(None,None)) #prominence van 0.1 om de echte piek te isoleren
-    LWid_main_toindex = ts.index[LWid_main]
-    HWid_main_toindex = ts.index[HWid_main]
-    data_pd_HWLW.loc[LWid_main_toindex,&#39;HWLWcode&#39;] = 2
-    data_pd_HWLW.loc[HWid_main_toindex,&#39;HWLWcode&#39;] = 1
+    LWid_main_raw,LWid_main_properties = ssig.find_peaks(-ts[&#39;values&#39;].values, distance=M2period_numsteps/1.7, #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
+                                                     prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
+    HWid_main_raw,HWid_main_properties = ssig.find_peaks(ts[&#39;values&#39;].values, distance=M2period_numsteps/1.9, #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
+                                                     prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
+    #remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
+    buffer_hr = 6
+    LWid_main_validbool = (data_pd_HWLW.loc[LWid_main_raw,&#39;times&#39;]&gt;=ts[&#39;times&#39;].iloc[0]+dt.timedelta(hours=buffer_hr)) &amp; (data_pd_HWLW.loc[LWid_main_raw,&#39;times&#39;]&lt;=ts[&#39;times&#39;].iloc[-1]-dt.timedelta(hours=buffer_hr))
+    HWid_main_validbool = (data_pd_HWLW.loc[HWid_main_raw,&#39;times&#39;]&gt;=ts[&#39;times&#39;].iloc[0]+dt.timedelta(hours=buffer_hr)) &amp; (data_pd_HWLW.loc[HWid_main_raw,&#39;times&#39;]&lt;=ts[&#39;times&#39;].iloc[-1]-dt.timedelta(hours=buffer_hr))
+    LWid_main = LWid_main_raw[LWid_main_validbool]
+    HWid_main = HWid_main_raw[HWid_main_validbool]
+    for key in LWid_main_properties.keys():
+        LWid_main_properties[key] = LWid_main_properties[key][LWid_main_validbool]
+        HWid_main_properties[key] = HWid_main_properties[key][HWid_main_validbool]
+    #use valid values to continue process
+    data_pd_HWLW.loc[LWid_main,&#39;HWLWcode&#39;] = 2
+    data_pd_HWLW.loc[HWid_main,&#39;HWLWcode&#39;] = 1
     data_pd_HWLW = data_pd_HWLW[-data_pd_HWLW[&#39;HWLWcode&#39;].isnull()] #minus: not nan
     
     #convert HWLWcode column to integers
     data_pd_HWLW[&#39;HWLWcode&#39;] = data_pd_HWLW[&#39;HWLWcode&#39;].astype(int)
-    
+
     if debug: #debug statistics
         prop_list = [&#39;prominences&#39;,&#39;widths&#39;]
         for prop in prop_list:
@@ -1615,23 +1697,20 @@ When first/second low waters and aggers are calculated, the local extremes aroun
             for prop in prop_list:
                 data_pd_HWLW.loc[data_pd_HWLW[&#39;HWLWcode&#39;]==11,prop] = HWid_all_properties[prop][HW_local_bool]
             print(&#39;HW_local values:\n%s\n&#39;%(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==11]))
-        
-    if not (data_pd_HWLW[&#39;HWLWcode&#39;].iloc[[0,-1]] == 1).all():
-        print(&#39;WARNING: ts does not start and end with HW (HWLWcode=1), HW very close to start/end of ts might be missed because of too low prominence and 1stLW/agger/2ndLW is not calculated if not between two HWs (if calc_HWLW345=True). Check if begin/end HWLWcodes are correct and extend ts if necessary:\n%s&#39;%(data_pd_HWLW))
 
+    
+    
     if calc_HWLW345: #recalculate local LW/HWs between two main HWs to firstLW/agger/secondLW
-        print(&#39;calculating 1stLW/agger/2ndLW for all tidalperiods...&#39;)
+        print(&#39;calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...&#39;)
         for iTide, dummy in enumerate(HWid_main[:-1]):
             data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
             
-            if 0: #remove only HW (not local values around HW)
-                data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide.iloc[1:-1]
-            else: #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
-                data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide[&#39;HWLWcode&#39;]==1,[&#39;values&#39;]].min()[0]
-                data_pd_HWLW_1tide_min = data_pd_HWLW_1tide[&#39;values&#39;].min()
-                data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
-                bool_LWs = data_pd_HWLW_1tide[&#39;values&#39;]&lt;data_pd_HWLW_1tide_mid
-                data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide[bool_LWs]
+            #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
+            data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide[&#39;HWLWcode&#39;]==1,[&#39;values&#39;]].min()[0]
+            data_pd_HWLW_1tide_min = data_pd_HWLW_1tide[&#39;values&#39;].min()
+            data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
+            bool_LWs = data_pd_HWLW_1tide[&#39;values&#39;]&lt;data_pd_HWLW_1tide_mid
+            data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide[bool_LWs]
             
             if len(data_pd_HWLW_1tide_noHWs) &gt; 3: #(attempt to) reduce to three values between two HWs
                 print(&#39;WARNING: more than 3 values between HWs, removing part of them&#39;)
@@ -1651,19 +1730,22 @@ When first/second low waters and aggers are calculated, the local extremes aroun
                     raise Exception(&#39;Only 1 LW value but does not have HWLWcode 2&#39;)
             elif len(data_pd_HWLW_1tide_noHWs) == 3:
                 if not data_pd_HWLW_1tide_noHWs[&#39;values&#39;].argmax() == 1:
-                    raise Exception(&#39;3 values between two HW values, but center one is not the largest:\n%s&#39;%(data_pd_HWLW_1tide_noHWs))
+                    raise Exception(&#39;3 values between two HW values, but center one is not the largest:\n%s&#39;%(data_pd_HWLW_1tide))
                 agger345_loc = data_pd_HWLW_1tide_noHWs.index
                 if not (data_pd_HWLW.loc[agger345_loc[0],&#39;HWLWcode&#39;] in [2,22] and data_pd_HWLW.loc[agger345_loc[1],&#39;HWLWcode&#39;] in [11] and data_pd_HWLW.loc[agger345_loc[2],&#39;HWLWcode&#39;] in [2,22]):
-                    raise Exception(&#39;3 values between two HW values, but do not correspond to LW/agger/LW:\n%s&#39;%(data_pd_HWLW_1tide_noHWs))
+                    raise Exception(&#39;3 values between two HW values, but do not correspond to LW/agger/LW:\n%s&#39;%(data_pd_HWLW_1tide))
                 data_pd_HWLW.loc[agger345_loc,&#39;HWLWcode&#39;] = [3,4,5]
+            elif len(data_pd_HWLW_1tide_noHWs) == 2:
+                print(&#39;WARNING: 2 values left between two HWs (slightly unexpected):\n%s&#39;%(data_pd_HWLW_1tide))
             else:
-                raise Exception(&#39;unexpected number of values between two HWs (0, 2 or more than 3):\n%s&#39;%(data_pd_HWLW_1tide_noHWs))
+                raise Exception(&#39;unexpected number of values between two HWs (0 or more than 3):\n%s&#39;%(data_pd_HWLW_1tide))
                 
         #remove remaining 11 and 22 values from array
         if calc_HWLW345_cleanup1122:
             data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==11].index)
             data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==22].index)
         print(&#39;finished calculating 1stLW/agger/2ndLW for all tidalperiods&#39;)
+    
     #return to normal time-index
     data_pd_HWLW = data_pd_HWLW.set_index(&#39;times&#39;)
     return data_pd_HWLW</code></pre>
@@ -2486,8 +2568,69 @@ Warning: the calculated extreme numbers in this definition are not corrected for
             f.write(&#39;%6s;%4s;%d/0;%d:\n&#39;%(index.strftime(&#39;%Y%m%d&#39;), index.strftime(&#39;%H%M&#39;), data_pd_row[&#39;HWLWcode&#39;], data_pd_row[&#39;values&#39;]*100))</code></pre>
 </details>
 </dd>
+<dt id="hatyan.timeseries.writets_noos"><code class="name flex">
+<span>def <span class="ident">writets_noos</span></span>(<span>ts, filename, metadata=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Writes the timeseries to a noos file</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ts</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries.</dd>
+<dt><strong><code>filename</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def writets_noos(ts, filename, metadata=None):
+    &#34;&#34;&#34;
+    Writes the timeseries to a noos file
+
+    Parameters
+    ----------
+    ts : pandas.DataFrame
+        The DataFrame should contain a &#39;values&#39; column and a pd.DatetimeIndex as index, it contains the timeseries.
+    filename : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import datetime as dt
+    import pandas as pd
+    
+    timestamp = dt.datetime.now().strftime(&#39;%c&#39;)
+    ts_out = pd.DataFrame({&#39;times&#39;:ts.index.strftime(&#39;%Y%m%d%H%M&#39;),&#39;values&#39;:ts[&#39;values&#39;]})
+    
+    if metadata is None:
+        header_txt = f&#34;&#34;&#34;------------------------------------------------------
+        Timeseries written by hatyan
+        Created at {timestamp}
+        ------------------------------------------------------
+        Location    : None
+        Position    : None
+        Source      : None
+        Unit        : waterlevel
+        Analyse time: 000000000000
+        Timezone    : None
+        ------------------------------------------------------&#34;&#34;&#34;
+    else:
+        header_txt = f&#34;&#34;&#34;------------------------------------------------------\nTimeseries written by hatyan\nCreated at {timestamp}\n------------------------------------------------------\n&#34;&#34;&#34;
+        for key in metadata.keys():
+            header_txt = header_txt+(&#39;%-12s: %s\n&#39;%(key, metadata[key]))
+        header_txt = header_txt+&#39;------------------------------------------------------&#39;
+    np.savetxt(filename,ts_out,fmt=&#39;%s %7.4f&#39;,header=header_txt)</code></pre>
+</details>
+</dd>
 <dt id="hatyan.timeseries.crop_timeseries"><code class="name flex">
-<span>def <span class="ident">crop_timeseries</span></span>(<span>ts, times_ext)</span>
+<span>def <span class="ident">crop_timeseries</span></span>(<span>ts, times_ext, onlyfull=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Crops the provided timeseries</p>
@@ -2512,7 +2655,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def crop_timeseries(ts, times_ext):
+<pre><code class="python">def crop_timeseries(ts, times_ext, onlyfull=True):
     &#34;&#34;&#34;
     Crops the provided timeseries
 
@@ -2541,8 +2684,12 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     if not times_ext[0]&lt;times_ext[1]:
         raise Exception(&#39;ERROR: the two times times_ext should be increasing, but they are not: %s.&#39;%(times_ext))
     if (times_ext[0] &lt; ts_pd_in.index[0]) or (times_ext[-1] &gt; ts_pd_in.index[-1]):
-        raise Exception(&#39;ERROR: imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s\nNOTE: if te requested period does not correspond with the one provided in the configfile, try setting analysis_peryear=None&#39;%(times_ext[0],times_ext[-1],ts_pd_in.index.iloc[0],ts_pd_in.index.iloc[-1]))
-    
+        message = &#39;imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s&#39;%(times_ext[0],times_ext[-1],ts_pd_in.index[0],ts_pd_in.index[-1])
+        if onlyfull:
+            raise Exception(&#39;ERROR: %s&#39;%(message))
+        else:
+            print(&#39;WARNING: %s&#39;%(message))
+            
     times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
@@ -2551,16 +2698,20 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 </details>
 </dd>
 <dt id="hatyan.timeseries.resample_timeseries"><code class="name flex">
-<span>def <span class="ident">resample_timeseries</span></span>(<span>ts, timestep_min)</span>
+<span>def <span class="ident">resample_timeseries</span></span>(<span>ts, timestep_min, tstart=None, tstop=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation</p>
+<div class="desc"><p>resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation. with tstart/tstop it is possible to extend the timeseries with NaN values.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>ts</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
 <dd>The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the timeseries to be resampled.</dd>
 <dt><strong><code>timestep_min</code></strong> :&ensp;<code>int</code></dt>
 <dd>the amount of minutes with which to resample the timeseries.</dd>
+<dt><strong><code>tstart</code></strong> :&ensp;<code>dt.datetime</code>, optional</dt>
+<dd>the start date for the resampled timeseries, the default is None which results in using the start date of the input ts.</dd>
+<dt><strong><code>tstop</code></strong> :&ensp;<code>dt.datetime</code>, optional</dt>
+<dd>the stop date for the resampled timeseries, the default is None which results in using the stop date of the input ts.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -2571,9 +2722,9 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def resample_timeseries(ts, timestep_min):
+<pre><code class="python">def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     &#34;&#34;&#34;
-    resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation
+    resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation. with tstart/tstop it is possible to extend the timeseries with NaN values.
 
     Parameters
     ----------
@@ -2581,6 +2732,10 @@ Warning: the calculated extreme numbers in this definition are not corrected for
         The DataFrame should contain a &#39;values&#39; and &#39;HWLW_code&#39; column and a pd.DatetimeIndex as index, it contains the timeseries to be resampled.
     timestep_min : int
         the amount of minutes with which to resample the timeseries.
+    tstart : dt.datetime, optional
+        the start date for the resampled timeseries, the default is None which results in using the start date of the input ts.
+    tstop : dt.datetime, optional
+        the stop date for the resampled timeseries, the default is None which results in using the stop date of the input ts.
 
     Returns
     -------
@@ -2594,12 +2749,17 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     
     print(&#39;-&#39;*100)
     print(&#39;resampling timeseries to %i mintues&#39;%(timestep_min))
-    data_pd_resample = pd.DataFrame({},index=pd.date_range(ts.index[0],ts.index[-1],freq=&#39;%dmin&#39;%(timestep_min)))
-    data_pd_resample[&#39;values&#39;] = np.nan
-    id_allinmeas = ts.index.isin(data_pd_resample.index)
-    id_measinall = data_pd_resample.index.isin(ts.index)
-    data_pd_resample.loc[id_measinall,&#39;values&#39;] = ts.loc[id_allinmeas,&#39;values&#39;].values
     
+    bool_duplicated_index = ts.index.duplicated()
+    if bool_duplicated_index.sum()&gt;0:
+        raise Exception(&#39;there are duplicated values in the ts DatetimeIndex, this is not supported by Timeseries.resample_timeseries(). Try &#34;ts_nodupl = ts[~ts.index.duplicated()]&#34;&#39;)
+    
+    if tstart is None:
+        tstart = ts.index[0]
+    if tstop is None:
+        tstop = ts.index[-1]
+    data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq=&#39;%dmin&#39;%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
+    data_pd_resample[&#39;values&#39;] = ts[&#39;values&#39;] #put measurements into this timeseries, matches to correct index automatically
     
     check_ts(data_pd_resample)
     return data_pd_resample</code></pre>
@@ -2657,18 +2817,25 @@ Warning: the calculated extreme numbers in this definition are not corrected for
         timesteps_incr_print = &#39;all timesteps are in increasing order and are never equal&#39;
     else:
         timesteps_incr_print = &#39;the times-order of ts is not always increasing (duplicate values or wrong order)&#39;
-        
-    list_statements = [&#39;timeseries contents:\n%s&#39;%(ts),
-                       &#39;timeseries # unique timesteps: %i&#39;%(len(timesteps_min)),
-                       &#39;timeseries unique timesteps (minutes):\n%s&#39;%(timesteps_min_print),
-                       &#39;timeseries validity: %s&#39;%(timesteps_incr_print),
-                       &#39;timeseries length: %i&#39;%(len(ts)),
-                       &#39;timeseries # nonan: %i&#39;%(ts[&#39;values&#39;].count()),
-                       &#39;timeseries %% nonan: %.1f%%&#39;%(ts[&#39;values&#39;].count()/len(ts)*100),
-                       &#39;timeseries # nan: %i&#39;%(len(ts)-ts[&#39;values&#39;].count()),
-                       &#39;timeseries %% nan: %.1f%%&#39;%((len(ts)-ts[&#39;values&#39;].count())/len(ts)*100)]
-    print_statement = &#39;\n&#39;.join(list_statements)
-    print(print_statement)
+    
+    ntimes_nonan = ts[&#39;values&#39;].count()
+    ntimes = len(ts)
+    ntimesteps_uniq = len(timesteps_min)
+    if len(ts)==0:
+        print_statement = &#39;timeseries contents:\n%s&#39;%(ts)
+        print(print_statement)
+    else:
+        list_statements = [&#39;timeseries contents:\n%s&#39;%(ts),
+                           &#39;timeseries # unique timesteps: %i&#39;%(ntimesteps_uniq),
+                           &#39;timeseries unique timesteps (minutes):\n%s&#39;%(timesteps_min_print),
+                           &#39;timeseries validity: %s&#39;%(timesteps_incr_print),
+                           &#39;timeseries length: %i&#39;%(ntimes),
+                           &#39;timeseries # nonan: %i&#39;%(ntimes_nonan),
+                           &#39;timeseries %% nonan: %.1f%%&#39;%(ntimes_nonan/ntimes*100),
+                           &#39;timeseries # nan: %i&#39;%(ntimes-ntimes_nonan),
+                           &#39;timeseries %% nan: %.1f%%&#39;%((ntimes-ntimes_nonan)/ntimes*100)]
+        print_statement = &#39;\n&#39;.join(list_statements)
+        print(print_statement)
     
     return print_statement</code></pre>
 </details>
@@ -2838,8 +3005,10 @@ Warning: the calculated extreme numbers in this definition are not corrected for
                     if not isinstance(file_vertref,str): #in case of nan value
                         raise Exception(&#39;ERROR: the imported file does not have a vertical reference in the metadata&#39;)
                 elif get_content_sel in [&#39;TYD&#39;]:
-                    datestart = dt.datetime.strptime(data_meta_pd.loc[id_mincontent,1:2].str.cat(), &#34;%Y%m%d%H%M&#34;)
-                    datestop = dt.datetime.strptime(data_meta_pd.loc[id_mincontent,3:4].str.cat(), &#34;%Y%m%d%H%M&#34;)
+                    data_timeext_raw = data_meta_pd.loc[id_mincontent,1:4]
+                    data_timeext = data_timeext_raw.astype(str).str.replace(&#39;.0&#39;,&#39;&#39;,regex=False) #to make sure there are no floats
+                    datestart = dt.datetime.strptime(data_timeext.loc[:2].str.cat(), &#34;%Y%m%d%H%M&#34;)
+                    datestop = dt.datetime.strptime(data_timeext.loc[3:].str.cat(), &#34;%Y%m%d%H%M&#34;)
                     timestep_value_raw = data_meta_pd.loc[id_mincontent,5]
                     if isinstance(timestep_value_raw,str): #if equidistant timeseries
                         timestep_value = int(timestep_value_raw)
@@ -3210,6 +3379,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 <li><code><a title="hatyan.timeseries.write_tsnetcdf" href="#hatyan.timeseries.write_tsnetcdf">write_tsnetcdf</a></code></li>
 <li><code><a title="hatyan.timeseries.write_tsdia" href="#hatyan.timeseries.write_tsdia">write_tsdia</a></code></li>
 <li><code><a title="hatyan.timeseries.write_tsdia_HWLW" href="#hatyan.timeseries.write_tsdia_HWLW">write_tsdia_HWLW</a></code></li>
+<li><code><a title="hatyan.timeseries.writets_noos" href="#hatyan.timeseries.writets_noos">writets_noos</a></code></li>
 <li><code><a title="hatyan.timeseries.crop_timeseries" href="#hatyan.timeseries.crop_timeseries">crop_timeseries</a></code></li>
 <li><code><a title="hatyan.timeseries.resample_timeseries" href="#hatyan.timeseries.resample_timeseries">resample_timeseries</a></code></li>
 <li><code><a title="hatyan.timeseries.check_ts" href="#hatyan.timeseries.check_ts">check_ts</a></code></li>

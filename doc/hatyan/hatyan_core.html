@@ -295,6 +295,8 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
 
 
 
+
+
 def get_doodson_eqvals(dood_date, mode=None):
     &#34;&#34;&#34;
     Berekent de doodson waardes T, S, H, P, N en P1 voor het opgegeven tijdstip.
@@ -322,12 +324,13 @@ def get_doodson_eqvals(dood_date, mode=None):
         Middelbare lengte van het perieum van de zon. Longitude of solar perigee
 
     &#34;&#34;&#34;
-    import datetime as dt
+    #import datetime as dt
     import numpy as np
     
     DNUJE = 24*36525
-    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
-    dood_Tj = (dood_tstart_hr+12)/(24*36525) #DTIJJE, #Aantal Juliaanse eeuwen ( = 36525 dagen) die zijn verstreken sinds 31 december 1899 12.00 uur GMT. Number of Julian centuries (36525 days) with respect to Greenwich mean noon, 31 December 1899 (Gregorian calendar)
+    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    
+    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525) #DTIJJE, #Aantal Juliaanse eeuwen ( = 36525 dagen) die zijn verstreken sinds 31 december 1899 12.00 uur GMT. Number of Julian centuries (36525 days) with respect to Greenwich mean noon, 31 December 1899 (Gregorian calendar)
     if mode==&#39;freq&#39;:
         #speed in radians per hour, de afgeleiden van onderstaande functies
         dood_T_rad = np.array(len(dood_Tj)*[np.deg2rad(15)]) #360/24=15 degrees of earth rotation per hour
@@ -338,7 +341,10 @@ def get_doodson_eqvals(dood_date, mode=None):
         dood_P1_rad = (   0.0300053 + 0.0000079*dood_Tj*2)/DNUJE
     else: #for everything else
         #hatyan documentation. Zie ook p162 of Schureman book
-        dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
+        if fancy_pddt:
+            dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
+        else:
+            dood_T_rad = np.array([np.deg2rad(180 + x.hour*15.0+x.minute*15.0/60) for x in dood_date])
         dood_S_rad =  (4.7200089 + 8399.7092745*dood_Tj + 0.0000346*dood_Tj**2)
         dood_H_rad =  (4.8816280 + 628.3319500*dood_Tj  + 0.0000052*dood_Tj**2)
         dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
@@ -346,7 +352,6 @@ def get_doodson_eqvals(dood_date, mode=None):
         dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
     
     return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad
-
 
 
 
@@ -379,11 +384,11 @@ def get_hatyan_constants(dood_date):
 
     &#34;&#34;&#34;
     
-    import datetime as dt
+    #import datetime as dt
     import numpy as np
     
-    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
-    dood_Tj = (dood_tstart_hr+12)/(24*36525)
+    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
     
     #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
     #327932: ratio of mass of sun to combined mass of earth and moon
@@ -1046,7 +1051,86 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
                 f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
 
     return f_i_pd
-    </code></pre>
+
+
+
+
+
+
+
+def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
+    &#34;&#34;&#34;
+    Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
+    For dates outside this period, a list is generated and converted to a pd.Index instead.
+
+    Parameters
+    ----------
+    times_ext : list of datetime.datetime
+        DESCRIPTION.
+    timestep_min : int
+        DESCRIPTION.
+
+    Returns
+    -------
+    times_pred_all_pdDTI : pd.DatetimeIndex or pd.Index
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    import datetime as dt
+    
+    if (np.array(times_ext) &gt; pd.Timestamp.min).all() and (np.array(times_ext) &lt; pd.Timestamp.max).all():
+        times_pred_all = pd.date_range(start=times_ext[0], end=times_ext[-1], freq=&#39;%imin&#39;%(timestep_min))
+        times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
+    else:
+        print(&#39;WARNING: OutOfBoundsDatetime: Out of bounds nanosecond timestamp, so reverting to less fancy (slower) datetime ranges. Fancy ones are possible between %s and %s&#39;%(pd.Timestamp.min, pd.Timestamp.max))
+        td_mins = (times_ext[-1]-times_ext[0]).total_seconds()/60
+        nsteps = int(td_mins/timestep_min)
+        times_pred_all = pd.Series([times_ext[0]+dt.timedelta(minutes=x*timestep_min) for x in range(nsteps+1)])
+        times_pred_all_pdDTI = pd.Index(times_pred_all)
+    return times_pred_all_pdDTI
+
+
+
+
+
+
+def robust_timedelta_sec(dood_date,refdate_dt=None):
+    &#34;&#34;&#34;
+    Generate timedelta. Pandas pd.DatetimeIndex subtraction only supports times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
+    For dates outside this period, a list subtraction is generated.
+    
+    Parameters
+    ----------
+    dood_date : pd.Index or pd.DatetimeIndex
+        DESCRIPTION.
+    refdate_dt : dt.datetime, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    dood_tstart_sec : np.array
+        DESCRIPTION.
+    fancy_pddt : bool
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import pandas as pd
+    import datetime as dt
+    import numpy as np
+    
+    if refdate_dt is None:
+        refdate_dt = dt.datetime(1900,1,1)
+        
+    if (dood_date[[0,-1]] &gt; pd.Timestamp.min).all() and (dood_date[[0,-1]] &lt; pd.Timestamp.max).all():
+        fancy_pddt = True
+        dood_tstart_sec = ( dood_date-refdate_dt ).total_seconds().values
+    else:
+        fancy_pddt = False
+        #print(&#39;WARNING: OutOfBoundsDatetime: Out of bounds nanosecond timestamp, so reverting to less fancy (slower) timedelta arrays. For fancy ones: min=%s and max=%s&#39;%(pd.Timestamp.min, pd.Timestamp.max))
+        dood_tstart_sec = np.array([(x-refdate_dt).total_seconds() for x in dood_date])
+    return dood_tstart_sec, fancy_pddt</code></pre>
 </details>
 </section>
 <section>
@@ -1380,12 +1464,13 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
         Middelbare lengte van het perieum van de zon. Longitude of solar perigee
 
     &#34;&#34;&#34;
-    import datetime as dt
+    #import datetime as dt
     import numpy as np
     
     DNUJE = 24*36525
-    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
-    dood_Tj = (dood_tstart_hr+12)/(24*36525) #DTIJJE, #Aantal Juliaanse eeuwen ( = 36525 dagen) die zijn verstreken sinds 31 december 1899 12.00 uur GMT. Number of Julian centuries (36525 days) with respect to Greenwich mean noon, 31 December 1899 (Gregorian calendar)
+    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    
+    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525) #DTIJJE, #Aantal Juliaanse eeuwen ( = 36525 dagen) die zijn verstreken sinds 31 december 1899 12.00 uur GMT. Number of Julian centuries (36525 days) with respect to Greenwich mean noon, 31 December 1899 (Gregorian calendar)
     if mode==&#39;freq&#39;:
         #speed in radians per hour, de afgeleiden van onderstaande functies
         dood_T_rad = np.array(len(dood_Tj)*[np.deg2rad(15)]) #360/24=15 degrees of earth rotation per hour
@@ -1396,7 +1481,10 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
         dood_P1_rad = (   0.0300053 + 0.0000079*dood_Tj*2)/DNUJE
     else: #for everything else
         #hatyan documentation. Zie ook p162 of Schureman book
-        dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
+        if fancy_pddt:
+            dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
+        else:
+            dood_T_rad = np.array([np.deg2rad(180 + x.hour*15.0+x.minute*15.0/60) for x in dood_date])
         dood_S_rad =  (4.7200089 + 8399.7092745*dood_Tj + 0.0000346*dood_Tj**2)
         dood_H_rad =  (4.8816280 + 628.3319500*dood_Tj  + 0.0000052*dood_Tj**2)
         dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
@@ -1457,11 +1545,11 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
 
     &#34;&#34;&#34;
     
-    import datetime as dt
+    #import datetime as dt
     import numpy as np
     
-    dood_tstart_hr = ( dood_date-dt.datetime(1900,1,1) ).total_seconds().values/3600
-    dood_Tj = (dood_tstart_hr+12)/(24*36525)
+    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
     
     #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
     #327932: ratio of mass of sun to combined mass of earth and moon
@@ -2222,6 +2310,123 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
     return f_i_pd</code></pre>
 </details>
 </dd>
+<dt id="hatyan.hatyan_core.robust_daterange_fromtimesextfreq"><code class="name flex">
+<span>def <span class="ident">robust_daterange_fromtimesextfreq</span></span>(<span>times_ext, timestep_min)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
+For dates outside this period, a list is generated and converted to a pd.Index instead.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>times_ext</code></strong> :&ensp;<code>list</code> of <code>datetime.datetime</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>timestep_min</code></strong> :&ensp;<code>int</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>times_pred_all_pdDTI</code></strong> :&ensp;<code>pd.DatetimeIndex</code> or <code>pd.Index</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
+    &#34;&#34;&#34;
+    Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
+    For dates outside this period, a list is generated and converted to a pd.Index instead.
+
+    Parameters
+    ----------
+    times_ext : list of datetime.datetime
+        DESCRIPTION.
+    timestep_min : int
+        DESCRIPTION.
+
+    Returns
+    -------
+    times_pred_all_pdDTI : pd.DatetimeIndex or pd.Index
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import numpy as np
+    import pandas as pd
+    import datetime as dt
+    
+    if (np.array(times_ext) &gt; pd.Timestamp.min).all() and (np.array(times_ext) &lt; pd.Timestamp.max).all():
+        times_pred_all = pd.date_range(start=times_ext[0], end=times_ext[-1], freq=&#39;%imin&#39;%(timestep_min))
+        times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
+    else:
+        print(&#39;WARNING: OutOfBoundsDatetime: Out of bounds nanosecond timestamp, so reverting to less fancy (slower) datetime ranges. Fancy ones are possible between %s and %s&#39;%(pd.Timestamp.min, pd.Timestamp.max))
+        td_mins = (times_ext[-1]-times_ext[0]).total_seconds()/60
+        nsteps = int(td_mins/timestep_min)
+        times_pred_all = pd.Series([times_ext[0]+dt.timedelta(minutes=x*timestep_min) for x in range(nsteps+1)])
+        times_pred_all_pdDTI = pd.Index(times_pred_all)
+    return times_pred_all_pdDTI</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.robust_timedelta_sec"><code class="name flex">
+<span>def <span class="ident">robust_timedelta_sec</span></span>(<span>dood_date, refdate_dt=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate timedelta. Pandas pd.DatetimeIndex subtraction only supports times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
+For dates outside this period, a list subtraction is generated.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dood_date</code></strong> :&ensp;<code>pd.Index</code> or <code>pd.DatetimeIndex</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>refdate_dt</code></strong> :&ensp;<code>dt.datetime</code>, optional</dt>
+<dd>DESCRIPTION. The default is None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dood_tstart_sec</code></strong> :&ensp;<code>np.array</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>fancy_pddt</code></strong> :&ensp;<code>bool</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def robust_timedelta_sec(dood_date,refdate_dt=None):
+    &#34;&#34;&#34;
+    Generate timedelta. Pandas pd.DatetimeIndex subtraction only supports times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
+    For dates outside this period, a list subtraction is generated.
+    
+    Parameters
+    ----------
+    dood_date : pd.Index or pd.DatetimeIndex
+        DESCRIPTION.
+    refdate_dt : dt.datetime, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    dood_tstart_sec : np.array
+        DESCRIPTION.
+    fancy_pddt : bool
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    import pandas as pd
+    import datetime as dt
+    import numpy as np
+    
+    if refdate_dt is None:
+        refdate_dt = dt.datetime(1900,1,1)
+        
+    if (dood_date[[0,-1]] &gt; pd.Timestamp.min).all() and (dood_date[[0,-1]] &lt; pd.Timestamp.max).all():
+        fancy_pddt = True
+        dood_tstart_sec = ( dood_date-refdate_dt ).total_seconds().values
+    else:
+        fancy_pddt = False
+        #print(&#39;WARNING: OutOfBoundsDatetime: Out of bounds nanosecond timestamp, so reverting to less fancy (slower) timedelta arrays. For fancy ones: min=%s and max=%s&#39;%(pd.Timestamp.min, pd.Timestamp.max))
+        dood_tstart_sec = np.array([(x-refdate_dt).total_seconds() for x in dood_date])
+    return dood_tstart_sec, fancy_pddt</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -2250,6 +2455,8 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
 <li><code><a title="hatyan.hatyan_core.get_hatyan_u" href="#hatyan.hatyan_core.get_hatyan_u">get_hatyan_u</a></code></li>
 <li><code><a title="hatyan.hatyan_core.get_hatyan_f" href="#hatyan.hatyan_core.get_hatyan_f">get_hatyan_f</a></code></li>
 <li><code><a title="hatyan.hatyan_core.correct_fwith_xfac" href="#hatyan.hatyan_core.correct_fwith_xfac">correct_fwith_xfac</a></code></li>
+<li><code><a title="hatyan.hatyan_core.robust_daterange_fromtimesextfreq" href="#hatyan.hatyan_core.robust_daterange_fromtimesextfreq">robust_daterange_fromtimesextfreq</a></code></li>
+<li><code><a title="hatyan.hatyan_core.robust_timedelta_sec" href="#hatyan.hatyan_core.robust_timedelta_sec">robust_timedelta_sec</a></code></li>
 </ul>
 </li>
 </ul>

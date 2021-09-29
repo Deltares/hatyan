@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
 <title>hatyan API documentation</title>
-<meta name="description" content="hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
-Copyright (C) 2019-2020 Rijkswaterstaat.
-Maintained by …" />
+<meta name="description" content="hatyan …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -24,10 +22,11 @@ Maintained by …" />
 <h1 class="title">Package <code>hatyan</code></h1>
 </header>
 <section id="section-intro">
+<h1 id="hatyan">hatyan</h1>
 <p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
-Copyright (C) 2019-2020 Rijkswaterstaat.
+Copyright (C) 2019-2021 Rijkswaterstaat.
 Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
-Source code available at: <a href="https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan">https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan</a></p>
+Source code available at: <a href="https://github.com/Deltares/hatyan">https://github.com/Deltares/hatyan</a></p>
 <p>This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -37,11 +36,23 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the
 GNU General Public License for more details.</p>
-<p>You should have received a copy of the GNU General Public License
+<p>You should have received a copy of the GNU Lesser General Public License
 along with this program.
 If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
 <h2 id="installation">Installation</h2>
-<p>Install hatyan OPTION 1: get and install RPM on CentOS/RHEL</p>
+<p>Install hatyan OPTION 1: Create a separate python environment and install from github (later maybe also via PyPI):</p>
+<ul>
+<li>download Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a> (miniconda should also be sufficient, but this is not yet tested)</li>
+<li>install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt</li>
+<li>open command window (or anaconda prompt)</li>
+<li>optional: <code>conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y</code> (or higher python version)</li>
+<li>optional: <code>conda activate hatyan_env</code></li>
+<li><code>python -m pip install git+https://github.com/Deltares/hatyan</code> (this command installs hatyan and all required packages)</li>
+<li>to update hatyan: <code>python -m pip install --upgrade git+https://github.com/Deltares/hatyan</code></li>
+<li><code>conda deactivate</code></li>
+<li>to remove venv when necessary: <code>conda remove -n hatyan_env --all</code></li>
+</ul>
+<p>Install hatyan OPTION 2: get and install RPM on CentOS/RHEL</p>
 <ul>
 <li>get the latest rpm file (see developer information for building procedure)</li>
 <li>install hatyan on CentOS: <code>rpm -i hatyan_python-2.2.30-1.x86_64.rpm</code></li>
@@ -53,26 +64,8 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 <li>if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.</li>
 <li>the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings &gt; Configuration &gt; X11)</li>
 </ul>
-<p>Install hatyan OPTION 2: no hatyan installation, use existing checkout (this example is only possible on the Deltares network):</p>
-<ul>
-<li>download Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a> (miniconda should also be sufficient, but this is not yet tested)</li>
-<li>install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt</li>
-<li>add to the top of your script <code>sys.path.append(r'n:\Deltabox\Bulletin\veenstra\hatyan_python')</code></li>
-</ul>
-<p>Install hatyan OPTION 3: Create a separate python environment hatyan_env and install from github or even PyPI (not yet possible, this is just an example):</p>
-<ul>
-<li>download Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a> (miniconda should also be sufficient, but this is not yet tested)</li>
-<li>install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt</li>
-<li>open command window (or anaconda prompt)</li>
-<li><code>conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y</code> (or higher python version)</li>
-<li><code>conda activate hatyan_env</code></li>
-<li><code>python -m pip install git+https://github.com/openearth/hatyan.git</code> (this command installs hatyan and all required packages)</li>
-<li>to update hatyan: <code>python -m pip install --upgrade git+https://github.com/openearth/hatyan.git</code></li>
-<li><code>conda deactivate</code></li>
-<li>to remove venv when necessary: <code>conda remove -n hatyan_env --all</code></li>
-</ul>
-<h2 id="example-usage">Example Usage</h2>
-<p>Copy the code below to your own script to get started.</p>
+<h2 id="getting-started">Getting Started</h2>
+<p>Documentation is available on <a href="https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html">https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html</a> and in the doc folder on github. Copy the code below to your own script to get started.</p>
 <pre><code class="language-python">import os, sys
 sys.path.append(r'n:\Deltabox\Bulletin\veenstra\hatyan_python')
 import datetime as dt
@@ -96,29 +89,37 @@ ts_meas = Timeseries.crop_timeseries(ts=ts_meas, times_ext=times_ext)
 #tidal analysis and plotting of results. commented: saving figure  
 comp_frommeas = get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
 fig,(ax1,ax2) = Components.plot_components(comp=comp_frommeas)
-#fig.savefig('components_%s_4Y.png'%(current_station))
+#fig.savefig('components_VLISSGN_4Y.png')
 
 #tidal prediction and plotting of results. commented: saving figure and writing to netCDF
 ts_prediction = prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
 fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
 ax1.legend(['prediction','measurement','difference','mean of prediction'])
 ax2.set_ylim(-0.5,0.5)
-ax2.lines.pop(1)
-#fig.savefig('prediction_%im_%s_measurements'%(timestep_pred, current_station))
-#Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref=vertref, filename='prediction_%im_%s.nc'%(times_step_pred,current_station))
+#fig.savefig('prediction_%im_VLISSGN_measurements'%(timestep_min))
 
 #calculation of HWLW and plotting of results. commented: saving figure
 ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
 fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
-#fig.savefig('prediction_%im_%s_HWLW'%(timestep_pred, current_station))
+#fig.savefig('prediction_%im_VLISSGN_HWLW'%(timestep_min))
+#Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='VLISSGN', vertref='NAP', filename='prediction_%im_VLISSGN.nc'%(timestep_min))
 </code></pre>
 <h2 id="information-for-developers">Information For Developers</h2>
 <p>Create a python environment hatyan_env and install hatyan as developer:</p>
 <ul>
 <li>download Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a> (miniconda should also be sufficient, but this is not yet tested)</li>
 <li>install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt</li>
-<li>checkout the hatyan_python folder from the lib_tide repository in a local folder, e.g. <code>C:\DATA\hatyan_python</code>: <a href="https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python">https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python</a></li>
-<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_python</code></li>
+<li>Download git from <a href="https://git-scm.com/download/win,">https://git-scm.com/download/win,</a> install with default settings</li>
+<li>open command window in a folder where you want to clone the hatyan github repo, e.g. C:\DATA</li>
+<li><code>git clone https://github.com/Deltares/hatyan hatyan_github</code> (repos gets cloned in C:\DATA\hatyan_github, this is a checkout of the master branch)</li>
+<li>open git bash window in local hatyan folder (e.g. C:\DATA\hatyan_github)</li>
+<li><code>git config --global user.email [emailaddress]</code></li>
+<li><code>git config --global user.name [username]</code> (this is outdated since Personal Access Tokens are now required)</li>
+<li>create a branch called work_yourname on <a href="https://github.com/Deltares/hatyan">https://github.com/Deltares/hatyan</a></li>
+<li>open git bash window in local hatyan folder (e.g. C:\DATA\hatyan_github)</li>
+<li><code>git remote update origin --prune</code> (update local branch list)</li>
+<li><code>git checkout work_yourname</code> (checkout your branch, never do anything while the master is selected)</li>
+<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_github</code></li>
 <li><code>conda env create -f environment.yml</code> (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL)</li>
 <li><code>conda info --envs</code> (should show hatyan_env virtual environment in the list)</li>
 <li><code>conda activate hatyan_env</code></li>
@@ -128,14 +129,14 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 </ul>
 <p>Increase the hatyan version number:</p>
 <ul>
-<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_python</code></li>
+<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_github</code></li>
 <li><code>conda activate hatyan_env</code></li>
 <li><code>bumpversion major</code> or <code>bumpversion minor</code> or <code>bumpversion patch</code></li>
 <li>the hatyan version number of all relevant files will be updated, as stated in setup.cfg</li>
 </ul>
 <p>Running the testbank:</p>
 <ul>
-<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_python</code></li>
+<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_github</code></li>
 <li><code>conda activate hatyan_env</code></li>
 <li><code>pytest</code></li>
 <li><code>pytest -m acceptance</code></li>
@@ -147,13 +148,13 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 <p>Generate html and pdf documentation:</p>
 <ul>
 <li>in order to generate pdf documentation, miktex needs to be installed and its packages should be updated from its console.</li>
-<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_python</code></li>
+<li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_github</code></li>
 <li><code>conda activate hatyan_env</code></li>
 <li><code>python scripts/generate_documentation.py</code></li>
 </ul>
 <p>Generate RPM (RHEL/CentOS installer):</p>
 <ul>
-<li>preparation: activate environment, run testbank, generate html and pdf documentation, increase minor version number, update history.rst, commit changes</li>
+<li>preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate html and pdf documentation, increase minor version number, update history.rst, commit changes</li>
 <li>use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)</li>
 <li>this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed</li>
 <li>rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input</li>
@@ -168,10 +169,12 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 </summary>
 <pre><code class="python"># -*- coding: utf-8 -*-
 &#34;&#34;&#34;
+# hatyan
+
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2020 Rijkswaterstaat.
+Copyright (C) 2019-2021 Rijkswaterstaat.
 Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python/hatyan
+Source code available at: https://github.com/Deltares/hatyan
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -183,14 +186,26 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
 
 
 Installation
 --------
 
-Install hatyan OPTION 1: get and install RPM on CentOS/RHEL
+Install hatyan OPTION 1: Create a separate python environment and install from github (later maybe also via PyPI):
+
+- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
+- install it with the recommended settings, but check &#39;add Anaconda3 to my PATH environment variable&#39; if you want to use conda from the windows command prompt instead of anaconda prompt
+- open command window (or anaconda prompt)
+- optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
+- optional: ``conda activate hatyan_env``
+- ``python -m pip install git+https://github.com/Deltares/hatyan`` (this command installs hatyan and all required packages)
+- to update hatyan: ``python -m pip install --upgrade git+https://github.com/Deltares/hatyan``
+- ``conda deactivate``
+- to remove venv when necessary: ``conda remove -n hatyan_env --all``
+
+Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 
 - get the latest rpm file (see developer information for building procedure)
 - install hatyan on CentOS: ``rpm -i hatyan_python-2.2.30-1.x86_64.rpm``
@@ -202,29 +217,11 @@ Install hatyan OPTION 1: get and install RPM on CentOS/RHEL
 - if you see the message &#34;RuntimeError: Invalid DISPLAY variable&#34;, restart the MobaXterm connection and try again.
 - the followning warning can be ignored: &#34;QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20&#34;. To avoid it, disable the extension RANDR in Mobaxterm settings (Settings &gt; Configuration &gt; X11)
 
-Install hatyan OPTION 2: no hatyan installation, use existing checkout (this example is only possible on the Deltares network):
 
-- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
-- install it with the recommended settings, but check &#39;add Anaconda3 to my PATH environment variable&#39; if you want to use conda from the windows command prompt instead of anaconda prompt
-- add to the top of your script ``sys.path.append(r&#39;n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python&#39;)``
-
-Install hatyan OPTION 3: Create a separate python environment hatyan_env and install from github or even PyPI (not yet possible, this is just an example):
-
-- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
-- install it with the recommended settings, but check &#39;add Anaconda3 to my PATH environment variable&#39; if you want to use conda from the windows command prompt instead of anaconda prompt
-- open command window (or anaconda prompt)
-- ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
-- ``conda activate hatyan_env``
-- ``python -m pip install git+https://github.com/openearth/hatyan.git`` (this command installs hatyan and all required packages)
-- to update hatyan: ``python -m pip install --upgrade git+https://github.com/openearth/hatyan.git``
-- ``conda deactivate``
-- to remove venv when necessary: ``conda remove -n hatyan_env --all``
-
-
-Example usage
+Getting started
 --------
 
-Copy the code below to your own script to get started.
+Documentation is available on https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html and in the doc folder on github. Copy the code below to your own script to get started.
 ```python
 import os, sys
 sys.path.append(r&#39;n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python&#39;)
@@ -249,21 +246,20 @@ ts_meas = Timeseries.crop_timeseries(ts=ts_meas, times_ext=times_ext)
 #tidal analysis and plotting of results. commented: saving figure  
 comp_frommeas = get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
 fig,(ax1,ax2) = Components.plot_components(comp=comp_frommeas)
-#fig.savefig(&#39;components_%s_4Y.png&#39;%(current_station))
+#fig.savefig(&#39;components_VLISSGN_4Y.png&#39;)
 
 #tidal prediction and plotting of results. commented: saving figure and writing to netCDF
 ts_prediction = prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
 fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
 ax1.legend([&#39;prediction&#39;,&#39;measurement&#39;,&#39;difference&#39;,&#39;mean of prediction&#39;])
 ax2.set_ylim(-0.5,0.5)
-ax2.lines.pop(1)
-#fig.savefig(&#39;prediction_%im_%s_measurements&#39;%(timestep_pred, current_station))
-#Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref=vertref, filename=&#39;prediction_%im_%s.nc&#39;%(times_step_pred,current_station))
+#fig.savefig(&#39;prediction_%im_VLISSGN_measurements&#39;%(timestep_min))
 
 #calculation of HWLW and plotting of results. commented: saving figure
 ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
 fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
-#fig.savefig(&#39;prediction_%im_%s_HWLW&#39;%(timestep_pred, current_station))
+#fig.savefig(&#39;prediction_%im_VLISSGN_HWLW&#39;%(timestep_min))
+#Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=&#39;VLISSGN&#39;, vertref=&#39;NAP&#39;, filename=&#39;prediction_%im_VLISSGN.nc&#39;%(timestep_min))
 ```
 
 Information for developers
@@ -273,8 +269,17 @@ Create a python environment hatyan_env and install hatyan as developer:
 
 - download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
 - install it with the recommended settings, but check &#39;add Anaconda3 to my PATH environment variable&#39; if you want to use conda from the windows command prompt instead of anaconda prompt
-- checkout the hatyan_python folder from the lib_tide repository in a local folder, e.g. ``C:\\DATA\\hatyan_python``: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- Download git from https://git-scm.com/download/win, install with default settings
+- open command window in a folder where you want to clone the hatyan github repo, e.g. C:\\DATA
+- ``git clone https://github.com/Deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the master branch)
+- open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
+- ``git config --global user.email [emailaddress]``
+- ``git config --global user.name [username]`` (this is outdated since Personal Access Tokens are now required)
+- create a branch called work_yourname on https://github.com/Deltares/hatyan
+- open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
+- ``git remote update origin --prune`` (update local branch list)
+- ``git checkout work_yourname`` (checkout your branch, never do anything while the master is selected)
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
 - ``conda activate hatyan_env``
@@ -284,14 +289,14 @@ Create a python environment hatyan_env and install hatyan as developer:
 
 Increase the hatyan version number:
 
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``bumpversion major`` or ``bumpversion minor`` or ``bumpversion patch``
 - the hatyan version number of all relevant files will be updated, as stated in setup.cfg
 
 Running the testbank:
 
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``pytest``
 - ``pytest -m acceptance``
@@ -303,13 +308,13 @@ Running the testbank:
 Generate html and pdf documentation:
 
 - in order to generate pdf documentation, miktex needs to be installed and its packages should be updated from its console.
-- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_python``
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``python scripts/generate_documentation.py``
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, generate html and pdf documentation, increase minor version number, update history.rst, commit changes
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate html and pdf documentation, increase minor version number, update history.rst, commit changes
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
@@ -322,7 +327,7 @@ Generate RPM (RHEL/CentOS installer):
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.2.75&#39;</code></pre>
+__version__ = &#39;2.2.85&#39;</code></pre>
 </details>
 </section>
 <section>
@@ -369,9 +374,12 @@ __version__ = &#39;2.2.75&#39;</code></pre>
 <h1>Index</h1>
 <div class="toc">
 <ul>
+<li><a href="#hatyan">hatyan</a><ul>
 <li><a href="#installation">Installation</a></li>
-<li><a href="#example-usage">Example usage</a></li>
+<li><a href="#getting-started">Getting started</a></li>
 <li><a href="#information-for-developers">Information for developers</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <ul id="index">

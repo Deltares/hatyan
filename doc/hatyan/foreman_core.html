@@ -240,7 +240,7 @@ def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
 
 
 
-def get_foreman_v0_freq(const_list, dood_date, freq_source=None):
+def get_foreman_v0_freq(const_list, dood_date):
     &#34;&#34;&#34;
     Zoekt voor iedere component uit de lijst de v op basis van harmonische doodson getallen en de frequentie rechtstreeks uit de foreman tabel.
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
@@ -589,7 +589,7 @@ def get_foreman_nodalfactors(const_list, dood_date):
 </details>
 </dd>
 <dt id="hatyan.foreman_core.get_foreman_v0_freq"><code class="name flex">
-<span>def <span class="ident">get_foreman_v0_freq</span></span>(<span>const_list, dood_date, freq_source=None)</span>
+<span>def <span class="ident">get_foreman_v0_freq</span></span>(<span>const_list, dood_date)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Zoekt voor iedere component uit de lijst de v op basis van harmonische doodson getallen en de frequentie rechtstreeks uit de foreman tabel.
@@ -598,7 +598,7 @@ Shallow water componenten worden afgeleid met de relaties beschreven in de forem
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_foreman_v0_freq(const_list, dood_date, freq_source=None):
+<pre><code class="python">def get_foreman_v0_freq(const_list, dood_date):
     &#34;&#34;&#34;
     Zoekt voor iedere component uit de lijst de v op basis van harmonische doodson getallen en de frequentie rechtstreeks uit de foreman tabel.
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
