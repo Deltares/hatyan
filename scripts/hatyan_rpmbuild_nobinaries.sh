@@ -1,9 +1,9 @@
 # usage: in PuTTY from current folder: './hatyan_rpmbuild_nobinaries.sh'
-# do not forget to chmod +x ./hatyan_rpmbuild.sh
+# do not forget to chmod +x ./hatyan_rpmbuild_nobinaries.sh
 #
 # if it doesn't work (permission issue), try:
 #    dos2unix hatyan_rpmbuild.sh
-#    ./hatyan_rpmbuild.sh
+#    ./hatyan_rpmbuild_nobinaries.sh
 #
 # rpmbuild requires (sudo yum -y install): centos-release-scl-rh, rh-python36-python,  rh-python36-python-virtualenv, rpm-build
 #!/bin/bash
