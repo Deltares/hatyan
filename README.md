@@ -49,7 +49,7 @@ Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 Getting started
 --------
 
-Documentation is available on https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/main/doc/hatyan/index.html and in the doc folder on github. Copy the code below to your own script to get started. For more examples, check https://github.com/Deltares/hatyan/tree/main/tests/configfiles
+[Documentation is available on Github](https://htmlpreview.github.io/?https://github.com) and background information is [in the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check the [configfiles](https://github.com/Deltares/hatyan/tree/main/tests/configfiles).
 
 ```python
 import os, sys
@@ -148,6 +148,6 @@ Generate RPM (RHEL/CentOS installer):
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
 - the dependencies for the RPM are documented in the specfile
-- the required Python libraries are documented in requirements_dev.txt: these are fixed, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
-- additionally, the library pyqt5==5.7.1 (specfile) is for interative QT5 plots. There is a newer version but it requires glibc >2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
+- the required Python libraries are documented in requirements_dev.txt: these are fixed versions, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
+- additionally, the library pyqt5==5.7.1 (hardcoded in specfile) is for interative QT5 plots. There is a newer version but it requires glibc >2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
 - to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.
