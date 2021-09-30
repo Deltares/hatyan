@@ -3,7 +3,7 @@ Version:     2.2.86
 Release:     1
 #BuildArch:   noarch
 #Buildroot:   ~/rpmbuild/%{name}-%{version}-root
-URL:         https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python
+URL:         https://github.com/Deltares/hatyan
 AutoReq:     no
 Summary:     Python version of the hatyan RWS program, packed with relocatable Python env including necessary Python libraries
 License:     LGPL
@@ -15,11 +15,11 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 glibc 
 
 #rpmbuild requires (sudo yum -y install): centos-release-scl-rh, rh-python36-python,  rh-python36-python-virtualenv, rpm-build
 #start rpmbuild like this (default and more strict)
-#rpmbuild -v -bb ~/hatyan_python/scripts/hatyan_python-latest.spec
-#rpmbuild -v -bb ~/hatyan_python/scripts/hatyan_python-latest.spec --define "_topdir /u/veenstra/rpmbuild" --define "HATYANROOTFOLDER ~/hatyan_python"
+#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec
+#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "_topdir /u/veenstra/rpmbuild" --define "HATYANROOTFOLDER ~/hatyan_github"
 
 #define hatyan root folder when using h6 (if not passed as rpmbuild define flag)
-%{!?HATYANROOTFOLDER: %define HATYANROOTFOLDER ~/hatyan_python}
+%{!?HATYANROOTFOLDER: %define HATYANROOTFOLDER ~/hatyan_github}
 
 #install the code into directories on the build machine
 %install
