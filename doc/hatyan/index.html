@@ -28,14 +28,14 @@ Copyright (C) 2019-2021 Rijkswaterstaat.
 Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
 Source code available at: <a href="https://github.com/Deltares/hatyan">https://github.com/Deltares/hatyan</a></p>
 <p>This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
+it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.</p>
 <p>This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the
-GNU General Public License for more details.</p>
+GNU Lesser General Public License for more details.</p>
 <p>You should have received a copy of the GNU Lesser General Public License
 along with this program.
 If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
@@ -65,7 +65,7 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 <li>the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings &gt; Configuration &gt; X11)</li>
 </ul>
 <h2 id="getting-started">Getting Started</h2>
-<p>Documentation is available on <a href="https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html">https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html</a> and in the doc folder on github. Copy the code below to your own script to get started.</p>
+<p><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html">Documentation is available on Github</a> and there is background information in <a href="https://github.com/Deltares/hatyan/tree/main/doc">the doc folder</a>. Copy the code below to your own script to get started. For more examples, check <a href="https://github.com/Deltares/hatyan/tree/main/tests/configfiles">the configfiles folder</a>.</p>
 <pre><code class="language-python">import os, sys
 sys.path.append(r'n:\Deltabox\Bulletin\veenstra\hatyan_python')
 import datetime as dt
@@ -138,29 +138,28 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 <ul>
 <li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_github</code></li>
 <li><code>conda activate hatyan_env</code></li>
-<li><code>pytest</code></li>
-<li><code>pytest -m acceptance</code></li>
+<li><code>pytest</code> (runs all tests)</li>
+<li><code>pytest -m unittest</code></li>
 <li><code>pytest -m systemtest</code></li>
-<li><code>pytest -m slow</code></li>
-<li><code>pytest -m "not slow"</code> (exclude 'slow' testbank scripts for all stations)</li>
+<li><code>pytest -m acceptance</code> (runs the acceptance tests, which are the scripts in <a href="https://github.com/Deltares/hatyan/tree/main/tests/configfiles">the configfiles folder</a>)</li>
+<li><code>pytest -m "not acceptance"</code> (excludes all acceptance tests)</li>
 <li>the following arguments are automatically provided via pytest.ini: <code>-v --tb=short</code>, add <code>--cov=hatyan</code> for a coverage summary</li>
 </ul>
-<p>Generate html and pdf documentation:</p>
+<p>Generate documentation:</p>
 <ul>
-<li>in order to generate pdf documentation, miktex needs to be installed and its packages should be updated from its console.</li>
 <li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_github</code></li>
 <li><code>conda activate hatyan_env</code></li>
 <li><code>python scripts/generate_documentation.py</code></li>
 </ul>
 <p>Generate RPM (RHEL/CentOS installer):</p>
 <ul>
-<li>preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate html and pdf documentation, increase minor version number, update history.rst, commit changes</li>
+<li>preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github</li>
 <li>use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)</li>
 <li>this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed</li>
 <li>rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input</li>
 <li>the dependencies for the RPM are documented in the specfile</li>
-<li>the required Python libraries are documented in requirements_dev.txt: these are fixed, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots</li>
-<li>additionally, the library pyqt5==5.7.1 (specfile) is for interative QT5 plots. There is a newer version but it requires glibc &gt;2.14, while 2.12 is the highest version available on CentOS/RedHat 6)</li>
+<li>the required Python libraries are documented in requirements_dev.txt: these are fixed versions, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots</li>
+<li>additionally, the library pyqt5==5.7.1 (hardcoded in specfile) is for interative QT5 plots. There is a newer version but it requires glibc &gt;2.14, while 2.12 is the highest version available on CentOS/RedHat 6)</li>
 <li>to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.</li>
 </ul>
 <details class="source">
@@ -172,19 +171,18 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 # hatyan
 
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2021 Rijkswaterstaat.
-Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
+Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
 Source code available at: https://github.com/Deltares/hatyan
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
+it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
@@ -221,7 +219,8 @@ Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 Getting started
 --------
 
-Documentation is available on https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/blob/main/doc/hatyan/index.html and in the doc folder on github. Copy the code below to your own script to get started.
+[Documentation is available on Github](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html) and there is background information in [the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles).
+
 ```python
 import os, sys
 sys.path.append(r&#39;n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python&#39;)
@@ -298,36 +297,35 @@ Running the testbank:
 
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
-- ``pytest``
-- ``pytest -m acceptance``
+- ``pytest`` (runs all tests)
+- ``pytest -m unittest``
 - ``pytest -m systemtest``
-- ``pytest -m slow``
-- ``pytest -m &#34;not slow&#34;`` (exclude &#39;slow&#39; testbank scripts for all stations)
+- ``pytest -m acceptance`` (runs the acceptance tests, which are the scripts in [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles))
+- ``pytest -m &#34;not acceptance&#34;`` (excludes all acceptance tests)
 - the following arguments are automatically provided via pytest.ini: ``-v --tb=short``, add ``--cov=hatyan`` for a coverage summary
 
-Generate html and pdf documentation:
+Generate documentation:
 
-- in order to generate pdf documentation, miktex needs to be installed and its packages should be updated from its console.
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``python scripts/generate_documentation.py``
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate html and pdf documentation, increase minor version number, update history.rst, commit changes
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
 - the dependencies for the RPM are documented in the specfile
-- the required Python libraries are documented in requirements_dev.txt: these are fixed, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
-- additionally, the library pyqt5==5.7.1 (specfile) is for interative QT5 plots. There is a newer version but it requires glibc &gt;2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
+- the required Python libraries are documented in requirements_dev.txt: these are fixed versions, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
+- additionally, the library pyqt5==5.7.1 (hardcoded in specfile) is for interative QT5 plots. There is a newer version but it requires glibc &gt;2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
 - to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.
 
 &#34;&#34;&#34;
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.2.85&#39;</code></pre>
+__version__ = &#39;2.2.86&#39;</code></pre>
 </details>
 </section>
 <section>
