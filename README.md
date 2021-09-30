@@ -134,16 +134,15 @@ Running the testbank:
 - ``pytest -m "not slow"`` (exclude 'slow' testbank scripts for all stations)
 - the following arguments are automatically provided via pytest.ini: ``-v --tb=short``, add ``--cov=hatyan`` for a coverage summary
 
-Generate html and pdf documentation:
+Generate documentation:
 
-- in order to generate pdf documentation, miktex needs to be installed and its packages should be updated from its console.
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``python scripts/generate_documentation.py``
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate html and pdf documentation, increase minor version number, update history.rst, commit changes
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
