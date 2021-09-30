@@ -49,7 +49,8 @@ Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 Getting started
 --------
 
-Documentation is available on https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/main/doc/hatyan/index.html and in the doc folder on github. Copy the code below to your own script to get started.
+Documentation is available on https://htmlpreview.github.io/?https://github.com/Deltares/Hatyan/main/doc/hatyan/index.html and in the doc folder on github. Copy the code below to your own script to get started. For more examples, check https://github.com/Deltares/hatyan/tree/main/tests/configfiles
+
 ```python
 import os, sys
 sys.path.append(r'n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python')
