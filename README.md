@@ -127,11 +127,11 @@ Running the testbank:
 
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
-- ``pytest``
-- ``pytest -m acceptance``
+- ``pytest`` (runs all tests)
+- ``pytest -m unittest``
 - ``pytest -m systemtest``
-- ``pytest -m slow``
-- ``pytest -m "not slow"`` (exclude 'slow' testbank scripts for all stations)
+- ``pytest -m acceptance`` (runs the acceptance tests, which are the scripts in [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles))
+- ``pytest -m "not acceptance"`` (excludes all acceptance tests)
 - the following arguments are automatically provided via pytest.ini: ``-v --tb=short``, add ``--cov=hatyan`` for a coverage summary
 
 Generate documentation:
