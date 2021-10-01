@@ -1,5 +1,7 @@
 [![pytest main devenv](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main-devenv.yml/badge.svg)](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main-devenv.yml)
-[![pytest main py39](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main-py39.yml/badge.svg)](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main-py39.yml)# hatyan
+[![pytest main py39](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main-py39.yml/badge.svg)](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main-py39.yml)
+
+# hatyan
 
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
 Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
