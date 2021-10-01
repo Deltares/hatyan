@@ -23,9 +23,6 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 glibc 
 
 #install the code into directories on the build machine
 %install
-#make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder
-cp * %{_topdir}/SOURCES | true
-cp hatyan %{_topdir}/SOURCES
 #create sh script for running hatyan on linux in one command
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 EXECFILE=$RPM_BUILD_ROOT/usr/bin/hatyan
