@@ -38,10 +38,10 @@ jobs:
                 - Create RPM
                 - Upload Source RPM
               draft: false
-              prerelease: false
+              prerelease: true
             
-        #- name: copy specfile
-        #  run: cp scripts/hatyan_python-latest.spec /github/home/rpmbuild/SPECS/
+        - name: copy specfile
+          run: cp scripts/hatyan_python-latest.spec /github/home/rpmbuild/SPECS/
 
         - name: build RPM package
           id: rpm_build
