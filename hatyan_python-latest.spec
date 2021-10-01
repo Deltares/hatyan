@@ -19,27 +19,30 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 glibc 
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "_topdir /u/veenstra/rpmbuild" --define "HATYANROOTFOLDER ~/hatyan_github"
 
 #define hatyan root folder when using h6 (if not passed as rpmbuild define flag)
-%{!?HATYANROOTFOLDER: %define HATYANROOTFOLDER ~/}
+%{!?HATYANROOTFOLDER: %define HATYANROOTFOLDER /github/workspace}
 
 #install the code into directories on the build machine
 %install
+#make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder
+cp %{HATYANROOTFOLDER}/* %{_topdir}/SOURCES | true
+cp -r %{HATYANROOTFOLDER}/hatyan %{_topdir}/SOURCES
 #create sh script for running hatyan on linux in one command
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 EXECFILE=$RPM_BUILD_ROOT/usr/bin/hatyan
-cp scripts/hatyan.sh $EXECFILE
+cp %{HATYANROOTFOLDER}/scripts/hatyan.sh $EXECFILE
 chmod +x $EXECFILE
 #create folder for hatyan_env and potentially other folders/files
 mkdir -p $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r doc $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r tests $RPM_BUILD_ROOT/opt/hatyan_python
-#cp -r hatyan $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{HATYANROOTFOLDER}/doc $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{HATYANROOTFOLDER}/tests $RPM_BUILD_ROOT/opt/hatyan_python
+#cp -r %{HATYANROOTFOLDER}/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create empty virtual environment
 /opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 # upgrade pip and setuptools to make sure all dependencies are handled well
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade pip
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade setuptools
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
-$RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install . -r requirements_dev.txt
+$RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install %{_topdir}/SOURCES -r %{_topdir}/SOURCES/requirements_dev.txt
 #install pyqt5==5.7.1 to avoid "Failed to import any qt binding" error. The fixed version is necessary since CentOS/RHEL6 have glibc 2.12 and higher pyqt5 versions require glibc>=2.14
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install pyqt5==5.7.1
 #make existing environment relocatable and remove BUILDROOT prefix in activate file:
