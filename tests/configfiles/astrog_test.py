@@ -15,7 +15,7 @@ schrijf resultaat (python) weg als csv (in MET) met pd.to_csv()
 
 import os, sys, pytz
 #sys.path.append(r'c:\Users\laan_st\Software\SVN\hatyan')
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import datetime as dt
 import pandas as pd

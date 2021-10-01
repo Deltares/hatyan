@@ -11,7 +11,7 @@ voor alle stations indien mogelijk:
 """
 
 import os, sys#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import datetime as dt
 import pandas as pd
 

@@ -6,7 +6,7 @@ Deze configfile kan gebruikt worden om de dataset data_M2phasediff_perstation.tx
 """
 
 import os, sys#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import datetime as dt
 import pandas as pd
 import numpy as np
@@ -223,7 +223,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     
     stats['M2phasediff_hr'] = stats['M2phasediff']/360*12.420601
     stats_M2phasediff_out = stats.sort_values('M2phasediff_hr')['M2phasediff']
-    #stats_M2phasediff_out.to_csv(r'c:\DATA\hatyan_python\hatyan\data_M2phasediff_perstation_new.txt', sep=' ', header=False, float_format='%.2f')
+    #stats_M2phasediff_out.to_csv(r'c:\DATA\hatyan_github\hatyan\data_M2phasediff_perstation_new.txt', sep=' ', header=False, float_format='%.2f')
     
     #exit_RWS(timer_start)
     print(stats)    

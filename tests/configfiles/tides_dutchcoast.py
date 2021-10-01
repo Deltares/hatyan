@@ -5,7 +5,7 @@ Created on Fri Apr 26 15:11:07 2019
 @author: veenstra
 """
 import os, sys
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt

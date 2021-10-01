@@ -6,7 +6,7 @@ Created on Wed Mar 10 23:40:17 2021
 """
 
 import sys
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import datetime as dt
 import os
 import numpy as np

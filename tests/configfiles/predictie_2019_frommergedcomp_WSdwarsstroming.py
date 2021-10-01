@@ -6,7 +6,7 @@ Created on Thu Dec 24 10:33:54 2020
 """
 import pytest
 import os, sys, glob#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import pandas as pd
 import datetime as dt
