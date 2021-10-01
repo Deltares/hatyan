@@ -8,7 +8,7 @@ AutoReq:     no
 Summary:     Python version of the hatyan RWS program, packed with relocatable Python env including necessary Python libraries
 License:     LGPL
 Provides:    hatyan_python
-Requires:    centos-release-scl-rh rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-python36-python-virtualenv >= 3.6.3 glibc >= 2.12 coreutils expect stix-fonts fontconfig freetype libstdc++ jasper libXcursor libXrender xorg-x11-xauth mesa-libGL mesa-libEGL libXi
+Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-python36-python-virtualenv >= 3.6.3 glibc >= 2.12 coreutils expect stix-fonts fontconfig freetype libstdc++ jasper libXcursor libXrender xorg-x11-xauth mesa-libGL mesa-libEGL libXi
 
 %description
 %{summary}
