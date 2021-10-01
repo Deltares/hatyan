@@ -44,7 +44,7 @@ jobs:
           id: rpm_build
           uses: naveenrajm7/rpmbuild@master
           with:
-              spec_file: "scripts/hatyan_python-latest.spec"
+              spec_file: "hatyan_python-latest.spec"
             
         - name: Upload Release Asset
           id: upload-release-asset 
