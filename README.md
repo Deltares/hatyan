@@ -1,5 +1,6 @@
 [![pytest devenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
 [![pytest py39](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
+[![RPM build](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml/badge.svg?branch=main&event=release)](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml)
 
 # hatyan
 
