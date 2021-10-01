@@ -589,10 +589,10 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
 
     print('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    if version.parse(pd.__version__) < version.parse('1.2.0'): #fix for non-backwards compatible change in pandas, pandas version 1.1.2 is used for RWS version.
-        times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start[0]).total_seconds().values
-    else:
+    if ~isinstance(times_pred_all_pdDTI,pd.DatetimeIndex) & (version.parse(pd.__version__) >= version.parse('1.2.0')): #fix for non-backwards compatible change in pandas, pandas version 1.1.2 is used for RWS version.
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start).total_seconds().values
+    else:
+        times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start[0]).total_seconds().values
     times_from0allpred_s = np.transpose(times_from0allpred_s_orig[np.newaxis])
 
     f_A = np.multiply(f_i.values,A)
