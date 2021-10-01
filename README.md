@@ -1,3 +1,5 @@
+[![Pytest](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/python-pytest-main.yml)
+
 # hatyan
 
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
