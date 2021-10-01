@@ -19,7 +19,7 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 glibc 
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "_topdir /u/veenstra/rpmbuild" --define "HATYANROOTFOLDER ~/hatyan_github"
 
 #define hatyan root folder when using h6 (if not passed as rpmbuild define flag)
-%{!?HATYANROOTFOLDER: %define HATYANROOTFOLDER ~/hatyan_github}
+%{!?HATYANROOTFOLDER: %define HATYANROOTFOLDER ~/}
 
 #install the code into directories on the build machine
 %install
