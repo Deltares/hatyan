@@ -6,7 +6,7 @@ Created on Thu Dec 24 10:33:54 2020
 """
 import pytest
 import os, sys, glob#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -51,7 +51,7 @@ for current_station in stat_list:
     fig.savefig('prediction_HWLW_%im_%s_main'%(times_step_pred, current_station))
 
     if 0: #current_station=='HOEKVHLD':
-        file_ext_vali = os.path.join(dir_tests,'data','other','hoek_har.dia')
+        file_ext_vali = os.path.join(dir_testdata,'other','hoek_har.dia') #file is nonexistent
         ts_ext_vali = Timeseries.readts_dia(filename=file_ext_vali, station=current_station, block_ids='allstation')
         #ts_ext_vali = Timeseries.crop_timeseries(ts_ext_vali, [dt.datetime(1990,1,5),dt.datetime(1990,1,10)])
         ts_ext_vali = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_vali, station=current_station)

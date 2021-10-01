@@ -543,11 +543,9 @@ def test_frommergedcomp_HWLW_345(current_station):
     ts_ext_prediction_main_HWLWno = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction_main, station=current_station)
     ts_ext_prediction_clean_HWLWno = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction_clean, station=current_station)
     
-    if 0:
-        fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_all)#, ts_ext_validation=ts_ext_validation)
-        #fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_clean_HWLWno)
-        for irow, pdrow in ts_ext_prediction_clean_HWLWno.iterrows():
-            ax1.text(pdrow.index,pdrow['values'],pdrow['HWLWno'])
+    #fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_all)#, ts_ext_validation=ts_ext_validation)
+    #for irow, pdrow in ts_ext_prediction_clean_HWLWno.iterrows():
+    #    ax1.text(pdrow.index,pdrow['values'],pdrow['HWLWno'])
     
     #expected values
     if current_station == 'HOEKVHLD':

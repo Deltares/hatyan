@@ -7,7 +7,7 @@ it plots the values in colored dots on a map
 """
 
 import os, sys#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

@@ -2,6 +2,9 @@
 History
 =======
 
+* Fri Oct 1 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.2.87
+- fix for non-backwards compatible change in pandas, to make it work in pandas versions both older and newer than 1.2.0
+
 * Wed Sep 29 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.2.85
 - first version of write_tsnoos() definition added
 - fixed extreme calculation for Lith Dorp, the algorithm is now more robust and less sensitive
