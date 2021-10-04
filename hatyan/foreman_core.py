@@ -33,9 +33,9 @@ def get_foreman_content():
     import numpy as np
     
     content_pd = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=False)
-    content_pd[0] = content_pd[0].str.replace('-0.' ,' -0.') #add spaces where needed
-    content_pd[0] = content_pd[0].str.replace('LDA2','LABDA2')
-    content_pd[0] = content_pd[0].str.replace('Z0','A0')
+    content_pd[0] = content_pd[0].str.replace('-0.',' -0.',regex=False) #add spaces where needed
+    content_pd[0] = content_pd[0].str.replace('LDA2','LABDA2',regex=False)
+    content_pd[0] = content_pd[0].str.replace('Z0','A0',regex=False)
     splitlines = np.where(content_pd[0].isnull())[0]
     if len(splitlines) != 2:
         print( 'WARNING: foreman file has less or more than 2 blank lines, fix corrupted file and run again' )

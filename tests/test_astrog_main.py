@@ -8,8 +8,7 @@ Created on Thu Jan 21 11:17:44 2021
 
 import pytest
 import os, sys
-#sys.path.append(r'c:\DATA\hatyan_python')
-#sys.path.append(r'c:\Users\laan_st\Software\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import pandas as pd
 import datetime as dt

@@ -23,8 +23,6 @@
 </header>
 <section id="section-intro">
 <p><a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml"><img alt="pytest devenv" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main"></a>
-<a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-py37.yml"><img alt="pytest py-3.7" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-py37.yml/badge.svg?branch=main"></a>
-<a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml"><img alt="pytest py-3.8" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml"><img alt="pytest py-3.9" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml"><img alt="RPM build" src="https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml/badge.svg?branch=main&amp;event=release"></a></p>
 <h1 id="hatyan">hatyan</h1>
@@ -71,8 +69,7 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 </ul>
 <h2 id="getting-started">Getting Started</h2>
 <p><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html">Documentation is available on Github</a> (replace 'main' in the url with any tagname to view older versions) and there is background information in <a href="https://github.com/Deltares/hatyan/tree/main/doc">the doc folder</a>. Copy the code below to your own script to get started. For more examples, check <a href="https://github.com/Deltares/hatyan/tree/main/tests/configfiles">the configfiles folder</a>.</p>
-<pre><code class="language-python">import os, sys
-sys.path.append(r'n:\Deltabox\Bulletin\veenstra\hatyan_python')
+<pre><code class="language-python">import os
 import datetime as dt
 
 from hatyan import timeseries as Timeseries
@@ -117,9 +114,6 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 <li>Download git from <a href="https://git-scm.com/download/win,">https://git-scm.com/download/win,</a> install with default settings</li>
 <li>open command window in a folder where you want to clone the hatyan github repo, e.g. C:\DATA</li>
 <li><code>git clone https://github.com/Deltares/hatyan hatyan_github</code> (repos gets cloned in C:\DATA\hatyan_github, this is a checkout of the master branch)</li>
-<li>open git bash window in local hatyan folder (e.g. C:\DATA\hatyan_github)</li>
-<li><code>git config --global user.email [emailaddress]</code></li>
-<li><code>git config --global user.name [username]</code> (this is outdated since Personal Access Tokens are now required)</li>
 <li>create a branch called work_yourname on <a href="https://github.com/Deltares/hatyan">https://github.com/Deltares/hatyan</a></li>
 <li>open git bash window in local hatyan folder (e.g. C:\DATA\hatyan_github)</li>
 <li><code>git remote update origin --prune</code> (update local branch list)</li>
@@ -174,8 +168,6 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 <pre><code class="python"># -*- coding: utf-8 -*-
 &#34;&#34;&#34;
 [![pytest devenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
-[![pytest py-3.7](https://github.com/Deltares/hatyan/actions/workflows/pytest-py37.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py37.yml)
-[![pytest py-3.8](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml)
 [![pytest py-3.9](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
 [![RPM build](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml/badge.svg?branch=main&amp;event=release)](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml)
 
@@ -233,8 +225,7 @@ Getting started
 [Documentation is available on Github](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html) (replace &#39;main&#39; in the url with any tagname to view older versions) and there is background information in [the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles).
 
 ```python
-import os, sys
-sys.path.append(r&#39;n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python&#39;)
+import os
 import datetime as dt
 
 from hatyan import timeseries as Timeseries
@@ -282,9 +273,6 @@ Create a python environment hatyan_env and install hatyan as developer:
 - Download git from https://git-scm.com/download/win, install with default settings
 - open command window in a folder where you want to clone the hatyan github repo, e.g. C:\\DATA
 - ``git clone https://github.com/Deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the master branch)
-- open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
-- ``git config --global user.email [emailaddress]``
-- ``git config --global user.name [username]`` (this is outdated since Personal Access Tokens are now required)
 - create a branch called work_yourname on https://github.com/Deltares/hatyan
 - open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
 - ``git remote update origin --prune`` (update local branch list)

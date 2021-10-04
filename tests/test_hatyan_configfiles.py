@@ -8,7 +8,7 @@ Created on Sat Apr  3 15:42:40 2021
 
 import pytest
 import os, sys
-#sys.path.append(r'c:\DATA\hatyan_python')
+#sys.path.append(r'c:\DATA\hatyan_github')
 import glob
 
 from hatyan.wrapper_RWS import get_outputfoldername

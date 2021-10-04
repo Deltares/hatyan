@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 [![pytest devenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
-[![pytest py-3.7](https://github.com/Deltares/hatyan/actions/workflows/pytest-py37.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py37.yml)
-[![pytest py-3.8](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml)
 [![pytest py-3.9](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
 [![RPM build](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml/badge.svg?branch=main&event=release)](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml)
 
@@ -60,8 +58,7 @@ Getting started
 [Documentation is available on Github](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html) (replace 'main' in the url with any tagname to view older versions) and there is background information in [the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles).
 
 ```python
-import os, sys
-sys.path.append(r'n:\\Deltabox\\Bulletin\\veenstra\\hatyan_python')
+import os
 import datetime as dt
 
 from hatyan import timeseries as Timeseries
@@ -109,9 +106,6 @@ Create a python environment hatyan_env and install hatyan as developer:
 - Download git from https://git-scm.com/download/win, install with default settings
 - open command window in a folder where you want to clone the hatyan github repo, e.g. C:\\DATA
 - ``git clone https://github.com/Deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the master branch)
-- open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
-- ``git config --global user.email [emailaddress]``
-- ``git config --global user.name [username]`` (this is outdated since Personal Access Tokens are now required)
 - create a branch called work_yourname on https://github.com/Deltares/hatyan
 - open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
 - ``git remote update origin --prune`` (update local branch list)
