@@ -78,9 +78,9 @@ def get_foreman_content():
     import numpy as np
     
     content_pd = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=[0], skip_blank_lines=False)
-    content_pd[0] = content_pd[0].str.replace(&#39;-0.&#39; ,&#39; -0.&#39;) #add spaces where needed
-    content_pd[0] = content_pd[0].str.replace(&#39;LDA2&#39;,&#39;LABDA2&#39;)
-    content_pd[0] = content_pd[0].str.replace(&#39;Z0&#39;,&#39;A0&#39;)
+    content_pd[0] = content_pd[0].str.replace(&#39;-0.&#39;,&#39; -0.&#39;,regex=False) #add spaces where needed
+    content_pd[0] = content_pd[0].str.replace(&#39;LDA2&#39;,&#39;LABDA2&#39;,regex=False)
+    content_pd[0] = content_pd[0].str.replace(&#39;Z0&#39;,&#39;A0&#39;,regex=False)
     splitlines = np.where(content_pd[0].isnull())[0]
     if len(splitlines) != 2:
         print( &#39;WARNING: foreman file has less or more than 2 blank lines, fix corrupted file and run again&#39; )
@@ -395,9 +395,9 @@ def get_foreman_nodalfactors(const_list, dood_date):
     import numpy as np
     
     content_pd = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=[0], skip_blank_lines=False)
-    content_pd[0] = content_pd[0].str.replace(&#39;-0.&#39; ,&#39; -0.&#39;) #add spaces where needed
-    content_pd[0] = content_pd[0].str.replace(&#39;LDA2&#39;,&#39;LABDA2&#39;)
-    content_pd[0] = content_pd[0].str.replace(&#39;Z0&#39;,&#39;A0&#39;)
+    content_pd[0] = content_pd[0].str.replace(&#39;-0.&#39;,&#39; -0.&#39;,regex=False) #add spaces where needed
+    content_pd[0] = content_pd[0].str.replace(&#39;LDA2&#39;,&#39;LABDA2&#39;,regex=False)
+    content_pd[0] = content_pd[0].str.replace(&#39;Z0&#39;,&#39;A0&#39;,regex=False)
     splitlines = np.where(content_pd[0].isnull())[0]
     if len(splitlines) != 2:
         print( &#39;WARNING: foreman file has less or more than 2 blank lines, fix corrupted file and run again&#39; )

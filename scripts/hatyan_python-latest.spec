@@ -1,5 +1,5 @@
 Name:        hatyan_python
-Version:     2.2.87
+Version:     2.2.88
 Release:     1
 #BuildArch:   noarch
 #Buildroot:   ~/rpmbuild/%{name}-%{version}-root

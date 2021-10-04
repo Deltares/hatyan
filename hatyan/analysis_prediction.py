@@ -238,11 +238,17 @@ def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
     print('percentage_nan in values_meas_sel: %.2f%%'%(percentage_nan))
 
-    #retrieve const_list and frequency in correct order
-    t_const_freq_pd = get_hatyan_freqs(const_list)
-    const_list = t_const_freq_pd.index.tolist()
-    #retrieve again but now with sorted const_list
-    t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+    #retrieve const_list and frequency in correct order, then retrieve again but now with sorted const_list
+    if source.lower()=='schureman':
+        t_const_freq_pd = get_hatyan_freqs(const_list)
+        const_list = t_const_freq_pd.index.tolist()
+        t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+    elif source.lower()=='foreman':
+        dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
+        t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
+        print('WARNING: foreman does not support retrieval of sorted freq list yet, rayleigh check can be wrong')
+    else:
+        raise Exception('invalid source value (schureman or foreman)')
     t_const_freq = t_const_freq_pd['freq']
             
     #check Rayleigh
@@ -547,11 +553,19 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     dood_date_mid = pd.Index([times_pred_all_pdDTI[len(times_pred_all_pdDTI)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
     dood_date_start = times_pred_all_pdDTI[:1] #first date (for v0, also freq?)
 
-    #retrieve const_list and frequency in correct order
-    t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
-    const_list = t_const_freq_pd.index.tolist()
-    #retrieve again but now with sorted const_list
-    t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+    #retrieve const_list and frequency in correct order, then retrieve again but now with sorted const_list
+    if source.lower()=='schureman':
+        t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
+        const_list = t_const_freq_pd.index.tolist()
+        t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+    elif source.lower()=='foreman':
+        print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
+        dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=COMP.index.tolist(), dood_date=dood_date_start)
+        const_list = t_const_freq_pd.index.tolist()
+        t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
+        print('WARNING: foreman does not support retrieval of sorted freq list yet')
+    else:
+        raise Exception('invalid source value (schureman or foreman)')
     COMP['freq'] = t_const_freq_pd['freq']
     COMP = COMP.sort_values(by='freq')
 

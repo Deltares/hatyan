@@ -2,6 +2,9 @@
 History
 =======
 
+* Mon Oct 4 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.2.88
+- bugfix for foreman frequencies, were actually retrieved from schureman
+
 * Fri Oct 1 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.2.87
 - fix for non-backwards compatible change in pandas, to make it work in pandas versions both older and newer than 1.2.0
 
