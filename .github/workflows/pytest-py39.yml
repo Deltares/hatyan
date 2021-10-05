@@ -5,7 +5,7 @@ name: pytest py-3.9
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main development]
     paths:
       - hatyan/**
   pull_request:
