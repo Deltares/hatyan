@@ -12,17 +12,11 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 from netCDF4 import Dataset, num2date
+import hatyan
 
 dir_scriptfile = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_tests = os.path.abspath(os.path.join(dir_scriptfile,os.pardir))  #1 level up from dir_scripts
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
-
-from hatyan import timeseries as Timeseries
-from hatyan import components as Components
-from hatyan import astrog as Astrog
-from hatyan.analysis_prediction import get_components_from_ts, prediction, analysis
-from hatyan.hatyan_core import get_const_list_hatyan
-
 modulename_list = ['os','sys','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
 
 
@@ -37,7 +31,7 @@ def test_import_libraries(modulename):
 @pytest.mark.unittest
 def test_readts_dia_multifile():
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%('VLISSGN', file_id)) for file_id in [1,2,3,4]]
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station='VLISSGN')
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station='VLISSGN')
     
     assert len(ts_measurements_group0) == 35064
 
@@ -46,12 +40,12 @@ def test_readts_dia_multifile():
 def test_readts_dia_multiblock():
     
     file1 = os.path.join(dir_testdata,'hoek_har.dia')
-    #ts_measurements_group0_extno = Timeseries.readts_dia(filename=file1, station='HOEKVHLD')
-    ts_measurements_group0_ext0 = Timeseries.readts_dia(filename=file1, station='HOEKVHLD', block_ids=0)
-    ts_measurements_group0_ext1 = Timeseries.readts_dia(filename=file1, station='HOEKVHLD', block_ids=1)
-    ts_measurements_group0_ext2 = Timeseries.readts_dia(filename=file1, station='HOEKVHLD', block_ids=2)
-    ts_measurements_group0_ext012 = Timeseries.readts_dia(filename=file1, station='HOEKVHLD', block_ids=[0,1,2])
-    ts_measurements_group0_extall = Timeseries.readts_dia(filename=file1, station='HOEKVHLD', block_ids='allstation')
+    #ts_measurements_group0_extno = hatyan.readts_dia(filename=file1, station='HOEKVHLD')
+    ts_measurements_group0_ext0 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=0)
+    ts_measurements_group0_ext1 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=1)
+    ts_measurements_group0_ext2 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=2)
+    ts_measurements_group0_ext012 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=[0,1,2])
+    ts_measurements_group0_extall = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids='allstation')
     
     assert len(ts_measurements_group0_ext0) == 3977
     assert len(ts_measurements_group0_ext1) == 9913
@@ -67,9 +61,9 @@ def test_readts_noos_resamplecrop():
     times_ext_comp0 = [dt.datetime(2018,1,1),dt.datetime(2018,4,1)]
 
     #component groups
-    ts_measurements_group0 = Timeseries.readts_noos(filename=file_data_comp0)
-    ts_measurements_group0_res = Timeseries.resample_timeseries(ts_measurements_group0, timestep_min=10)
-    ts_measurements_group0_rescrop = Timeseries.crop_timeseries(ts_measurements_group0_res, times_ext=times_ext_comp0)
+    ts_measurements_group0 = hatyan.readts_noos(filename=file_data_comp0)
+    ts_measurements_group0_res = hatyan.resample_timeseries(ts_measurements_group0, timestep_min=10)
+    ts_measurements_group0_rescrop = hatyan.crop_timeseries(ts_measurements_group0_res, times_ext=times_ext_comp0)
     
     assert len(ts_measurements_group0) == 12752
     assert len(ts_measurements_group0_res) == 12961
@@ -86,12 +80,12 @@ def test_writenetcdf():
     times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,6,1)]
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
-    ts_prediction = Timeseries.readts_dia(filename=file_pred, station=current_station)
-    ts_prediction = Timeseries.crop_timeseries(ts_prediction, times_ext=times_ext)
-    ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
+    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_prediction = hatyan.crop_timeseries(ts_prediction, times_ext=times_ext)
+    ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     
     file_nc = 'prediction_10m_%s.nc'%(current_station)
-    Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, tzone_hr=1)
+    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, tzone_hr=1)
     
     data_nc = Dataset(file_nc,'r')
     
@@ -122,15 +116,15 @@ def test_analysis_settings():
     
     #comp0
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1]]
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
     
-    ts_comp_nfac1_fualltimes0_xfac1_peryear0 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_peryear=False)
+    ts_comp_nfac1_fualltimes0_xfac1_peryear0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_peryear=False)
     
-    ts_comp_nfac1_fualltimes1_xfac1 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True)
-    ts_comp_nfac1_fualltimes0_xfac1 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True)
-    ts_comp_nfac1_fualltimes1_xfac0 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False)
-    ts_comp_nfac1_fualltimes0_xfac0 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False)
-    ts_comp_nfac0_fualltimes0_xfac0 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False)
+    ts_comp_nfac1_fualltimes1_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True)
+    ts_comp_nfac1_fualltimes0_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True)
+    ts_comp_nfac1_fualltimes1_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False)
+    ts_comp_nfac1_fualltimes0_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False)
+    ts_comp_nfac0_fualltimes0_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False)
     
     comp_A_expected = np.array([9.92687566e-04, 3.11039747e-02, 9.73652407e-02, 6.68645368e-02,
                                 4.02714135e-02, 2.44247279e-02, 1.34401343e-01, 2.69848016e-01,
@@ -157,10 +151,10 @@ def test_analysis_foreman():
     
     #comp0
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1]]
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
     
-    comp_frommeas_HAT = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='schureman')
-    comp_frommeas_FOR = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='foreman')
+    comp_frommeas_HAT = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='schureman')
+    comp_frommeas_FOR = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='foreman')
     HAT_comp_phi_expected =  np.array([  0.        , 141.68386391, 188.27101759,   7.3992028 ,
                                        279.17807514, 122.81257343, 159.77061119,  33.51788732,
                                         59.01827634, 256.05796043, 117.47528038, 345.63438447,
@@ -199,15 +193,15 @@ def test_getcomponentsfromts_settings():
     
     #comp0
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2]]
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
     
-    ts_comp_nfac1_fualltimes1_xfac1_peryear0 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_peryear=False)
+    ts_comp_nfac1_fualltimes1_xfac1_peryear0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_peryear=False)
     
-    ts_comp_nfac1_fualltimes1_xfac1 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_peryear=True)
-    ts_comp_nfac1_fualltimes0_xfac1 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_peryear=True)
-    ts_comp_nfac1_fualltimes1_xfac0 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False, analysis_peryear=True)
-    ts_comp_nfac1_fualltimes0_xfac0 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False, analysis_peryear=True)
-    ts_comp_nfac0_fualltimes0_xfac0 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False, analysis_peryear=True)
+    ts_comp_nfac1_fualltimes1_xfac1 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_peryear=True)
+    ts_comp_nfac1_fualltimes0_xfac1 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_peryear=True)
+    ts_comp_nfac1_fualltimes1_xfac0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False, analysis_peryear=True)
+    ts_comp_nfac1_fualltimes0_xfac0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False, analysis_peryear=True)
+    ts_comp_nfac0_fualltimes0_xfac0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False, analysis_peryear=True)
 
 
 @pytest.mark.unittest
@@ -217,12 +211,12 @@ def test_predictionsettings():
     current_station = 'DENHDR'
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = Components.read_components(filename=file_data_comp0)
-    ts_prediction_nfac1_fualltimes1_xfac1 = prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_prediction_nfac1_fualltimes0_xfac1 = prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_prediction_nfac1_fualltimes1_xfac0 = prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_prediction_nfac1_fualltimes0_xfac0 = prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_prediction_nfac0_fualltimes0_xfac0 = prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
+    ts_prediction_nfac1_fualltimes1_xfac1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_prediction_nfac1_fualltimes0_xfac1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_prediction_nfac1_fualltimes1_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_prediction_nfac1_fualltimes0_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_prediction_nfac0_fualltimes0_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
 
 
 @pytest.mark.unittest
@@ -235,10 +229,10 @@ def test_prediction_1018():
     times_step_pred = 10
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = Components.read_components(filename=file_data_comp0)
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction
-    ts_prediction = prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
     
     ts_prediction_times = np.array([dt.datetime(1018, 7, 21, 0, 0),
                                     dt.datetime(1018, 7, 21, 0, 10),
@@ -300,8 +294,8 @@ def test_frommergedcomp():
                                                       1.27790547,  1.20020227,  1.11748521])
     
     # 3. run test
-    COMP_mergedfromfile = Components.read_components(filename=file_data_comp)
-    ts_prediction_direct = prediction(COMP_mergedfromfile, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=timestep_pred)
+    COMP_mergedfromfile = hatyan.read_components(filename=file_data_comp)
+    ts_prediction_direct = hatyan.prediction(COMP_mergedfromfile, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=timestep_pred)
     ts_prediction_direct_values = ts_prediction_direct['values'].values
     
     # 4. Vefiry final expectations
@@ -317,7 +311,7 @@ def test_frommergedcomp():
 def test_frommergedcomp_HWLW_toomuch():
     """
     This test produces a very short prediction for DENHDR, based on an imported component list. It then calculates extremes (HW/LW) and numbers them both.
-    This test is meant to tweak the prominence parameter of scipy.signal.find_peaks() in Timeseries.calc_HWLW() and it fails when the prominence is not set or is too small.
+    This test is meant to tweak the prominence parameter of scipy.signal.find_peaks() in hatyan.calc_HWLW() and it fails when the prominence is not set or is too small.
     A prominence value of None works for most stations, but fails for DENHDR in this period since a local dip is interpreted as a low water.
     This incorrect LW has a prominence of ~0.03, other peaks in this timeseries have a prominence of >1 and even when lowering M2 to an unrealistic value (0.5*M2) the prominence of peaks is >0.2
     A prominence value of 0.1 makes sure this test succeeds.
@@ -330,14 +324,14 @@ def test_frommergedcomp_HWLW_toomuch():
     current_station = 'DENHDR'
 
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = Components.read_components(filename=file_data_comp0)
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
     COMP_merged_temp = COMP_merged.copy()
     #COMP_merged_temp.loc['M2','A']=0.05
-    ts_prediction_HWLWno = prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_ext_prediction_HWLWno_pre = Timeseries.calc_HWLW(ts=ts_prediction_HWLWno, debug=True)
+    ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, debug=True)
     
-    ts_ext_prediction_HWLWno = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
-    #fig,(ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_HWLWno_pre)
+    ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
+    #fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_HWLWno_pre)
     #for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
     #    ax1.text(pdrow.index,pdrow['values'],pdrow['HWLWno'], color='k')
 
@@ -356,7 +350,7 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     """
     This test produces a prediction for an entire year for a specific station, based on an imported component list. It then calculates extremes (HW/LW) and numbers them both. 
     The test fails if the numbers for HW and/or LW do not always increase with 1 and prints parts of the HW/LW-arrays with these gaps.
-    This test is meant to tweak the distance parameter of scipy.signal.find_peaks() in Timeseries.calc_HWLW() and it fails when the distance is to small.
+    This test is meant to tweak the distance parameter of scipy.signal.find_peaks() in hatyan.calc_HWLW() and it fails when the distance is to small.
     A distance value of M2period/1.4 works for most stations, but fails for three stations of the selection in several years (of which the year 2000)
     A distance value of M2period/1.5 for HW and M2period/1.7 for LW works for all tested stations and years.
     
@@ -399,7 +393,7 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     #else:
     #    analysis_peryear=True
     #constituent list
-    #const_list = get_const_list_hatyan('year') #94 const
+    #const_list = hatyan.get_const_list_hatyan('year') #94 const
     #vertical reference
     #vertref='NAP'
     #END OF STATION SETTINGS
@@ -409,22 +403,22 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     times_step_pred = 1
     
     #component groups
-    COMP_merged = Components.read_components(filename=file_data_comp0)
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
-    ts_prediction = prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
-    #ts_validation = Timeseries.readts_dia(filename=file_data_predvali, station=current_station)
-    #ts_ext_validation = Timeseries.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
-    ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction, debug=True)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
+    #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
+    ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction, debug=True)
     
     #calculate tidal wave number
-    ts_ext_prediction_HWLWno = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=current_station)
+    ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=current_station)
     #print(ts_ext_prediction_HWLWno)
     #for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
     #    ax1.text(pdrow.index,pdrow['values'],pdrow['HWLWno'], color=colors[i_stat])
     
     #ax1.plot(ts_prediction.index, ts_prediction['values'], label=current_station, color=colors[i_stat])
-    #figa, (ax1a) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction_HWLWno)
+    #figa, (ax1a) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction_HWLWno)
     
     #str_combination = '%i_%s'%(yr, current_station)
     #print(str_combination)
@@ -473,7 +467,7 @@ def test_frommergedcomp_HWLW_345(current_station):
     times_step_pred = 1
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = Components.read_components(filename=file_data_comp0)
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
     COMP_merged_temp = COMP_merged.copy()
     
     times_ext_pred_HWLWno = [dt.datetime(2010,1,31,3),dt.datetime(2010,2,17,12)] #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
@@ -481,15 +475,15 @@ def test_frommergedcomp_HWLW_345(current_station):
     #times_ext_pred_HWLWno = [dt.datetime(2010,6,26),dt.datetime(2010,6,28)] #lokale extremen tussen twee laagste LWs
     #times_ext_pred_HWLWno = [dt.datetime(2019,2,1),dt.datetime(2019,2,2)] #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
     
-    ts_prediction_HWLWno = prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_ext_prediction_main = Timeseries.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
-    ts_ext_prediction_all = Timeseries.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
-    ts_ext_prediction_clean = Timeseries.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
+    ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
+    ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
+    ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
     
-    ts_ext_prediction_main_HWLWno = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction_main, station=current_station)
-    ts_ext_prediction_clean_HWLWno = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction_clean, station=current_station)
+    ts_ext_prediction_main_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_main, station=current_station)
+    ts_ext_prediction_clean_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_clean, station=current_station)
     
-    #fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_all)#, ts_ext_validation=ts_ext_validation)
+    #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_all)#, ts_ext_validation=ts_ext_validation)
     #for irow, pdrow in ts_ext_prediction_clean_HWLWno.iterrows():
     #    ax1.text(pdrow.index,pdrow['values'],pdrow['HWLWno'])
     
@@ -565,26 +559,26 @@ def test_19Ycomp4Ydia():
     # 1. define test data
     nodalfactors = True
     xfac = True
-    const_list = get_const_list_hatyan('year')
+    const_list = hatyan.get_const_list_hatyan('year')
     current_station = 'VLISSGN'
     
     #comp0
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2,3,4]]
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
-    comp_frommeasurements_avg_group0 = get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_peryear=1)
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    comp_frommeasurements_avg_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_peryear=1)
     comp_frommeasurements_avg_group0.station = current_station
     
     #comp1
     file_data_comp1 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    comp_fromfile_group1 = Components.read_components(filename=file_data_comp1)
+    comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = Components.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
     times_ext_pred = [dt.datetime(2019,1,1),dt.datetime(2019,1,1,12)]
     times_step_pred = 10
-    ts_prediction = prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations (VLISSGN)
@@ -613,7 +607,7 @@ def test_19Ycomp4Ydia_compsplitsing():
     # 1. define test data
     nodalfactors = True
     xfac = False
-    const_list = get_const_list_hatyan('month')
+    const_list = hatyan.get_const_list_hatyan('month')
     current_station = 'D15'
     file_data_comp0 = os.path.join(dir_testdata,'%s_obs1.txt'%(current_station))
     CS_comps = pd.DataFrame({'CS_comps_from':['K1','N2','2MN2','S2','S2'],
@@ -626,15 +620,15 @@ def test_19Ycomp4Ydia_compsplitsing():
     
     # 3. run test
     #component groups
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
-    comp_frommeasurements_avg_group0 = get_components_from_ts(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=0, fu_alltimes=False, CS_comps=CS_comps)
-    comp_fromfile_group1 = Components.read_components(filename=file_data_comp1)
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    comp_frommeasurements_avg_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=0, fu_alltimes=False, CS_comps=CS_comps)
+    comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = Components.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
-    ts_prediction = prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations (D15)
@@ -663,7 +657,7 @@ def test_allfromdia():
     # 1. define test data
     nodalfactors = True
     xfac = True
-    const_list = get_const_list_hatyan('year')
+    const_list = hatyan.get_const_list_hatyan('year')
     current_station = 'VLISSGN'
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2,3,4]]
     file_data_comp1 = os.path.join(dir_testdata,'%s_obs19.txt'%(current_station))
@@ -671,16 +665,16 @@ def test_allfromdia():
     times_step_pred = 10
 
     #component groups
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
-    comp_frommeasurements_avg_group0 = get_components_from_ts(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=1, fu_alltimes=False)
-    ts_measurements_group1 = Timeseries.readts_dia(filename=file_data_comp1, station=current_station)
-    comp_frommeasurements_avg_group1 = get_components_from_ts(ts=ts_measurements_group1, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=None, fu_alltimes=False)
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    comp_frommeasurements_avg_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=1, fu_alltimes=False)
+    ts_measurements_group1 = hatyan.readts_dia(filename=file_data_comp1, station=current_station)
+    comp_frommeasurements_avg_group1 = hatyan.get_components_from_ts(ts=ts_measurements_group1, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=None, fu_alltimes=False)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = Components.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
-    ts_prediction = prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations
@@ -725,18 +719,18 @@ def test_allfromdia_2008xfac0():
     # 1. define test data
     nodalfactors = True
     xfac = False
-    const_list = get_const_list_hatyan('year')
+    const_list = hatyan.get_const_list_hatyan('year')
     current_station = 'DOVR'
     file_data_comp0 = os.path.join(dir_testdata,'%s_obs1.txt'%(current_station))
     times_ext_pred = [dt.datetime(2019,1,1),dt.datetime(2019,1,1,12)]
     times_step_pred = 10
     
     #component groups
-    ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
-    comp_frommeasurements_avg_group0 = get_components_from_ts(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=1, fu_alltimes=False)
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    comp_frommeasurements_avg_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_peryear=1, fu_alltimes=False)
     
     #prediction and validation
-    ts_prediction = prediction(comp=comp_frommeasurements_avg_group0, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group0, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations

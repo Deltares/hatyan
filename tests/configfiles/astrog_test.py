@@ -14,19 +14,15 @@ schrijf resultaat (python) weg als csv (in MET) met pd.to_csv()
 """
 
 import os, sys, pytz
-#sys.path.append(r'c:\Users\laan_st\Software\SVN\hatyan')
-#sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
 plt.close('all')
-
-from hatyan import astrog as Astrog
-from hatyan.wrapper_RWS import init_RWS, exit_RWS
+import hatyan
 
 file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
@@ -48,31 +44,31 @@ pdtocsv_kwargs = dict(index=False, sep=',', date_format='%Y-%m-%d %H:%M:%S %Z', 
 
 #%% calculate astrog arrays
 # lunar culmination times, parallax, declination
-culminations_python = Astrog.astrog_culminations(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_GMT)
+culminations_python = hatyan.astrog_culminations(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_GMT)
 culminations_python.to_csv(os.path.join(dir_output,'moon_culminations.csv'),**pdtocsv_kwargs)
 
 # lunar phases
-phases_python = Astrog.astrog_phases(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
+phases_python = hatyan.astrog_phases(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
 phases_python.to_csv(os.path.join(dir_output,'moon_phases.csv'),**pdtocsv_kwargs)
 
 # moonrise and -set
-moonriseset_python = Astrog.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
+moonriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
 moonriseset_python.to_csv(os.path.join(dir_output,'moon_riseset.csv'),**pdtocsv_kwargs)
-moonriseset_python_perday = Astrog.convert2perday(moonriseset_python)
+moonriseset_python_perday = hatyan.convert2perday(moonriseset_python)
 moonriseset_python_perday.to_csv(os.path.join(dir_output,'moon_riseset_perday.csv'),**pdtocsv_kwargs)
 
 # sunrise and -set
-sunriseset_python = Astrog.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
+sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
 sunriseset_python.to_csv(os.path.join(dir_output,'sun_riseset.csv'),**pdtocsv_kwargs)
-sunriseset_python_perday = Astrog.convert2perday(sunriseset_python)
+sunriseset_python_perday = hatyan.convert2perday(sunriseset_python)
 sunriseset_python_perday.to_csv(os.path.join(dir_output,'sun_riseset_perday.csv'),**pdtocsv_kwargs)
 
 # lunar anomalies
-anomalies_python = Astrog.astrog_anomalies(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
+anomalies_python = hatyan.astrog_anomalies(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
 anomalies_python.to_csv(os.path.join(dir_output,'anomalies.csv'),**pdtocsv_kwargs)
 
 # astronomical seasons
-seasons_python = Astrog.astrog_seasons(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
+seasons_python = hatyan.astrog_seasons(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
 seasons_python.to_csv(os.path.join(dir_output,'seasons.csv'),**pdtocsv_kwargs)
 
 if compare2fortran:
@@ -94,7 +90,7 @@ if compare2fortran:
     phases_long_fortran = pd.read_csv(txt_phas, sep=';', names=['date','time','type_str'], skiprows=1) # long time series 2021-2035 (Koos Doekes)
     phases_long_fortran['datetime']=pd.to_datetime(phases_long_fortran['date'].astype(str)+phases_long_fortran['time'].astype(str).str.zfill(4))
     phases_long_fortran['type'] = phases_long_fortran['type_str'].replace('EK',1).replace('VM',2).replace('LK',3).replace('NM',4)
-    phases_long_python = Astrog.astrog_phases(phases_long_fortran['datetime'].iloc[0]-dt.timedelta(days=5), phases_long_fortran['datetime'].iloc[-1]+dt.timedelta(days=5), mode_dT=mode_dT)
+    phases_long_python = hatyan.astrog_phases(phases_long_fortran['datetime'].iloc[0]-dt.timedelta(days=5), phases_long_fortran['datetime'].iloc[-1]+dt.timedelta(days=5), mode_dT=mode_dT)
     phases_long_python['datetime'] = phases_long_python['datetime'].dt.tz_convert(tz_EurAms) #convert to local timezone
     
     moonriseset_fortran = pd.read_pickle(pkl_moon)
@@ -112,32 +108,32 @@ if compare2fortran:
     seasons_fortran = seasons_fortran[np.logical_and(seasons_fortran['datetime']>=timeStart,seasons_fortran['datetime']<=timeEnd)].reset_index(drop=True)
     
     #%% plot results (differences)
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(culminations_python[['datetime','type']], culminations_fortran[['datetime','type']], typeLab=['lower','upper'], timeBand=[-.18,.18])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python[['datetime','type']], culminations_fortran[['datetime','type']], typeLab=['lower','upper'], timeBand=[-.18,.18])
     fig.savefig(os.path.join(dir_output,'culmination_differences.png'))
     
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(culminations_python[['datetime','parallax']], culminations_fortran[['datetime','parallax']], typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.000005,.000005])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python[['datetime','parallax']], culminations_fortran[['datetime','parallax']], typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.000005,.000005])
     fig.savefig(os.path.join(dir_output,'culmination_differences_parallax.png'))
     
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(culminations_python[['datetime','declination']], culminations_fortran[['datetime','declination']], typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.0005,.0005])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python[['datetime','declination']], culminations_fortran[['datetime','declination']], typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.0005,.0005])
     fig.savefig(os.path.join(dir_output,'culmination_differences_declination.png'))
 
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(pd_python=phases_python, pd_fortran=phases_fortran, typeLab=['FQ','FM','LQ','NM'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_python, pd_fortran=phases_fortran, typeLab=['FQ','FM','LQ','NM'], timeBand=[0,60])
     fig.savefig(os.path.join(dir_output,'phase_differences.png'))
 
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(pd_python=phases_long_python, pd_fortran=phases_long_fortran[['datetime','type']], typeLab=['FQ','FM','LQ','NM'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_long_python, pd_fortran=phases_long_fortran[['datetime','type']], typeLab=['FQ','FM','LQ','NM'], timeBand=[0,60])
     fig.savefig(os.path.join(dir_output,'phase_differences_longperiod.png'))
 
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(pd_python=moonriseset_python, pd_fortran=moonriseset_fortran, typeLab=['rise','set'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=moonriseset_python, pd_fortran=moonriseset_fortran, typeLab=['rise','set'], timeBand=[0,60])
     fig.savefig(os.path.join(dir_output,'moonRiseSet_differences.png'))
     
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(sunriseset_python_somedays, sunriseset_fortran, typeLab=['rise','set'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(sunriseset_python_somedays, sunriseset_fortran, typeLab=['rise','set'], timeBand=[0,60])
     fig.savefig(os.path.join(dir_output,'sunRiseSet_differences.png'))
     
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(pd_python=anomalies_python, pd_fortran=anomalies_fortran, typeLab=['perigeum','apogeum'], timeBand=[0,3600])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=anomalies_python, pd_fortran=anomalies_fortran, typeLab=['perigeum','apogeum'], timeBand=[0,3600])
     fig.savefig(os.path.join(dir_output,'anomaly_differences.png'))
     
-    fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(pd_python=seasons_python, pd_fortran=seasons_fortran, typeLab=['spring','summer','autumn','winter'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=seasons_python, pd_fortran=seasons_fortran, typeLab=['spring','summer','autumn','winter'], timeBand=[0,60])
     fig.savefig(os.path.join(dir_output,'season_differences.png'))
 
 #%%
-exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python

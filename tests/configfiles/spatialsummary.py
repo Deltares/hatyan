@@ -6,20 +6,14 @@ it plots the values in colored dots on a map
 
 """
 
-import os, sys#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_github')
+import os, sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-from hatyan import timeseries as Timeseries
-from hatyan import components as Components
-#from hatyan.hatyan_core import get_const_list_hatyan
-from hatyan.wrapper_RWS import init_RWS, exit_RWS
+import hatyan
 
 file_config = os.path.realpath(__file__)
-dir_output, timer_start = init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -34,7 +28,7 @@ case_list = ['A0','P1','K1','M2','S2','K2','M4','P1_K1','NU2_N2','LABDA2_2MN2','
 #ldb file
 file_ldb = os.path.join(dir_testdata,'other','wvs_coastline3.ldb') #WGS84 ldb is converted to RD, but does not change anything wrt to matlab converted ldb, which is good
 ldb_pd_wgs = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['x','y'],na_values=[999.999])
-x_out, y_out = Timeseries.convertcoordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
+x_out, y_out = hatyan.convertcoordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
 ldb_pd = pd.DataFrame({'RDx':x_out/1000, 'RDy':y_out/1000})
 
 
@@ -45,8 +39,8 @@ for current_station in selected_stations:
     file_data_comp = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     file_data_pred = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station)) #to get station coordinates
     
-    diablocks_pd_extra = Timeseries.get_diablocks(filename=file_data_pred)
-    stat_x, stat_y = Timeseries.convertcoordinates(coordx_in=diablocks_pd_extra.loc[0,'x'], coordy_in=diablocks_pd_extra.loc[0,'y'], epsg_in=diablocks_pd_extra.loc[0,'epsg'], epsg_out=28992)
+    diablocks_pd_extra = hatyan.get_diablocks(filename=file_data_pred)
+    stat_x, stat_y = hatyan.convertcoordinates(coordx_in=diablocks_pd_extra.loc[0,'x'], coordy_in=diablocks_pd_extra.loc[0,'y'], epsg_in=diablocks_pd_extra.loc[0,'epsg'], epsg_out=28992)
     stats_x.append(stat_x/1000) #from m to km
     stats_y.append(stat_y/1000) #from m to km
 
@@ -65,7 +59,7 @@ for case in case_list:
     for current_station in selected_stations:
         file_data_comp = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
         
-        COMP_fromfile = Components.read_components(filename=file_data_comp)
+        COMP_fromfile = hatyan.read_components(filename=file_data_comp)
         const_list_sel = [x for x in const_list if x in COMP_fromfile.index] #should not be necessary, but T2 is not always available, this causes wrong results for specific stations
         COMP_sel = COMP_fromfile.loc[const_list_sel,:]
         if len(COMP_sel) == 1:
@@ -117,6 +111,6 @@ for case in case_list:
     fig.savefig('summary_%s.png'%(case))
 
     
-exit_RWS(timer_start)
+hatyan.exit_RWS(timer_start)
     
     
