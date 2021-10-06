@@ -5,26 +5,21 @@ Created on Fri Apr 26 15:11:07 2019
 @author: veenstra
 """
 import os, sys
-#sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
 plt.close('all')
 import matplotlib.dates as mdates
-
-from hatyan.analysis_prediction import prediction
-import hatyan.components as Components
-from hatyan.hatyan_core import get_const_list_hatyan
-from hatyan.wrapper_RWS import init_RWS, exit_RWS
+import hatyan
 
 file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = init_RWS(file_config, sys.argv, interactive_plots=False) #provides header to outputfile when calling this script with python
+dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False) #provides header to outputfile when calling this script with python
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 polar_fig = False
 
-const_list = get_const_list_hatyan('year')
+const_list = hatyan.get_const_list_hatyan('year')
 selected_stations = ['CADZD','BATH','VLISSGN','HOEKVHLD','IJMDBTHVN','DENHDR','TERSLNZE','SCHIERMNOG','DELFZL']
 selected_stations_names = ['Cadzand','Bath','Vlissingen','Hoek van Holland','IJmuiden Buitenhaven','Den Helder','Terschelling','Schiermonnikoog','Delfzijl']
 
@@ -44,9 +39,9 @@ n_colors = len(selected_stations)
 colors = plt.cm.jet(np.linspace(0,1,n_colors))
 for i_stat, current_station in enumerate(selected_stations):
     
-    comp_frommeasurements_avg_group = Components.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
+    comp_frommeasurements_avg_group = hatyan.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
     
-    ts_prediction = prediction(comp=comp_frommeasurements_avg_group, times_ext=times_ext_pred, timestep_min=timestep_pred)
+    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times_ext=times_ext_pred, timestep_min=timestep_pred)
     
     vals_real = ts_prediction['values']
     times_real = ts_prediction.index
@@ -95,6 +90,6 @@ ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b %H:%M'))
 fig.tight_layout()
 fig.savefig('tide_clock_nonpolar_copy.png', dpi=250)
 
-exit_RWS(timer_start)
+hatyan.exit_RWS(timer_start)
 
 

@@ -71,40 +71,36 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 <p><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html">Documentation is available on Github</a> (replace 'main' in the url with any tagname to view older versions) and there is background information in <a href="https://github.com/Deltares/hatyan/tree/main/doc">the doc folder</a>. Copy the code below to your own script to get started. For more examples, check <a href="https://github.com/Deltares/hatyan/tree/main/tests/configfiles">the configfiles folder</a>.</p>
 <pre><code class="language-python">import os
 import datetime as dt
-
-from hatyan import timeseries as Timeseries
-from hatyan import components as Components
-from hatyan.analysis_prediction import get_components_from_ts, prediction
-from hatyan.hatyan_core import get_const_list_hatyan
+import hatyan
 
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
-const_list = get_const_list_hatyan('year')
+const_list = hatyan.get_const_list_hatyan('year')
 
 #reading and editing time series, results in a pandas DataFrame a 'values' column (water level in meters) and a pd.DatetimeIndex as index (timestamps as datetime.datetime)
 file_data_meas = os.path.join(r'n:\Deltabox\Bulletin\veenstra\VLISSGN_waterlevel_20101201_20140101.noos')
 times_ext = [dt.datetime(2012,1,1),dt.datetime(2013,1,1)]
 timestep_min = 10
-ts_meas = Timeseries.readts_noos(filename=file_data_meas)
-ts_meas = Timeseries.resample_timeseries(ts_meas, timestep_min=timestep_min)
-ts_meas = Timeseries.crop_timeseries(ts=ts_meas, times_ext=times_ext)
+ts_meas = hatyan.readts_noos(filename=file_data_meas)
+ts_meas = hatyan.resample_timeseries(ts_meas, timestep_min=timestep_min)
+ts_meas = hatyan.crop_timeseries(ts=ts_meas, times_ext=times_ext)
 
 #tidal analysis and plotting of results. commented: saving figure  
-comp_frommeas = get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
-fig,(ax1,ax2) = Components.plot_components(comp=comp_frommeas)
+comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
+fig,(ax1,ax2) = hatyan.plot_components(comp=comp_frommeas)
 #fig.savefig('components_VLISSGN_4Y.png')
 
 #tidal prediction and plotting of results. commented: saving figure and writing to netCDF
-ts_prediction = prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
-fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
+ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
 ax1.legend(['prediction','measurement','difference','mean of prediction'])
 ax2.set_ylim(-0.5,0.5)
 #fig.savefig('prediction_%im_VLISSGN_measurements'%(timestep_min))
 
 #calculation of HWLW and plotting of results. commented: saving figure
-ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
-fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
+ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
 #fig.savefig('prediction_%im_VLISSGN_HWLW'%(timestep_min))
-#Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='VLISSGN', vertref='NAP', filename='prediction_%im_VLISSGN.nc'%(timestep_min))
+#hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='VLISSGN', vertref='NAP', filename='prediction_%im_VLISSGN.nc'%(timestep_min))
 </code></pre>
 <h2 id="information-for-developers">Information For Developers</h2>
 <p>Create a python environment hatyan_env and install hatyan as developer:</p>
@@ -118,6 +114,7 @@ fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_pred
 <li>open git bash window in local hatyan folder (e.g. C:\DATA\hatyan_github)</li>
 <li><code>git remote update origin --prune</code> (update local branch list)</li>
 <li><code>git checkout work_yourname</code> (checkout your branch, never do anything while the master is selected)</li>
+<li>update your branch if main has been updated: add+commit+push everything in branch first, <code>git checkout main</code>, <code>git pull</code>, <code>git checkout development</code>, <code>git merge main -m ''</code>, <code>git push origin development</code></li>
 <li>open command line and navigate to hatyan local folder, e.g. <code>C:\DATA\hatyan_github</code></li>
 <li><code>conda env create -f environment.yml</code> (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL)</li>
 <li><code>conda info --envs</code> (should show hatyan_env virtual environment in the list)</li>
@@ -227,40 +224,36 @@ Getting started
 ```python
 import os
 import datetime as dt
-
-from hatyan import timeseries as Timeseries
-from hatyan import components as Components
-from hatyan.analysis_prediction import get_components_from_ts, prediction
-from hatyan.hatyan_core import get_const_list_hatyan
+import hatyan
 
 #defining a list of the components to be analysed (can also be &#39;half_year&#39; and others, &#39;year&#39; contains 94 components and the mean H0)
-const_list = get_const_list_hatyan(&#39;year&#39;)
+const_list = hatyan.get_const_list_hatyan(&#39;year&#39;)
 
 #reading and editing time series, results in a pandas DataFrame a &#39;values&#39; column (water level in meters) and a pd.DatetimeIndex as index (timestamps as datetime.datetime)
 file_data_meas = os.path.join(r&#39;n:\\Deltabox\\Bulletin\\veenstra\\VLISSGN_waterlevel_20101201_20140101.noos&#39;)
 times_ext = [dt.datetime(2012,1,1),dt.datetime(2013,1,1)]
 timestep_min = 10
-ts_meas = Timeseries.readts_noos(filename=file_data_meas)
-ts_meas = Timeseries.resample_timeseries(ts_meas, timestep_min=timestep_min)
-ts_meas = Timeseries.crop_timeseries(ts=ts_meas, times_ext=times_ext)
+ts_meas = hatyan.readts_noos(filename=file_data_meas)
+ts_meas = hatyan.resample_timeseries(ts_meas, timestep_min=timestep_min)
+ts_meas = hatyan.crop_timeseries(ts=ts_meas, times_ext=times_ext)
 
 #tidal analysis and plotting of results. commented: saving figure  
-comp_frommeas = get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
-fig,(ax1,ax2) = Components.plot_components(comp=comp_frommeas)
+comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
+fig,(ax1,ax2) = hatyan.plot_components(comp=comp_frommeas)
 #fig.savefig(&#39;components_VLISSGN_4Y.png&#39;)
 
 #tidal prediction and plotting of results. commented: saving figure and writing to netCDF
-ts_prediction = prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
-fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
+ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
 ax1.legend([&#39;prediction&#39;,&#39;measurement&#39;,&#39;difference&#39;,&#39;mean of prediction&#39;])
 ax2.set_ylim(-0.5,0.5)
 #fig.savefig(&#39;prediction_%im_VLISSGN_measurements&#39;%(timestep_min))
 
 #calculation of HWLW and plotting of results. commented: saving figure
-ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
-fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
+ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
 #fig.savefig(&#39;prediction_%im_VLISSGN_HWLW&#39;%(timestep_min))
-#Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=&#39;VLISSGN&#39;, vertref=&#39;NAP&#39;, filename=&#39;prediction_%im_VLISSGN.nc&#39;%(timestep_min))
+#hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=&#39;VLISSGN&#39;, vertref=&#39;NAP&#39;, filename=&#39;prediction_%im_VLISSGN.nc&#39;%(timestep_min))
 ```
 
 Information for developers
@@ -277,6 +270,7 @@ Create a python environment hatyan_env and install hatyan as developer:
 - open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
 - ``git remote update origin --prune`` (update local branch list)
 - ``git checkout work_yourname`` (checkout your branch, never do anything while the master is selected)
+- update your branch if main has been updated: add+commit+push everything in branch first, ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main -m &#39;&#39;``, ``git push origin development``
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
@@ -324,7 +318,15 @@ Generate RPM (RHEL/CentOS installer):
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.2.87&#39;</code></pre>
+__version__ = &#39;2.2.88&#39;
+
+from hatyan.analysis_prediction import *
+from hatyan.astrog import *
+from hatyan.components import *
+from hatyan.foreman_core import *
+from hatyan.hatyan_core import *
+from hatyan.timeseries import *
+from hatyan.wrapper_RWS import *</code></pre>
 </details>
 </section>
 <section>

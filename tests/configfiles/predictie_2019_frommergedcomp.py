@@ -8,18 +8,12 @@ voor alle stations indien mogelijk:
 
 """
 
-import os, sys#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_github')
+import os, sys
 import datetime as dt
-
-from hatyan import timeseries as Timeseries
-from hatyan import components as Components
-from hatyan.analysis_prediction import get_components_from_ts, prediction
-from hatyan.hatyan_core import get_const_list_hatyan
-from hatyan.wrapper_RWS import init_RWS, exit_RWS
+import hatyan
 
 file_config = os.path.realpath(__file__)
-dir_output, timer_start = init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -53,11 +47,11 @@ for current_station in selected_stations:
         analysis_peryear=True
     #constituent list
     if current_station in ['D15','F3PFM','K14PFM','MAESLKRZZDE','Q1','A12','AWGPFM','F16','J6','L9PFM']:
-        const_list = get_const_list_hatyan('month') #21 const, potentially extended with component splitting (5 components) and SA+SM
+        const_list = hatyan.get_const_list_hatyan('month') #21 const, potentially extended with component splitting (5 components) and SA+SM
     elif current_station in ['AMLAHVN']:
-        const_list = get_const_list_hatyan('halfyear') #88 const
+        const_list = hatyan.get_const_list_hatyan('halfyear') #88 const
     else:
-        const_list = get_const_list_hatyan('year') #94 const
+        const_list = hatyan.get_const_list_hatyan('year') #94 const
     #component splitting
     CS_comps = None
     #vertical reference
@@ -83,22 +77,22 @@ for current_station in selected_stations:
         continue
     
     #component groups
-    COMP_merged = Components.read_components(filename=file_data_comp0)
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
-    ts_prediction = prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
-    ts_validation = Timeseries.readts_dia(filename=file_data_predvali, station=current_station)
-    #ts_ext_validation = Timeseries.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
-    Timeseries.write_tsdia(ts=ts_prediction, station=current_station, vertref=vertref, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
-    #ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
-    #Timeseries.write_tsdia_HWLW(ts_ext=ts_ext_prediction, station=current_station, vertref=vertref, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
-    #fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
+    #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
+    hatyan.write_tsdia(ts=ts_prediction, station=current_station, vertref=vertref, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
+    #ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
+    #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, station=current_station, vertref=vertref, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
+    #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
     #fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
-    fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_validation=ts_validation)
+    fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_validation)
     fig.savefig('prediction_%im_%s_validation'%(times_step_pred, current_station))
 
     
-exit_RWS(timer_start)
+hatyan.exit_RWS(timer_start)
 print('\nthese %i stations were requested for processing:\n%s'%(len(selected_stations),selected_stations))
 print('\nthese %i stations were not processed because there is no ana/comp dataset available:\n%s'%(len(stats_noana),stats_noana))
     

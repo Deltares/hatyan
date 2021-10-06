@@ -28,6 +28,7 @@ foreman_file = os.path.join(os.path.dirname(file_path),'data_components_foreman.
 ################# FILECONTENTS ##################
 #################################################
 
+
 def get_foreman_content():
     import pandas as pd
     import numpy as np
@@ -46,10 +47,6 @@ def get_foreman_content():
     foreman_shallowrelations_raw = content_pd.loc[splitlines[1]+1:,0]
 
     return foreman_harmonic_raw, foreman_shallowrelations_raw
-
-
-
-
 
 
 def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
@@ -122,8 +119,6 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     return foreman_doodson_harmonic, foreman_nodal_harmonic
 
 
-
-
 def get_foreman_shallowrelations():
     """
     Omzetten van het derde deel van de foremantabel in een pandas DataFrame met shallow water relations.
@@ -142,11 +137,6 @@ def get_foreman_shallowrelations():
     foreman_shallowrelations.index.name = None
     
     return foreman_shallowrelations
-
-
-
-
-
 
 
 #################################################
@@ -187,11 +177,6 @@ def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
         freqv0_dood_pd = v_0i_rad_pd
     
     return freqv0_dood_pd
-
-
-
-
-
 
 
 def get_foreman_v0_freq(const_list, dood_date):
@@ -242,12 +227,6 @@ def get_foreman_v0_freq(const_list, dood_date):
     return v_0i_rad_pd, t_const_freq_pd
 
 
-
-
-
-
-
-
 #################################################
 ################# NODALFACTORS ##################
 #################################################
@@ -270,11 +249,6 @@ def get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const,
     u_i_rad_FOR = -np.arctan2(fore_fj_right,1+fore_fj_left) #added minus to get sign comparable to hatyan
 
     return f_i_FOR, u_i_rad_FOR
-
-
-
-
-
 
 
 def get_foreman_nodalfactors(const_list, dood_date):
@@ -327,7 +301,5 @@ def get_foreman_nodalfactors(const_list, dood_date):
     u_i_rad_FOR_pd = pd.DataFrame(u_i_rad_FOR, index=const_list)
     
     return f_i_FOR_pd, u_i_rad_FOR_pd
-
-
 
 

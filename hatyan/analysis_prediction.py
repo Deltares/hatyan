@@ -65,13 +65,6 @@ def vectoravg(A_all, phi_deg_all):
     return A_mean, phi_deg_mean
 
 
-
-
-
-
-
-
-
 def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, source='schureman'):
     """
     Wrapper around the analysis() function, 
@@ -174,8 +167,6 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
         return COMP_mean_pd, COMP_all_pd
     else:
         return COMP_mean_pd
-
-
 
 
 def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
@@ -361,10 +352,6 @@ def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS
         return COMP_pd, ts_prediction
     else:
         return COMP_pd
-   
-
-
-
 
 
 def split_components(comp, CS_comps, dood_date_mid, xfac=False):
@@ -400,7 +387,6 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
         if comp_sel in const_list:
             A_i_inclCS[iC] = A_i[const_list.index(comp_sel)]
             phi_i_rad_str_inclCS[iC] = phi_i_rad_str[const_list.index(comp_sel)]
-  
     
     def get_CS_vars(iC_slave, DBETA_in):
         """
@@ -430,7 +416,7 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
         main_ids = np.where(CS_comps['CS_comps_from'] == comp_main)[0]
         comp_slave = CS_comps.loc[main_ids,'CS_comps_derive'].tolist()
         print('splitting component %s into %s'%(comp_main, comp_slave))
-
+        
         iC_main = const_list_inclCS.index(comp_main)
         iC_slave = const_list_inclCS.index(comp_slave[0])
         idslave_CScomp = CS_comps['CS_comps_derive'].tolist().index(comp_slave[0])
@@ -440,7 +426,7 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
         DTHETA, DALPHA, DBETA = get_CS_vars(iC_slave,0)
         A_i_inclCS[iC_main] = A_i_inclCS[iC_main]/DALPHA
         phi_i_rad_str_inclCS[iC_main] = (phi_i_rad_str_inclCS[iC_main]-DBETA)%(2*np.pi)
-
+        
         if len(comp_slave) == 1:
             A_i_inclCS[iC_slave] = A_i_inclCS[iC_main]*DTHETA
             phi_i_rad_str_inclCS[iC_slave] = (phi_i_rad_str_inclCS[iC_main]+np.deg2rad(degincr))%(2*np.pi)
@@ -465,19 +451,14 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
             phi_i_rad_str_inclCS[iC_slave] = (phi_i_rad_str_inclCS[iC_main]+np.deg2rad(degincr))%(2*np.pi)
         else:
             raise Exception('ERROR: length of comp_slave is invalid (%i)'%(len(comp_slave)))
-
+     
     phi_i_deg_str_inclCS = np.rad2deg(phi_i_rad_str_inclCS)
-  
+    
     comp_CS = pd.DataFrame({ 'A': A_i_inclCS, 'phi_deg': phi_i_deg_str_inclCS},index=const_list_inclCS)
     
     return comp_CS
-    
 
 
-
-
-
-    
 def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nodalfactors=True, xfac=False, fu_alltimes=True, source='schureman'):
     """
     generates a tidal prediction from a set of components A and phi values.
@@ -509,7 +490,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     -------
     ts_prediction_pd : pandas.DataFrame
         The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the prediction times and values.
-
+    
     """
     
     print('-'*100)
@@ -517,7 +498,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     print('%-20s = %s'%('nodalfactors',nodalfactors))
     print('%-20s = %s'%('xfac',xfac))
     print('%-20s = %s'%('fu_alltimes',fu_alltimes))
-
+    
     import numpy as np
     import pandas as pd
     from packaging import version
@@ -525,7 +506,6 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     from hatyan.foreman_core import get_foreman_v0_freq, get_foreman_nodalfactors
     
     COMP = comp.copy()
-    
     
     if times_pred_all is None:
         if times_ext is None or timestep_min is None:
@@ -535,7 +515,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     else:
         if times_ext is not None or timestep_min is not None:
             raise Exception('if argument times_pred_all is provided, the arguments times_ext and timestep_min are not allowed')
-
+    
     if not len(times_pred_all) > 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
     
@@ -552,7 +532,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     
     dood_date_mid = pd.Index([times_pred_all_pdDTI[len(times_pred_all_pdDTI)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
     dood_date_start = times_pred_all_pdDTI[:1] #first date (for v0, also freq?)
-
+    
     #retrieve const_list and frequency in correct order, then retrieve again but now with sorted const_list
     if source.lower()=='schureman':
         t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
@@ -568,7 +548,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
         raise Exception('invalid source value (schureman or foreman)')
     COMP['freq'] = t_const_freq_pd['freq']
     COMP = COMP.sort_values(by='freq')
-
+    
     A = np.array(COMP['A'])
     phi_rad = np.array(np.deg2rad(COMP['phi_deg']))
     
@@ -599,8 +579,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
         print('no nodal factors (fu) are calculated for (f=1, u=0)')
         f_i = pd.DataFrame(np.ones(len(const_list)),index=const_list).T
         u_i_rad = pd.DataFrame(np.zeros(len(const_list)),index=const_list).T
-
-
+    
     print('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
     if ~isinstance(times_pred_all_pdDTI,pd.DatetimeIndex) & (version.parse(pd.__version__) >= version.parse('1.2.0')): #fix for non-backwards compatible change in pandas, pandas version 1.1.2 is used for RWS version.
@@ -608,7 +587,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     else:
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start[0]).total_seconds().values
     times_from0allpred_s = np.transpose(times_from0allpred_s_orig[np.newaxis])
-
+    
     f_A = np.multiply(f_i.values,A)
     omeg_t = np.multiply(times_from0allpred_s,omega_i_rads)#_td)
     v_u_phi = np.subtract(np.add(v_0i_rad.values,u_i_rad.values),phi_rad)
@@ -619,9 +598,3 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     print('PREDICTION finished')
     
     return ts_prediction_pd
-        
-
-
-
-
-

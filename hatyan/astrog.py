@@ -100,11 +100,6 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataCulminations
 
 
-
-
-
-
-
 def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     """
     Makes use of the definitions dT, astrab and astrac.
@@ -183,9 +178,6 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataPhases
 
 
-
-
-
 def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52.1562):
     """
     Makes use of the definitions dT, astrab and astrac.
@@ -251,10 +243,6 @@ def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52
     dataSun = dataSun[np.logical_and(dataSun_dtnaive>=tFirst,dataSun_dtnaive<=tLast)].reset_index(drop=True)
     
     return dataSun
-
-
-
-
 
 
 def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52.1562):
@@ -336,9 +324,6 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     dataMoon = dataMoon[np.logical_and(dataMoon_dtnaive>=tFirst,dataMoon_dtnaive<=tLast)].reset_index(drop=True)
 
     return dataMoon
-
-
-
 
 
 def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
@@ -423,11 +408,6 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataAnomaly
 
 
-
-
-
-
-
 def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     """
     Makes use of the definitions dT, astrab and astrac.
@@ -484,10 +464,6 @@ def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataSeasons
 
 
-
-
-
-
 def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     """
     Python version of astrab.f in FORTRAN 77
@@ -531,13 +507,12 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
             LATMOO, lunar latitude (degrees)
             RAMOON, lunar right ascension (degrees, between 0 and 360)
             ANM,    mean lunar anomaly (degrees, between 0 and 360)
-
+    
     """
     import pandas as pd
     import numpy as np
     import datetime as dt
-
-
+    
     # check input
     if isinstance(date, pd.DatetimeIndex):
         pass
@@ -545,7 +520,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
         date = pd.DatetimeIndex([date])
     else:
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
-
+    
     if np.abs(lon)>180:
         raise Exception('Input variable longitude larger than 180deg')
     if np.abs(lat)>90:
@@ -678,24 +653,24 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # equation of center
     CENTR=(6910.10 -17.33*TIME/36525)*np.sin(ANS)+72.01*np.sin(2.*ANS) + 1.05*np.sin(3.*ANS)
     # planetary disturbances
-    PLANET= ( 4.838*np.cos(   VENTER       +1.5708)
-             +5.526*np.cos(2.*VENTER       +1.5723)
-             +0.666*np.cos(3.*VENTER       +4.7195)
-             +2.497*np.cos(2.*VENTER   -ANS+4.4986)
-             +1.559*np.cos(3.*VENTER   -ANS+1.3607)
-             +1.024*np.cos(3.*VENTER-2.*ANS+0.8875)
-             +7.208*np.cos(   TERJUP       +1.5898)
-             +2.731*np.cos(2.*TERJUP       +4.7168)
-             +2.600*np.cos(   TERJUP   -ANS+3.0503)
-             +1.610*np.cos(2.*TERJUP   -ANS+5.1068)
-             +0.556*np.cos(3.*TERJUP   -ANS+3.0946)
-             +2.043*np.cos(2.*TERMAR       +1.5660)
-             +1.770*np.cos(2.*TERMAR   -ANS+5.3454)
-             +0.585*np.cos(4.*TERMAR-2.*ANS+3.2432)
-             +0.500*np.cos(4.*TERMAR   -ANS+5.5317)
-             +0.425*np.cos(3.*TERMAR   -ANS+5.5449)
-             +0.419*np.cos(   TERSAT       +1.5767)
-             +0.320*np.cos(   TERSAT   -ANS+4.5242))
+    PLANET= (4.838*np.cos(   VENTER       +1.5708)+
+             5.526*np.cos(2.*VENTER       +1.5723)+
+             0.666*np.cos(3.*VENTER       +4.7195)+
+             2.497*np.cos(2.*VENTER   -ANS+4.4986)+
+             1.559*np.cos(3.*VENTER   -ANS+1.3607)+
+             1.024*np.cos(3.*VENTER-2.*ANS+0.8875)+
+             7.208*np.cos(   TERJUP       +1.5898)+
+             2.731*np.cos(2.*TERJUP       +4.7168)+
+             2.600*np.cos(   TERJUP   -ANS+3.0503)+
+             1.610*np.cos(2.*TERJUP   -ANS+5.1068)+
+             0.556*np.cos(3.*TERJUP   -ANS+3.0946)+
+             2.043*np.cos(2.*TERMAR       +1.5660)+
+             1.770*np.cos(2.*TERMAR   -ANS+5.3454)+
+             0.585*np.cos(4.*TERMAR-2.*ANS+3.2432)+
+             0.500*np.cos(4.*TERMAR   -ANS+5.5317)+
+             0.425*np.cos(3.*TERMAR   -ANS+5.5449)+
+             0.419*np.cos(   TERSAT       +1.5767)+
+             0.320*np.cos(   TERSAT   -ANS+4.5242))
     # geometric disturbance by the moon
     GEOM=6.454*np.sin(ELO)-0.424*np.sin(ELO-ANM)
     # aberration (correction for optical path)
@@ -788,9 +763,6 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     return astrabOutput
 
 
-
-
-
 def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     """
     Python version of astrac.f in FORTRAN 77.
@@ -851,16 +823,16 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     ANGLE  = np.array([180.   , 360.   , 90.    , 180.    ,   270.  , 360.    ,   -.5667,    -.5667,     -.8333,     -.8333, 360.     , 90.     , 180.     , 270.     ,   0.   ,  0.   ])
     CRITER = np.array([  0.001,   0.001,  0.0001,   0.0001,   0.0001,   0.0001,   0.0002,    0.0002,     0.0002,     0.0002,   0.00001,  0.00001,   0.00001,   0.00001,   0.002,  0.002])
     RAT    = np.array([346.8  , 346.8  , 12.2   ,  12.2   ,    12.2 ,  12.2   , 346.8   , -346.8   ,   360.    ,  -360.    ,   1.     ,  1.     ,   1.     ,   1.     , -10.08 , 10.08 ])
-    ANG =ANGLE [mode-1] # required value after iteration
-    CRIT=CRITER[mode-1] # allowed difference between ANG and iteration result
-    RATE=RAT   [mode-1] # estimated change per day for iteration
+    ANG = ANGLE[mode-1] # required value after iteration
+    CRIT = CRITER[mode-1] # allowed difference between ANG and iteration result
+    RATE = RAT[mode-1] # estimated change per day for iteration
     if (mode>=7).any() and (mode<=10).any(): # correct RATE in case of rise and set for latitude
         if np.abs(lat)>59:
             raise Exception('Latitude to close to poles (>59deg), cannot take polar days and nights into account')
         RATE=RATE*np.cos(np.deg2rad(lat))
 
     # define astrab output parameter corresponding to requested mode
-    if   ((mode== 1) | (mode== 2)).all():
+    if ((mode== 1) | (mode== 2)).all():
         IPAR = 'EHMOON'
     elif ((mode>= 3) & (mode<= 6)).all():
         IPAR = 'ELONG'
@@ -897,10 +869,6 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     TIMOUT=TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
 
     return TIMOUT
-
-
-
-
 
 
 def dT(dateIn,mode_dT='exact'):
@@ -1015,9 +983,6 @@ def dT(dateIn,mode_dT='exact'):
     return dT_TT
 
 
-
-
-
 def convert_str2datetime(datetime_in_list):
     """
     Tries to convert datetime_in_list (list of str or datetime.datetime) to list of datetime.datetime
@@ -1059,10 +1024,6 @@ def convert_str2datetime(datetime_in_list):
     return datetime_out_list
 
 
-
-
-
-
 def convert2perday(dataframeIn, timeformat='%H:%M %Z'):
     """
     converts normal astrog pd.DataFrame to one with the same information restructured per day
@@ -1090,11 +1051,6 @@ def convert2perday(dataframeIn, timeformat='%H:%M %Z'):
     dataframeOut['datetime'] = dataframeOut.index #overwrite datetime with dates
     
     return dataframeOut
-
-
-
-
-
 
 
 def plot_astrog_diff(pd_python, pd_fortran, typeUnit='-', typeLab=None, typeBand=None, timeBand=None):
@@ -1167,7 +1123,5 @@ def plot_astrog_diff(pd_python, pd_fortran, typeUnit='-', typeLab=None, typeBand
 
     axs = (ax1,ax2,ax3)
     return fig, axs
-
-
 
 
