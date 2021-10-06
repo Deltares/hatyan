@@ -507,7 +507,6 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     
     COMP = comp.copy()
     
-    
     if times_pred_all is None:
         if times_ext is None or timestep_min is None:
             raise Exception('if argument times_pred_all is not provided, the arguments times_ext and timestep_min are obligatory')
@@ -580,7 +579,6 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
         print('no nodal factors (fu) are calculated for (f=1, u=0)')
         f_i = pd.DataFrame(np.ones(len(const_list)),index=const_list).T
         u_i_rad = pd.DataFrame(np.zeros(len(const_list)),index=const_list).T
-    
     
     print('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600

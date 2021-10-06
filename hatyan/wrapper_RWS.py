@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+
 def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False):
     """
     Initializes the hatyan process for RWS related calculations. Besides the return variables,
@@ -164,8 +165,7 @@ def get_outputfoldername(file_config):
     """
     import datetime as dt
     import os
-
-
+    
     mode = file_config.split(os.sep)[-1].split('.')[0]
     time_now = dt.datetime.now()
     dir_output = os.path.join(os.getcwd(),'output__%s__%s'%(time_now.strftime('%Y%m%d_%H%M%S'),mode))
@@ -177,7 +177,5 @@ def get_outputfoldername(file_config):
         os.makedirs(dir_output)
     else:
         raise Exception('ERROR: dir_output already exists')
-
+    
     return dir_output
-
-

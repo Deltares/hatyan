@@ -75,7 +75,6 @@ anomalies_python.to_csv(os.path.join(dir_output,'anomalies.csv'),**pdtocsv_kwarg
 seasons_python = Astrog.astrog_seasons(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_MET)
 seasons_python.to_csv(os.path.join(dir_output,'seasons.csv'),**pdtocsv_kwargs)
 
-
 if compare2fortran:
     #%% load fortran results
     pkl_culm = os.path.join(dir_testdata,'other','astrog20_2000_2011.pkl')
@@ -112,7 +111,6 @@ if compare2fortran:
     seasons_fortran = pd.read_pickle(pkl_seas)
     seasons_fortran = seasons_fortran[np.logical_and(seasons_fortran['datetime']>=timeStart,seasons_fortran['datetime']<=timeEnd)].reset_index(drop=True)
     
-    
     #%% plot results (differences)
     fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(culminations_python[['datetime','type']], culminations_fortran[['datetime','type']], typeLab=['lower','upper'], timeBand=[-.18,.18])
     fig.savefig(os.path.join(dir_output,'culmination_differences.png'))
@@ -140,7 +138,6 @@ if compare2fortran:
     
     fig, (ax1,ax2,ax3) = Astrog.plot_astrog_diff(pd_python=seasons_python, pd_fortran=seasons_fortran, typeLab=['spring','summer','autumn','winter'], timeBand=[0,60])
     fig.savefig(os.path.join(dir_output,'season_differences.png'))
-
 
 #%%
 exit_RWS(timer_start) #provides footer to outputfile when calling this script with python

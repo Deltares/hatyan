@@ -40,7 +40,6 @@ times_freqdiff = pd.date_range(start=dt.datetime(2000,1,1),end=dt.datetime(2040,
 const_list_freqv0uf_hat55 = const_list_freqv0uf[:]
 if 'A0' in const_list_freqv0uf_hat55:
     const_list_freqv0uf_hat55.remove('A0')
-    
 
 dood_date_fu = pd.date_range(start=dt.datetime(1980,1,1), end=dt.datetime(2020,1,1), freq='60D')
 
@@ -57,11 +56,11 @@ dir_output_v0uplots = os.path.join('v0u_plots_timeseries')
 if not os.path.exists(dir_output_v0uplots):
     os.makedirs(dir_output_v0uplots)
 
-
 print('')
 print('#####################################################################')
 print('#### GET hatyan55 values ############################################')
 print('#####################################################################')
+
 
 def get_hatyan55_values(file_hatyan55):
     
@@ -78,7 +77,6 @@ def get_hatyan55_values(file_hatyan55):
     hatyan55_freq = hatyan55_freq.apply(pd.to_numeric,errors='ignore')
     hatyan55_freq = hatyan55_freq.set_index('NAAM')
     hatyan55_freq.index.name=None
-    
     
     #######################
     hatyan55_v0u = pd.DataFrame()
@@ -97,7 +95,7 @@ def get_hatyan55_values(file_hatyan55):
         drop_idx = []
         for x,y in zip(bool_droprowsbegin,bool_droprowsend):
             drop_idx = drop_idx+list(range(x,y+1))
-    
+        
         hatyan55_v0uf_1y = hatyan55_v0uf_raw_1y.drop(drop_idx).reset_index(drop=True)
         hatyan55_v0uf_1y = hatyan55_v0uf_1y.apply(pd.to_numeric,errors='ignore')
         hatyan55_v0uf_1y.index = hatyan55_freq.index
@@ -105,8 +103,8 @@ def get_hatyan55_values(file_hatyan55):
         hatyan55_v0u[year] = hatyan55_v0uf_1y['VU-FAKTOR']
         hatyan55_f[year] = hatyan55_v0uf_1y['F-FAKTOR']
     
-
     return hatyan55_freq, hatyan55_v0u, hatyan55_f, dood_date_hatyan55, dood_date_hatyan55_v0
+
 
 file_hatyan55 = os.path.join(dir_testdata,'other','hatyan55_output.txt')
 hatyan55_freq, hatyan55_v0u, hatyan55_f, dood_date_hatyan55, dood_date_hatyan55_v0 = get_hatyan55_values(file_hatyan55)
@@ -158,7 +156,6 @@ ax1.grid()
 fig.tight_layout()
 fig.savefig('test_foreman_R1R2.png')
 
-
 print('')
 print('#####################################################################')
 print('#### CALCULATING AND PLOTTING DOODSON NUMBERS #######################')
@@ -180,12 +177,10 @@ plt.legend(loc=1)
 #plt.yticks(np.arange(0, 2*np.pi+1, np.pi/2))
 plt.savefig(os.path.join('%s_%s_doodson_all.png'%(times_doodsonplot[0].strftime('%Y%m%d'), times_doodsonplot[-1].strftime('%Y%m%d'))))
 
-
 print('')
 print('#####################################################################')
 print('#### V0, FREQ TEST ##################################################')
 print('#####################################################################')
-
 
 v_0i_rad_F, t_const_freq_F = get_foreman_v0_freq(const_list_freqv0uf, dood_date_v0freq)
 v_0i_deg_F = np.rad2deg(v_0i_rad_F)
@@ -215,7 +210,6 @@ print('#### V0 for %s'%(dood_date_fu[0]))
 print(v0_test)
 print('components with significant (%e) differences for v0:\n%s'%(treshold_v0uf, v_0i_diff.loc[v_0i_diff_toolarge_bool,0]))
 print('#### END V0, FREQ TEST ##################')
-
 
 print('plotting...')
 fig, (ax1,ax2) = plt.subplots(2,1, figsize=(15,8),sharex=True)
@@ -253,7 +247,6 @@ ax2.set_ylabel('v0 [deg]')
 fig.tight_layout()
 fig.savefig('freq_v0.png')
 
-
 #difference in frequency over time
 print('calculating and plotting frequency difference over time')
 times_freqdiff_forplot = times_freqdiff[:1].append(times_freqdiff)
@@ -281,7 +274,6 @@ fig.tight_layout()
 fig.savefig('component_speed_difference.png')
 
 print('...done')
-
 
 #vuf-files per year
 print('creating v0uf files per year...')
@@ -314,12 +306,10 @@ for year_sel in dood_date_fu.year.unique():
     outpd.to_csv(dir_file.replace('.txt','.csv'))
 print('...done')
 
-
 print('')
 print('#####################################################################')
 print('#### NODAL FACTORS TEST (F, U) ######################################')
 print('#####################################################################')
-
 
 # NODAL FACTORS (F, U) FOREMAN
 f_i_FOR, u_i_rad_FOR = get_foreman_nodalfactors(const_list_freqv0uf, dood_date_fu)
@@ -340,7 +330,6 @@ u_i_deg_diff_toolarge_bool = u_i_deg_diff[0].abs()>treshold_v0uf
 f_test = pd.DataFrame({'f(hatyan)':f_i_HAT_xfac0.loc[:,0], 'f(foreman)':f_i_FOR.loc[:,0], 'f(H-F)':f_i_diff.loc[:,0], 'diff_toolarge':f_i_diff_toolarge_bool}, index=f_i_HAT_xfac0.index)
 u_test = pd.DataFrame({'u(hatyan)':u_i_deg_HAT.loc[:,0], 'u(foreman)':u_i_deg_FOR.loc[:,0], 'u(H-F)':u_i_deg_diff.loc[:,0], 'diff_toolarge':u_i_deg_diff_toolarge_bool}, index=u_i_deg_HAT.index)
 
-
 print('#### NODAL FACTOR F for %s'%(dood_date_fu[0]))
 print(f_test)
 print('components with significant (%e) differences for f:\n%s'%(treshold_v0uf, f_i_diff.loc[f_i_diff_toolarge_bool,0]))
@@ -348,7 +337,6 @@ print('#### NODAL FACTOR U for %s'%(dood_date_fu[0]))
 print(u_test)
 print('components with significant (%e) differences for u:\n%s'%(treshold_v0uf, u_i_deg_diff.loc[u_i_deg_diff_toolarge_bool,0]))
 print('#### END NODAL FACTOR TEST ##################')
-
 
 print('plotting...')
 fig, (ax1,ax2) = plt.subplots(2,1, figsize=(15,8))
@@ -386,11 +374,9 @@ for iC,const in enumerate(const_list_freqv0uf):
     ax2.legend(loc=1)
     ax2.grid()
     
-    
     fig.tight_layout()
     fig.savefig(os.path.join(dir_output_ufplots,'fu_%03d_%s.png'%(iC_hat,const)))
 print('...done')
-
 
 print('plotting v0u...')
 fig, (ax1,ax2) = plt.subplots(2,1, figsize=(15,8))
@@ -422,7 +408,5 @@ for iC,const in enumerate(const_list_freqv0uf):
         fig.tight_layout()
         fig.savefig(os.path.join(dir_output_v0uplots,'v0u_%03d_%s.png'%(iC_hat,const)))
 print('...done')
-       
-
 
 exit_RWS(timer_start)

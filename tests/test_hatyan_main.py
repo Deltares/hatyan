@@ -24,6 +24,8 @@ from hatyan.analysis_prediction import get_components_from_ts, prediction, analy
 from hatyan.hatyan_core import get_const_list_hatyan
 
 modulename_list = ['os','sys','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
+
+
 @pytest.mark.parametrize("modulename", [pytest.param('%s'%(stat), id='%s'%(stat)) for stat in modulename_list])
 @pytest.mark.unittest
 def test_import_libraries(modulename):
@@ -121,15 +123,14 @@ def test_analysis_settings():
     #comp0
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1]]
     ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
-
+    
     ts_comp_nfac1_fualltimes0_xfac1_peryear0 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_peryear=False)
-
+    
     ts_comp_nfac1_fualltimes1_xfac1 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True)
     ts_comp_nfac1_fualltimes0_xfac1 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True)
     ts_comp_nfac1_fualltimes1_xfac0 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False)
     ts_comp_nfac1_fualltimes0_xfac0 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False)
     ts_comp_nfac0_fualltimes0_xfac0 = analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False)
-    
     
     comp_A_expected = np.array([9.92687566e-04, 3.11039747e-02, 9.73652407e-02, 6.68645368e-02,
                                 4.02714135e-02, 2.44247279e-02, 1.34401343e-01, 2.69848016e-01,
@@ -310,7 +311,6 @@ def test_frommergedcomp():
     assert len(ts_prediction_direct_values) == len(expected_ts_prediction_data_pd_values)
     assert type(ts_prediction_direct_values) == type(expected_ts_prediction_data_pd_values)
     assert (np.abs(ts_prediction_direct_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
-    
 
 
 @pytest.mark.systemtest
@@ -432,7 +432,6 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     print('all HWLW values:')
     print(ts_ext_prediction_HWLWno)
     
-    
     HW_data = ts_ext_prediction_HWLWno[ts_ext_prediction_HWLWno['HWLWcode']==1]
     HW_data_diff1bool = (HW_data['HWLWno'].diff().iloc[1:].values==1)
     print('%i parts of HW array containing gaps:'%((~HW_data_diff1bool).sum()))
@@ -451,14 +450,13 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     
     assert HW_data_diff1bool.all()
     assert LW_data_diff1bool.all()
-
+    
     #ax1.set_xlim(times_ext_pred)
     #fig.tight_layout()
     #ax1.legend(loc=2, fontsize=7)#bbox_to_anchor=(1,1))
     #import matplotlib.dates as mdates
     #ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M"))
     #fig.savefig('tide_numbering_%i.png'%(yr), dpi=250)
-    
 
 
 @pytest.mark.parametrize("current_station", [pytest.param(x, id=x) for x in ['HOEKVHLD','DENHDR']])
@@ -562,7 +560,6 @@ def test_frommergedcomp_HWLW_345(current_station):
     assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWno'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWno) < 10E-9).all()
 
 
-    
 @pytest.mark.systemtest
 def test_19Ycomp4Ydia():
     # 1. define test data
@@ -609,8 +606,8 @@ def test_19Ycomp4Ydia():
 
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
-    
-    
+
+
 @pytest.mark.systemtest
 def test_19Ycomp4Ydia_compsplitsing():
     # 1. define test data
@@ -659,12 +656,8 @@ def test_19Ycomp4Ydia_compsplitsing():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()        
-    
-    
 
 
-    
-    
 @pytest.mark.systemtest
 def test_allfromdia():
     # 1. define test data
@@ -725,7 +718,7 @@ def test_allfromdia():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
-    
+
 
 @pytest.mark.systemtest
 def test_allfromdia_2008xfac0():
@@ -765,7 +758,3 @@ def test_allfromdia_2008xfac0():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
-
-     
-
-

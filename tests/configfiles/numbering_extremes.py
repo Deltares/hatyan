@@ -108,8 +108,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         #vertical reference
         #vertref='NAP'
         #END OF STATION SETTINGS
-    
-    
+        
         file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
         #file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
@@ -118,7 +117,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         
         file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
         #file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
-        
     
         #component groups
         COMP_merged = Components.read_components(filename=file_data_comp0)
@@ -130,7 +128,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         #ts_ext_validation = Timeseries.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
         #Timeseries.write_tsdia(ts=ts_prediction, station=current_station, vertref=vertref, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
         ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
-    
         
         if i_stat == 0:
             COMP_merged_CADZD = Components.read_components(filename=file_data_comp0.replace(current_station,'CADZD'))
@@ -160,7 +157,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             bool_wrtHWcadz = (ts_ext_prediction.index >= firstHWcadz) & (ts_ext_prediction['HWLWcode']==1)
             ts_firstlocalHW = ts_ext_prediction.loc[bool_wrtHWcadz].iloc[0] #first HW after HWcadzd
             M2phasediff = M2phasediff_raw
-    
             
         #print('tdiff %s:'%(current_station), ts_firstlocalHW.index-firstHWcadz)
         pdrow = pd.DataFrame({'time': [ts_firstlocalHW.name], 'HWtdiff_hr': [(ts_firstlocalHW.name-firstHWcadz).total_seconds()/3600], 'M2phase':COMP_merged.loc['M2','phi_deg'], 'M2phasediff':M2phasediff}, index=[current_station])
@@ -176,11 +172,10 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         #fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
         #fig.savefig('prediction_%im_%s_validation'%(times_step_pred, current_station))
-    
+        
         ax1.plot(ts_prediction.index, ts_prediction['values'], label=current_station, color=colors[i_stat])
         ax1.plot([ts_firstlocalHW.name,ts_firstlocalHW.name], [ts_firstlocalHW['values'], 2.5], '--', linewidth=1.5, color=colors[i_stat])
         ax1.plot(ts_firstlocalHW.name,ts_firstlocalHW['values'],'x', color=colors[i_stat])
-        
         
         if 1: #validation case
             #calculate tidal wave number
@@ -204,7 +199,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             else:
                 ts_ext_prediction_HWLWno = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
             
-            
             print(ts_ext_prediction_HWLWno)
             for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
                 ax2.text(pdrow.name,pdrow['values'],pdrow['HWLWno'].astype(int), color=colors[i_stat])
@@ -217,8 +211,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             ax2.plot([ts_firstlocalHW_fromcalc.index[0],ts_firstlocalHW_fromcalc.index[0]], [ts_firstlocalHW_fromcalc['values'].iloc[0], 2.5], '--', linewidth=1.5, color=colors[i_stat])
             ax2.plot(ts_firstlocalHW_fromcalc.index,ts_firstlocalHW_fromcalc['values'],'x', color=colors[i_stat])
     
-            
-        
     ax2.plot(pd_firstlocalHW_list.index,pd_firstlocalHW_list['values'],'-ok')
     
     stats['M2phasediff_hr'] = stats['M2phasediff']/360*12.420601
@@ -229,7 +221,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     print(stats)    
     print('')
     print(get_hatyan_freqs(['M2']))
-       
+    
     ax1.set_xlim(times_ext_pred)
     ax2.set_xlim(times_ext_pred_HWLWno)
     ax2.set_xlim([dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12)])
@@ -242,7 +234,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         import matplotlib.dates as mdates
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M"))
     fig.savefig('tide_numbering_%i.png'%(yr_HWLWno), dpi=250)
-
 
 if create_spatialplot:
     fig2, (fig2_ax1) = plt.subplots(1,1,figsize=(10,9))
@@ -267,6 +258,4 @@ if create_spatialplot:
         ctx.add_basemap(fig2_ax1, source=source_list[1], crs="EPSG:28992", attribution_size=5)
     fig2.savefig('tide_numbering_phasediff.png', dpi=250)
 
-
 exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
-

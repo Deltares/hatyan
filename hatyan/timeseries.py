@@ -536,7 +536,6 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     import hatyan
     version_no = hatyan.__version__
     
-    
     times_all = ts.index
     timeseries = ts['values']
     times_stepmin = (ts.index[1]-ts.index[0]).total_seconds()/60
@@ -1268,8 +1267,7 @@ def readts_dia(filename, station=None, block_ids=None):
         DataFrame with a 'values' column and a pd.DatetimeIndex as index in case of an equidistant file, or more columns in case of a non-equidistant file.
 
     """
- 
-
+    
     import pandas as pd
     import numpy as np
     
@@ -1284,7 +1282,7 @@ def readts_dia(filename, station=None, block_ids=None):
         if len(data_pd_all) != len(data_pd_all.index.unique()):
             raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
         data_pd = data_pd_all
-
+    
     else:
         diablocks_pd = get_diablocks(filename)
         str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=Timeseries.get_diablocks(filename)"'
@@ -1297,7 +1295,7 @@ def readts_dia(filename, station=None, block_ids=None):
             if len(ids_station)<1:
                 raise Exception('ERROR: no data block with requested station (%s) present in dia file. %s'%(station, str_getdiablockspd))
             elif len(ids_station)>1 and block_ids is None:
-                    raise Exception('ERROR: more than one data block with requested station (%s) present in dia file. Provide block_ids argument to readts_dia() (int, list of int or "allstation"). %s'%(station, str_getdiablockspd))
+                raise Exception('ERROR: more than one data block with requested station (%s) present in dia file. Provide block_ids argument to readts_dia() (int, list of int or "allstation"). %s'%(station, str_getdiablockspd))
             else: #exactly one occurrence or block_ids is provided
                 block_ids = ids_station
         

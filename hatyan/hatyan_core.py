@@ -29,6 +29,7 @@ file_pkl = os.path.join(os.path.dirname(file_path),'data_components_hatyan.pkl')
 v0uf_allT_frompkl = pd.read_pickle(file_pkl)
 v0uf_calculatewrite = False #master switch to determine whether the doodson table is calculated+written with calcwrite_baseforv0uf() or read from data_components_hatyan.pkl. The default is False.
 
+
 def get_v0uf_sel(const_list):
     """
     get_v0uf_sel
@@ -228,8 +229,8 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                             #harmonic constituents for 1-tide analysis
                             #A0 en 6 componenten
                             ['A0','M2','M4','M6','M8','M10','M12']
-                            }
-        
+                        }
+    
     const_list_options = const_lists_dict.keys()
     if listtype in const_list_options:
         const_list_hatyan = const_lists_dict[listtype]
@@ -362,13 +363,13 @@ def calcwrite_baseforv0uf():
     -------
     v0uf_all : TYPE
         DESCRIPTION.
-
+    
     """
     
     import pandas as pd
     # in solar days T=Cs=w0 (s is van solar, er is ook een Cl=w1=ia for lunar), S=w2=ib, H=w3=ic, P=w4=id, N=w5=ie, P1=w6=if, EDN=ExtendedDoodsonNumber
     # N zit is hier altijd 0 (regression of moons node), want dat wordt apart als knoopfactor gedaan
-                              #comp      T, S, H, P, N,P1,EDN,     u eqs                    f eqs 73-79           f M1 K1 L2 K2 M1C feqsstr          #comparison of v0 columns with lunar conversion to SLS and IHO
+    #                         comp       T, S, H, P, N,P1,EDN,     u eqs                    f eqs 73-79           f M1 K1 L2 K2 M1C feqsstr          #comparison of v0 columns with lunar conversion to SLS and IHO
     v0uf_base = pd.DataFrame({'A0':     [0, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  0
                               'SA':     [0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  1 #SA 2nd option from IHO
                               'SA_IHO1':[0, 0, 1, 0, 0,-1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: SA 1st option from IHO (used in SLS and t_tide). Nulpunt v0 ligt dicht bij jaarwisseling (2015,1,3,21,50,0)
@@ -613,7 +614,7 @@ def calcwrite_baseforv0uf():
                    '4M2S12': '4*M2 + 2*S2',                #[195]   
                    'N4': '2*N2',                           #extra added   
                    }
-
+    
     shallow_eqs_pd = pd.Series(shallow_eqs)
     
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
@@ -622,7 +623,7 @@ def calcwrite_baseforv0uf():
     shallow_eqs_sel_str = '\n'.join('comp_%s = %s'%(key.replace('(','').replace(')',''), val) for key, val in shallow_eqs_sel.iteritems()) #brackets are temporarily removed in order to evaluate functions
     v0uf_base_forv0u.eval(shallow_eqs_sel_str, inplace=True)
     v0uf_base_forf.eval(shallow_eqs_sel_str.replace('-','+'), inplace=True) #for f only multiplication is applied, never division
-
+    
     if 1:
         v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
     else: #option does not work at f definition yet
@@ -633,13 +634,13 @@ def calcwrite_baseforv0uf():
                 shallow_eqs_sel_str_nomult = shallow_eqs_sel_str_nomult.replace('%i*%s'%(mult,comp),'+'.join(mult*[comp]))
         v0uf_base_forfstr.eval(shallow_eqs_sel_str_nomult.replace('-','+'), inplace=True) #for f only multiplication is applied, never division
         v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forfstr])
-
+    
     #remove component_ prefix and restore brackets in component names (was necessary since equation cannot start with number)
     new_cols = [x.replace('comp_','') for x in v0uf_all.columns]
     for comp in ['M2(KS)2','2SN(MK)2','2KM(SN)2','3(SM)N2','2(MN)S6','2(MS)K6','2(MN)8','2(MS)8','2(MN)K9','2(MS)N10']:
         new_cols = [x.replace(comp.replace('(','').replace(')',''),comp) for x in new_cols]
     v0uf_all.columns.values[:] = new_cols
-
+    
     if 1:
         v0uf_allT = v0uf_all.T
     else: #option does not work at f definition yet
@@ -648,7 +649,7 @@ def calcwrite_baseforv0uf():
         v0uf_allT[index_fstr] = v0uf_allT_obj.loc[:,index_fstr]
     
     v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
-
+    
     pd.to_pickle(v0uf_allT,file_pkl)
     
     return v0uf_allT
@@ -695,7 +696,7 @@ def get_hatyan_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw
     v0uf_sel_freq = v0uf_sel[['T','S','H','P','P1']]
     
     DOMEGA_speed = np.dot(v0uf_sel_freq.values,multiply_variables)
-
+    
     t_const_speed = DOMEGA_speed[:,0]
     t_const_freq = t_const_speed/(2*np.pi) #aantal rotaties per uur, freq
     np.seterr(divide='ignore') #suppress divide by 0 warning
@@ -733,7 +734,7 @@ def get_hatyan_v0(const_list, dood_date):
     
     T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date) #N is not used here
     multiply_variables = np.stack([T_rad,S_rad, H_rad, P_rad, P1_rad])
-
+    
     v0uf_sel = get_v0uf_sel(const_list=const_list)
     v0uf_sel_v = v0uf_sel[['T','S','H','P','P1']]
     
@@ -773,7 +774,6 @@ def get_hatyan_u(const_list, dood_date):
     DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_hatyan_constants(dood_date)
     DHOMI = (DOMEGA-DIKL)*0.5
     DHOPI = (DOMEGA+DIKL)*0.5
-    
     
     DTHN = np.tan(N_rad*0.5)
     DATC = np.arctan2(np.cos(DHOMI)*DTHN,np.cos(DHOPI))
@@ -917,8 +917,6 @@ def get_hatyan_f(const_list, dood_date, xfac):
         f_i_pd = correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac=xfac)
     
     return f_i_pd
-    
-    
 
 
 def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):

@@ -5,7 +5,7 @@ Created on Thu Dec 24 10:33:54 2020
 @author: veenstra
 """
 import pytest
-import os, sys, glob#, getopt, shutil
+import os, sys
 #sys.path.append(r'c:\DATA\hatyan_github')
 import numpy as np
 import pandas as pd
