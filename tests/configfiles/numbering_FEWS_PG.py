@@ -3,23 +3,16 @@
 
 """
 
-import os, sys#, getopt, shutil
-#sys.path.append(r'c:\DATA\hatyan_github')
+import os, sys
 import datetime as dt
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 plt.close('all')
 from netCDF4 import Dataset, num2date
-
-from hatyan import timeseries as Timeseries
-from hatyan import components as Components
-from hatyan.hatyan_core import get_hatyan_freqs
-from hatyan.wrapper_RWS import init_RWS, exit_RWS
-from hatyan.analysis_prediction import get_components_from_ts, analysis, prediction
+import hatyan
 
 file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -45,20 +38,20 @@ station_name = 'HOEKVHLD'
 file_ncout = os.path.join(dir_output,'%s_getijnummers_new.nc'%(station_name))
 
 if analyse_ts_bool:
-    COMP_merged = analysis(ts=ts_meas, const_list='year')
-    ts_prediction_fromcomp = prediction(comp=COMP_merged, times_pred_all=ts_prediction.index, xfac=True)#, fu_alltimes=False)
+    COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year')
+    ts_prediction_fromcomp = hatyan.prediction(comp=COMP_merged, times_pred_all=ts_prediction.index, xfac=True)#, fu_alltimes=False)
 else:
-    COMP_merged = Components.read_components(filename=file_comp)
-    ts_prediction_fromcomp_2019 = prediction(comp=COMP_merged, times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
-    ts_prediction_fromcomp_2020 = prediction(comp=COMP_merged, times_ext=[dt.datetime(2020,1,1),dt.datetime(2020,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
+    COMP_merged = hatyan.read_components(filename=file_comp)
+    ts_prediction_fromcomp_2019 = hatyan.prediction(comp=COMP_merged, times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
+    ts_prediction_fromcomp_2020 = hatyan.prediction(comp=COMP_merged, times_ext=[dt.datetime(2020,1,1),dt.datetime(2020,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
     ts_prediction_fromcomp = ts_prediction_fromcomp_2019.append(ts_prediction_fromcomp_2020)
     ts_prediction_fromcomp.index = ts_prediction_fromcomp.index-dt.timedelta(hours=1)
 
-Timeseries.check_ts(ts_prediction)
-ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)#, calc_HWLWlocal=True)
-ts_ext_prediction_nos = Timeseries.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=station_name)
+hatyan.check_ts(ts_prediction)
+ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)#, calc_HWLWlocal=True)
+ts_ext_prediction_nos = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=station_name)
 
-fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_validation=ts_prediction_fromcomp, ts_ext=ts_ext_prediction)
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_prediction_fromcomp, ts_ext=ts_ext_prediction)
 ax2.set_ylim(-0.2,0.2)
 fig.savefig(file_ncout.replace('.nc','.png'))
 
@@ -70,7 +63,7 @@ ax2.plot(ts_ext_prediction_nos.index,ts_ext_prediction_nos['HWLWno'].diff(),'o')
 ax2.set_ylim(-1,2)
 fig.savefig(file_ncout.replace('.nc','_nrs.png'))
 
-Timeseries.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=1)
+hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=1)
 
 
 #from dfm_tools.get_nc_helpers import get_ncvardimlist
@@ -81,4 +74,4 @@ data_ncout.variables['waterlevel_astro_LW_numbers']
 data_ncout.variables['waterlevel_astro_HW_numbers']
 
 
-exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python

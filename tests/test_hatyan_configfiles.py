@@ -8,11 +8,9 @@ Created on Sat Apr  3 15:42:40 2021
 
 
 import pytest
-import os#, sys
-#sys.path.append(r'c:\DATA\hatyan_github')
+import os
 import glob
-
-from hatyan.wrapper_RWS import get_outputfoldername
+import hatyan
 
 dir_scriptfile = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_tests = os.path.abspath(os.path.join(dir_scriptfile,os.pardir))  #1 level up from dir_scripts
@@ -38,7 +36,7 @@ def test_configfiles(file_config):
     file_config = os.path.join(dir_tests,'configfiles','predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py')
     """
     # 1. Set up test data
-    dir_output = get_outputfoldername(file_config)
+    dir_output = hatyan.get_outputfoldername(file_config)
     if not os.path.exists(dir_output):
         os.mkdir(dir_output)
 

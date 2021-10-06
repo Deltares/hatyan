@@ -17,9 +17,21 @@ file_readme = os.path.join(dir_scripts,'..','README.md')
 with open(file_readme) as f:
     data_readme = pd.Series(f.readlines())
 init_pre = pd.Series(['# -*- coding: utf-8 -*-\n','"""\n'])
-init_post = pd.Series(['"""\n','\n','__author__ = """Jelmer Veenstra"""\n',"__email__ = 'jelmer.veenstra@deltares.nl'\n","__version__ = '%s'\n"%(hatyan.__version__)])
+init_post = pd.Series(['\n',
+                       '"""\n',
+                       '\n',
+                       '__author__ = """Jelmer Veenstra"""\n',
+                       "__email__ = 'jelmer.veenstra@deltares.nl'\n","__version__ = '%s'\n"%(hatyan.__version__),
+                       '\n',
+                       'from hatyan.analysis_prediction import *\n',
+                       'from hatyan.astrog import *\n',
+                       'from hatyan.components import *\n',
+                       'from hatyan.foreman_core import *\n',
+                       'from hatyan.hatyan_core import *\n',
+                       'from hatyan.timeseries import *\n',
+                       'from hatyan.wrapper_RWS import *\n'])
 
-data_init_out = pd.concat([init_pre,data_readme,pd.Series(['\n']),init_post])
+data_init_out = pd.concat([init_pre,data_readme,init_post])
 data_init_out_str = data_init_out.str.cat()
 
 with open(file_init,'w') as f:

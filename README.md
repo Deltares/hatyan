@@ -58,40 +58,36 @@ Getting started
 ```python
 import os
 import datetime as dt
-
-from hatyan import timeseries as Timeseries
-from hatyan import components as Components
-from hatyan.analysis_prediction import get_components_from_ts, prediction
-from hatyan.hatyan_core import get_const_list_hatyan
+import hatyan
 
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
-const_list = get_const_list_hatyan('year')
+const_list = hatyan.get_const_list_hatyan('year')
 
 #reading and editing time series, results in a pandas DataFrame a 'values' column (water level in meters) and a pd.DatetimeIndex as index (timestamps as datetime.datetime)
 file_data_meas = os.path.join(r'n:\\Deltabox\\Bulletin\\veenstra\\VLISSGN_waterlevel_20101201_20140101.noos')
 times_ext = [dt.datetime(2012,1,1),dt.datetime(2013,1,1)]
 timestep_min = 10
-ts_meas = Timeseries.readts_noos(filename=file_data_meas)
-ts_meas = Timeseries.resample_timeseries(ts_meas, timestep_min=timestep_min)
-ts_meas = Timeseries.crop_timeseries(ts=ts_meas, times_ext=times_ext)
+ts_meas = hatyan.readts_noos(filename=file_data_meas)
+ts_meas = hatyan.resample_timeseries(ts_meas, timestep_min=timestep_min)
+ts_meas = hatyan.crop_timeseries(ts=ts_meas, times_ext=times_ext)
 
 #tidal analysis and plotting of results. commented: saving figure  
-comp_frommeas = get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
-fig,(ax1,ax2) = Components.plot_components(comp=comp_frommeas)
+comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
+fig,(ax1,ax2) = hatyan.plot_components(comp=comp_frommeas)
 #fig.savefig('components_VLISSGN_4Y.png')
 
 #tidal prediction and plotting of results. commented: saving figure and writing to netCDF
-ts_prediction = prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
-fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
+ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
 ax1.legend(['prediction','measurement','difference','mean of prediction'])
 ax2.set_ylim(-0.5,0.5)
 #fig.savefig('prediction_%im_VLISSGN_measurements'%(timestep_min))
 
 #calculation of HWLW and plotting of results. commented: saving figure
-ts_ext_prediction = Timeseries.calc_HWLW(ts=ts_prediction)
-fig, (ax1,ax2) = Timeseries.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
+ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
 #fig.savefig('prediction_%im_VLISSGN_HWLW'%(timestep_min))
-#Timeseries.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='VLISSGN', vertref='NAP', filename='prediction_%im_VLISSGN.nc'%(timestep_min))
+#hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='VLISSGN', vertref='NAP', filename='prediction_%im_VLISSGN.nc'%(timestep_min))
 ```
 
 Information for developers
@@ -143,7 +139,7 @@ Generate documentation:
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, update history.rst, commit changes, bumpversion minor, create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input

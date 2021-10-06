@@ -11,8 +11,7 @@ import pytest
 import numpy as np
 import pandas as pd
 import datetime as dt
-
-from hatyan import astrog as Astrog
+import hatyan
 
 
 @pytest.mark.systemtest
@@ -56,9 +55,9 @@ def test_astrog_dT():
                           0.00080074])
     
     # 3. Run test
-    dTLastOut = Astrog.dT(timeInput,mode_dT='last')
-    dTHistOut = Astrog.dT(timeInput,mode_dT='historical')
-    dTExctOut = Astrog.dT(timeInput,mode_dT='exact')
+    dTLastOut = hatyan.dT(timeInput,mode_dT='last')
+    dTHistOut = hatyan.dT(timeInput,mode_dT='historical')
+    dTExctOut = hatyan.dT(timeInput,mode_dT='exact')
     
     # 4. Vefication
     assert type(dTLastOut) == np.ndarray
@@ -97,7 +96,7 @@ def test_astrog_astrab():
                  'ANM':    np.array([151.15606465])}
     
     # 3. Run test
-    parOutput = Astrog.astrab(timeInput,Astrog.dT(timeInput,mode_dT='last'))
+    parOutput = hatyan.astrab(timeInput,hatyan.dT(timeInput,mode_dT='last'))
     
     # 4. Vefication
     assert type(parOutput) == dict
@@ -134,7 +133,7 @@ def test_astrog_astrac():
     # 3. Run test
     timeOutput = []
     for iMode in range(1,17):
-        timeOutput.append(Astrog.astrac(timeInput,Astrog.dT(timeInput),np.array(iMode)))
+        timeOutput.append(hatyan.astrac(timeInput,hatyan.dT(timeInput),np.array(iMode)))
     
     # 4. Vefication
     for iMode in range(0,16):

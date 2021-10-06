@@ -6,30 +6,26 @@ Created on Wed Mar 10 23:40:17 2021
 """
 
 import sys
-#sys.path.append(r'c:\DATA\hatyan_github')
 import datetime as dt
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 plt.close('all')
 import pandas as pd
-
-from hatyan.foreman_core import get_foreman_doodson_nodal_harmonic, get_foreman_shallowrelations, get_foreman_v0_freq, get_foreman_nodalfactors
-from hatyan.hatyan_core import get_doodson_eqvals, get_hatyan_freqs, get_hatyan_v0, get_hatyan_u, get_hatyan_f, get_const_list_hatyan
-from hatyan.wrapper_RWS import init_RWS, exit_RWS
+import hatyan
 
 file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = init_RWS(file_config, sys.argv, interactive_plots=False) #provides header to outputfile when calling this script with python
+dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False) #provides header to outputfile when calling this script with python
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
-const_list_hatyan195_orig = get_const_list_hatyan('all_originalorder')
+const_list_hatyan195_orig = hatyan.get_const_list_hatyan('all_originalorder')
 
 times_doodsonplot = pd.date_range(start=dt.datetime(2018,12,1),end=dt.datetime(2025,1,1),freq='60min')
 
 const_list_freqv0uf = ['A0','SA','SSA','MSM','MM','MSF','MF','2Q1','Q1','O1','TAU1','M1C','CHI1','PI1','P1','S1','K1','PSI1','J1','OO1','2N2','MU2','N2','NU2','M2','LABDA2','L2','T2','S2','R2','K2','ETA2','M3']
-#const_list_freqv0uf = get_const_list_hatyan('year')
-#const_list_freqv0uf = get_const_list_hatyan('springneap')
+#const_list_freqv0uf = hatyan.get_const_list_hatyan('year')
+#const_list_freqv0uf = hatyan.get_const_list_hatyan('springneap')
 #const_list_freqv0uf = ['MU2','N2','NU2','M2','2MN2','S2','M4','MS4','M6','2MS6','M8','3MS8'] #xfac list, should also entail constituents for which f==1
 #const_list_freqv0uf = ['M2','K1','S2','2MN2'] 
 #const_list_freqv0uf = ['MM','MF','Q1','O1','K1','M2','N2','K2','S2','J1','OO1'] #M2=2N2 MU2 NU2 N2 M2. list also for SLS and R
@@ -115,8 +111,8 @@ v0uffile_2016 = pd.read_csv(file_fwithxfac, skiprows=3, delim_whitespace=True, n
 v0uffile_2016 = v0uffile_2016.set_index('Naam')
 
 hatyan55_freq_conv = np.array([0]+(hatyan55_freq.loc[const_list_freqv0uf_hat55,'HOEKSNELHEID[deg/hr]'].values/360).tolist())
-v_0i_rad_H_195 = get_hatyan_v0(const_list_hatyan195_orig, dood_date_hatyan55_v0)
-u_i_rad_195 = get_hatyan_u(const_list=const_list_hatyan195_orig, dood_date=dood_date_hatyan55)
+v_0i_rad_H_195 = hatyan.get_hatyan_v0(const_list_hatyan195_orig, dood_date_hatyan55_v0)
+u_i_rad_195 = hatyan.get_hatyan_u(const_list=const_list_hatyan195_orig, dood_date=dood_date_hatyan55)
 v0u_deg_195 = np.rad2deg(v_0i_rad_H_195+u_i_rad_195)%360
 hatyan55py_v0u_diff = ((v0u_deg_195.iloc[1:,:]-hatyan55_v0u.values)+180)%360-180 #first remove A0 and use .values to ignore column names
 hatyan55_ucorr = (hatyan55_v0u-np.rad2deg(v_0i_rad_H_195.iloc[1:,:].values)+180)%360-180
@@ -126,8 +122,8 @@ print('#####################################################################')
 print('#### READ FOREMAN TABLE TEST ########################################')
 print('#####################################################################')
 
-foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-foreman_shallowrelations = get_foreman_shallowrelations()
+foreman_doodson_harmonic, foreman_nodal_harmonic = hatyan.get_foreman_doodson_nodal_harmonic()
+foreman_shallowrelations = hatyan.get_foreman_shallowrelations()
 
 foreman_harmonic_doodson_all_list = foreman_doodson_harmonic.index.tolist()
 foreman_harmonic_nodal_all_list = foreman_nodal_harmonic.index.unique().tolist()
@@ -162,7 +158,7 @@ print('#### CALCULATING AND PLOTTING DOODSON NUMBERS #######################')
 print('#####################################################################')
 
 #get and plot doodson values
-dood_T_HAT, dood_S_HAT, dood_H_HAT, dood_P_HAT, dood_N_HAT, dood_P1_HAT = get_doodson_eqvals(times_doodsonplot)
+dood_T_HAT, dood_S_HAT, dood_H_HAT, dood_P_HAT, dood_N_HAT, dood_P1_HAT = hatyan.get_doodson_eqvals(times_doodsonplot)
 
 plt.figure(figsize=(15,5))
 plt.title('doodson all')
@@ -182,15 +178,15 @@ print('#####################################################################')
 print('#### V0, FREQ TEST ##################################################')
 print('#####################################################################')
 
-v_0i_rad_F, t_const_freq_F = get_foreman_v0_freq(const_list_freqv0uf, dood_date_v0freq)
+v_0i_rad_F, t_const_freq_F = hatyan.get_foreman_v0_freq(const_list_freqv0uf, dood_date_v0freq)
 v_0i_deg_F = np.rad2deg(v_0i_rad_F)
 
-t_const_freq_H = get_hatyan_freqs(const_list_freqv0uf, dood_date_v0freq) #dood_date is not so relevant
-v_0i_rad_H = get_hatyan_v0(const_list_freqv0uf, dood_date_v0freq)
+t_const_freq_H = hatyan.get_hatyan_freqs(const_list_freqv0uf, dood_date_v0freq) #dood_date is not so relevant
+v_0i_rad_H = hatyan.get_hatyan_v0(const_list_freqv0uf, dood_date_v0freq)
 v_0i_deg_H = np.rad2deg(v_0i_rad_H)
 
 #export hatyan constituents and frequencies
-t_const_freq_pd = get_hatyan_freqs(const_list_hatyan195_orig)
+t_const_freq_pd = hatyan.get_hatyan_freqs(const_list_hatyan195_orig)
 t_const_freq_pd.to_csv('hatyan_frequencies.csv')
 
 freq_diff = t_const_freq_H['freq']-t_const_freq_F['freq']
@@ -252,7 +248,7 @@ print('calculating and plotting frequency difference over time')
 times_freqdiff_forplot = times_freqdiff[:1].append(times_freqdiff)
 const_list_forplot = ['']+const_list_freqv0uf #to make pcolormesh possible
 
-t_const_freq, t_const_speed_all = get_hatyan_freqs(const_list_freqv0uf, dood_date=times_freqdiff, sort_onfreq=False, return_allraw=True)
+t_const_freq, t_const_speed_all = hatyan.get_hatyan_freqs(const_list_freqv0uf, dood_date=times_freqdiff, sort_onfreq=False, return_allraw=True)
 t_const_freq_all = t_const_speed_all/(2*np.pi) #aantal rotaties per uur, freq
 np.seterr(divide='ignore') #suppress divide by 0 warning
 t_const_perds_all = 1/t_const_freq_all #period [hr]
@@ -282,10 +278,10 @@ for year_sel in dood_date_fu.year.unique():
     dood_date_mid = pd.DatetimeIndex([dt.datetime(year_sel,7,2)])
     print(year_sel)
     
-    v_0i_rad = get_hatyan_v0(const_list=const_list_freqv0uf, dood_date=dood_date_start) #v0 on beginning of year
-    u_i_rad = get_hatyan_u(const_list=const_list_freqv0uf, dood_date=dood_date_mid)
-    f_i_xfac0 = get_hatyan_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=False) #helemaal geen xfac toepassen, is voor eg S2 anders en dit is hatyan55 berekening
-    f_i_xfac1 = get_hatyan_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=True)
+    v_0i_rad = hatyan.get_hatyan_v0(const_list=const_list_freqv0uf, dood_date=dood_date_start) #v0 on beginning of year
+    u_i_rad = hatyan.get_hatyan_u(const_list=const_list_freqv0uf, dood_date=dood_date_mid)
+    f_i_xfac0 = hatyan.get_hatyan_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=False) #helemaal geen xfac toepassen, is voor eg S2 anders en dit is hatyan55 berekening
+    f_i_xfac1 = hatyan.get_hatyan_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=True)
     
     vuf_v0_deg = np.remainder(np.rad2deg(v_0i_rad),360)
     vuf_u_deg = np.remainder(np.rad2deg(u_i_rad)+180,360)-180
@@ -312,15 +308,15 @@ print('#### NODAL FACTORS TEST (F, U) ######################################')
 print('#####################################################################')
 
 # NODAL FACTORS (F, U) FOREMAN
-f_i_FOR, u_i_rad_FOR = get_foreman_nodalfactors(const_list_freqv0uf, dood_date_fu)
+f_i_FOR, u_i_rad_FOR = hatyan.get_foreman_nodalfactors(const_list_freqv0uf, dood_date_fu)
 u_i_deg_FOR = np.rad2deg(u_i_rad_FOR)
 
 # NODAL FACTORS (F, U) HATYAN
-u_i_rad_HAT = get_hatyan_u(const_list_freqv0uf, dood_date_fu)
+u_i_rad_HAT = hatyan.get_hatyan_u(const_list_freqv0uf, dood_date_fu)
 u_i_rad_HAT = (u_i_rad_HAT+np.pi)%(2*np.pi)-np.pi
 u_i_deg_HAT = np.rad2deg(u_i_rad_HAT)
-f_i_HAT_xfac0 = get_hatyan_f(const_list_freqv0uf, dood_date_fu, xfac=False)
-f_i_HAT_xfac1 = get_hatyan_f(const_list_freqv0uf, dood_date_fu, xfac=True)
+f_i_HAT_xfac0 = hatyan.get_hatyan_f(const_list_freqv0uf, dood_date_fu, xfac=False)
+f_i_HAT_xfac1 = hatyan.get_hatyan_f(const_list_freqv0uf, dood_date_fu, xfac=True)
 
 f_i_diff = f_i_HAT_xfac0-f_i_FOR
 u_i_deg_diff = u_i_deg_HAT-u_i_deg_FOR
@@ -409,4 +405,4 @@ for iC,const in enumerate(const_list_freqv0uf):
         fig.savefig(os.path.join(dir_output_v0uplots,'v0u_%03d_%s.png'%(iC_hat,const)))
 print('...done')
 
-exit_RWS(timer_start)
+hatyan.exit_RWS(timer_start)
