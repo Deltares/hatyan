@@ -5,7 +5,7 @@ name: pytest devenv
 
 on:
   push:
-    branches: [ main , development ]
+    branches: [ main development ]
     paths:
       - hatyan/**
   pull_request:
