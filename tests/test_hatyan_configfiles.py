@@ -3,11 +3,12 @@
 Created on Sat Apr  3 15:42:40 2021
 
 @author: veenstra
+
 """
 
 
 import pytest
-import os, sys
+import os#, sys
 #sys.path.append(r'c:\DATA\hatyan_github')
 import glob
 
@@ -18,7 +19,7 @@ dir_tests = os.path.abspath(os.path.join(dir_scriptfile,os.pardir))  #1 level up
 
 dir_output = os.path.join(dir_tests,'output_configfiles')
 if not os.path.exists(dir_output):
-	os.mkdir(dir_output)
+    os.mkdir(dir_output)
 os.chdir(dir_output)
 
 
@@ -28,6 +29,8 @@ os.chdir(dir_output)
 list_configfiles = glob.glob(os.path.join(dir_tests,'configfiles','*.py'))
 list_configfiles = [x for x in list_configfiles if '_interactive' not in x]
 #list_configfiles = ['predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py']
+
+
 @pytest.mark.acceptance
 @pytest.mark.parametrize("file_config", [pytest.param(file_config, id=os.path.basename(file_config).replace('.py','')) for file_config in list_configfiles])
 def test_configfiles(file_config):

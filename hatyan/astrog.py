@@ -678,24 +678,24 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # equation of center
     CENTR=(6910.10 -17.33*TIME/36525)*np.sin(ANS)+72.01*np.sin(2.*ANS) + 1.05*np.sin(3.*ANS)
     # planetary disturbances
-    PLANET= ( 4.838*np.cos(   VENTER       +1.5708)
-             +5.526*np.cos(2.*VENTER       +1.5723)
-             +0.666*np.cos(3.*VENTER       +4.7195)
-             +2.497*np.cos(2.*VENTER   -ANS+4.4986)
-             +1.559*np.cos(3.*VENTER   -ANS+1.3607)
-             +1.024*np.cos(3.*VENTER-2.*ANS+0.8875)
-             +7.208*np.cos(   TERJUP       +1.5898)
-             +2.731*np.cos(2.*TERJUP       +4.7168)
-             +2.600*np.cos(   TERJUP   -ANS+3.0503)
-             +1.610*np.cos(2.*TERJUP   -ANS+5.1068)
-             +0.556*np.cos(3.*TERJUP   -ANS+3.0946)
-             +2.043*np.cos(2.*TERMAR       +1.5660)
-             +1.770*np.cos(2.*TERMAR   -ANS+5.3454)
-             +0.585*np.cos(4.*TERMAR-2.*ANS+3.2432)
-             +0.500*np.cos(4.*TERMAR   -ANS+5.5317)
-             +0.425*np.cos(3.*TERMAR   -ANS+5.5449)
-             +0.419*np.cos(   TERSAT       +1.5767)
-             +0.320*np.cos(   TERSAT   -ANS+4.5242))
+    PLANET= (4.838*np.cos(   VENTER       +1.5708)+
+             5.526*np.cos(2.*VENTER       +1.5723)+
+             0.666*np.cos(3.*VENTER       +4.7195)+
+             2.497*np.cos(2.*VENTER   -ANS+4.4986)+
+             1.559*np.cos(3.*VENTER   -ANS+1.3607)+
+             1.024*np.cos(3.*VENTER-2.*ANS+0.8875)+
+             7.208*np.cos(   TERJUP       +1.5898)+
+             2.731*np.cos(2.*TERJUP       +4.7168)+
+             2.600*np.cos(   TERJUP   -ANS+3.0503)+
+             1.610*np.cos(2.*TERJUP   -ANS+5.1068)+
+             0.556*np.cos(3.*TERJUP   -ANS+3.0946)+
+             2.043*np.cos(2.*TERMAR       +1.5660)+
+             1.770*np.cos(2.*TERMAR   -ANS+5.3454)+
+             0.585*np.cos(4.*TERMAR-2.*ANS+3.2432)+
+             0.500*np.cos(4.*TERMAR   -ANS+5.5317)+
+             0.425*np.cos(3.*TERMAR   -ANS+5.5449)+
+             0.419*np.cos(   TERSAT       +1.5767)+
+             0.320*np.cos(   TERSAT   -ANS+4.5242))
     # geometric disturbance by the moon
     GEOM=6.454*np.sin(ELO)-0.424*np.sin(ELO-ANM)
     # aberration (correction for optical path)

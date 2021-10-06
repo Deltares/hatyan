@@ -8,8 +8,7 @@ Created on Mon Jan 27 17:21:13 2020
 
 
 import pytest
-import os, sys
-#sys.path.append(r'c:\DATA\hatyan_github')
+import os
 import numpy as np
 import pandas as pd
 import datetime as dt
