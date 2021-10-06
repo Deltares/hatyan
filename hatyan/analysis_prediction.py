@@ -65,13 +65,6 @@ def vectoravg(A_all, phi_deg_all):
     return A_mean, phi_deg_mean
 
 
-
-
-
-
-
-
-
 def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, source='schureman'):
     """
     Wrapper around the analysis() function, 
@@ -174,8 +167,6 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
         return COMP_mean_pd, COMP_all_pd
     else:
         return COMP_mean_pd
-
-
 
 
 def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
@@ -364,9 +355,6 @@ def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS
    
 
 
-
-
-
 def split_components(comp, CS_comps, dood_date_mid, xfac=False):
     """
     component splitting function
@@ -472,9 +460,6 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
     
     return comp_CS
     
-
-
-
 
 
     
@@ -620,8 +605,5 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     
     return ts_prediction_pd
         
-
-
-
 
 

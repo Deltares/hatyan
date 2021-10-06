@@ -25,9 +25,6 @@ from hatyan.analysis_prediction import get_components_from_ts, prediction, analy
 from hatyan.hatyan_core import get_const_list_hatyan
 
 
-
-
-
 modulename_list = ['os','sys','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
 @pytest.mark.parametrize("modulename", [pytest.param('%s'%(stat), id='%s'%(stat)) for stat in modulename_list])
 @pytest.mark.unittest
@@ -35,9 +32,6 @@ def test_import_libraries(modulename):
     exec('import %s'%(modulename))
     if modulename == 'pyproj':
         exec('from pyproj import Transformer')
-
-
-
 
 
 @pytest.mark.unittest
@@ -69,8 +63,6 @@ def test_readts_dia_multiblock():
     
 
 
-
-
 @pytest.mark.unittest
 def test_readts_noos_resamplecrop():
 
@@ -89,9 +81,6 @@ def test_readts_noos_resamplecrop():
     assert ts_measurements_group0_rescrop.index[-1] == pd.Timestamp('2018-04-01')
     assert ts_measurements_group0_rescrop['values'][0] == 2.5
     assert ts_measurements_group0_rescrop['values'][-1] == 1.05
-
-
-
 
 
 def test_writenetcdf():
@@ -129,7 +118,6 @@ def test_writenetcdf():
     os.remove(file_nc)
 
 
-
 @pytest.mark.unittest
 def test_analysis_settings():
     
@@ -165,11 +153,6 @@ def test_analysis_settings():
     assert (np.abs(ts_comp_nfac1_fualltimes0_xfac1_peryear0-ts_comp_nfac1_fualltimes0_xfac1) < 10E-9).all().all()
     assert (np.abs(ts_comp_nfac1_fualltimes0_xfac1_peryear0['phi_deg'].values-comp_phi_expected) < 10E-9).all()
     assert (np.abs(ts_comp_nfac1_fualltimes0_xfac1_peryear0['A'].values-comp_A_expected) < 10E-9).all()
-
-
-
-
-
 
 
 @pytest.mark.unittest
@@ -214,8 +197,6 @@ def test_analysis_foreman():
     
 
 
-
-
 @pytest.mark.unittest
 def test_getcomponentsfromts_settings():
     
@@ -234,13 +215,6 @@ def test_getcomponentsfromts_settings():
     ts_comp_nfac0_fualltimes0_xfac0 = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False, analysis_peryear=True)
 
 
-
-
-
-
-
-
-
 @pytest.mark.unittest
 def test_predictionsettings():
     times_ext_pred_HWLWno = [dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12)]
@@ -254,12 +228,6 @@ def test_predictionsettings():
     ts_prediction_nfac1_fualltimes1_xfac0 = prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     ts_prediction_nfac1_fualltimes0_xfac0 = prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     ts_prediction_nfac0_fualltimes0_xfac0 = prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-
-
-
-
-
-
 
 
 @pytest.mark.unittest
@@ -308,7 +276,6 @@ def test_prediction_1018():
     
 
 
-
 @pytest.mark.systemtest
 def test_frommergedcomp():
     # 1. define test data
@@ -355,7 +322,6 @@ def test_frommergedcomp():
     
 
 
-
 @pytest.mark.systemtest
 def test_frommergedcomp_HWLW_toomuch():
     """
@@ -390,10 +356,6 @@ def test_frommergedcomp_HWLW_toomuch():
 
     assert len(ts_ext_prediction_HWLWno['HWLWno']) == 5
     assert (np.abs(ts_ext_prediction_HWLWno['HWLWno'].values -np.array([7057, 7058, 7058, 7059, 7059])) < 10E-9).all()
-
-
-
-
 
 
 @pytest.mark.systemtest
@@ -508,10 +470,6 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     
 
 
-
-
-
-
 @pytest.mark.parametrize("current_station", [pytest.param(x, id=x) for x in ['HOEKVHLD','DENHDR']])
 @pytest.mark.systemtest
 def test_frommergedcomp_HWLW_345(current_station):
@@ -611,9 +569,6 @@ def test_frommergedcomp_HWLW_345(current_station):
     assert (np.abs(ts_ext_prediction_all['HWLWcode'].values - expected_ts_ext_prediction_all_HWLWcode) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWcode'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWcode) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWno'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWno) < 10E-9).all()
-
-
-
 
 
     
@@ -821,11 +776,5 @@ def test_allfromdia_2008xfac0():
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
 
      
-
-
-
-
-
-
 
 

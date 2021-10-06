@@ -100,11 +100,6 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataCulminations
 
 
-
-
-
-
-
 def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     """
     Makes use of the definitions dT, astrab and astrac.
@@ -183,9 +178,6 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataPhases
 
 
-
-
-
 def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52.1562):
     """
     Makes use of the definitions dT, astrab and astrac.
@@ -251,10 +243,6 @@ def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52
     dataSun = dataSun[np.logical_and(dataSun_dtnaive>=tFirst,dataSun_dtnaive<=tLast)].reset_index(drop=True)
     
     return dataSun
-
-
-
-
 
 
 def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52.1562):
@@ -336,9 +324,6 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     dataMoon = dataMoon[np.logical_and(dataMoon_dtnaive>=tFirst,dataMoon_dtnaive<=tLast)].reset_index(drop=True)
 
     return dataMoon
-
-
-
 
 
 def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
@@ -423,11 +408,6 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataAnomaly
 
 
-
-
-
-
-
 def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     """
     Makes use of the definitions dT, astrab and astrac.
@@ -482,10 +462,6 @@ def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     dataSeasons = dataSeasons[np.logical_and(dataSeasons_dtnaive>=tFirst,dataSeasons_dtnaive<=tLast)].reset_index(drop=True)
     
     return dataSeasons
-
-
-
-
 
 
 def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
@@ -788,9 +764,6 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     return astrabOutput
 
 
-
-
-
 def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     """
     Python version of astrac.f in FORTRAN 77.
@@ -897,10 +870,6 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     TIMOUT=TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
 
     return TIMOUT
-
-
-
-
 
 
 def dT(dateIn,mode_dT='exact'):
@@ -1015,9 +984,6 @@ def dT(dateIn,mode_dT='exact'):
     return dT_TT
 
 
-
-
-
 def convert_str2datetime(datetime_in_list):
     """
     Tries to convert datetime_in_list (list of str or datetime.datetime) to list of datetime.datetime
@@ -1059,10 +1025,6 @@ def convert_str2datetime(datetime_in_list):
     return datetime_out_list
 
 
-
-
-
-
 def convert2perday(dataframeIn, timeformat='%H:%M %Z'):
     """
     converts normal astrog pd.DataFrame to one with the same information restructured per day
@@ -1090,11 +1052,6 @@ def convert2perday(dataframeIn, timeformat='%H:%M %Z'):
     dataframeOut['datetime'] = dataframeOut.index #overwrite datetime with dates
     
     return dataframeOut
-
-
-
-
-
 
 
 def plot_astrog_diff(pd_python, pd_fortran, typeUnit='-', typeLab=None, typeBand=None, timeBand=None):
@@ -1167,7 +1124,5 @@ def plot_astrog_diff(pd_python, pd_fortran, typeUnit='-', typeLab=None, typeBand
 
     axs = (ax1,ax2,ax3)
     return fig, axs
-
-
 
 

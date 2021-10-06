@@ -149,4 +149,3 @@ print('\nthese %i stations were not processed because there is no 4Y or likewise
 print('\nthese %i stations were not processed because there is no 19Y data available:\n%s'%(len(stats_no19Y),stats_no19Y))
 
 
-

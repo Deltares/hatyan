@@ -62,10 +62,6 @@ def get_v0uf_sel(const_list):
     return v0uf_sel
 
 
-
-
-
-
 def get_const_list_hatyan(listtype, return_listoptions=False):
     """
     Definition of several hatyan components lists, taken from the tidegui initializetide.m code, often originating from corresponcence with Koos Doekes
@@ -246,11 +242,6 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         return const_list_hatyan
 
 
-
-
-
-
-
 def get_doodson_eqvals(dood_date, mode=None):
     """
     Berekent de doodson waardes T, S, H, P, N en P1 voor het opgegeven tijdstip.
@@ -308,12 +299,6 @@ def get_doodson_eqvals(dood_date, mode=None):
     return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad
 
 
-
-
-
-
-
-
 def get_hatyan_constants(dood_date):
     """
     get_hatyan_constants
@@ -367,9 +352,6 @@ def get_hatyan_constants(dood_date):
     DC5023 = 0.5+0.75*DE*DE
     
     return DOMEGA, DIKL, DC1681, DC5023, DC0365
-
-
-
 
 
 def calcwrite_baseforv0uf():
@@ -672,14 +654,6 @@ def calcwrite_baseforv0uf():
     return v0uf_allT
 
 
-
-
-
-
-
-
-
-
 def get_hatyan_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw=False):
     """
     Returns the frequencies of the requested list of constituents. Source: beromg.f
@@ -737,11 +711,6 @@ def get_hatyan_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw
         return freq_pd
 
 
-
-
-
-
-
 def get_hatyan_v0(const_list, dood_date):
     """
     Returns the v-values of the requested list of constituents for the requested date(s)
@@ -774,10 +743,6 @@ def get_hatyan_v0(const_list, dood_date):
     DV0_pd.index = const_list
     
     return DV0_pd
-
-
-
-
 
 
 def get_hatyan_u(const_list, dood_date):
@@ -846,8 +811,6 @@ def get_hatyan_u(const_list, dood_date):
     DU_pd.index = const_list
     
     return DU_pd
-
-
 
 
 def get_hatyan_f(const_list, dood_date, xfac):
@@ -958,8 +921,6 @@ def get_hatyan_f(const_list, dood_date, xfac):
     
 
 
-
-
 def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
     """
     Correct f-values with xfactor, this definition is only ran when xfac=True.
@@ -1007,11 +968,6 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
     return f_i_pd
 
 
-
-
-
-
-
 def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
     """
     Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
@@ -1044,10 +1000,6 @@ def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
         times_pred_all = pd.Series([times_ext[0]+dt.timedelta(minutes=x*timestep_min) for x in range(nsteps+1)])
         times_pred_all_pdDTI = pd.Index(times_pred_all)
     return times_pred_all_pdDTI
-
-
-
-
 
 
 def robust_timedelta_sec(dood_date,refdate_dt=None):

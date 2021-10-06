@@ -161,5 +161,3 @@ print('\nthese %i stations were not processed because there is no ana/comp datas
 print('\nthese %i stations were not processed because there is no 4Y or likewise data available:\n%s'%(len(stats_no4Y),stats_no4Y))
 
 
-
-

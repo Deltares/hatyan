@@ -110,7 +110,6 @@ def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False)
     return dir_output, timer_start
 
 
-
 def exit_RWS(timer_start):
     """
     Provides a footer to the print output (shows up in the hatyan diagnostics file)
@@ -141,8 +140,6 @@ def exit_RWS(timer_start):
     print('-'*100)
     
     os.remove('__NOT_FINISHED__')
-
-
 
 
 def get_outputfoldername(file_config):

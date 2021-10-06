@@ -159,7 +159,6 @@ fig.tight_layout()
 fig.savefig('test_foreman_R1R2.png')
 
 
-
 print('')
 print('#####################################################################')
 print('#### CALCULATING AND PLOTTING DOODSON NUMBERS #######################')
@@ -180,9 +179,6 @@ plt.grid()
 plt.legend(loc=1)
 #plt.yticks(np.arange(0, 2*np.pi+1, np.pi/2))
 plt.savefig(os.path.join('%s_%s_doodson_all.png'%(times_doodsonplot[0].strftime('%Y%m%d'), times_doodsonplot[-1].strftime('%Y%m%d'))))
-
-
-
 
 
 print('')
@@ -319,11 +315,6 @@ for year_sel in dood_date_fu.year.unique():
 print('...done')
 
 
-
-
-
-
-
 print('')
 print('#####################################################################')
 print('#### NODAL FACTORS TEST (F, U) ######################################')
@@ -350,7 +341,6 @@ f_test = pd.DataFrame({'f(hatyan)':f_i_HAT_xfac0.loc[:,0], 'f(foreman)':f_i_FOR.
 u_test = pd.DataFrame({'u(hatyan)':u_i_deg_HAT.loc[:,0], 'u(foreman)':u_i_deg_FOR.loc[:,0], 'u(H-F)':u_i_deg_diff.loc[:,0], 'diff_toolarge':u_i_deg_diff_toolarge_bool}, index=u_i_deg_HAT.index)
 
 
-
 print('#### NODAL FACTOR F for %s'%(dood_date_fu[0]))
 print(f_test)
 print('components with significant (%e) differences for f:\n%s'%(treshold_v0uf, f_i_diff.loc[f_i_diff_toolarge_bool,0]))
@@ -358,9 +348,6 @@ print('#### NODAL FACTOR U for %s'%(dood_date_fu[0]))
 print(u_test)
 print('components with significant (%e) differences for u:\n%s'%(treshold_v0uf, u_i_deg_diff.loc[u_i_deg_diff_toolarge_bool,0]))
 print('#### END NODAL FACTOR TEST ##################')
-
-
-
 
 
 print('plotting...')

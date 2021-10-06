@@ -55,5 +55,3 @@ def test_configfiles(file_config):
         raise Exception('calculation did not finish properly since __NOT_FINISHED__ file is still present in output directory: %s\nlast 40 lines of diagnostics file:\n\n%s'%(dir_output, diag_contents_1str))
 
 
-
-

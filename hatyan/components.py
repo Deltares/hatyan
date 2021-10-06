@@ -22,7 +22,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-
 def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=True):
     """
     Create a plot with the provided analysis results
@@ -114,7 +113,6 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     
 
 
-
     
     
 def write_components(comp, filename, metadata=None):
@@ -165,9 +163,6 @@ def write_components(comp, filename, metadata=None):
             f.write("COMP %4i %12.6f %9.3f %7.2f  %-12s\n" % (const_no[iC], const_speed[iC], COMP.loc[compname,'A']*100, COMP.loc[compname,'phi_deg']%360, compname))
 
 
-
-
-
 def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     """
     Merges the provided component groups into one
@@ -206,10 +201,6 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     COMP_merged = COMP_merged.sort_values(by='freq')
     
     return COMP_merged
-
-
-
-
 
 
 def read_components(filename, get_metadata=False):
@@ -269,10 +260,6 @@ def read_components(filename, get_metadata=False):
         return COMP_pd, meta
     else:
         return COMP_pd
-
-
-
-
 
 
 def components_timeshift(comp,hours):

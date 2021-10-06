@@ -189,11 +189,6 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
     return data_pd_HWLW
 
 
-
-
-
-
-
 def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     """
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
@@ -287,10 +282,6 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     return ts_ext
 
 
-
-
-
-
 def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
     import matplotlib.pyplot as plt
     import numpy as np
@@ -338,9 +329,6 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
     print('suggested constituents+freqs from hatyan:\n%s'%(hatyan_freqs_suggestions))
     
     return peak_freq, hatyan_freqs_suggestions, hatyan_freqs_matches
-
-
-
 
 
     
@@ -524,11 +512,6 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         return fig, axs
 
 
-
-
-
-
-
 def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     """
     Writes the timeseries to a netCDF file
@@ -683,10 +666,6 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     
 
 
-
-
-
-
 def write_tsdia(ts, station, vertref, filename):
     """
     Writes the timeseries to an equidistant dia file
@@ -763,8 +742,6 @@ def write_tsdia(ts, station, vertref, filename):
             else:
                 f.write(linestr+'\n')
                 linestr = linestr_add
-
-
 
 
     
@@ -863,8 +840,6 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
                     
 
 
-
-
 def writets_noos(ts, filename, metadata=None):
     """
     Writes the timeseries to a noos file
@@ -954,9 +929,6 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     return ts_pd_out
 
 
-
-
-
 def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     """
     resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation. with tstart/tstop it is possible to extend the timeseries with NaN values.
@@ -998,8 +970,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     check_ts(data_pd_resample)
     return data_pd_resample
-
-
 
 
 def check_ts(ts):
@@ -1065,11 +1035,6 @@ def check_ts(ts):
 ###############################
 
 
-
-
-
-
-
 def get_diablocks_startstopstation(filename):
     """
     Gets information about the data blocks present in a dia file
@@ -1129,11 +1094,6 @@ def get_diablocks_startstopstation(filename):
     diablocks_pd_startstopstation[linenum_colnames] = diablocks_pd_startstopstation[linenum_colnames].astype(int)
         
     return diablocks_pd_startstopstation
-
-
-
-
-
 
 
 def get_diablocks(filename):
@@ -1218,14 +1178,6 @@ def get_diablocks(filename):
     return diablocks_pd
 
 
-
-
-
-
-
-
-
-
 def convertcoordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
     from pyproj import Transformer
 
@@ -1253,14 +1205,6 @@ def convertcoordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
     return coordx_out, coordy_out
 
 
-
-
-
-
-
-
-
-
 def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
     import numpy as np
     import pandas as pd
@@ -1285,10 +1229,6 @@ def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
     data_pd = data_pd.set_index('times')
     
     return data_pd
-
-
-
-
 
 
 def readts_dia_equidistant(filename, diablocks_pd_extra, block_id):
@@ -1325,9 +1265,6 @@ def readts_dia_equidistant(filename, diablocks_pd_extra, block_id):
     data_pd = data_pd.set_index('times')
     
     return data_pd
-
-
-
 
 
 def readts_dia(filename, station=None, block_ids=None):
@@ -1426,23 +1363,12 @@ def readts_dia(filename, station=None, block_ids=None):
     return data_pd
 
 
-
-
-
-
 def readts_dia_HWLW(filename, station):
     """
     Reads a non-equidistant dia file (wrapper around readts_dia). This definition will be phased out.
 
     """
     raise Exception('ERROR: readts_dia_HWLW() was phased out, use readts_dia() instead')
-
-
-
-
-
-
-
 
 
 def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
@@ -1490,12 +1416,5 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     
     check_ts(data_pd)
     return data_pd
-
-
-
-
-
-
-
 
 
