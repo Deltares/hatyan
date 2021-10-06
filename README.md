@@ -108,7 +108,7 @@ Create a python environment hatyan_env and install hatyan as developer:
 - open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
 - ``git remote update origin --prune`` (update local branch list)
 - ``git checkout work_yourname`` (checkout your branch, never do anything while the master is selected)
-- update your branch if main has been updated (all necessary?): ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main``, ``git push origin development``
+- update your branch if main has been updated: add+commit+push everything in branch first, ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main``, ``git push origin development``
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
