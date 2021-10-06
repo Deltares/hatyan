@@ -6,7 +6,6 @@ Created on Mon Jan 27 17:21:13 2020
 
 """
 
-
 import pytest
 import os
 import numpy as np
@@ -24,7 +23,6 @@ from hatyan import astrog as Astrog
 from hatyan.analysis_prediction import get_components_from_ts, prediction, analysis
 from hatyan.hatyan_core import get_const_list_hatyan
 
-
 modulename_list = ['os','sys','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
 @pytest.mark.parametrize("modulename", [pytest.param('%s'%(stat), id='%s'%(stat)) for stat in modulename_list])
 @pytest.mark.unittest
@@ -40,8 +38,6 @@ def test_readts_dia_multifile():
     ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station='VLISSGN')
     
     assert len(ts_measurements_group0) == 35064
-    
-    
 
 
 @pytest.mark.unittest
@@ -60,7 +56,6 @@ def test_readts_dia_multiblock():
     assert len(ts_measurements_group0_ext2) == 9403
     assert len(ts_measurements_group0_ext012) == 23293
     assert len(ts_measurements_group0_extall) == 23293
-    
 
 
 @pytest.mark.unittest
@@ -162,7 +157,7 @@ def test_analysis_foreman():
     #comp0
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1]]
     ts_measurements_group0 = Timeseries.readts_dia(filename=file_data_comp0, station=current_station)
-
+    
     comp_frommeas_HAT = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='schureman')
     comp_frommeas_FOR = get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='foreman')
     HAT_comp_phi_expected =  np.array([  0.        , 141.68386391, 188.27101759,   7.3992028 ,
@@ -194,7 +189,6 @@ def test_analysis_foreman():
     assert (np.abs(comp_frommeas_HAT['A'].values-HAT_comp_A_expected) < 10E-9).all()
     assert (np.abs(comp_frommeas_FOR['phi_deg'].values-FOR_comp_phi_expected) < 10E-9).all()
     assert (np.abs(comp_frommeas_FOR['A'].values-FOR_comp_A_expected) < 10E-9).all()
-    
 
 
 @pytest.mark.unittest
@@ -220,7 +214,7 @@ def test_predictionsettings():
     times_ext_pred_HWLWno = [dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12)]
     times_step_pred = 1
     current_station = 'DENHDR'
-
+    
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = Components.read_components(filename=file_data_comp0)
     ts_prediction_nfac1_fualltimes1_xfac1 = prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
@@ -235,7 +229,7 @@ def test_prediction_1018():
     current_station = 'DENHDR'
     nodalfactors = True
     xfac=True
-      
+    
     times_ext_pred = [dt.datetime(1018,7,21),dt.datetime(1018,7,21,3)]
     times_step_pred = 10
     
@@ -246,24 +240,24 @@ def test_prediction_1018():
     ts_prediction = prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
     
     ts_prediction_times = np.array([dt.datetime(1018, 7, 21, 0, 0),
-       dt.datetime(1018, 7, 21, 0, 10),
-       dt.datetime(1018, 7, 21, 0, 20),
-       dt.datetime(1018, 7, 21, 0, 30),
-       dt.datetime(1018, 7, 21, 0, 40),
-       dt.datetime(1018, 7, 21, 0, 50),
-       dt.datetime(1018, 7, 21, 1, 0),
-       dt.datetime(1018, 7, 21, 1, 10),
-       dt.datetime(1018, 7, 21, 1, 20),
-       dt.datetime(1018, 7, 21, 1, 30),
-       dt.datetime(1018, 7, 21, 1, 40),
-       dt.datetime(1018, 7, 21, 1, 50),
-       dt.datetime(1018, 7, 21, 2, 0),
-       dt.datetime(1018, 7, 21, 2, 10),
-       dt.datetime(1018, 7, 21, 2, 20),
-       dt.datetime(1018, 7, 21, 2, 30),
-       dt.datetime(1018, 7, 21, 2, 40),
-       dt.datetime(1018, 7, 21, 2, 50),
-       dt.datetime(1018, 7, 21, 3, 0)], dtype=object)
+                                    dt.datetime(1018, 7, 21, 0, 10),
+                                    dt.datetime(1018, 7, 21, 0, 20),
+                                    dt.datetime(1018, 7, 21, 0, 30),
+                                    dt.datetime(1018, 7, 21, 0, 40),
+                                    dt.datetime(1018, 7, 21, 0, 50),
+                                    dt.datetime(1018, 7, 21, 1, 0),
+                                    dt.datetime(1018, 7, 21, 1, 10),
+                                    dt.datetime(1018, 7, 21, 1, 20),
+                                    dt.datetime(1018, 7, 21, 1, 30),
+                                    dt.datetime(1018, 7, 21, 1, 40),
+                                    dt.datetime(1018, 7, 21, 1, 50),
+                                    dt.datetime(1018, 7, 21, 2, 0),
+                                    dt.datetime(1018, 7, 21, 2, 10),
+                                    dt.datetime(1018, 7, 21, 2, 20),
+                                    dt.datetime(1018, 7, 21, 2, 30),
+                                    dt.datetime(1018, 7, 21, 2, 40),
+                                    dt.datetime(1018, 7, 21, 2, 50),
+                                    dt.datetime(1018, 7, 21, 3, 0)], dtype=object)
     ts_prediction_vals = np.array([-0.77416669, -0.78821831, -0.79718123, -0.80126649, -0.80055319,
                                    -0.79466499, -0.78252257, -0.76226094, -0.73136835, -0.68705389,
                                    -0.62679467, -0.54896408, -0.4534113 , -0.34185962, -0.218017  ,
@@ -271,9 +265,6 @@ def test_prediction_1018():
     
     assert (np.abs(ts_prediction['values'].values-ts_prediction_vals) < 10E-9).all()
     assert (np.abs(ts_prediction.index.values-ts_prediction_times) < dt.timedelta(days=10E-9)).all()
-    
-    
-    
 
 
 @pytest.mark.systemtest
