@@ -91,7 +91,6 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
         data_pd_HWLW.loc[LWid_all,'HWLWcode'] = 22 #all LW
         data_pd_HWLW.loc[HWid_all,'HWLWcode'] = 11 #all HW
 
-
     #get HWLW (extremes per tidal period)
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(-ts['values'].values, distance=M2period_numsteps/1.7, #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
                                                      prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
@@ -135,8 +134,6 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
             for prop in prop_list:
                 data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==11,prop] = HWid_all_properties[prop][HW_local_bool]
             print('HW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11]))
-
-    
     
     if calc_HWLW345: #recalculate local LW/HWs between two main HWs to firstLW/agger/secondLW
         print('calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...')
@@ -331,7 +328,6 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
     return peak_freq, hatyan_freqs_suggestions, hatyan_freqs_matches
 
 
-    
 def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None):
     """
     Creates a plot with the provided timeseries
@@ -435,9 +431,6 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     return fig, axs
 
 
-    
-
-
 def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
     """
     This definition calculates (and plots and prints) some statistics when comparing extreme values.
@@ -466,7 +459,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
     import matplotlib.pyplot as plt
     
     print('Calculating comparison statistics for extremes')
-    if not 'HWLWno' in ts_ext.columns or not 'HWLWno' in ts_ext_validation.columns:
+    if 'HWLWno' not in ts_ext.columns or 'HWLWno' not in ts_ext_validation.columns:
         print('HWLWno is not present in ts_ext or ts_ext_validation, trying to automatically derive it without M2phasediff argument (this might fail)')
         try:
             ts_ext_nrs = calc_HWLWnumbering(ts_ext=ts_ext)
@@ -476,7 +469,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
     else:
         ts_ext_nrs = ts_ext.copy()
         ts_ext_validation_nrs = ts_ext_validation.copy()
-
+    
     #set HWLWcode and HWLWno as index, to make easy subtraction possible
     ts_ext_nrs['times'] = ts_ext_nrs.index
     ts_ext_nrs = ts_ext_nrs.set_index(['HWLWcode','HWLWno'],drop=False)
@@ -530,13 +523,13 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes. The default is None.
     tzone_hr : int, optional
         The timezone (GMT+tzone_hr) that applies to the data. The default is 1 (MET).
-
+    
     Returns
     -------
     None.
-
+    
     """
-
+    
     #import os
     import datetime as dt
     from netCDF4 import Dataset, date2num, stringtoarr#, num2date
@@ -555,7 +548,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
                  'timestep_min': times_stepmin}
     for ncattrname in list(attr_dict.keys()):
         data_nc.setncattr(ncattrname, attr_dict[ncattrname])
-
+    
     ncvarlist = list(data_nc.variables.keys())
     ncdimlist = list(data_nc.dimensions.keys())
     statname_len = 64
@@ -568,7 +561,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         data_nc.createDimension('time',len(times_all.tolist()))
     if 'analysis_time' not in ncdimlist:
         data_nc.createDimension('analysis_time',1)
-
+    
     refdate_tz = dt.datetime(1900,1,1,tzinfo=dt.timezone(dt.timedelta(hours=tzone_hr)))
     dict_statattr = {'cf_role': 'timeseries_id'}
     dict_anatimattr = {'units': 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z')), 'standard_name':'forecast_reference_time', 'long_name':'forecast_reference_time'}
@@ -577,12 +570,12 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     dict_HWattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of high water extremes above reference level'}
     dict_LWattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of low water extremes above reference level'}
     #dict_HWrowsizeattr = {'long_name':'number of observations for this station', 'sample_dimension':'obs_raggedHW'}
-    if not 'stations' in ncvarlist: #create empty variables if not yet present
+    if 'stations' not in ncvarlist: #create empty variables if not yet present
         nc_newvar = data_nc.createVariable('stations','S1',('stations','statname_len',))
         for attrname in list(dict_statattr.keys()):
             nc_newvar.setncattr(attrname, dict_statattr[attrname])
     
-    if not 'analysis_time' in ncvarlist:
+    if 'analysis_time' not in ncvarlist:
         nc_newvar = data_nc.createVariable('analysis_time','f8',('analysis_time',))
         for attrname in list(dict_anatimattr.keys()):
             nc_newvar.setncattr(attrname, dict_anatimattr[attrname])
@@ -593,15 +586,14 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     #append current data to netcdf files
     data_nc.variables['stations'][nstat,:] = stringtoarr(station, statname_len, dtype='S')
     
-    
     #general prediction
-    if not 'time' in ncvarlist:
+    if 'time' not in ncvarlist:
         nc_newvar = data_nc.createVariable('time','f8',('time',))
         for attrname in list(dict_timattr.keys()):
             nc_newvar.setncattr(attrname, dict_timattr[attrname])
         #set time contents upon creation of variable, is constant over loop
         data_nc.variables['time'][:] = date2num(times_all.tolist(),units=data_nc.variables['time'].units)
-    if not 'waterlevel_astro' in ncvarlist:
+    if 'waterlevel_astro' not in ncvarlist:
         nc_newvar = data_nc.createVariable('waterlevel_astro','f8',('stations','time',))
         for attrname in list(dict_wlattr.keys()):
             nc_newvar.setncattr(attrname, dict_wlattr[attrname])
@@ -614,16 +606,16 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         data_HW = data_HWLW[data_HWLW['HWLWcode']==1]
         data_LW = data_HWLW[data_HWLW['HWLWcode']==2]
         #create empty variables if not yet present
-
+        
         #HW
         if 'time_HW' not in ncdimlist:
             data_nc.createDimension('time_HW',len(data_HW))
-        if not 'time_HW' in ncvarlist:
+        if 'time_HW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('time_HW','f8',('time_HW',))
             for attrname in list(dict_timattr.keys()):
                 nc_newvar.setncattr(attrname, dict_timattr[attrname])
         data_nc.variables['time_HW'][:] = date2num(data_HW.index.tolist(),units=data_nc.variables['time_HW'].units)
-        if not 'waterlevel_astro_HW' in ncvarlist:
+        if 'waterlevel_astro_HW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','time_HW',))
             for attrname in list(dict_HWattr.keys()):
                 nc_newvar.setncattr(attrname, dict_HWattr[attrname])
@@ -632,12 +624,12 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         #LW
         if 'time_LW' not in ncdimlist:
             data_nc.createDimension('time_LW',len(data_LW))
-        if not 'time_LW' in ncvarlist:
+        if 'time_LW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('time_LW','f8',('time_LW',))
             for attrname in list(dict_timattr.keys()):
                 nc_newvar.setncattr(attrname, dict_timattr[attrname])
         data_nc.variables['time_LW'][:] = date2num(data_LW.index.tolist(),units=data_nc.variables['time_LW'].units)
-        if not 'waterlevel_astro_LW' in ncvarlist:
+        if 'waterlevel_astro_LW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','time_LW',))
             for attrname in list(dict_LWattr.keys()):
                 nc_newvar.setncattr(attrname, dict_LWattr[attrname])
@@ -645,25 +637,21 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         
         #HWLW numbering
         if 'HWLWno' in ts_ext.columns:
-            if not 'waterlevel_astro_HW_numbers' in ncvarlist:
+            if 'waterlevel_astro_HW_numbers' not in ncvarlist:
                 nc_newvar = data_nc.createVariable('waterlevel_astro_HW_numbers','i4',('stations','time_HW',))
                 #for attrname in list(dict_HWattr.keys()):
                 #    nc_newvar.setncattr(attrname, dict_HWattr[attrname])
             data_nc.variables['waterlevel_astro_HW_numbers'][nstat,:] = data_HW['HWLWno']
-            if not 'waterlevel_astro_LW_numbers' in ncvarlist:
+            if 'waterlevel_astro_LW_numbers' not in ncvarlist:
                 nc_newvar = data_nc.createVariable('waterlevel_astro_LW_numbers','i4',('stations','time_LW',))
                 #for attrname in list(dict_LWattr.keys()):
                 #    nc_newvar.setncattr(attrname, dict_LWattr[attrname])
             data_nc.variables['waterlevel_astro_LW_numbers'][nstat,:] = data_LW['HWLWno']
-            
-
+    
     else:
         print('no HWLW prediction written')
-
-        
-    data_nc.close()
-       
     
+    data_nc.close()
 
 
 def write_tsdia(ts, station, vertref, filename):
@@ -743,10 +731,6 @@ def write_tsdia(ts, station, vertref, filename):
                 f.write(linestr+'\n')
                 linestr = linestr_add
 
-
-    
-
-    
 
 def write_tsdia_HWLW(ts_ext, station, vertref, filename):
     """
@@ -837,7 +821,6 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
 
         for index,data_pd_row in data_HWLW.iterrows():
             f.write('%6s;%4s;%d/0;%d:\n'%(index.strftime('%Y%m%d'), index.strftime('%H%M'), data_pd_row['HWLWcode'], data_pd_row['values']*100))
-                    
 
 
 def writets_noos(ts, filename, metadata=None):
@@ -881,10 +864,6 @@ def writets_noos(ts, filename, metadata=None):
             header_txt = header_txt+('%-12s: %s\n'%(key, metadata[key]))
         header_txt = header_txt+'------------------------------------------------------'
     np.savetxt(filename,ts_out,fmt='%s %7.4f',header=header_txt)
-    
-    
-    
-    
 
 
 def crop_timeseries(ts, times_ext, onlyfull=True):
@@ -1028,8 +1007,6 @@ def check_ts(ts):
     return print_statement
     
     
-    
-    
 ###############################
 ################# READING FILES
 ###############################
@@ -1077,7 +1054,7 @@ def get_diablocks_startstopstation(filename):
         block_id = -1
         for linenum, line in enumerate(f, 1):
             if linenum == 1:
-                if not '[IDT;*DIF*;A;' in line:
+                if '[IDT;*DIF*;A;' not in line:
                     raise Exception('ERROR: not a valid dia-file, first line should contain "[IDT;*DIF*;A;"')
             if '[W3H]' in line:
                 block_id += 1
@@ -1121,7 +1098,7 @@ def get_diablocks(filename):
                         valid_parameternames = ['WATHTE','WATHTBRKD']
                     else:
                         valid_parameternames = ['GETETBRKD2','GETETBRKDMSL2','GETETM2']
-                    if not file_parametername in valid_parameternames:
+                    if file_parametername not in valid_parameternames:
                         raise Exception('ERROR: parameter name (%s) should be in %s but is %s'%(pardef, valid_parameternames, file_parametername))
                     diablocks_pd.loc[block_id,'parameter'] = file_parametername
                 elif get_content_sel in ['LOC']:
@@ -1184,7 +1161,7 @@ def convertcoordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
     epsg_dict = {'RD':28992,'W84':4326,'E50':4230}
     
     if isinstance(epsg_in,str):
-        if not epsg_in in epsg_dict.keys():
+        if epsg_in not in epsg_dict.keys():
             raise Exception('when providing epsg_in as a string, the options are: %s'%(list(epsg_dict.keys())))
         else:
             epsgcode_in = epsg_dict[epsg_in]
@@ -1192,7 +1169,7 @@ def convertcoordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
         epsgcode_in = epsg_in
     
     if isinstance(epsg_out,str):
-        if not epsg_out in epsg_dict.keys():
+        if epsg_out not in epsg_dict.keys():
             raise Exception('when providing epsg_out as a string, the options are: %s'%(list(epsg_dict.keys())))
         else:
             epsgcode_out = epsg_dict[epsg_out]
@@ -1416,5 +1393,3 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     
     check_ts(data_pd)
     return data_pd
-
-

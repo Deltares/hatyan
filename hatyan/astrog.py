@@ -507,13 +507,12 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
             LATMOO, lunar latitude (degrees)
             RAMOON, lunar right ascension (degrees, between 0 and 360)
             ANM,    mean lunar anomaly (degrees, between 0 and 360)
-
+    
     """
     import pandas as pd
     import numpy as np
     import datetime as dt
-
-
+    
     # check input
     if isinstance(date, pd.DatetimeIndex):
         pass
@@ -521,7 +520,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
         date = pd.DatetimeIndex([date])
     else:
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
-
+    
     if np.abs(lon)>180:
         raise Exception('Input variable longitude larger than 180deg')
     if np.abs(lat)>90:
@@ -824,16 +823,16 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     ANGLE  = np.array([180.   , 360.   , 90.    , 180.    ,   270.  , 360.    ,   -.5667,    -.5667,     -.8333,     -.8333, 360.     , 90.     , 180.     , 270.     ,   0.   ,  0.   ])
     CRITER = np.array([  0.001,   0.001,  0.0001,   0.0001,   0.0001,   0.0001,   0.0002,    0.0002,     0.0002,     0.0002,   0.00001,  0.00001,   0.00001,   0.00001,   0.002,  0.002])
     RAT    = np.array([346.8  , 346.8  , 12.2   ,  12.2   ,    12.2 ,  12.2   , 346.8   , -346.8   ,   360.    ,  -360.    ,   1.     ,  1.     ,   1.     ,   1.     , -10.08 , 10.08 ])
-    ANG =ANGLE [mode-1] # required value after iteration
-    CRIT=CRITER[mode-1] # allowed difference between ANG and iteration result
-    RATE=RAT   [mode-1] # estimated change per day for iteration
+    ANG = ANGLE[mode-1] # required value after iteration
+    CRIT = CRITER[mode-1] # allowed difference between ANG and iteration result
+    RATE = RAT[mode-1] # estimated change per day for iteration
     if (mode>=7).any() and (mode<=10).any(): # correct RATE in case of rise and set for latitude
         if np.abs(lat)>59:
             raise Exception('Latitude to close to poles (>59deg), cannot take polar days and nights into account')
         RATE=RATE*np.cos(np.deg2rad(lat))
 
     # define astrab output parameter corresponding to requested mode
-    if   ((mode== 1) | (mode== 2)).all():
+    if ((mode== 1) | (mode== 2)).all():
         IPAR = 'EHMOON'
     elif ((mode>= 3) & (mode<= 6)).all():
         IPAR = 'ELONG'
