@@ -66,9 +66,6 @@ along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
 
 &#34;&#34;&#34;
 
-import os
-file_path = os.path.realpath(__file__)
-foreman_file = os.path.join(os.path.dirname(file_path),&#39;data_components_foreman.txt&#39;)
 #################################################
 ################# FILECONTENTS ##################
 #################################################
@@ -77,7 +74,10 @@ foreman_file = os.path.join(os.path.dirname(file_path),&#39;data_components_fore
 def get_foreman_content():
     import pandas as pd
     import numpy as np
+    import os
     
+    file_path = os.path.realpath(__file__)
+    foreman_file = os.path.join(os.path.dirname(file_path),&#39;data_components_foreman.txt&#39;)
     content_pd = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=[0], skip_blank_lines=False)
     content_pd[0] = content_pd[0].str.replace(&#39;-0.&#39;,&#39; -0.&#39;,regex=False) #add spaces where needed
     content_pd[0] = content_pd[0].str.replace(&#39;LDA2&#39;,&#39;LABDA2&#39;,regex=False)
@@ -367,7 +367,10 @@ def get_foreman_nodalfactors(const_list, dood_date):
 <pre><code class="python">def get_foreman_content():
     import pandas as pd
     import numpy as np
+    import os
     
+    file_path = os.path.realpath(__file__)
+    foreman_file = os.path.join(os.path.dirname(file_path),&#39;data_components_foreman.txt&#39;)
     content_pd = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=[0], skip_blank_lines=False)
     content_pd[0] = content_pd[0].str.replace(&#39;-0.&#39;,&#39; -0.&#39;,regex=False) #add spaces where needed
     content_pd[0] = content_pd[0].str.replace(&#39;LDA2&#39;,&#39;LABDA2&#39;,regex=False)

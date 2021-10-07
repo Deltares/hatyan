@@ -149,7 +149,7 @@ fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_predicti
 </ul>
 <p>Generate RPM (RHEL/CentOS installer):</p>
 <ul>
-<li>preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github</li>
+<li>preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, update history.rst, commit changes, bumpversion minor, create tag on github</li>
 <li>use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)</li>
 <li>this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed</li>
 <li>rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input</li>
@@ -163,6 +163,7 @@ fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_predicti
 <span>Expand source code</span>
 </summary>
 <pre><code class="python"># -*- coding: utf-8 -*-
+# this __init__.py file is automatically generated with scripts/generate_documentation.py
 &#34;&#34;&#34;
 [![pytest devenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
 [![pytest py-3.9](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
@@ -305,7 +306,7 @@ Generate documentation:
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, update history.rst, commit changes, bumpversion minor, create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
@@ -318,7 +319,7 @@ Generate RPM (RHEL/CentOS installer):
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.2.88&#39;
+__version__ = &#39;2.2.89&#39;
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
