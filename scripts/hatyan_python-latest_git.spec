@@ -25,7 +25,7 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-pyt
 wget https://github.com/Deltares/hatyan/archive/%{version}.zip # downloads to rpmbuild/BUILD
 unzip %{version}.zip #creates folder with sourcefiles: %{_topdir}/BUILD/hatyan-%{version}
 #make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder (maybe possible to build from entire source from BUILD folder, but is slower)
-cp %{_topdir}/BUILD/hatyan-%{version}* %{_topdir}/SOURCES | true
+cp %{_topdir}/BUILD/hatyan-%{version}/* %{_topdir}/SOURCES | true
 cp -r %{_topdir}/BUILD/hatyan-%{version}/hatyan %{_topdir}/SOURCES
 #create sh script for running hatyan on linux in one command
 mkdir -p $RPM_BUILD_ROOT/usr/bin
