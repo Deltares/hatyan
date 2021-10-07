@@ -7,16 +7,20 @@ Created on Fri Jul 16 00:07:52 2021
 
 import os
 import pandas as pd
+from inspect import getmembers, isfunction
+import importlib
 import hatyan
 
-print('## generating copy contents of README.md to docstring of hatyan/__init__.py')
+print('## generating copy contents of README.md to docstring of hatyan/__init__')
 dir_scripts = os.path.dirname(os.path.realpath(__file__))
 file_init = os.path.join(dir_scripts,'..','hatyan/__init__.py')
 file_readme = os.path.join(dir_scripts,'..','README.md')
 
 with open(file_readme) as f:
     data_readme = pd.Series(f.readlines())
-init_pre = pd.Series(['# -*- coding: utf-8 -*-\n','"""\n'])
+init_pre = pd.Series(['# -*- coding: utf-8 -*-\n',
+                      '# this __init__.py file is automatically generated with scripts/generate_documentation.py\n',
+                      '"""\n'])
 init_post = pd.Series(['\n',
                        '"""\n',
                        '\n',

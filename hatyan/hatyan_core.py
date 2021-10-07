@@ -21,13 +21,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
-
-import os
-import pandas as pd
-file_path = os.path.realpath(__file__)
-file_pkl = os.path.join(os.path.dirname(file_path),'data_components_hatyan.pkl')
-v0uf_allT_frompkl = pd.read_pickle(file_pkl)
 v0uf_calculatewrite = False #master switch to determine whether the doodson table is calculated+written with calcwrite_baseforv0uf() or read from data_components_hatyan.pkl. The default is False.
+file_pkl_fname = 'data_components_hatyan.pkl'
+
+
+def get_v0uf_allT_frompkl():
+    import os
+    import pandas as pd
+    
+    file_path = os.path.realpath(__file__)
+    file_pkl = os.path.join(os.path.dirname(file_path),file_pkl_fname)
+    v0uf_allT_frompkl = pd.read_pickle(file_pkl)
+    
+    return v0uf_allT_frompkl
 
 
 def get_v0uf_sel(const_list):
@@ -46,10 +52,12 @@ def get_v0uf_sel(const_list):
 
     """
     
+    import pandas as pd
+
     if v0uf_calculatewrite:
         v0uf_allT = calcwrite_baseforv0uf()
     else:
-        v0uf_allT = v0uf_allT_frompkl
+        v0uf_allT = get_v0uf_allT_frompkl()
     
     const_list_pd = pd.Series(const_list,index=const_list)
     const_list_avaibool = const_list_pd.isin(v0uf_allT.index)
@@ -92,6 +100,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         A list of component names.
 
     """
+    v0uf_allT_frompkl = get_v0uf_allT_frompkl()
     const_list_all = v0uf_allT_frompkl.index.tolist()
     
     const_lists_dict = {'all':
@@ -366,7 +375,9 @@ def calcwrite_baseforv0uf():
     
     """
     
+    import os
     import pandas as pd
+    
     # in solar days T=Cs=w0 (s is van solar, er is ook een Cl=w1=ia for lunar), S=w2=ib, H=w3=ic, P=w4=id, N=w5=ie, P1=w6=if, EDN=ExtendedDoodsonNumber
     # N zit is hier altijd 0 (regression of moons node), want dat wordt apart als knoopfactor gedaan
     #                         comp       T, S, H, P, N,P1,EDN,     u eqs                    f eqs 73-79           f M1 K1 L2 K2 M1C feqsstr          #comparison of v0 columns with lunar conversion to SLS and IHO
@@ -650,6 +661,8 @@ def calcwrite_baseforv0uf():
     
     v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
     
+    file_path = os.path.realpath(__file__)
+    file_pkl = os.path.join(os.path.dirname(file_path),file_pkl_fname)
     pd.to_pickle(v0uf_allT,file_pkl)
     
     return v0uf_allT

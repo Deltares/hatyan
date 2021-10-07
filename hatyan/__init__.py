@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# this __init__.py file is automatically generated with scripts/generate_documentation.py
 """
 [![pytest devenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
 [![pytest py-3.9](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
@@ -141,7 +142,7 @@ Generate documentation:
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, update history.rst, commit changes, bumpversion minor, create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
@@ -154,7 +155,7 @@ Generate RPM (RHEL/CentOS installer):
 
 __author__ = """Jelmer Veenstra"""
 __email__ = 'jelmer.veenstra@deltares.nl'
-__version__ = '2.2.89'
+__version__ = '2.2.90'
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
