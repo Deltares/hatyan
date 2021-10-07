@@ -139,7 +139,7 @@ Generate documentation:
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, update history.rst, commit changes, bumpversion minor, create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
