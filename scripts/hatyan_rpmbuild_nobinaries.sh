@@ -21,11 +21,12 @@ rm -rf ${HATYANENVDIR}
 # download spec from source and rpmbuild from spec
 versiontag=main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.2.68
 wget https://github.com/Deltares/hatyan/archive/${versiontag}.zip -O ${versiontag}.zip
-unzip -p ${versiontag}.zip hatyan-${versiontag}/scripts/hatyan_python-latest_git.spec > hatyan_python-latest_git.spec
-rpmbuild -v -bi hatyan_python-latest_git.spec
+rm -rf hatyan-${versiontag} #first delete the destination folder
+unzip -p ${versiontag}.zip
+rpmbuild -v -bi hatyan-${versiontag}/scripts/hatyan_python-latest_git.spec
 
 cp -r ${RPMTOPDIR}/BUILDROOT/hatyan_python-*/opt/hatyan_python/hatyan_env $HATYANENVDIR
-cp ${HATYANROOTFOLDER}/scripts/hatyan.sh $HATYANEXEC
+cp hatyan-${versiontag}/scripts/hatyan.sh $HATYANEXEC
 chmod +x $HATYANEXEC
 #replace env location in activate script and hatyanexec (double quote to expand variable)
 sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $HATYANENVDIR/bin/activate
