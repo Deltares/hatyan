@@ -17,6 +17,7 @@ HATYANEXEC=~/hatyan_fromhome.sh
 #delete resulting directories first to start clean
 rm -rf ${RPMTOPDIR}
 rm -rf ${HATYANENVDIR}
+rm -f ${HATYANEXEC}
 
 # download spec from source and rpmbuild from spec
 versiontag=main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.2.68
@@ -32,4 +33,5 @@ chmod +x $HATYANEXEC
 sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $HATYANENVDIR/bin/activate
 sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $HATYANEXEC
 
-echo "If all went well, there is now a hatyan_env copied from the RPM BUILDROOT in $HATYANENVDIR and $HATYANEXEC can be used to execute hatyan"
+echo "If all went well, there is now a hatyan_env copied from the RPM BUILDROOT in $HATYANENVDIR and $HATYANEXEC can be used to execute hatyan:"
+echo "EXAMPLE: ./hatyan_fromhome.sh hatyan-${versiontag}/tests/configfiles/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py"
