@@ -23,7 +23,7 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-pyt
 %install
 #clear build folder, clone specific hatyan versiontag
 rm -rf %{_topdir}/BUILD/*
-git clone -b ${versiontag} https://github.com/Deltares/hatyan.git %{_topdir}/BUILD/hatyan_github 
+git clone -b %{version} https://github.com/Deltares/hatyan.git %{_topdir}/BUILD/hatyan_github 
 #make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder (possible to build from entire source from BUILD folder, but is slower)
 cp %{_topdir}/BUILD/hatyan_github/* %{_topdir}/SOURCES | true
 cp -r %{_topdir}/BUILD/hatyan_github/hatyan %{_topdir}/SOURCES
