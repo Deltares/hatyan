@@ -35,7 +35,7 @@ chmod +x $EXECFILE
 #create folder for hatyan_env and potentially other folders/files
 mkdir -p $RPM_BUILD_ROOT/opt/hatyan_python
 cp -r %{_topdir}/BUILD/hatyan_github/doc $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r %{_topdir}/BUILD/hatyan_githubtests $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 #cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create empty virtual environment
 /opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
