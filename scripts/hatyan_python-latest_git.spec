@@ -17,12 +17,12 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-pyt
 #start rpmbuild like this (default and more strict)
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "_topdir /u/veenstra/rpmbuild" --define "HATYANROOTFOLDER ~/hatyan_github"
-echo TESTTEST
-echo ${version}
-echo TESTTEST
 
 #install the code into directories on the build machine
 %install
+echo TESTTEST
+echo ${version}
+echo TESTTEST
 #make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder
 cp %{HATYANROOTFOLDER}/* %{_topdir}/SOURCES | true
 cp -r %{HATYANROOTFOLDER}/hatyan %{_topdir}/SOURCES
