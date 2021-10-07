@@ -22,7 +22,7 @@ rm -rf ${HATYANENVDIR}
 versiontag=main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.2.68
 wget https://github.com/Deltares/hatyan/archive/${versiontag}.zip -O ${versiontag}.zip
 rm -rf hatyan-${versiontag} #first delete the destination folder
-unzip -p ${versiontag}.zip
+unzip ${versiontag}.zip
 rpmbuild -v -bi hatyan-${versiontag}/scripts/hatyan_python-latest_git.spec
 
 cp -r ${RPMTOPDIR}/BUILDROOT/hatyan_python-*/opt/hatyan_python/hatyan_env $HATYANENVDIR
