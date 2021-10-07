@@ -15,8 +15,8 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-pyt
 %description
 %{summary}
 
-#define versiontag (use version number if not passed as rpmbuild define flag, assuming there is a github tag created with that name (e.g. 2.2.86)
-%{!?VERSIONTAG: %define VERSIONTAG v%{version}}
+#define versiontag (defaults to main if not passed as rpmbuild define flag, there should be a github tag created with that name, e.g. v2.2.86)
+%{!?VERSIONTAG: %define VERSIONTAG main}
 
 #install the code into directories on the build machine
 %install
