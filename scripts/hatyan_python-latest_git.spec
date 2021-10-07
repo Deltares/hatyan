@@ -2,8 +2,7 @@ Name:        hatyan_python
 Version:     main
 #2.2.90
 Release:     1
-#BuildArch:   noarch
-#Buildroot:   ~/rpmbuild/%{name}-%{version}-root
+BuildArch:   x86_64
 URL:         https://github.com/Deltares/hatyan
 AutoReq:     no
 Summary:     Python version of the hatyan RWS program, packed with relocatable Python env including necessary Python libraries
