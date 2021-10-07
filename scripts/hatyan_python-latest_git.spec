@@ -1,3 +1,6 @@
+#rpmbuild requires (sudo yum -y install): centos-release-scl-rh, rh-python36-python,  rh-python36-python-virtualenv, rpm-build. Start rpmbuild like this
+#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "VERSIONTAG main"
+
 Name:        hatyan_python
 Version:     2.2.90
 Release:     1
@@ -12,16 +15,14 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-pyt
 %description
 %{summary}
 
-#rpmbuild requires (sudo yum -y install): centos-release-scl-rh, rh-python36-python,  rh-python36-python-virtualenv, rpm-build
-#start rpmbuild like this (default and more strict)
-#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec
-#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "_topdir /u/veenstra/rpmbuild" --define "HATYANROOTFOLDER ~/hatyan_github"
+#define versiontag (use version number if not passed as rpmbuild define flag, assuming there is a github tag created with that name (e.g. 2.2.86)
+%{!?VERSIONTAG: %define VERSIONTAG v%{version}}
 
 #install the code into directories on the build machine
 %install
 #clear build folder, clone specific hatyan versiontag
 rm -rf %{_topdir}/BUILD/*
-git clone -b %{version} https://github.com/Deltares/hatyan.git %{_topdir}/BUILD/hatyan_github 
+git clone -b %{VERSIONTAG} https://github.com/Deltares/hatyan.git %{_topdir}/BUILD/hatyan_github 
 #make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder (possible to build from entire source from BUILD folder, but is slower)
 cp %{_topdir}/BUILD/hatyan_github/* %{_topdir}/SOURCES | true
 cp -r %{_topdir}/BUILD/hatyan_github/hatyan %{_topdir}/SOURCES
