@@ -10,9 +10,7 @@
 set -e
 
 #for h6
-HATYANROOTFOLDER=~/hatyan_github
 RPMTOPDIR=/u/veenstra/rpmbuild #(cannot contain ~ character) is default location on h6 so not per se necessary here
-
 HATYANENVDIR=~/hatyan_env
 HATYANEXEC=~/hatyan_fromhome.sh
 
@@ -20,7 +18,11 @@ HATYANEXEC=~/hatyan_fromhome.sh
 rm -rf ${RPMTOPDIR}
 rm -rf ${HATYANENVDIR}
 
-rpmbuild -v -bi ${HATYANROOTFOLDER}/scripts/hatyan_python-latest.spec --define "_topdir ${RPMTOPDIR}" --define "HATYANROOTFOLDER ${HATYANROOTFOLDER}"
+# download spec from source and rpmbuild from spec
+versiontag=main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.2.68
+wget https://github.com/Deltares/hatyan/archive/${versiontag}.zip -O ${versiontag}.zip
+unzip -p ${versiontag}.zip hatyan-${versiontag}/scripts/hatyan_python-latest_git.spec > hatyan_python-latest_git.spec
+rpmbuild -v -bi hatyan_python-latest_git.spec
 
 cp -r ${RPMTOPDIR}/BUILDROOT/hatyan_python-*/opt/hatyan_python/hatyan_env $HATYANENVDIR
 cp ${HATYANROOTFOLDER}/scripts/hatyan.sh $HATYANEXEC
