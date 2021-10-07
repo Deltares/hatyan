@@ -3,8 +3,9 @@ on:
   push:
     branches:
       - "main"
-    paths:
-      - hatyan/**
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
 jobs:
   sigridci:
     runs-on: ubuntu-latest
@@ -16,4 +17,4 @@ jobs:
         env:
           SIGRID_CI_ACCOUNT: "${{ secrets.SIGRID_CI_ACCOUNT }}"
           SIGRID_CI_TOKEN: "${{ secrets.SIGRID_CI_TOKEN }}"
-        run: "./sigridci/sigridci/sigridci.py --customer examplecustomername --system examplesystemname --source . --targetquality 3.0 --publish" 
+        run: "./sigridci/sigridci/sigridci.py --customer deltares --system hatyan --source . --targetquality 3.0 --publish" 
