@@ -21,23 +21,22 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-pyt
 
 #install the code into directories on the build machine
 %install
-#clear build folder, download specific hatyan version source and unzip
+#clear build folder, clone specific hatyan versiontag
 rm -rf %{_topdir}/BUILD/*
-wget https://github.com/Deltares/hatyan/archive/%{version}.zip # downloads to rpmbuild/BUILD
-unzip %{version}.zip #creates folder with sourcefiles: %{_topdir}/BUILD/hatyan-%{version}
-#make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder (maybe possible to build from entire source from BUILD folder, but is slower)
-cp %{_topdir}/BUILD/hatyan-%{version}/* %{_topdir}/SOURCES | true
-cp -r %{_topdir}/BUILD/hatyan-%{version}/hatyan %{_topdir}/SOURCES
+git clone -b ${versiontag} https://github.com/Deltares/hatyan.git %{_topdir}/BUILD/hatyan_github 
+#make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder (possible to build from entire source from BUILD folder, but is slower)
+cp %{_topdir}/BUILD/hatyan_github/* %{_topdir}/SOURCES | true
+cp -r %{_topdir}/BUILD/hatyan_github/hatyan %{_topdir}/SOURCES
 #create sh script for running hatyan on linux in one command
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 EXECFILE=$RPM_BUILD_ROOT/usr/bin/hatyan
-cp %{_topdir}/BUILD/hatyan-%{version}/scripts/hatyan.sh $EXECFILE
+cp %{_topdir}/BUILD/hatyan_github/scripts/hatyan.sh $EXECFILE
 chmod +x $EXECFILE
 #create folder for hatyan_env and potentially other folders/files
 mkdir -p $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r %{_topdir}/BUILD/hatyan-%{version}/doc $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r %{_topdir}/BUILD/hatyan-%{version}/tests $RPM_BUILD_ROOT/opt/hatyan_python
-#cp -r %{_topdir}/BUILD/hatyan-%{version}/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{_topdir}/BUILD/hatyan_github/doc $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{_topdir}/BUILD/hatyan_githubtests $RPM_BUILD_ROOT/opt/hatyan_python
+#cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create empty virtual environment
 /opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 # upgrade pip and setuptools to make sure all dependencies are handled well
