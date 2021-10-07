@@ -1,8 +1,10 @@
+#rpmbuild requires (sudo yum -y install): centos-release-scl-rh, rh-python36-python,  rh-python36-python-virtualenv, rpm-build. Start rpmbuild like this
+#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "VERSIONTAG main"
+
 Name:        hatyan_python
 Version:     2.2.90
 Release:     1
-#BuildArch:   noarch
-#Buildroot:   ~/rpmbuild/%{name}-%{version}-root
+BuildArch:   x86_64
 URL:         https://github.com/Deltares/hatyan
 AutoReq:     no
 Summary:     Python version of the hatyan RWS program, packed with relocatable Python env including necessary Python libraries
@@ -13,29 +15,27 @@ Requires:    rh-python36-python >= 3.6.3 rh-python36-python-libs >= 3.6.3 rh-pyt
 %description
 %{summary}
 
-#rpmbuild requires (sudo yum -y install): centos-release-scl-rh, rh-python36-python,  rh-python36-python-virtualenv, rpm-build
-#start rpmbuild like this (default and more strict)
-#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec
-#rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "_topdir /u/veenstra/rpmbuild" --define "HATYANROOTFOLDER ~/hatyan_github"
-
-#define hatyan root folder when using h6 (if not passed as rpmbuild define flag)
-%{!?HATYANROOTFOLDER: %define HATYANROOTFOLDER ~/hatyan_github} #on github: /github/workspace (but rh-python36 seems not to be available)
+#define versiontag (defaults to main if not passed as rpmbuild define flag, there should be a github tag created with that name, e.g. v2.2.86)
+%{!?VERSIONTAG: %define VERSIONTAG main}
 
 #install the code into directories on the build machine
 %install
-#make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder
-cp %{HATYANROOTFOLDER}/* %{_topdir}/SOURCES | true
-cp -r %{HATYANROOTFOLDER}/hatyan %{_topdir}/SOURCES
+#clear build folder, clone specific hatyan versiontag
+rm -rf %{_topdir}/BUILD/*
+git clone -b %{VERSIONTAG} https://github.com/Deltares/hatyan.git %{_topdir}/BUILD/hatyan_github 
+#make local copy of hatyan sources, to install from later. first all files in root (but not folders), then the hatyan and scripts folder (possible to build from entire source from BUILD folder, but is slower)
+cp %{_topdir}/BUILD/hatyan_github/* %{_topdir}/SOURCES | true
+cp -r %{_topdir}/BUILD/hatyan_github/hatyan %{_topdir}/SOURCES
 #create sh script for running hatyan on linux in one command
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 EXECFILE=$RPM_BUILD_ROOT/usr/bin/hatyan
-cp %{HATYANROOTFOLDER}/scripts/hatyan.sh $EXECFILE
+cp %{_topdir}/BUILD/hatyan_github/scripts/hatyan.sh $EXECFILE
 chmod +x $EXECFILE
 #create folder for hatyan_env and potentially other folders/files
 mkdir -p $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r %{HATYANROOTFOLDER}/doc $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r %{HATYANROOTFOLDER}/tests $RPM_BUILD_ROOT/opt/hatyan_python
-#cp -r %{HATYANROOTFOLDER}/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{_topdir}/BUILD/hatyan_github/doc $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
+#cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create empty virtual environment
 /opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 # upgrade pip and setuptools to make sure all dependencies are handled well
@@ -54,5 +54,3 @@ exit 0 #to prevent compiling
 %files
 /opt/hatyan_python
 /usr/bin/hatyan
-
-
