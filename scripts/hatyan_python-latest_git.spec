@@ -1,6 +1,5 @@
 Name:        hatyan_python
-Version:     main
-#2.2.90
+Version:     2.2.90
 Release:     1
 BuildArch:   x86_64
 URL:         https://github.com/Deltares/hatyan
