@@ -155,7 +155,7 @@ Generate RPM (RHEL/CentOS installer):
 
 __author__ = """Jelmer Veenstra"""
 __email__ = 'jelmer.veenstra@deltares.nl'
-__version__ = '2.2.89'
+__version__ = '2.2.90'
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
