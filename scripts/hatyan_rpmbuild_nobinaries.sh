@@ -9,21 +9,17 @@
 #!/bin/bash
 set -e
 
-#for h6
+versiontag=main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.2.68
+
+#for h6: define and delete resulting directories first to start clean
 RPMTOPDIR=/u/veenstra/rpmbuild #(cannot contain ~ character) is default location on h6 so not per se necessary here
 HATYANENVDIR=~/hatyan_env
 HATYANEXEC=~/hatyan_fromhome.sh
-
-#delete resulting directories first to start clean
 rm -rf ${RPMTOPDIR}
 rm -rf ${HATYANENVDIR}
 rm -f ${HATYANEXEC}
 
 # download spec from source and rpmbuild from spec
-versiontag=main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.2.68
-#wget https://github.com/Deltares/hatyan/archive/${versiontag}.zip -O ${versiontag}.zip
-#rm -rf hatyan-${versiontag} #first delete the destination folder
-#unzip ${versiontag}.zip
 rm -rf hatyan_github
 git clone -b ${versiontag} https://github.com/Deltares/hatyan.git hatyan_github 
 rpmbuild -v -bi hatyan_github/scripts/hatyan_python-latest_git.spec
