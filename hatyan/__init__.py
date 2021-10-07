@@ -141,7 +141,7 @@ Generate documentation:
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, increase minor version number, update history.rst, commit changes, create tag on github
+- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, update history.rst, commit changes, bumpversion minor, create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
@@ -156,10 +156,10 @@ __author__ = """Jelmer Veenstra"""
 __email__ = 'jelmer.veenstra@deltares.nl'
 __version__ = '2.2.89'
 
-from hatyan.analysis_prediction import *
-from hatyan.astrog import *
-from hatyan.components import *
-from hatyan.foreman_core import *
-from hatyan.hatyan_core import *
-from hatyan.timeseries import *
-from hatyan.wrapper_RWS import *
+from hatyan.analysis_prediction import analysis, get_components_from_ts, prediction, split_components, vectoravg
+from hatyan.astrog import astrab, astrac, astrog_anomalies, astrog_culminations, astrog_moonriseset, astrog_phases, astrog_seasons, astrog_sunriseset, convert2perday, convert_str2datetime, dT, plot_astrog_diff
+from hatyan.components import components_timeshift, merge_componentgroups, plot_components, read_components, write_components
+from hatyan.foreman_core import get_foreman_content, get_foreman_doodson_nodal_harmonic, get_foreman_nodalfactors, get_foreman_nodalfactors_fromharmonic_oneconst, get_foreman_shallowrelations, get_foreman_v0_freq, get_foreman_v0freq_fromfromharmonicdood
+from hatyan.hatyan_core import calcwrite_baseforv0uf, correct_fwith_xfac, get_const_list_hatyan, get_doodson_eqvals, get_hatyan_constants, get_hatyan_f, get_hatyan_freqs, get_hatyan_u, get_hatyan_v0, get_v0uf_allT_frompkl, get_v0uf_sel, robust_daterange_fromtimesextfreq, robust_timedelta_sec
+from hatyan.timeseries import calc_HWLW, calc_HWLWnumbering, check_ts, convertcoordinates, crop_timeseries, get_diablocks, get_diablocks_startstopstation, plot_HWLW_validatestats, plot_timeseries, readts_dia, readts_dia_HWLW, readts_dia_equidistant, readts_dia_nonequidistant, readts_noos, resample_timeseries, timeseries_fft, write_tsdia, write_tsdia_HWLW, write_tsnetcdf, writets_noos
+from hatyan.wrapper_RWS import close, exit_RWS, get_outputfoldername, init_RWS

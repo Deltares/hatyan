@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.1" />
+<title>hatyan.wrapper_RWS API documentation</title>
+<meta name="description" content="wrapper_RWS.py contains wrapper functions around the hatyan process for RWS related calculations …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hatyan.wrapper_RWS</code></h1>
+</header>
+<section id="section-intro">
+<p>wrapper_RWS.py contains wrapper functions around the hatyan process for RWS related calculations.</p>
+<p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
+Copyright (C) 2019-2021 Rijkswaterstaat.
+Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
+Source code available at: <a href="https://github.com/Deltares/hatyan">https://github.com/Deltares/hatyan</a></p>
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the
+GNU Lesser General Public License for more details.</p>
+<p>You should have received a copy of the GNU Lesser General Public License
+along with this program.
+If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+wrapper_RWS.py contains wrapper functions around the hatyan process for RWS related calculations.
+
+hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
+Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
+Source code available at: https://github.com/Deltares/hatyan
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
+&#34;&#34;&#34;
+
+
+def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False):
+    &#34;&#34;&#34;
+    Initializes the hatyan process for RWS related calculations. Besides the return variables,
+    it prints a header for the print output (shows up in the hatyan diagnostics file)
+
+    Parameters
+    ----------
+    file_config : TYPE
+        DESCRIPTION.
+    argvlist : TYPE
+        DESCRIPTION.
+    interactive_plots : bool/int, optional
+        sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is True.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    dir_output : path/str
+        the output directory for the hatyan process, the current directory is set to this folder.
+    timer_start : datetime.datetime
+        provides a start time with which exit_RWS calculates the total time of the process.
+
+    &#34;&#34;&#34;
+    
+    import os
+    import shutil
+    import datetime as dt
+    
+    if len(argvlist) == 1:
+        dir_output = get_outputfoldername(file_config)
+    elif len(argvlist) == 2: #for running from terminal with command &#34;hatyan configfile&#34;
+        dir_output = argvlist[1]
+    else:
+        raise Exception(&#39;ERROR: something wrong with input arguments&#39;)
+    os.chdir(dir_output)
+    
+    with open(&#39;__NOT_FINISHED__&#39;,&#39;w&#39;) as f:
+        f.write(&#39;CAUTION, this hatyan process has not yet properly finished, check FILE_DIAGNOSICS.txt for possible errors&#39;)
+
+    try:
+        import hatyan
+        version_no = hatyan.__version__
+    except:
+        version_no = None
+    
+    #set the storage location of interactive plots
+    import matplotlib
+    matplotlib.rcParams[&#34;savefig.directory&#34;] = dir_output
+    
+    #set the matplotlib backend depending on the interactive_plots argument
+    import matplotlib.pyplot as plt
+    if interactive_plots:
+        try:
+            plt.switch_backend(&#39;Qt5agg&#39;)
+        except:
+            raise Exception(&#39;Failed to switch to Qt5agg backend, check if you have X-forwarding enabled (and mesa-libGL and possibly other libraries installed) or use argument interactive_plots=False&#39;)
+    else:
+        plt.switch_backend(&#39;Agg&#39;)
+    
+    ##################################################################
+    ##### fixed settings #############################################
+    ##################################################################
+    
+    timer_start = dt.datetime.now()
+    if not silent: #necessary to suppress this in CentOS hatyan command, since print output is interpreted as dir_output variable
+        print(&#39;#&#39;*100)
+        print(&#39;#&#39;*100)
+        print(&#39;#&#39;*100)
+        print(&#39;-&#39;*100)
+        print(&#39;hatyan-%s: RWS tidal analysis and prediction&#39;%(version_no))
+        print(&#39;-&#39;*100)
+        print(&#39;INITIALISATION&#39;)
+        print(&#39;started at %s&#39;%(timer_start.strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)))
+        print(&#39;%-45s = %s&#39;%(&#39;file_config&#39;,file_config))
+        print(&#39;%-45s = %s&#39;%(&#39;dir_output&#39;,dir_output))
+        print(&#39;-&#39;*100)
+            
+        #copy configfile to dir_output
+        print(&#39;copying configfile to dir_output\\%s&#39;%(os.path.basename(file_config)))
+        shutil.copy(file_config,dir_output)
+        print(&#39;END OF INITIALISATION&#39;)
+        
+    return dir_output, timer_start
+
+
+def exit_RWS(timer_start):
+    &#34;&#34;&#34;
+    Provides a footer to the print output (shows up in the hatyan diagnostics file)
+
+    Parameters
+    ----------
+    timer_start : TYPE
+        The start time of the hatyan process, which is used to calculate the total time of the process.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import os
+    import datetime as dt
+    import matplotlib
+    import matplotlib.pyplot as plt
+    if matplotlib.get_backend() == &#39;Qt5Agg&#39;:
+        print(&#39;MESSAGE: interactive plots opened, close them to continue&#39;)
+        plt.show()
+    
+    print(&#39;-&#39;*100)
+    timer_stop = dt.datetime.now()
+    print(&#39;calculation finished at %s&#39;%(timer_stop.strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)))
+    timer_elapsed = (timer_stop - timer_start).total_seconds()/60
+    print(&#39;elapsed time: %.2f minutes (%.2f seconds)&#39;%(timer_elapsed,timer_elapsed*60))
+    print(&#39;-&#39;*100)
+    
+    os.remove(&#39;__NOT_FINISHED__&#39;)
+
+
+def get_outputfoldername(file_config):
+    &#34;&#34;&#34;
+    Creates an output folder based on the start time of the filename of the configfile and the current time. 
+
+    Parameters
+    ----------
+    file_config : str or path
+        path to the configuration file.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    dir_output : str or path
+        path to the output directory.
+
+    &#34;&#34;&#34;
+    import datetime as dt
+    import os
+    
+    mode = file_config.split(os.sep)[-1].split(&#39;.&#39;)[0]
+    time_now = dt.datetime.now()
+    dir_output = os.path.join(os.getcwd(),&#39;output__%s__%s&#39;%(time_now.strftime(&#39;%Y%m%d_%H%M%S&#39;),mode))
+    
+    if not os.path.isfile(file_config):
+        raise Exception(&#39;ERROR: configfile not found: %s&#39;%(file_config))
+    
+    if not os.path.exists(dir_output):
+        os.makedirs(dir_output)
+    else:
+        raise Exception(&#39;ERROR: dir_output already exists&#39;)
+    
+    return dir_output
+
+
+def close(fig=None):
+    &#34;&#34;&#34;
+    wrapper around matplotlib.pyplot.close() to enable closing of plots generated by hatyan without explicitly importing matplotlib
+
+    Parameters
+    ----------
+    fig : None or int or str or .Figure
+        The figure to close. There are a number of ways to specify this:
+        None: the current figure
+        .Figure: the given .Figure instance
+        int: a figure number
+        str: a figure name
+        &#39;all&#39;: all figures.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import matplotlib.pyplot as plt
+    plt.close(fig)
+    </code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hatyan.wrapper_RWS.init_RWS"><code class="name flex">
+<span>def <span class="ident">init_RWS</span></span>(<span>file_config, argvlist=[None], interactive_plots=True, silent=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Initializes the hatyan process for RWS related calculations. Besides the return variables,
+it prints a header for the print output (shows up in the hatyan diagnostics file)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_config</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>argvlist</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>interactive_plots</code></strong> :&ensp;<code>bool/int</code>, optional</dt>
+<dd>sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is True.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dir_output</code></strong> :&ensp;<code>path/str</code></dt>
+<dd>the output directory for the hatyan process, the current directory is set to this folder.</dd>
+<dt><strong><code>timer_start</code></strong> :&ensp;<code>datetime.datetime</code></dt>
+<dd>provides a start time with which exit_RWS calculates the total time of the process.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False):
+    &#34;&#34;&#34;
+    Initializes the hatyan process for RWS related calculations. Besides the return variables,
+    it prints a header for the print output (shows up in the hatyan diagnostics file)
+
+    Parameters
+    ----------
+    file_config : TYPE
+        DESCRIPTION.
+    argvlist : TYPE
+        DESCRIPTION.
+    interactive_plots : bool/int, optional
+        sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is True.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    dir_output : path/str
+        the output directory for the hatyan process, the current directory is set to this folder.
+    timer_start : datetime.datetime
+        provides a start time with which exit_RWS calculates the total time of the process.
+
+    &#34;&#34;&#34;
+    
+    import os
+    import shutil
+    import datetime as dt
+    
+    if len(argvlist) == 1:
+        dir_output = get_outputfoldername(file_config)
+    elif len(argvlist) == 2: #for running from terminal with command &#34;hatyan configfile&#34;
+        dir_output = argvlist[1]
+    else:
+        raise Exception(&#39;ERROR: something wrong with input arguments&#39;)
+    os.chdir(dir_output)
+    
+    with open(&#39;__NOT_FINISHED__&#39;,&#39;w&#39;) as f:
+        f.write(&#39;CAUTION, this hatyan process has not yet properly finished, check FILE_DIAGNOSICS.txt for possible errors&#39;)
+
+    try:
+        import hatyan
+        version_no = hatyan.__version__
+    except:
+        version_no = None
+    
+    #set the storage location of interactive plots
+    import matplotlib
+    matplotlib.rcParams[&#34;savefig.directory&#34;] = dir_output
+    
+    #set the matplotlib backend depending on the interactive_plots argument
+    import matplotlib.pyplot as plt
+    if interactive_plots:
+        try:
+            plt.switch_backend(&#39;Qt5agg&#39;)
+        except:
+            raise Exception(&#39;Failed to switch to Qt5agg backend, check if you have X-forwarding enabled (and mesa-libGL and possibly other libraries installed) or use argument interactive_plots=False&#39;)
+    else:
+        plt.switch_backend(&#39;Agg&#39;)
+    
+    ##################################################################
+    ##### fixed settings #############################################
+    ##################################################################
+    
+    timer_start = dt.datetime.now()
+    if not silent: #necessary to suppress this in CentOS hatyan command, since print output is interpreted as dir_output variable
+        print(&#39;#&#39;*100)
+        print(&#39;#&#39;*100)
+        print(&#39;#&#39;*100)
+        print(&#39;-&#39;*100)
+        print(&#39;hatyan-%s: RWS tidal analysis and prediction&#39;%(version_no))
+        print(&#39;-&#39;*100)
+        print(&#39;INITIALISATION&#39;)
+        print(&#39;started at %s&#39;%(timer_start.strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)))
+        print(&#39;%-45s = %s&#39;%(&#39;file_config&#39;,file_config))
+        print(&#39;%-45s = %s&#39;%(&#39;dir_output&#39;,dir_output))
+        print(&#39;-&#39;*100)
+            
+        #copy configfile to dir_output
+        print(&#39;copying configfile to dir_output\\%s&#39;%(os.path.basename(file_config)))
+        shutil.copy(file_config,dir_output)
+        print(&#39;END OF INITIALISATION&#39;)
+        
+    return dir_output, timer_start</code></pre>
+</details>
+</dd>
+<dt id="hatyan.wrapper_RWS.exit_RWS"><code class="name flex">
+<span>def <span class="ident">exit_RWS</span></span>(<span>timer_start)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Provides a footer to the print output (shows up in the hatyan diagnostics file)</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>timer_start</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>The start time of the hatyan process, which is used to calculate the total time of the process.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def exit_RWS(timer_start):
+    &#34;&#34;&#34;
+    Provides a footer to the print output (shows up in the hatyan diagnostics file)
+
+    Parameters
+    ----------
+    timer_start : TYPE
+        The start time of the hatyan process, which is used to calculate the total time of the process.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import os
+    import datetime as dt
+    import matplotlib
+    import matplotlib.pyplot as plt
+    if matplotlib.get_backend() == &#39;Qt5Agg&#39;:
+        print(&#39;MESSAGE: interactive plots opened, close them to continue&#39;)
+        plt.show()
+    
+    print(&#39;-&#39;*100)
+    timer_stop = dt.datetime.now()
+    print(&#39;calculation finished at %s&#39;%(timer_stop.strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)))
+    timer_elapsed = (timer_stop - timer_start).total_seconds()/60
+    print(&#39;elapsed time: %.2f minutes (%.2f seconds)&#39;%(timer_elapsed,timer_elapsed*60))
+    print(&#39;-&#39;*100)
+    
+    os.remove(&#39;__NOT_FINISHED__&#39;)</code></pre>
+</details>
+</dd>
+<dt id="hatyan.wrapper_RWS.get_outputfoldername"><code class="name flex">
+<span>def <span class="ident">get_outputfoldername</span></span>(<span>file_config)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates an output folder based on the start time of the filename of the configfile and the current time. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_config</code></strong> :&ensp;<code>str</code> or <code>path</code></dt>
+<dd>path to the configuration file.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>dir_output</code></strong> :&ensp;<code>str</code> or <code>path</code></dt>
+<dd>path to the output directory.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_outputfoldername(file_config):
+    &#34;&#34;&#34;
+    Creates an output folder based on the start time of the filename of the configfile and the current time. 
+
+    Parameters
+    ----------
+    file_config : str or path
+        path to the configuration file.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    dir_output : str or path
+        path to the output directory.
+
+    &#34;&#34;&#34;
+    import datetime as dt
+    import os
+    
+    mode = file_config.split(os.sep)[-1].split(&#39;.&#39;)[0]
+    time_now = dt.datetime.now()
+    dir_output = os.path.join(os.getcwd(),&#39;output__%s__%s&#39;%(time_now.strftime(&#39;%Y%m%d_%H%M%S&#39;),mode))
+    
+    if not os.path.isfile(file_config):
+        raise Exception(&#39;ERROR: configfile not found: %s&#39;%(file_config))
+    
+    if not os.path.exists(dir_output):
+        os.makedirs(dir_output)
+    else:
+        raise Exception(&#39;ERROR: dir_output already exists&#39;)
+    
+    return dir_output</code></pre>
+</details>
+</dd>
+<dt id="hatyan.wrapper_RWS.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>fig=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>wrapper around matplotlib.pyplot.close() to enable closing of plots generated by hatyan without explicitly importing matplotlib</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>fig</code></strong> :&ensp;<code>None</code> or <code>int</code> or <code>str</code> or <code>.Figure</code></dt>
+<dd>The figure to close. There are a number of ways to specify this:
+None: the current figure
+.Figure: the given .Figure instance
+int: a figure number
+str: a figure name
+'all': all figures.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def close(fig=None):
+    &#34;&#34;&#34;
+    wrapper around matplotlib.pyplot.close() to enable closing of plots generated by hatyan without explicitly importing matplotlib
+
+    Parameters
+    ----------
+    fig : None or int or str or .Figure
+        The figure to close. There are a number of ways to specify this:
+        None: the current figure
+        .Figure: the given .Figure instance
+        int: a figure number
+        str: a figure name
+        &#39;all&#39;: all figures.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    import matplotlib.pyplot as plt
+    plt.close(fig)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hatyan" href="index.html">hatyan</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="hatyan.wrapper_RWS.init_RWS" href="#hatyan.wrapper_RWS.init_RWS">init_RWS</a></code></li>
+<li><code><a title="hatyan.wrapper_RWS.exit_RWS" href="#hatyan.wrapper_RWS.exit_RWS">exit_RWS</a></code></li>
+<li><code><a title="hatyan.wrapper_RWS.get_outputfoldername" href="#hatyan.wrapper_RWS.get_outputfoldername">get_outputfoldername</a></code></li>
+<li><code><a title="hatyan.wrapper_RWS.close" href="#hatyan.wrapper_RWS.close">close</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+</footer>
+</body>
+</html>

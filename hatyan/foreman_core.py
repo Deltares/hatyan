@@ -21,9 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
-import os
-file_path = os.path.realpath(__file__)
-foreman_file = os.path.join(os.path.dirname(file_path),'data_components_foreman.txt')
 #################################################
 ################# FILECONTENTS ##################
 #################################################
@@ -32,7 +29,10 @@ foreman_file = os.path.join(os.path.dirname(file_path),'data_components_foreman.
 def get_foreman_content():
     import pandas as pd
     import numpy as np
+    import os
     
+    file_path = os.path.realpath(__file__)
+    foreman_file = os.path.join(os.path.dirname(file_path),'data_components_foreman.txt')
     content_pd = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=False)
     content_pd[0] = content_pd[0].str.replace('-0.',' -0.',regex=False) #add spaces where needed
     content_pd[0] = content_pd[0].str.replace('LDA2','LABDA2',regex=False)
