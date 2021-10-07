@@ -1,5 +1,6 @@
 [![pytest devenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
 [![pytest py-3.9](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
+[![sigrid-publish](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml)
 [![RPM build](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml/badge.svg?branch=main&event=release)](https://github.com/Deltares/hatyan/actions/workflows/RPM-build.yml)
 
 # hatyan
