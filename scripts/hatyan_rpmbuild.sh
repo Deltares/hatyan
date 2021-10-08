@@ -20,9 +20,4 @@ rm -rf ${RPMTOPDIR} #to be sure all RPM's are removed, so quering version number
 rm -rf hatyan_github
 git clone -b ${versiontag} https://github.com/Deltares/hatyan.git hatyan_github 
 rpmbuild -v -bb hatyan_github/scripts/hatyan_python-latest.spec --define "VERSIONTAG ${versiontag}"
-
-#copy specfile and RPM to build folder
-HATYANVERSION=$(rpm -q -p ${RPMTOPDIR}/RPMS/x86_64/*.rpm --queryformat '%{VERSION}')
-mkdir -p hatyan_github/build
-cp hatyan_github/scripts/hatyan_python-latest.spec hatyan_github/build/hatyan_python-${HATYANVERSION}.spec
-cp ${RPMTOPDIR}/RPMS/x86_64/*.rpm hatyan_github/build
+echo "RPM was created: ${RPMTOPDIR}/RPMS/x86_64/*.rpm"
