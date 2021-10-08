@@ -9,7 +9,7 @@
 #!/bin/bash
 set -e
 
-versiontag=main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.2.68
+versiontag=put_versiontag_here #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.3.0
 
 #define and delete resulting directories first to start clean
 #RPMTOPDIR=%system.teamcity.build.workingDir%/rpmbuild #(cannot contain ~ character) # for teamcity
