@@ -94,20 +94,19 @@ fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_predicti
 Information for developers
 --------
 
-Create a python environment hatyan_env and install hatyan as developer:
+Create python environment hatyan_env and install hatyan in developer mode:
 
 - download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
 - install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
 - Download git from https://git-scm.com/download/win, install with default settings
-- open command window in a folder where you want to clone the hatyan github repo, e.g. C:\\DATA
-- ``git clone https://github.com/Deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the master branch)
 - create a branch called work_yourname on https://github.com/Deltares/hatyan
-- open git bash window in local hatyan folder (e.g. C:\\DATA\\hatyan_github)
+- open command window in a folder where you want to clone the hatyan github repo, e.g. C:\\DATA
+- open git bash window where you want to checkout (e.g. C:\\DATA\\)
 - ``git remote update origin --prune`` (update local branch list)
-- ``git checkout work_yourname`` (checkout your branch, never do anything while the master is selected)
-- update your branch if main has been updated: add+commit+push everything in branch first, ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main -m ''``, ``git push origin development``
+- ``git clone -b work_yourname https://github.com/Deltares/hatyan hatyan_github`` (repos gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the work_yourname branch)
+- update your branch if main has been updated: add+commit+push everything in branch first, ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main -m ''``, ``git push``
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
-- ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL)
+- ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL6)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
 - ``conda activate hatyan_env``
 - ``python -m pip install -e . -r requirements_dev.txt`` (pip developer mode, also install all packages in requirements_dev.txt containing CentOS tested libraries, linked via setup.py)
@@ -140,10 +139,10 @@ Generate documentation:
 
 Generate RPM (RHEL/CentOS installer):
 
-- preparation: activate environment, run testbank, check acceptance test output and make backup of results, generate documentation, update history.rst, commit changes, bumpversion minor (recreate documentation/testoutput with correct version number), create tag on github
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
+- preparation: activate environment, run testbank and check acceptancetest output, update history.rst, git add+commit, bumpversion minor, (run testbank and) backup acceptancetest output, generate documentation, git add+commit+push, merge branch with main, create tag+release on github (e.g. v2.3.0)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
-- rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input
+- rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input (set the versiontag variable to the newly created github tag)
 - the dependencies for the RPM are documented in the specfile
 - the required Python libraries are documented in requirements_dev.txt: these are fixed versions, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
 - additionally, the library pyqt5==5.7.1 (hardcoded in specfile) is for interative QT5 plots. There is a newer version but it requires glibc >2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
