@@ -4,6 +4,8 @@ History
 
 * Fri Oct 8 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.3.0
 - simplified rpmbuild scripts and specfile, make more directly dependent on github
+
+* Thu Oct 7 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.2.89
 - generalized imports, now only 'import hatyan' necessary, all modules can be loaded from there
 
 * Mon Oct 4 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.2.88
