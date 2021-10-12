@@ -135,8 +135,12 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
             ts_years = ['%d-%02d'%(x.year,x.month) for x in ts_years_dt]
 
         n_years = len(ts_years)
-        A_i_all = np.zeros((n_const,n_years))
-        phi_i_deg_all = np.zeros((n_const,n_years))
+        if CS_comps is None:
+            A_i_all = np.zeros((n_const,n_years))
+            phi_i_deg_all = np.zeros((n_const,n_years))
+        else:
+            A_i_all = np.zeros((n_const+len(CS_comps),n_years))
+            phi_i_deg_all = np.zeros((n_const+len(CS_comps),n_years))
         for iY, year_dt in enumerate(ts_years_dt):
             if analysis_peryear:
                 print('analyzing %d of sequence %s'%(year_dt,ts_years))
