@@ -53,9 +53,12 @@ jobs:
           run: |
             ARTIFACT_PATHNAME=$(ls /home/runner/rpmbuild/RPMS/x86_64/hatyan_python-*.rpm | head -n 1)
             ARTIFACT_NAME=$(basename $ARTIFACT_PATHNAME)
-            echo "ARTIFACT_PATHNAME=${ARTIFACT_PATHNAME} >> $GITHUB_ENV #to be used later as env.ARTIFACT_PATHNAME
-            echo "ARTIFACT_NAME=${ARTIFACT_NAME} >> $GITHUB_ENV #to be used later as env.ARTIFACT_NAME
-
+            echo "ARTIFACT_PATHNAME=${ARTIFACT_PATHNAME}" >> $GITHUB_ENV
+            echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
+            #test existence of environment variables
+            echo ${{ env.ARTIFACT_PATHNAME }}
+            echo ${{ env.ARTIFACT_NAME }}
+        
         - name: check RPM existence
           id: checkRPMexists
           run: |
