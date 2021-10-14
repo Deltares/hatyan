@@ -56,6 +56,7 @@ $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install pyqt5==5.
 #python -m virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/*
+ls -alF %{_topdir}/RPMS
 exit 0 #to prevent compiling
 
 # gathers list of files and packs them to the RPM
