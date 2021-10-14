@@ -28,8 +28,8 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            tag_name: v2.3.1-alpha #${{ github.ref }}
-            release_name: Release v2.3.1-alpha #${{ github.ref }}
+            tag_name: ${{ github.ref }} #like v2.3.1-alpha or main
+            release_name: Release ${{ github.ref }} #like v2.3.1-alpha or main
             draft: false
             prerelease: true
         
@@ -44,7 +44,7 @@ jobs:
         - name: build RPM package core
           id: rpm_build_core
           run: |
-            versiontag=main #${{ github.ref }} #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.3.0
+            versiontag=${{ github.ref }} #like v2.3.1-alpha or main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.3.0
             # download spec from source and rpmbuild from spec
             rpmbuild -v -bb scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
             #echo "RPM was created: ${RPMTOPDIR}/RPMS/x86_64/*.rpm"
