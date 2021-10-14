@@ -38,7 +38,7 @@ jobs:
             echo ${{ github.ref }}
         
         - name: Checkout code
-          uses: actions/checkout@${{ github.ref }} #like v2.3.1-alpha or main
+          uses: actions/checkout@main #TODO: should be also the tag, but how to get it here? (if triggered by tag creation, it is the same version)
             
         - name: test python3 availability
           id: python3_test
