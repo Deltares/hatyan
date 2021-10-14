@@ -22,7 +22,7 @@ rm -f ${HATYANEXEC}
 # download spec from source and rpmbuild from spec
 rm -rf hatyan_github
 git clone -b ${versiontag} https://github.com/Deltares/hatyan.git hatyan_github 
-rpmbuild -v -bi hatyan_github/scripts/hatyan_python-latest.spec --define "VERSIONTAG ${versiontag}"
+rpmbuild -v -bi hatyan_github/scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
 
 cp -r ${RPMTOPDIR}/BUILDROOT/hatyan_python-*/opt/hatyan_python/hatyan_env $HATYANENVDIR
 cp hatyan_github/scripts/hatyan.sh $HATYANEXEC
