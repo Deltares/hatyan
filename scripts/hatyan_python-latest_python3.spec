@@ -18,6 +18,7 @@ Requires:    python3 python3-libs python3-pip python3-setuptools glibc >= 2.12 c
 %description
 %{summary}
 
+%define _build_id_links none
 #define versiontag (defaults to main if not passed as rpmbuild define flag, there should be a github tag created with that name, e.g. v2.2.86)
 %{!?VERSIONTAG: %define VERSIONTAG main}
 
