@@ -46,7 +46,6 @@ python -m pip install virtualenv
 #create empty virtualenv (this one should be relocatable, not possible with venv)
 #/opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 python -m virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
-deactivate
 # upgrade pip and setuptools to make sure all dependencies are handled well
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade pip setuptools
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
@@ -58,6 +57,7 @@ $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install pyqt5==5.
 python -m virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env #TODO check if all works without relocatable, this flag was dropped. move to venv entirely with copies/symlinks flags? https://docs.python.org/3/library/venv.html
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/*
+deactivate #deactivate virtualenv hatyan_env
 exit 0 #to prevent compiling
 
 # gathers list of files and packs them to the RPM
