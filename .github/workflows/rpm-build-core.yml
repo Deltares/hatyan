@@ -36,8 +36,15 @@ jobs:
             echo ${{ steps.get_release.outputs.upload_url }}
 
         - name: Checkout code
-          uses: actions/checkout@main #TODO: should be also the tag, but failes. If triggered by tag creation, it is also the same version so it does not matter too much
+          uses: actions/checkout@v2
+          
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: '3.6.12'
             
+        - name: Display Python version
+          run: python -c "import sys; print(sys.version)"
         #- name: test python3 availability
         #  id: python3_test
         #  run: |
@@ -45,6 +52,10 @@ jobs:
           
         - name: build RPM package core
           id: rpm_build_core
+          uses: actions/setup-python@v2
+            with: |
+              python-version: '3.9.0-alpha - 3.9.0' # SemVer's version range syntax
+
           run: |
             versiontag=${{ steps.get_release.outputs.tag_name }}
             echo $versiontag
