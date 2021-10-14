@@ -5,9 +5,7 @@ name: pytest-py39
 
 on:
   push:
-    branches: [ main development]
-    paths:
-      - hatyan/**
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   # Allows you to run this workflow manually from the Actions tab
