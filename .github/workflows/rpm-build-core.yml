@@ -22,6 +22,12 @@ jobs:
 
         steps:
 
+        - name: Get github tag
+          run: |
+            VERSIONTAG=${GITHUB_REF/refs\/tags\//} # Possible are main, branches, tags like v2.3.0. GITHUB_REF is lomething like refs/tags/v2.3.1-alpha, so prefix should be removed
+            echo "VERSIONTAG=${VERSIONTAG}" >> $GITHUB_ENV
+            echo ${{ env.VERSIONTAG }}
+
         #- name: Create Release
         #  id: create_release
         #  uses: actions/create-release@latest
@@ -33,22 +39,18 @@ jobs:
         #    draft: false
         #    prerelease: true
         
-        - name: Get github tag
-          run: |
-            echo ${{ github.ref }}
-        
         - name: Checkout code
           uses: actions/checkout@main #TODO: should be also the tag, but how to get it here? (if triggered by tag creation, it is the same version)
             
-        - name: test python3 availability
-          id: python3_test
-          run: |
-            python3 -m pip install --upgrade pip
+        #- name: test python3 availability
+        #  id: python3_test
+        #  run: |
+        #    python3 -m pip install --upgrade pip
           
         - name: build RPM package core
           id: rpm_build_core
           run: |
-            versiontag=${GITHUB_REF/refs\/tags\//} #like v2.3.1-alpha or main #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.3.0
+            versiontag=${{ env.VERSIONTAG }}
             echo $versiontag
             # download spec from source and rpmbuild from spec
             rpmbuild -v -bb scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
