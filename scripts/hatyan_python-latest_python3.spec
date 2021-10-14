@@ -40,7 +40,7 @@ cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 python3 -m venv hatyan_setup_venv
 ls -alF hatyan_setup_venv/bin
 . hatyan_setup_venv/bin/activate #TODO: check h6-c7/teamcity. Was (but does not work on github): source hatyan_setup_venv/bin/activate
-python --version
+python --version #TODO: this version is used for venv and virtualenv, but might not be available on destination machine, how to fix?
 python -m pip install --upgrade pip setuptools
 python -m pip install virtualenv
 #create empty virtualenv (this one should be relocatable, not possible with venv)
