@@ -13,6 +13,7 @@ License:     LGPL
 Provides:    hatyan_python
 Requires:    python3 python3-libs python3-pip python3-setuptools glibc >= 2.12 coreutils expect stix-fonts fontconfig freetype libstdc++ jasper libXcursor libXrender xorg-x11-xauth mesa-libGL mesa-libEGL libXi
 #TODO: update rpminstall requires list (python3 is shipped now?)
+#TODO: check on teamcity?
 
 %description
 %{summary}
@@ -38,8 +39,8 @@ cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 #cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create python3 venv to install virtualenv in # this is necessary on h6-c7, not on Github Actions since default there is python3
 python3 -m venv hatyan_setup_venv
-. hatyan_setup_venv/bin/activate #TODO: check h6-c7/teamcity. Was (but does not work on github): source hatyan_setup_venv/bin/activate
-python --version #TODO: this version is used for venv and virtualenv, but might not be available on destination machine, how to fix?
+. hatyan_setup_venv/bin/activate #Was (but does not work on github): source hatyan_setup_venv/bin/activate
+python --version #TODO: this version is used for venv and virtualenv. Python 3.8 requires glibc>2.24 or so, but might not be available on destination machine, how to fix pythonversion?
 python
 python -m pip install --upgrade pip setuptools
 python -m pip install virtualenv
