@@ -49,11 +49,11 @@ jobs:
             rpmbuild -v -bb scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
             #echo "RPM was created: ${RPMTOPDIR}/RPMS/x86_64/*.rpm"
         
-        #- name: Produce RPM as artifact
-        #  uses: actions/upload-artifact@v2
-        #  with:
-        #    #name: hatyan_python_RPM
-        #    path: /home/runner/rpmbuild/RPMS/hatyan_python-*.rpm
+        - name: check RPM existence
+          id: checkRPMexists
+          run: |
+            ls -alF
+            
         - name: Upload Release Asset
           id: upload-release-asset 
           uses: actions/upload-release-asset@v1
