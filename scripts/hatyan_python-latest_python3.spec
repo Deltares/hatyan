@@ -1,5 +1,6 @@
 #rpmbuild requires (sudo yum -y install): centos-release-scl-rh, rh-python36-python,  rh-python36-python-virtualenv, rpm-build. Start rpmbuild like this
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest.spec --define "VERSIONTAG main"
+#TODO: update rpmbuild requires list (rh is old, replace with python3*?)
 
 Name:        hatyan_python
 Version:     2.3.1
@@ -11,6 +12,7 @@ Summary:     Python version of the hatyan RWS program, packed with relocatable P
 License:     LGPL
 Provides:    hatyan_python
 Requires:    python3 python3-libs python3-pip python3-setuptools glibc >= 2.12 coreutils expect stix-fonts fontconfig freetype libstdc++ jasper libXcursor libXrender xorg-x11-xauth mesa-libGL mesa-libEGL libXi
+#TODO: update rpminstall requires list (python3 is shipped now?)
 
 %description
 %{summary}
@@ -34,10 +36,10 @@ mkdir -p $RPM_BUILD_ROOT/opt/hatyan_python
 cp -r %{_topdir}/BUILD/hatyan_github/doc $RPM_BUILD_ROOT/opt/hatyan_python
 cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 #cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
-# create python3 venv to install virtualenv in #TODO: this is necessary on h6-c7, not on Github Actions since default python is python3
+# create python3 venv to install virtualenv in # this is necessary on h6-c7, not on Github Actions since default there is python3
 python3 -m venv hatyan_setup_venv
 ls -alF hatyan_setup_venv/bin
-. hatyan_setup_venv/bin/activate #was (but does not work on github): source hatyan_setup_venv/bin/activate
+. hatyan_setup_venv/bin/activate #TODO: check h6-c7/teamcity. Was (but does not work on github): source hatyan_setup_venv/bin/activate
 python --version
 python -m pip install --upgrade pip setuptools
 python -m pip install virtualenv
@@ -53,7 +55,7 @@ $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install %{_topdir
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install pyqt5==5.7.1
 #make existing environment relocatable and remove BUILDROOT prefix in activate file:
 #/opt/rh/rh-python36/root/usr/bin/virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
-#python -m virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
+#python -m virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env #TODO check if all works without relocatable, this flag was dropped
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/*
 exit 0 #to prevent compiling
