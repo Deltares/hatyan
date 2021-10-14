@@ -25,7 +25,12 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@master
 
-        - name: Create Release
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v1
+          with:
+            python-version: ${{ matrix.python-version }}
+
+       - name: Create Release
           id: create_release
           uses: actions/create-release@latest
           env:
