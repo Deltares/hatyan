@@ -36,8 +36,7 @@ cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 # create empty virtual environment
 /opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 # upgrade pip and setuptools to make sure all dependencies are handled well
-$RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade pip
-$RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade setuptools
+$RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade pip setuptools
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install %{_topdir}/BUILD/hatyan_github -r %{_topdir}/BUILD/hatyan_github/requirements_dev.txt
 #install pyqt5==5.7.1 to avoid "Failed to import any qt binding" error. The fixed version is necessary since CentOS/RHEL6 have glibc 2.12 and higher pyqt5 versions require glibc>=2.14
