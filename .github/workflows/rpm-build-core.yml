@@ -49,6 +49,13 @@ jobs:
             rpmbuild -v -bb scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
             #echo "RPM was created: ${RPMTOPDIR}/RPMS/x86_64/*.rpm"
         
+        - name: Get Name of Artifact
+          run: |
+            ARTIFACT_PATHNAME=$(ls /home/runner/rpmbuild/RPMS/x86_64/hatyan_python-*.rpm | head -n 1)
+            ARTIFACT_NAME=$(basename $ARTIFACT_PATHNAME)
+            echo ::set-env name=ARTIFACT_NAME::${ARTIFACT_NAME}
+            echo ::set-env name=ARTIFACT_PATHNAME::${ARTIFACT_PATHNAME}
+
         - name: check RPM existence
           id: checkRPMexists
           run: |
@@ -69,6 +76,6 @@ jobs:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
               upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-              asset_path: /home/runner/rpmbuild/RPMS/x86_64/hatyan_python-*.rpm #${{ steps.rpm_build.outputs.source_rpm_path }}
-              #asset_name: hatyan_python_rpm # ${{ github.ref }} #${{ steps.rpm_build.outputs.source_rpm_name }}
+              asset_path: ${{ env.ARTIFACT_PATHNAME }} #${{ steps.rpm_build.outputs.source_rpm_path }}
+              asset_name: ${{ env.ARTIFACT_NAME }} #${{ steps.rpm_build.outputs.source_rpm_name }}
               asset_content_type: application/octet-stream #${{ steps.rpm_build.outputs.rpm_content_type }}
