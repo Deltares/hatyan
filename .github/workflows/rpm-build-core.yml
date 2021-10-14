@@ -38,11 +38,10 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@main #TODO: should be also the tag, but failes. If triggered by tag creation, it is also the same version so it does not matter too much
             
-        - name: test python3 availability
-          id: python3_test
-          run: |
-            python3 -m pip install --upgrade pip
-            conda activate base
+        #- name: test python3 availability
+        #  id: python3_test
+        #  run: |
+        #    python3 -m pip install --upgrade pip
           
         - name: build RPM package core
           id: rpm_build_core
