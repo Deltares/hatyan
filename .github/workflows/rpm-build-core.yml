@@ -31,6 +31,7 @@ jobs:
         - name: display release info
           run: |
             echo ${{ steps.get_release.outputs.id }}
+            echo ${{ steps.get_release.outputs.tag_name }}
             echo ${{ steps.get_release.outputs.name }}
             echo ${{ steps.get_release.outputs.upload_url }}
 
@@ -45,7 +46,7 @@ jobs:
         - name: build RPM package core
           id: rpm_build_core
           run: |
-            versiontag=${{ steps.get_release.outputs.name }}
+            versiontag=${{ steps.get_release.outputs.tag_name }}
             echo $versiontag
             # download spec from source and rpmbuild from spec
             rpmbuild -v -bb scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
