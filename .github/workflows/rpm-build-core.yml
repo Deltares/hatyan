@@ -22,19 +22,23 @@ jobs:
 
         steps:
 
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@latest
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ github.ref }} #like v2.3.1-alpha or main
-            release_name: Release ${{ github.ref }} #like v2.3.1-alpha or main
-            draft: false
-            prerelease: true
+        #- name: Create Release
+        #  id: create_release
+        #  uses: actions/create-release@latest
+        #  env:
+        #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #  with:
+        #    tag_name: ${{ github.ref }} #like v2.3.1-alpha or main
+        #    release_name: Release ${{ github.ref }} #like v2.3.1-alpha or main
+        #    draft: false
+        #    prerelease: true
+        
+        - name: Get github tag
+          run: |
+            echo ${{ github.ref }}
         
         - name: Checkout code
-          uses: actions/checkout@main
+          uses: actions/checkout@${{ github.ref }} #like v2.3.1-alpha or main
             
         - name: test python3 availability
           id: python3_test
