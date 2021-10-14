@@ -40,6 +40,8 @@ jobs:
         
         - name: Produce RPM as artifact
           uses: actions/upload-artifact@v2.3.1-alpha
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             #name: hatyan_python_RPM
             path: /home/runner/rpmbuild/BUILDROOT/hatyan_python-*.rpm
