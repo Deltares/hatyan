@@ -28,19 +28,23 @@ jobs:
             echo "VERSIONTAG=${VERSIONTAG}" >> $GITHUB_ENV
             echo ${{ env.VERSIONTAG }}
 
-        #- name: Create Release
-        #  id: create_release
-        #  uses: actions/create-release@latest
-        #  env:
-        #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        #  with:
-        #    tag_name: ${{ github.ref }} #like v2.3.1-alpha or main
-        #    release_name: Release ${{ github.ref }} #like v2.3.1-alpha or main
-        #    draft: false
-        #    prerelease: true
+        - name: Create Release
+          id: create_release
+          uses: actions/create-release@latest
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag_name: ${{ github.ref }} #like v2.3.1-alpha or main
+            release_name: Release ${{ github.ref }} #like v2.3.1-alpha or main
+            draft: false
+            prerelease: true
         
         - name: Checkout code
           uses: actions/checkout@main #TODO: should be also the tag, but how to get it here? (if triggered by tag creation, it is the same version)
+            
+        - name: display upload url
+          run: |
+            echo ${{ steps.create_release.outputs.upload_url }}
             
         #- name: test python3 availability
         #  id: python3_test
