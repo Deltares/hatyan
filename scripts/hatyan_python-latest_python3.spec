@@ -42,7 +42,7 @@ python3 -m venv hatyan_setup_venv
 . hatyan_setup_venv/bin/activate #Was (but does not work on github): source hatyan_setup_venv/bin/activate
 python --version #TODO: this version is used for venv and virtualenv. Python 3.8 requires glibc>2.24 or so, but might not be available on destination machine, how to fix pythonversion? Github has setup-python available for specific version 
 python -m pip install --upgrade pip setuptools
-python -m pip install virtualenv==15.1.0
+python -m pip install virtualenv==15.1.0 #in this version the relocatable flag still works
 #create empty virtualenv (this one should be relocatable, not possible with venv)
 #/opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 python -m virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
