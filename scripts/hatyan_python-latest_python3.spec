@@ -41,7 +41,7 @@ python3 -m venv hatyan_setup_venv
 . hatyan_setup_venv/bin/activate #Was (but does not work on github): source hatyan_setup_venv/bin/activate
 python --version #TODO: this version is used for venv and virtualenv. Python 3.8 requires glibc>2.24 or so, but might not be available on destination machine, how to fix pythonversion? Github has setup-python available for specific version 
 python -m pip install --upgrade pip setuptools
-python -m pip install virtualenv==15.1.0 #in this version the relocatable flag still works
+python -m pip install virtualenv #==15.1.0 #in this version the relocatable flag still works
 #create empty virtualenv (this one should be relocatable, not possible with venv)
 #/opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 python -m virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
@@ -53,7 +53,7 @@ $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install %{_topdir
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install pyqt5==5.7.1
 #make existing environment relocatable and remove BUILDROOT prefix in activate file:
 #/opt/rh/rh-python36/root/usr/bin/virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
-python -m virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env #TODO check if all works without relocatable, this flag was dropped. move to venv entirely with copies/symlinks flags? https://docs.python.org/3/library/venv.html
+#python -m virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env #TODO check if all works without relocatable, this flag was dropped. Also breaks installation entirely (no module hatyan)
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/*
 deactivate #deactivate virtualenv hatyan_env
