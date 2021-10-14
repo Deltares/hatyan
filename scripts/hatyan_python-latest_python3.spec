@@ -37,13 +37,10 @@ cp -r %{_topdir}/BUILD/hatyan_github/doc $RPM_BUILD_ROOT/opt/hatyan_python
 cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 #cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create python3 venv to install virtualenv in # this is necessary on h6-c7, not on Github Actions since default there is python3
-#python3 -m venv hatyan_setup_venv
-#ls -alF hatyan_setup_venv/bin
-#. hatyan_setup_venv/bin/activate #TODO: check h6-c7/teamcity. Was (but does not work on github): source hatyan_setup_venv/bin/activate
-conda create --name hatyan_setup_venv python=3.6.12 #TODO: check if conda works, since then a fixed python version can be used
-conda init bash
-conda activate hatyan_setup_venv
+python3 -m venv hatyan_setup_venv
+. hatyan_setup_venv/bin/activate #TODO: check h6-c7/teamcity. Was (but does not work on github): source hatyan_setup_venv/bin/activate
 python --version #TODO: this version is used for venv and virtualenv, but might not be available on destination machine, how to fix?
+python
 python -m pip install --upgrade pip setuptools
 python -m pip install virtualenv
 #create empty virtualenv (this one should be relocatable, not possible with venv)
