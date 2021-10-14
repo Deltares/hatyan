@@ -28,17 +28,6 @@ jobs:
             echo "VERSIONTAG=${VERSIONTAG}" >> $GITHUB_ENV
             echo ${{ env.VERSIONTAG }}
 
-        #- name: Create Release
-        #  id: create_release
-        #  uses: actions/create-release@latest
-        #  env:
-        #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        #  with:
-        #    tag_name: ${{ github.ref }} #like v2.3.1-alpha or main
-        #    release_name: Release ${{ github.ref }} #like v2.3.1-alpha or main
-        #    draft: false
-        #    prerelease: true
-
         - name: Get release
           id: get_release
           uses: bruceadams/get-release@v1.2.3
@@ -47,6 +36,8 @@ jobs:
         
         - name: display upload url
           run: |
+            echo ${{ steps.get_release.outputs.id }}
+            echo ${{ steps.get_release.outputs.name }}
             echo ${{ steps.get_release.outputs.upload_url }}
 
         - name: Checkout code
