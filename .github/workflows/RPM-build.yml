@@ -52,10 +52,14 @@ jobs:
         #      draft: false
         #      prerelease: true
             
+        - name: test python3 availability
+          id: python3_test
+          run: |
+            python3 -m pip install --upgrade pip
+          
         - name: build RPM package
           id: rpm_build
           uses: naveenrajm7/rpmbuild@master
-          uses: python3
           with:
               spec_file: "test_python3.spec"
         #- name: Upload Release Asset
