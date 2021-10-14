@@ -44,7 +44,7 @@ python -m pip install virtualenv
 #create empty virtualenv (this one should be relocatable, not possible with venv)
 #/opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 python -m virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
-deactivate
+#deactivate
 # upgrade pip and setuptools to make sure all dependencies are handled well
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade pip setuptools
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
