@@ -56,21 +56,9 @@ jobs:
             echo "ARTIFACT_PATHNAME=${ARTIFACT_PATHNAME}" >> $GITHUB_ENV
             echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
             #test existence of environment variables
+            ls -alF /home/runner/rpmbuild/RPMS/x86_64
             echo ${{ env.ARTIFACT_PATHNAME }}
             echo ${{ env.ARTIFACT_NAME }}
-        
-        - name: check RPM existence
-          id: checkRPMexists
-          run: |
-            echo "test"
-            ls -alF ~
-            echo "test"
-            ls -alF /home/runner/
-            echo "test"
-            ls -alF /home/runner/rpmbuild
-            echo "test"
-            ls -alF /home/runner/rpmbuild/RPMS/x86_64
-            echo "test"
             
         - name: Upload Release Asset
           id: upload-release-asset 
