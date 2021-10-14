@@ -83,7 +83,7 @@ jobs:
           env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-              upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+              upload_url: ${{ steps.get_release.outputs.upload_url }} # This pulls from the get_release step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
               asset_path: ${{ env.ARTIFACT_PATHNAME }} #${{ steps.rpm_build.outputs.source_rpm_path }}
               asset_name: ${{ env.ARTIFACT_NAME }} #${{ steps.rpm_build.outputs.source_rpm_name }}
               asset_content_type: application/octet-stream #${{ steps.rpm_build.outputs.rpm_content_type }}
