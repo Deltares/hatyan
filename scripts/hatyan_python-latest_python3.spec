@@ -40,8 +40,7 @@ cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 # create python3 venv to install virtualenv in # this is necessary on h6-c7, not on Github Actions since default there is python3
 python3 -m venv hatyan_setup_venv
 . hatyan_setup_venv/bin/activate #Was (but does not work on github): source hatyan_setup_venv/bin/activate
-python --version #TODO: this version is used for venv and virtualenv. Python 3.8 requires glibc>2.24 or so, but might not be available on destination machine, how to fix pythonversion?
-python
+python --version #TODO: this version is used for venv and virtualenv. Python 3.8 requires glibc>2.24 or so, but might not be available on destination machine, how to fix pythonversion? Github has setup-python available for specific version 
 python -m pip install --upgrade pip setuptools
 python -m pip install virtualenv
 #create empty virtualenv (this one should be relocatable, not possible with venv)
