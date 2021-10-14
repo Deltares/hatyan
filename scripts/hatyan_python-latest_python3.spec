@@ -30,7 +30,6 @@ git clone -b %{VERSIONTAG} https://github.com/Deltares/hatyan.git %{_topdir}/BUI
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 EXECFILE=$RPM_BUILD_ROOT/usr/bin/hatyan
 cp %{_topdir}/BUILD/hatyan_github/scripts/hatyan.sh $EXECFILE
-sed -i "s#/opt/hatyan_python/hatyan_env/lib/#/opt/hatyan_python/hatyan_env/lib64/#g" $EXECFILE
 chmod +x $EXECFILE
 #create folder for hatyan_env and potentially other folders/files
 mkdir -p $RPM_BUILD_ROOT/opt/hatyan_python
