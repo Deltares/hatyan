@@ -25,10 +25,10 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@master
 
-        - name: Set up Python ${{ matrix.python-version }}
+        - name: Set up Python 3.6
           uses: actions/setup-python@v1
           with:
-            python-version: ${{ matrix.python-version }}
+            python-version: 3.6
 
        - name: Create Release
           id: create_release
