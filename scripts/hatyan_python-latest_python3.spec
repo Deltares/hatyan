@@ -36,7 +36,7 @@ cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 #cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create python3 venv to install virtualenv in
 python3 -m venv hatyan_setup_venv #is created in BUILD folder in github actions, so might also use it per default
-ls -alF hatyan_setup_venv/bin/activate
+ls -alF hatyan_setup_venv/bin
 source hatyan_setup_venv/bin/activate
 python -m pip install --upgrade pip setuptools
 python -m pip install virtualenv
