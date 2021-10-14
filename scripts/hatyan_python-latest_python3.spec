@@ -45,6 +45,7 @@ python -m pip install virtualenv #==15.1.0 #in this version the relocatable flag
 #create empty virtualenv (this one should be relocatable, not possible with venv)
 #/opt/rh/rh-python36/root/usr/bin/virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 python -m virtualenv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
+deactivate #deactivate venv hatyan_setup_venv
 # upgrade pip and setuptools to make sure all dependencies are handled well
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install --upgrade pip setuptools
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
@@ -52,11 +53,8 @@ $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install %{_topdir
 #install pyqt5==5.7.1 to avoid "Failed to import any qt binding" error. The fixed version is necessary since CentOS/RHEL6 have glibc 2.12 and higher pyqt5 versions require glibc>=2.14
 $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/python -m pip install pyqt5==5.7.1
 #make existing environment relocatable and remove BUILDROOT prefix in activate file:
-#/opt/rh/rh-python36/root/usr/bin/virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
-#python -m virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env #TODO check if all works without relocatable, this flag was dropped. Also breaks installation entirely (no module hatyan)
-sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate
-sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/*
-deactivate #deactivate virtualenv hatyan_env
+#/opt/rh/rh-python36/root/usr/bin/virtualenv --relocatable $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env  #relocatable flag was dropped in newer virtualenv version which comes with non-rh python. It also broke installation entirely (no module hatyan)
+sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/* #replace BUILDROOT prefix in all bin folders, makes sure activate/python/pip can find each other
 exit 0 #to prevent compiling
 
 # gathers list of files and packs them to the RPM
