@@ -24,12 +24,13 @@ jobs:
 
         - name: Checkout code
           uses: actions/checkout@master
-        - name: Install system dependencies
-          if: runner.os == 'Linux'
-          run: |
-            sudo apt update
-            sudo apt-get update
-            sudo apt-get -y install python3
+
+        #- name: Install system dependencies
+        #  if: runner.os == 'Linux'
+        #  run: |
+        #    sudo apt update
+        #    sudo apt-get update
+        #    sudo apt-get -y install python3
 
         #- name: Set up Python 3.6
         #  uses: actions/setup-python@v1
@@ -53,7 +54,7 @@ jobs:
             
         - name: build RPM package
           id: rpm_build
-          uses: naveenrajm7/rpmbuild@master
+          uses: naveenrajm7/rpmbuild@master python3
           with:
               spec_file: "test_python3.spec"
         #- name: Upload Release Asset
