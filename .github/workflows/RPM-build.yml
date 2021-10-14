@@ -23,7 +23,7 @@ jobs:
         steps:
 
         - name: Checkout code
-          uses: actions/checkout@master
+          uses: actions/checkout@main
 
         #- name: Install system dependencies
         #  if: runner.os == 'Linux'
