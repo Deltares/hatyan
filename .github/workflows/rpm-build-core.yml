@@ -35,7 +35,7 @@ jobs:
             echo ${{ steps.get_release.outputs.upload_url }}
 
         - name: Checkout code
-          uses: actions/checkout@${{ steps.get_release.outputs.name }}
+          uses: actions/checkout@main #TODO: should be also the tag, but failes. If triggered by tag creation, it is also the same version so it does not matter too much
             
         #- name: test python3 availability
         #  id: python3_test
