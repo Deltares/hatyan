@@ -52,7 +52,15 @@ jobs:
         - name: check RPM existence
           id: checkRPMexists
           run: |
-            ls -alF
+            echo "test"
+            ls -alF ~
+            echo "test"
+            ls -alF /home/runner/
+            echo "test"
+            ls -alF /home/runner/rpmbuild
+            echo "test"
+            ls -alF /home/runner/rpmbuild/RPMS/x86_64
+            echo "test"
             
         - name: Upload Release Asset
           id: upload-release-asset 
