@@ -18,7 +18,6 @@ Requires:    glibc >= 2.12 coreutils expect stix-fonts fontconfig freetype libst
 
 #prevent build_id links (/usr/lib/) on github platform
 %define debug_package %{nil}
-#%define _build_id_links none
 #define versiontag (defaults to main if not passed as rpmbuild define flag, there should be a github tag created with that name, e.g. v2.2.86)
 %{!?VERSIONTAG: %define VERSIONTAG main}
 
