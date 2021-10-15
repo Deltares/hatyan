@@ -33,7 +33,7 @@ Install hatyan OPTION 1: Create a separate python environment and install from g
 - open command window (or anaconda prompt)
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
-- ``python -m pip install git+https://github.com/Deltares/hatyan`` (this command installs hatyan and all required packages)
+- ``python -m pip install git+https://github.com/Deltares/hatyan`` (this command installs hatyan and all required packages, add a tag like ``@v2.3.0`` if you require a specific version)
 - to update hatyan: ``python -m pip install --upgrade git+https://github.com/Deltares/hatyan``
 - ``conda deactivate``
 - to remove venv when necessary: ``conda remove -n hatyan_env --all``
