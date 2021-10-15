@@ -1,4 +1,4 @@
-#rpmbuild requires (sudo yum -y install): python3 python3-libs python3-pip python3-setuptools, rpm-build
+#rpmbuild requires (sudo yum -y install): rpm-build and python3 (or anaconda or anything else), the python version you use will also be the version that is in the hatyan_env
 #start rpmbuild like this:
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG main"
 
