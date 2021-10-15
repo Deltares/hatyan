@@ -21,7 +21,7 @@ rm -f ${HATYANEXEC}
 rm -rf hatyan_github
 git clone -b ${versiontag} https://github.com/Deltares/hatyan.git hatyan_github 
 module load anaconda3
-conda create -n hatyan_setup_venv python=3.7 -y 
+conda create -n hatyan_setup_venv python=3.6.12 -y 
 conda activate hatyan_setup_venv
 rpmbuild -v -bi hatyan_github/scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
 conda deactivate
