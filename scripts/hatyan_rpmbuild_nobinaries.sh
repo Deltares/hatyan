@@ -27,11 +27,11 @@ rpmbuild -v -bi hatyan_github/scripts/hatyan_python-latest_python3.spec --define
 conda deactivate
 module unload anaconda3
 
-OPTHATYANDIR=$(find $HOME/rpmbuild/BUILDROOT/hatyan_python-*/opt/hatyan_python | head -n 1)
+HATYANENVDIR=$(find $HOME/rpmbuild/BUILDROOT/hatyan_python-*/opt/hatyan_python/hatyan_env | head -n 1)
 cp hatyan_github/scripts/hatyan.sh $HATYANEXEC
 chmod +x $HATYANEXEC
 #replace env location in activate script and hatyanexec (double quote to expand variable)
-sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $OPTHATYANDIR/hatyan_env/bin/activate
+sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $HATYANENVDIR/bin/activate
 sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $HATYANEXEC
 
 echo "If all went well, there is now a hatyan_env copied from the RPM BUILDROOT in $HATYANENVDIR and $HATYANEXEC can be used to execute hatyan:"
