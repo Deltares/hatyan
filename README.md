@@ -26,17 +26,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 Installation
 --------
 
-Install hatyan OPTION 1: Create a separate python environment and install from github (later maybe also via PyPI):
+Install hatyan OPTION 1: Install from github in an existing or new environment:
 
-- download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested)
-- install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
+- optional: download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
 - open command window (or anaconda prompt)
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
 - ``python -m pip install git+https://github.com/Deltares/hatyan`` (this command installs hatyan and all required packages, add a tag like ``@v2.3.0`` if you require a specific version)
 - to update hatyan: ``python -m pip install --upgrade git+https://github.com/Deltares/hatyan``
-- ``conda deactivate``
-- to remove venv when necessary: ``conda remove -n hatyan_env --all``
+- optional: ``conda deactivate``
 
 Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 
@@ -57,38 +55,49 @@ Getting started
 [Documentation is available on Github](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html) (replace 'main' in the url with any tagname to view older versions) and there is background information in [the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles).
 
 ```python
-import os
 import datetime as dt
+import pandas as pd
+from netCDF4 import Dataset, num2date
 import hatyan
+hatyan.close('all')
 
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
 const_list = hatyan.get_const_list_hatyan('year')
 
 #reading and editing time series, results in a pandas DataFrame a 'values' column (water level in meters) and a pd.DatetimeIndex as index (timestamps as datetime.datetime)
-file_data_meas = os.path.join(r'n:\\Deltabox\\Bulletin\\veenstra\\VLISSGN_waterlevel_20101201_20140101.noos')
-times_ext = [dt.datetime(2012,1,1),dt.datetime(2013,1,1)]
+file_data_meas = 'http://uhslc.soest.hawaii.edu:80/opendap/rqds/global/hourly/h825a.nc' #Cuxhaven dataset from UHSLC database #os.path.join(r'n:\\Deltabox\\Bulletin\\veenstra\\VLISSGN_waterlevel_20101201_20140101.noos')
+times_ext = [dt.datetime(2017,1,1),dt.datetime(2018,12,31)]
 timestep_min = 10
-ts_meas = hatyan.readts_noos(filename=file_data_meas)
-ts_meas = hatyan.resample_timeseries(ts_meas, timestep_min=timestep_min)
+ts_data = Dataset(file_data_meas)
+ts_data_values = ts_data['sea_level'][0,-18000:]/1000-5 #correct from mm to meters and for 5m offset
+ts_data_times = num2date(ts_data['time'][-18000:],units=ts_data['time'].units, only_use_cftime_datetimes=False)
+ts_meas = pd.DataFrame({'values':ts_data_values},index=ts_data_times)
+#ts_meas = hatyan.resample_timeseries(ts_meas, timestep_min=60) #resampling only works well when timesteps are rounded to seconds
 ts_meas = hatyan.crop_timeseries(ts=ts_meas, times_ext=times_ext)
 
 #tidal analysis and plotting of results. commented: saving figure  
-comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_peryear=False)
-fig,(ax1,ax2) = hatyan.plot_components(comp=comp_frommeas)
-#fig.savefig('components_VLISSGN_4Y.png')
+comp_frommeas, comp_allyears = hatyan.get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, return_allyears=True, fu_alltimes=True, analysis_peryear=True)
+fig,(ax1,ax2) = hatyan.plot_components(comp=comp_frommeas, comp_allyears=comp_allyears)
+#fig.savefig('components.png')
 
 #tidal prediction and plotting of results. commented: saving figure and writing to netCDF
-ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
+ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
 fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
 ax1.legend(['prediction','measurement','difference','mean of prediction'])
 ax2.set_ylim(-0.5,0.5)
-#fig.savefig('prediction_%im_VLISSGN_measurements'%(timestep_min))
+#fig.savefig('prediction.png')
 
 #calculation of HWLW and plotting of results. commented: saving figure
+ts_ext_meas = hatyan.calc_HWLW(ts=ts_meas)
 ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
-fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
-#fig.savefig('prediction_%im_VLISSGN_HWLW'%(timestep_min))
-#hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='VLISSGN', vertref='NAP', filename='prediction_%im_VLISSGN.nc'%(timestep_min))
+fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_meas)
+ax1.set_xlim([dt.datetime(2018,6,1),dt.datetime(2018,7,1)])
+ax2.set_ylim(-1,1)
+#fig.savefig('prediction_HWLW.png')
+
+fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_meas)
+
+#hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='Cuxhaven', vertref='MSL', filename='prediction.nc')
 ```
 
 Information for developers
