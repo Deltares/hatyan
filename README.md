@@ -96,7 +96,7 @@ ax2.set_ylim(-1,1)
 #fig.savefig('prediction_HWLW.png')
 
 fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_meas)
-
+#fig.savefig('prediction_HWLW_validatestats.png')
 #hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='Cuxhaven', vertref='MSL', filename='prediction.nc')
 ```
 
