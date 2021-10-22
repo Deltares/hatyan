@@ -135,8 +135,12 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
             ts_years = ['%d-%02d'%(x.year,x.month) for x in ts_years_dt]
 
         n_years = len(ts_years)
-        A_i_all = np.zeros((n_const,n_years))
-        phi_i_deg_all = np.zeros((n_const,n_years))
+        if CS_comps is None:
+            A_i_all = np.zeros((n_const,n_years))
+            phi_i_deg_all = np.zeros((n_const,n_years))
+        else:
+            A_i_all = np.zeros((n_const+len(CS_comps),n_years))
+            phi_i_deg_all = np.zeros((n_const+len(CS_comps),n_years))
         for iY, year_dt in enumerate(ts_years_dt):
             if analysis_peryear:
                 print('analyzing %d of sequence %s'%(year_dt,ts_years))
@@ -598,3 +602,44 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     print('PREDICTION finished')
     
     return ts_prediction_pd
+
+
+def prediction_peryear(comp_allyears, timestep_min, nodalfactors=True, xfac=False, fu_alltimes=True, source='schureman'):
+    """
+    Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.
+
+    Parameters
+    ----------
+    comp_allyears : TYPE
+        DESCRIPTION.
+    timestep_min : TYPE
+        DESCRIPTION.
+    nodalfactors : TYPE, optional
+        DESCRIPTION. The default is True.
+    xfac : TYPE, optional
+        DESCRIPTION. The default is False.
+    fu_alltimes : TYPE, optional
+        DESCRIPTION. The default is True.
+    source : TYPE, optional
+        DESCRIPTION. The default is 'schureman'.
+
+    Returns
+    -------
+    ts_prediction_peryear : TYPE
+        DESCRIPTION.
+
+    """
+    
+    import pandas as pd
+    import datetime as dt
+    
+    list_years = comp_allyears.columns.levels[1]
+    ts_prediction_peryear = pd.DataFrame()
+    for year in list_years:
+        print('generating prediction %d of sequence %s'%(year,list(list_years)))
+        comp_oneyear = comp_allyears.loc[:,(slice(None),year)]
+        comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
+        times_ext = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, source=source)
+        ts_prediction_peryear = ts_prediction_peryear.append(ts_prediction_oneyear)
+    return ts_prediction_peryear

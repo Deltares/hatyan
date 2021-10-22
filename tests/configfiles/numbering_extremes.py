@@ -20,7 +20,6 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','BRESKS','BROUWHVSGT02','BROUWHVSGT08','CADZD','CROMR','CUXHVN','DELFZL','DENHDR','DENOVBTN','DEVPT','DORDT','DOVR','EEMHVN','EEMSHVN','EURPFM','EURPHVN','FELSWE','FISHGD','GEULHVN','GOIDSOD','GOUDBG','HAGSBNDN','HANSWT','HARLGN','HARMSBG','HARTBG','HARTHVN','HARVT10','HEESBN','HELLVSS','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','IMMHM','KATSBTN','KEIZVR','KINLBVE','KORNWDZBTN','KRAMMSZWT','KRIMPADIJSL','KRIMPADLK','K13APFM','LAUWOG','LEITH','LICHTELGRE','LITHDP','LLANDNO','LOWST','MAASMSMPL','MAASSS','MAESLKRZZDE','MARLGT','MOERDK','NES','NEWHVN','NEWLN','NIEUWSTZL','NORTHSS','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','PARKSS','PETTZD','PORTSMH','RAKND','ROOMPBNN','ROOMPBTN','ROTTDM','ROZBSSNZDE','ROZBSSZZDE','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SCHOONHVN','SHEERNS','SINTANLHVSGR','SPIJKNSE','STAVNSE','STELLDBTN','STORNWY','SUURHBNZDE','TENNSHVN','TERNZN','TERSLNZE','TEXNZE','VLAARDGN','VLAKTVDRN','VLIELHVN','VLISSGN','VURN','WALSODN','WERKDBTN','WESTKPLE','WESTTSLG','WEYMH','WHITBY','WICK','WIERMGDN','YERSKE','ZALTBML','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
-stats_anaperyear0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
 stats_MSL = ['EURPFM','K13APFM','LICHTELGRE','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 
 stats_CADZDm2 = ['WICK']
@@ -43,7 +42,7 @@ ldb_pd = pd.DataFrame({'RDx':x_out/1000, 'RDy':y_out/1000})
 if 0:
     """
     #all stations in NLD, including several from English coast for which it is know how many tidal waves before CADZD they are. ZALTBML excluded because there is no _ana file available
-    stats_xfac1_ana4yr_NAP = [x for x in stats_all if x not in stats_xfac0+stats_anaperyear0+stats_MSL+['ZALTBML']]
+    stats_xfac1_ana4yr_NAP = [x for x in stats_all if x not in stats_xfac0+stats_MSL+['ZALTBML']]
     selected_stations = stats_xfac1_ana4yr_NAP+stats_CADZDm2+stats_CADZDm1+['CUXHVN']
     selected_stations = list(np.unique(selected_stations))
     selected_stations = ['WICK', 'ABDN', 'LEITH', 'WHITBY', 'IMMHM', 'CROMR', 'FELSWE',
@@ -93,10 +92,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         else:
             xfac=True
         #analysis_peryear
-        #if current_station in stats_anaperyear0:
-        #    analysis_peryear=False
-        #else:
-        #    analysis_peryear=True
+        #analysis_peryear=True
         #constituent list
         const_list = hatyan.get_const_list_hatyan('year') #94 const
         #vertical reference

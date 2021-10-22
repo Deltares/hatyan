@@ -2,6 +2,11 @@
 History
 =======
 
+* Fri Oct 22 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.3.3
+- improvement in get_components_from_ts() to support analysis_peryear=True and CS_comps=!None at the same time. Now possible to remove stats_anaperyear from configfiles
+- updated example in readme to work with online UHSLC file
+- added prediction_peryear() definition
+
 * Fri Oct 8 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.3.0
 - simplified rpmbuild scripts and specfile, make more directly dependent on github
 

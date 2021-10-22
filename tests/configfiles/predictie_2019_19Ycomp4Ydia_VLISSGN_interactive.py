@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-predictie_2019_b02_19Ycomp4Ydia_all.py
+predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py
 hatyan master configfile
 voor alle stations indien mogelijk:
     - analyse van 4 jaar aan data
@@ -17,11 +17,11 @@ import hatyan
 file_config = os.path.realpath(__file__)
 dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=True)
 
-dir_tests = os.path.abspath(os.path.join(file_config,os.pardir,os.pardir)) #1 level up from dir_scripts
+dir_testdata = os.path.abspath(os.path.join(file_config,os.pardir,os.pardir)) #1 level up from dir_scripts
 
 selected_stations = ['VLISSGN']
 
-file_slotgemiddelden = os.path.join(dir_tests,'data_unitsystemtests','_slotgemiddelden_predictie2019.txt')
+file_slotgemiddelden = os.path.join(dir_testdata,'data_unitsystemtests','_slotgemiddelden_predictie2019.txt')
 stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
 
 for current_station in selected_stations:
@@ -42,18 +42,18 @@ for current_station in selected_stations:
     #END OF STATION SETTINGS
     
 
-    file_data_comp0_raw = [os.path.join(dir_tests,'data_unitsystemtests','%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2,3,4]]
+    file_data_comp0_raw = [os.path.join(dir_testdata,'data_unitsystemtests','%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2,3,4]]
     file_data_comp0 = [x for x in file_data_comp0_raw if os.path.exists(x)] #slim filename list down to available files/years
         
-    file_data_comp1 = os.path.join(dir_tests,'data_unitsystemtests','%s_ana.txt'%(current_station))
+    file_data_comp1 = os.path.join(dir_testdata,'data_unitsystemtests','%s_ana.txt'%(current_station))
     
-    file_data_compvali = os.path.join(dir_tests,'data_unitsystemtests','%s_ana.txt'%(current_station))
+    file_data_compvali = os.path.join(dir_testdata,'data_unitsystemtests','%s_ana.txt'%(current_station))
     
     times_ext_pred = [dt.datetime(2019,1,1),dt.datetime(2020,1,1)]
     times_step_pred = 10
 
-    file_data_predvali = os.path.join(dir_tests,'data_unitsystemtests','%s_pre.txt'%(current_station))
-    file_data_predvaliHWLW = os.path.join(dir_tests,'data_unitsystemtests','%s_ext.txt'%(current_station))
+    file_data_predvali = os.path.join(dir_testdata,'data_unitsystemtests','%s_pre.txt'%(current_station))
+    file_data_predvaliHWLW = os.path.join(dir_testdata,'data_unitsystemtests','%s_ext.txt'%(current_station))
     
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
     times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
