@@ -180,8 +180,12 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
             ts_years = [&#39;%d-%02d&#39;%(x.year,x.month) for x in ts_years_dt]
 
         n_years = len(ts_years)
-        A_i_all = np.zeros((n_const,n_years))
-        phi_i_deg_all = np.zeros((n_const,n_years))
+        if CS_comps is None:
+            A_i_all = np.zeros((n_const,n_years))
+            phi_i_deg_all = np.zeros((n_const,n_years))
+        else:
+            A_i_all = np.zeros((n_const+len(CS_comps),n_years))
+            phi_i_deg_all = np.zeros((n_const+len(CS_comps),n_years))
         for iY, year_dt in enumerate(ts_years_dt):
             if analysis_peryear:
                 print(&#39;analyzing %d of sequence %s&#39;%(year_dt,ts_years))
@@ -642,7 +646,48 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     ts_prediction_pd = pd.DataFrame({&#39;values&#39;: ht_res},index=times_pred_all_pdDTI)
     print(&#39;PREDICTION finished&#39;)
     
-    return ts_prediction_pd</code></pre>
+    return ts_prediction_pd
+
+
+def prediction_peryear(comp_allyears, timestep_min, nodalfactors=True, xfac=False, fu_alltimes=True, source=&#39;schureman&#39;):
+    &#34;&#34;&#34;
+    Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.
+
+    Parameters
+    ----------
+    comp_allyears : TYPE
+        DESCRIPTION.
+    timestep_min : TYPE
+        DESCRIPTION.
+    nodalfactors : TYPE, optional
+        DESCRIPTION. The default is True.
+    xfac : TYPE, optional
+        DESCRIPTION. The default is False.
+    fu_alltimes : TYPE, optional
+        DESCRIPTION. The default is True.
+    source : TYPE, optional
+        DESCRIPTION. The default is &#39;schureman&#39;.
+
+    Returns
+    -------
+    ts_prediction_peryear : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    import pandas as pd
+    import datetime as dt
+    
+    list_years = comp_allyears.columns.levels[1]
+    ts_prediction_peryear = pd.DataFrame()
+    for year in list_years:
+        print(&#39;generating prediction %d of sequence %s&#39;%(year,list(list_years)))
+        comp_oneyear = comp_allyears.loc[:,(slice(None),year)]
+        comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
+        times_ext = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, source=source)
+        ts_prediction_peryear = ts_prediction_peryear.append(ts_prediction_oneyear)
+    return ts_prediction_peryear</code></pre>
 </details>
 </section>
 <section>
@@ -836,8 +881,12 @@ str: a predefined name of a component set for hatyan_core.get_const_list_hatyan(
             ts_years = [&#39;%d-%02d&#39;%(x.year,x.month) for x in ts_years_dt]
 
         n_years = len(ts_years)
-        A_i_all = np.zeros((n_const,n_years))
-        phi_i_deg_all = np.zeros((n_const,n_years))
+        if CS_comps is None:
+            A_i_all = np.zeros((n_const,n_years))
+            phi_i_deg_all = np.zeros((n_const,n_years))
+        else:
+            A_i_all = np.zeros((n_const+len(CS_comps),n_years))
+            phi_i_deg_all = np.zeros((n_const+len(CS_comps),n_years))
         for iY, year_dt in enumerate(ts_years_dt):
             if analysis_peryear:
                 print(&#39;analyzing %d of sequence %s&#39;%(year_dt,ts_years))
@@ -1360,6 +1409,76 @@ The component set has the same timezone as the timeseries used to create it, the
     return ts_prediction_pd</code></pre>
 </details>
 </dd>
+<dt id="hatyan.analysis_prediction.prediction_peryear"><code class="name flex">
+<span>def <span class="ident">prediction_peryear</span></span>(<span>comp_allyears, timestep_min, nodalfactors=True, xfac=False, fu_alltimes=True, source='schureman')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>comp_allyears</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>timestep_min</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>nodalfactors</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is True.</dd>
+<dt><strong><code>xfac</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is False.</dd>
+<dt><strong><code>fu_alltimes</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is True.</dd>
+<dt><strong><code>source</code></strong> :&ensp;<code>TYPE</code>, optional</dt>
+<dd>DESCRIPTION. The default is 'schureman'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ts_prediction_peryear</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prediction_peryear(comp_allyears, timestep_min, nodalfactors=True, xfac=False, fu_alltimes=True, source=&#39;schureman&#39;):
+    &#34;&#34;&#34;
+    Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.
+
+    Parameters
+    ----------
+    comp_allyears : TYPE
+        DESCRIPTION.
+    timestep_min : TYPE
+        DESCRIPTION.
+    nodalfactors : TYPE, optional
+        DESCRIPTION. The default is True.
+    xfac : TYPE, optional
+        DESCRIPTION. The default is False.
+    fu_alltimes : TYPE, optional
+        DESCRIPTION. The default is True.
+    source : TYPE, optional
+        DESCRIPTION. The default is &#39;schureman&#39;.
+
+    Returns
+    -------
+    ts_prediction_peryear : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+    
+    import pandas as pd
+    import datetime as dt
+    
+    list_years = comp_allyears.columns.levels[1]
+    ts_prediction_peryear = pd.DataFrame()
+    for year in list_years:
+        print(&#39;generating prediction %d of sequence %s&#39;%(year,list(list_years)))
+        comp_oneyear = comp_allyears.loc[:,(slice(None),year)]
+        comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
+        times_ext = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, source=source)
+        ts_prediction_peryear = ts_prediction_peryear.append(ts_prediction_oneyear)
+    return ts_prediction_peryear</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -1383,6 +1502,7 @@ The component set has the same timezone as the timeseries used to create it, the
 <li><code><a title="hatyan.analysis_prediction.analysis" href="#hatyan.analysis_prediction.analysis">analysis</a></code></li>
 <li><code><a title="hatyan.analysis_prediction.split_components" href="#hatyan.analysis_prediction.split_components">split_components</a></code></li>
 <li><code><a title="hatyan.analysis_prediction.prediction" href="#hatyan.analysis_prediction.prediction">prediction</a></code></li>
+<li><code><a title="hatyan.analysis_prediction.prediction_peryear" href="#hatyan.analysis_prediction.prediction_peryear">prediction_peryear</a></code></li>
 </ul>
 </li>
 </ul>

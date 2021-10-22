@@ -8,7 +8,7 @@ Created on Fri Jul 16 00:07:52 2021
 import os
 
 print('## generating HTML documentation')
-err_html = os.system('pdoc --html hatyan -o doc --force --config sort_identifiers=False')
+err_html = os.system('pdoc --html hatyan -o docs --force --config sort_identifiers=False')
 
 #print('## generating pdf documentation')
 #err_pdf_pdoc = os.system('pdoc --pdf hatyan --config sort_identifiers=False > doc/hatyan_functions.md')
