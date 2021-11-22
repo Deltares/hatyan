@@ -14,8 +14,7 @@ import datetime as dt
 from netCDF4 import Dataset, num2date
 import hatyan
 
-dir_scriptfile = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_tests = os.path.abspath(os.path.join(dir_scriptfile,os.pardir))  #1 level up from dir_scripts
+dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 modulename_list = ['os','sys','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
 
