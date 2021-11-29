@@ -680,6 +680,8 @@ def write_tsdia(ts, station, vertref, filename):
     """
     import io
     import datetime as dt
+    import numpy as np
+    import pandas as pd
     
     if vertref == 'NAP':
         waarnemingssoort = 18
@@ -690,45 +692,50 @@ def write_tsdia(ts, station, vertref, filename):
 
     ts_times = ts.index
     ts_values = ts['values']
-
-    with io.open(filename,'w', newline='\n') as f:
-        #f.write('#### created by Python prototype of HATYAN 2.0 ####\n')
-        f.write('[IDT;*DIF*;A;CENT;%6s]\n'%(dt.datetime.today().strftime('%Y%m%d')))
-        f.write('[W3H]\n')
-        f.write('WNS;%i\n'%(waarnemingssoort))
-        f.write('PAR;WATHTBRKD;;;\n') #parameter, gelijk voor waarnemingssoorten 18 en 55
-        f.write('CPM;10\n') #compartiment, gelijk voor waarnemingssoorten 18 en 55
-        f.write('EHD;I;cm\n') #eenheid, gelijk voor waarnemingssoorten 18 en 55
-        f.write('HDH;%s\n'%(vertref))
-        f.write('ANI;RIKZITSDHG\n')
-        f.write('BHI;RIKZITSDHG\n')
-        f.write('BMI;NVT\n')
-        f.write('OGI;RIKZMON_WAT\n')
-        f.write('LOC;%s\n'%(station))
-        f.write('ANA;F012\n')
-        f.write('BEM;NVT\n')
-        f.write('BEW;NVT\n')
-        f.write('VAT;NVT\n')
-        f.write('TYP;TE\n')
-        f.write('[TPS]\n')
-        f.write('STA;%6s;%4s;%6s;%4s;O\n'%(ts_times[0].strftime('%Y%m%d'),ts_times[0].strftime('%H%M'),ts_times[-1].strftime('%Y%m%d'),ts_times[-1].strftime('%H%M')))
-        f.write('[RKS]\n')
-        f.write('TYD;%6s;%4s;%6s;%4s;%i;min\n'%(ts_times[0].strftime('%Y%m%d'),ts_times[0].strftime('%H%M'),ts_times[-1].strftime('%Y%m%d'),ts_times[-1].strftime('%H%M'), (ts_times[1]-ts_times[0]).total_seconds()/60))
-        f.write('[WRD]\n')
-
-        linestr = ''
-        filelim = len(ts_values)
-        for iV, ts_value in enumerate(ts_values):
-            blocklength = 720
-            linestr_add = "%i/0:"%(ts_value*100)
-            if len(linestr+linestr_add)<=120:
-                linestr = linestr + linestr_add
-                if iV==filelim-1 or iV%blocklength==blocklength-1:
-                    f.write(linestr+'\n')
-                    linestr = ''
-            else:
-                f.write(linestr+'\n')
-                linestr = linestr_add
+    metadata_dict = {'[IDT;*DIF*;A;;%6s]'%(dt.datetime.today().strftime('%Y%m%d')):[],
+                    '[W3H]':[
+                    'WNS;%i'%(waarnemingssoort),
+                    'PAR;WATHTBRKD;;;', #parameter, gelijk voor waarnemingssoorten 18 en 55
+                    'CPM;10', #compartiment, gelijk voor waarnemingssoorten 18 en 55
+                    'EHD;I;cm', #eenheid, gelijk voor waarnemingssoorten 18 en 55
+                    'HDH;%s'%(vertref),
+                    'ANI;RIKZITSDHG',
+                    'BHI;RIKZITSDHG',
+                    'BMI;NVT',
+                    'OGI;RIKZMON_WAT',
+                    'LOC;%s'%(station),
+                    'ANA;F012;Waterhoogte astronomisch mbv harmonische analyse',
+                    'BEM;NVT',
+                    'BEW;NVT',
+                    'VAT;NVT',
+                    'TYP;TE'],
+                    '[TPS]':[
+                    'STA;%6s;%4s;%6s;%4s;O'%(ts_times[0].strftime('%Y%m%d'),ts_times[0].strftime('%H%M'),ts_times[-1].strftime('%Y%m%d'),ts_times[-1].strftime('%H%M'))],
+                    '[RKS]':[
+                    'TYD;%6s;%4s;%6s;%4s;%i;min'%(ts_times[0].strftime('%Y%m%d'),ts_times[0].strftime('%H%M'),ts_times[-1].strftime('%Y%m%d'),ts_times[-1].strftime('%H%M'), (ts_times[1]-ts_times[0]).total_seconds()/60)],
+                    '[WRD]':[]}
+    
+    linestr_list = []
+    linestr = ''
+    for iV, ts_value in enumerate(ts_values): # iterate over ts_values
+        #blocklength = 720
+        linestr_add = "%i/0:"%(np.round(ts_value*100))
+        if len(linestr+linestr_add) <= 120: # append linestr_add to linestring if the result will be shorter than max_linelength
+            linestr = linestr + linestr_add
+            if iV==len(ts_values)-1:# or iV%blocklength==blocklength-1: #if the last ts_value is reached, the linestr should also be written to the file
+                linestr_list.append(linestr) #f.write(linestr+'\n')
+                linestr = ''
+        else: #otherwise write linestr to file and start a new linestr with linestr_add
+            linestr_list.append(linestr) #f.write(linestr+'\n')
+            linestr = linestr_add
+    data_todia = pd.Series(linestr_list)
+    
+    with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
+        for metakey in metadata_dict.keys():
+            f.write('%s\n'%(metakey))
+            for metakeyline in metadata_dict[metakey]:
+                f.write('%s\n'%(metakeyline))
+        data_todia.to_csv(f,index=False,header=False)
 
 
 def write_tsdia_HWLW(ts_ext, station, vertref, filename):
@@ -776,50 +783,55 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
     if 11 in data_HWLW['HWLWcode'].values or 22 in data_HWLW['HWLWcode'].values:
         raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
     
-    with io.open(filename,'w', newline='\n') as f:
-        f.write('[IDT;*DIF*;A;;%6s]\n'%(dt.datetime.today().strftime('%Y%m%d')))
-        f.write('[W3H]\n')
-        f.write('MUX;%s;%s\n'%(parameter, parameterlong))
-        f.write('ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag\n')
-        f.write('BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag\n')
-        f.write('BMI;NVT;Niet van toepassing\n')
-        f.write('OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens\n')
-        f.write('LOC;%s\n'%(station))
-        f.write('ANA;F012;Waterhoogte astronomisch mbv harmonische analyse\n') #HW en LW uit 1 min. waterhoogten gefilterd uit 10 min. gem.
-        f.write('BEM;NVT;Niet van toepassing\n')
-        f.write('BEW;NVT;Niet van toepassing\n')
-        f.write('VAT;NVT;Niet van toepassing\n')
-        f.write('TYP;TN\n')
-        f.write('[MUX]\n')
-        f.write('MXW;1;15\n')
-        f.write('MXP;1;GETETCDE;Getijextreem code;J\n')
-        f.write('MXC;1;10;Oppervlaktewater\n')
-        f.write('MXE;1;T;DIMSLS\n')
-        f.write('MXH;1;NVT;Niet van toepassing\n')
-        f.write('MXO;1;NVT;Niet van toepassing\n')
-        f.write('MXS;1;NVT\n')
-        f.write('MXW;2;%i\n'%(waarnemingssoort))
-        f.write('MXP;2;WATHTBRKD;Waterhoogte berekend;J\n')
-        f.write('MXC;2;10;Oppervlaktewater\n')
-        f.write('MXE;2;I;cm\n')
-        f.write('MXH;2;%s;%s\n'%(vertref, vertreflong))
-        f.write('MXO;2;NVT;Niet van toepassing\n')
-        f.write('MXS;2;NVT\n')
-        f.write('[TYP]\n')
-        f.write('TVL;1;1;hoogwater\n')
-        f.write('TVL;1;2;laagwater\n')
-        f.write('TVL;1;3;laagwater 1\n')
-        f.write('TVL;1;4;topagger\n')
-        f.write('TVL;1;5;laagwater 2\n')
-        f.write('[RKS]\n')
-        f.write('TYD;%6s;%4s;%6s;%4s\n'%(data_HWLW.index[0].strftime('%Y%m%d'),data_HWLW.index[0].strftime('%H%M'),data_HWLW.index[-1].strftime('%Y%m%d'),data_HWLW.index[-1].strftime('%H%M')))
-        f.write('SYS;CENT\n')
-        f.write('[TPS]\n')
-        f.write('STA;%6s;%4s;%6s;%4s;O\n'%(data_HWLW.index[0].strftime('%Y%m%d'),data_HWLW.index[0].strftime('%H%M'),data_HWLW.index[-1].strftime('%Y%m%d'),data_HWLW.index[-1].strftime('%H%M')))
-        f.write('[WRD]\n')
-
-        for index,data_pd_row in data_HWLW.iterrows():
-            f.write('%6s;%4s;%d/0;%d:\n'%(index.strftime('%Y%m%d'), index.strftime('%H%M'), data_pd_row['HWLWcode'], data_pd_row['values']*100))
+    with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
+        metadata_dict = {'[IDT;*DIF*;A;;%6s]'%(dt.datetime.today().strftime('%Y%m%d')):[],
+                        '[W3H]':[
+                        'MUX;%s;%s'%(parameter, parameterlong),
+                        'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
+                        'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
+                        'BMI;NVT;Niet van toepassing',
+                        'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens',
+                        'LOC;%s'%(station),
+                        'ANA;F012;Waterhoogte astronomisch mbv harmonische analyse', #HW en LW uit 1 min. waterhoogten gefilterd uit 10 min. gem.
+                        'BEM;NVT;Niet van toepassing',
+                        'BEW;NVT;Niet van toepassing',
+                        'VAT;NVT;Niet van toepassing',
+                        'TYP;TN'],
+                        '[MUX]':[
+                        'MXW;1;15',
+                        'MXP;1;GETETCDE;Getijextreem code;J',
+                        'MXC;1;10;Oppervlaktewater',
+                        'MXE;1;T;DIMSLS',
+                        'MXH;1;NVT;Niet van toepassing',
+                        'MXO;1;NVT;Niet van toepassing',
+                        'MXS;1;NVT',
+                        'MXW;2;%i'%(waarnemingssoort),
+                        'MXP;2;WATHTBRKD;Waterhoogte berekend;J',
+                        'MXC;2;10;Oppervlaktewater',
+                        'MXE;2;I;cm',
+                        'MXH;2;%s;%s'%(vertref, vertreflong),
+                        'MXO;2;NVT;Niet van toepassing',
+                        'MXS;2;NVT'],
+                        '[TYP]':[
+                        'TVL;1;1;hoogwater',
+                        'TVL;1;2;laagwater',
+                        'TVL;1;3;laagwater 1',
+                        'TVL;1;4;topagger',
+                        'TVL;1;5;laagwater 2'],
+                        '[RKS]':[
+                        'TYD;%6s;%4s;%6s;%4s'%(data_HWLW.index[0].strftime('%Y%m%d'),data_HWLW.index[0].strftime('%H%M'),data_HWLW.index[-1].strftime('%Y%m%d'),data_HWLW.index[-1].strftime('%H%M')),
+                        'SYS;CENT'],
+                        '[TPS]':[
+                        'STA;%6s;%4s;%6s;%4s;O'%(data_HWLW.index[0].strftime('%Y%m%d'),data_HWLW.index[0].strftime('%H%M'),data_HWLW.index[-1].strftime('%Y%m%d'),data_HWLW.index[-1].strftime('%H%M'))],
+                        '[WRD]':[]}
+        
+        for metakey in metadata_dict.keys():
+            f.write('%s\n'%(metakey))
+            for metakeyline in metadata_dict[metakey]:
+                f.write('%s\n'%(metakeyline))
+        
+        data_todia = data_HWLW.index.strftime('%Y%m%d')+';'+data_HWLW.index.strftime('%H%M')+';'+data_HWLW['HWLWcode'].astype(str)+'/0;'+(data_HWLW['values']*100).round().astype(int).astype(str)+':'
+        data_todia.to_csv(f,index=False,header=False)
 
 
 def writets_noos(ts, filename, metadata=None):
@@ -930,10 +942,9 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     """
     
     import pandas as pd
-    import numpy as np
     
     print('-'*100)
-    print('resampling timeseries to %i mintues'%(timestep_min))
+    print('resampling timeseries to %i minutes'%(timestep_min))
     
     bool_duplicated_index = ts.index.duplicated()
     if bool_duplicated_index.sum()>0:
@@ -1054,7 +1065,8 @@ def get_diablocks_startstopstation(filename):
         for linenum, line in enumerate(f, 1):
             if linenum == 1:
                 if '[IDT;*DIF*;A;' not in line:
-                    raise Exception('ERROR: not a valid dia-file, first line should contain "[IDT;*DIF*;A;"')
+                    #raise Exception('ERROR: not a valid dia-file, first line should contain "[IDT;*DIF*;A;"')
+                    pass
             if '[W3H]' in line:
                 block_id += 1
                 diablocks_pd_startstopstation.loc[block_id,'block_starts'] = linenum
@@ -1077,8 +1089,8 @@ def get_diablocks(filename):
     import numpy as np
     import pandas as pd
     
-    mincontent_equidistant = ['PAR','LOC','HDH','TYD']
-    mincontent_nonequidistant = ['MUX','LOC','MXH;2']
+    mincontent_equidistant = ['PAR','GHD','LOC','HDH','TYD','EHD'] # PAR is for dia, GHD is for wia
+    mincontent_nonequidistant = ['MUX','LOC','MXH;2','MXE']
     getpossible = mincontent_equidistant+mincontent_nonequidistant
     
     diablocks_pd_startstopstation = get_diablocks_startstopstation(filename)
@@ -1090,17 +1102,20 @@ def get_diablocks(filename):
             bool_mincontent = data_meta_pd[0]==get_content_sel
             if bool_mincontent.any(): #if get_content_sel available in diafile
                 id_mincontent = np.where(bool_mincontent)[0][0]
-                if get_content_sel in ['PAR','MUX']:
+                if get_content_sel in ['PAR','GHD','MUX']: # Grootheid (dia, wia, and dia/wia equidistant)
                     pardef = data_meta_pd.loc[id_mincontent,0]
                     file_parametername = data_meta_pd.loc[id_mincontent,1]
-                    if pardef == 'PAR':
+                    if file_parametername in ['NVT']:
+                        print('WARNING: "PAR;NVT" found in header. You are probably reading a wia file, if that is not the case, this is where it went wrong')
+                        continue
+                    if pardef in ['PAR','GHD']: # for equidistant dia/wia files
                         valid_parameternames = ['WATHTE','WATHTBRKD']
                     else:
                         valid_parameternames = ['GETETBRKD2','GETETBRKDMSL2','GETETM2']
                     if file_parametername not in valid_parameternames:
                         raise Exception('ERROR: parameter name (%s) should be in %s but is %s'%(pardef, valid_parameternames, file_parametername))
                     diablocks_pd.loc[block_id,'parameter'] = file_parametername
-                elif get_content_sel in ['LOC']:
+                elif get_content_sel in ['LOC']: # Locatie
                     file_station_coord_pd = data_meta_pd.loc[id_mincontent,4:6]
                     if file_station_coord_pd.isnull().any():
                         print('no coordinate data available in LOC line of dia file')
@@ -1110,11 +1125,11 @@ def get_diablocks(filename):
                             epsg_in = 28992
                             factor = 100
                         elif file_station_coord[0] == 'W84':
-                            print('WARNING: diafile contains W84(epsg:4326) coordinate, correctness is unsure')
+                            print('WARNING: diafile contains W84(epsg:4326) coordinates, correctness is unsure')
                             epsg_in = 4326
                             factor = 1000000
                         elif file_station_coord[0] == 'E50':
-                            print('WARNING: diafile contains E50(epsg:4230) coordinate, correctness is unsure')
+                            print('WARNING: diafile contains E50(epsg:4230) coordinates, correctness is unsure')
                             epsg_in = 4230
                             factor = 1000000
                         else:
@@ -1123,7 +1138,13 @@ def get_diablocks(filename):
                         diablocks_pd.loc[block_id,'y'] = int(file_station_coord[2])/factor
                         diablocks_pd.loc[block_id,'coordsys'] = file_station_coord[0]
                         diablocks_pd.loc[block_id,'epsg'] = epsg_in
-                elif get_content_sel in ['HDH','MXH;2']:
+                elif get_content_sel in ['EHD','MXE;2']: # Eenheid
+                    file_eenheid = data_meta_pd.loc[id_mincontent,2]
+                    if file_eenheid == 'cm':
+                        pass
+                    else:
+                        raise Exception('unknown eenheid in diafile: %s'%(file_eenheid))
+                elif get_content_sel in ['HDH','MXH;2']: # Hoedanigheid
                     if get_content_sel in ['HDH']:
                         file_vertref = data_meta_pd.loc[id_mincontent,1]
                     else:
@@ -1132,7 +1153,7 @@ def get_diablocks(filename):
                     print('the vertical reference level in the imported file is: %s'%(file_vertref))
                     if not isinstance(file_vertref,str): #in case of nan value
                         raise Exception('ERROR: the imported file does not have a vertical reference in the metadata')
-                elif get_content_sel in ['TYD']:
+                elif get_content_sel in ['TYD']: #Tijdstip
                     data_timeext_raw = data_meta_pd.loc[id_mincontent,1:4]
                     data_timeext = data_timeext_raw.astype(str).str.replace('.0','',regex=False) #to make sure there are no floats
                     datestart = dt.datetime.strptime(data_timeext.loc[:2].str.cat(), "%Y%m%d%H%M")
@@ -1152,33 +1173,6 @@ def get_diablocks(filename):
     print_cols = ['block_starts', 'station', 'parameter', 'tstart', 'tstop']
     print('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))    
     return diablocks_pd
-
-
-def convertcoordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
-    from pyproj import Transformer
-
-    epsg_dict = {'RD':28992,'W84':4326,'E50':4230}
-    
-    if isinstance(epsg_in,str):
-        if epsg_in not in epsg_dict.keys():
-            raise Exception('when providing epsg_in as a string, the options are: %s'%(list(epsg_dict.keys())))
-        else:
-            epsgcode_in = epsg_dict[epsg_in]
-    else:
-        epsgcode_in = epsg_in
-    
-    if isinstance(epsg_out,str):
-        if epsg_out not in epsg_dict.keys():
-            raise Exception('when providing epsg_out as a string, the options are: %s'%(list(epsg_dict.keys())))
-        else:
-            epsgcode_out = epsg_dict[epsg_out]
-    else:
-        epsgcode_out = epsg_out
-        
-    transformer = Transformer.from_crs('epsg:%i'%(epsgcode_in), 'epsg:%i'%(epsgcode_out), always_xy=True)
-    coordx_out, coordy_out = transformer.transform(coordx_in, coordy_in)
-    
-    return coordx_out, coordy_out
 
 
 def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
@@ -1340,7 +1334,7 @@ def readts_dia(filename, station=None, block_ids=None):
 
 def readts_dia_HWLW(filename, station):
     """
-    Reads a non-equidistant dia file (wrapper around readts_dia). This definition will be phased out.
+    Reads a non-equidistant dia file (wrapper around readts_dia). This definition is phased out.
 
     """
     raise Exception('ERROR: readts_dia_HWLW() was phased out, use readts_dia() instead')
@@ -1391,3 +1385,30 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     
     check_ts(data_pd)
     return data_pd
+
+
+def convertcoordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
+    from pyproj import Transformer
+
+    epsg_dict = {'RD':28992,'W84':4326,'E50':4230}
+    
+    if isinstance(epsg_in,str):
+        if epsg_in not in epsg_dict.keys():
+            raise Exception('when providing epsg_in as a string, the options are: %s'%(list(epsg_dict.keys())))
+        else:
+            epsgcode_in = epsg_dict[epsg_in]
+    else:
+        epsgcode_in = epsg_in
+    
+    if isinstance(epsg_out,str):
+        if epsg_out not in epsg_dict.keys():
+            raise Exception('when providing epsg_out as a string, the options are: %s'%(list(epsg_dict.keys())))
+        else:
+            epsgcode_out = epsg_dict[epsg_out]
+    else:
+        epsgcode_out = epsg_out
+        
+    transformer = Transformer.from_crs('epsg:%i'%(epsgcode_in), 'epsg:%i'%(epsgcode_out), always_xy=True)
+    coordx_out, coordy_out = transformer.transform(coordx_in, coordy_in)
+    
+    return coordx_out, coordy_out
