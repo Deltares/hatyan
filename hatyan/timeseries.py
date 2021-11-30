@@ -653,7 +653,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     data_nc.close()
 
 
-def write_tsdia(ts, station, vertref, filename):
+def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
     """
     Writes the timeseries to an equidistant dia file
 
@@ -686,46 +686,57 @@ def write_tsdia(ts, station, vertref, filename):
     if vertref == 'NAP':
         waarnemingssoort = 18
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
-        grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
     elif vertref == 'MSL':
         waarnemingssoort = 55
         vertreflong = 'T.o.v. Mean Sea Level'
-        grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
-
-    ts_times = ts.index
+    grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
+    ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse'
+    
+    time_today = dt.datetime.today().strftime('%Y%m%d')
+    tstart_str = ts.index[0].strftime('%Y%m%d;%H%M')
+    tstop_str = ts.index[-1].strftime('%Y%m%d;%H%M')
+    timestep_min = (ts.index[1]-ts.index[0]).total_seconds()/60
+    
     ts_values = ts['values']
-    metadata_dict = {'[IDT;*DIF*;A;;%6s]'%(dt.datetime.today().strftime('%Y%m%d')):[],
-                    '[W3H]':[
-                    'WNS;%i'%(waarnemingssoort),
-                    'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55
-                    'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
-                    'EHD;I;cm', #eenheid, gelijk voor waarnemingssoorten 18 en 55
-                    'HDH;%s;%s'%(vertref,vertreflong),
-                    #'ORG;NVT;Niet van toepassing',
-                    #'SGK;NVT',
-                    #'IVS;NVT;Niet van toepassing',
-                    #'BTX;NVT;NVT;Niet van toepassing',
-                    #'BTN;Niet van toepassing',
-                    'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
-                    'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
-                    'BMI;NVT;Niet van toepassing', #niet essentieel?
-                    'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet essentieel?
-                    #'GBD;NIEUWWTWG;Nieuwe Waterweg',
-                    'LOC;%s'%(station), #;Hoek van Holland;P;RD;6793000;44400000
-                    'ANA;F012;Waterhoogte astronomisch mbv harmonische analyse',
-                    'BEM;NVT',
-                    'BEW;NVT',
-                    'VAT;NVT',
-                    'TYP;TE'],
-                    '[RKS]':[
-                    'TYD;%10s;%10s;%i;min'%(ts_times[0].strftime('%Y%m%d;%H%M'),ts_times[-1].strftime('%Y%m%d;%H%M'), (ts_times[1]-ts_times[0]).total_seconds()/60)],
-                    #'PLT;NVT;-999999999;6793000;44400000',
-                    #'SYS;CENT',
-                    '[TPS]':[
-                    'STA;%10s;%10s;O'%(ts_times[0].strftime('%Y%m%d;%H%M'),ts_times[-1].strftime('%Y%m%d;%H%M'))],
-                    '[WRD]':[]}
+    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today),
+                             '[W3H]',
+                             'WNS;%i'%(waarnemingssoort),
+                             'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55
+                             'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
+                             'EHD;I;cm', #eenheid, gelijk voor waarnemingssoorten 18 en 55
+                             'HDH;%s;%s'%(vertref,vertreflong),
+                              ##'ORG;NVT;Niet van toepassing',
+                              ##'SGK;NVT',
+                              ##'IVS;NVT;Niet van toepassing',
+                              ##'BTX;NVT;NVT;Niet van toepassing',
+                              ##'BTN;Niet van toepassing',
+                              #'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
+                              #'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
+                              #'BMI;NVT;Niet van toepassing', #niet essentieel?
+                              #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet essentieel?
+                              ##'GBD;NIEUWWTWG;Nieuwe Waterweg',
+                             'LOC;%s'%(station), #;Hoek van Holland;P;RD;6793000;44400000
+                             'ANA;%s'%(ana),
+                              #'BEM;NVT',
+                              #'BEW;NVT',
+                              #'VAT;NVT',
+                             'TYP;TE',
+                             '[RKS]',
+                             'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min),
+                              ##'PLT;NVT;-999999999;6793000;44400000',
+                              ##'SYS;CENT',
+                             '[TPS]',
+                             'STA;%10s;%10s;O'%(tstart_str,tstop_str),
+                             '[WRD]'])
+    if headerformat=='wia':
+        for metalinestart in ['[IDT;','WNS']:
+            bool_drop = metadata_pd.str.startswith(metalinestart)
+            metadata_pd = metadata_pd[~bool_drop]
+        metadata_pd[metadata_pd.str.startswith('PAR')] = 'GHD;%s'%(grootheid)#.split(';')[0])
+        metadata_pd[metadata_pd.str.startswith('CPM')] = 'CPM;OW;Oppervlaktewater'
+        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)#.split(';')[0])
     
     linestr_list = []
     linestr = ''
@@ -743,14 +754,12 @@ def write_tsdia(ts, station, vertref, filename):
     data_todia = pd.Series(linestr_list)
     
     with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
-        for metakey in metadata_dict.keys():
-            f.write('%s\n'%(metakey))
-            for metakeyline in metadata_dict[metakey]:
-                f.write('%s\n'%(metakeyline))
+        for metaline in metadata_pd:
+            f.write('%s\n'%(metaline))
         data_todia.to_csv(f,index=False,header=False)
 
 
-def write_tsdia_HWLW(ts_ext, station, vertref, filename):
+def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
     """
     writes the extremes timeseries to a non-equidistant dia file
 
@@ -777,6 +786,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
     """
     import io
     import datetime as dt
+    import pandas as pd
     
     if vertref == 'NAP':
         waarnemingssoort = 18
@@ -789,59 +799,74 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
     grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
-            
-    data_HWLW = ts_ext.copy()
-    if 11 in data_HWLW['HWLWcode'].values or 22 in data_HWLW['HWLWcode'].values:
+    ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #HW en LW uit 1 min. waterhoogten gefilterd uit 10 min. gem.
+    time_today = dt.datetime.today().strftime('%Y%m%d')
+    tstart_str = ts_ext.index[0].strftime('%Y%m%d;%H%M')
+    tstop_str = ts_ext.index[-1].strftime('%Y%m%d;%H%M')
+    
+    if 11 in ts_ext['HWLWcode'].values or 22 in ts_ext['HWLWcode'].values:
         raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
     
+    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today),
+                             '[W3H]',
+                             'MUX;%s'%(parameterX),
+                             ##IVS;NVT;Niet van toepassing
+                             ##BTX;NVT;NVT;Niet van toepassing
+                             ##BTN;Niet van toepassing
+                             #'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
+                             #'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
+                             #'BMI;NVT;Niet van toepassing',
+                             #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens',
+                             ##GBD;NIEUWWTWG;Nieuwe Waterweg
+                             'LOC;%s'%(station),
+                             'ANA;%s'%(ana),
+                             #'BEM;NVT;Niet van toepassing',
+                             #'BEW;NVT;Niet van toepassing',
+                             #'VAT;NVT;Niet van toepassing',
+                             'TYP;TN',
+                             '[MUX]',
+                             'MXW;1;15',
+                             'MXP;1;GETETCDE;Getijextreem code;J',
+                             'MXC;1;10;Oppervlaktewater',
+                             'MXE;1;T;DIMSLS',
+                             #'MXH;1;NVT;Niet van toepassing',
+                             #'MXO;1;NVT;Niet van toepassing',
+                             #'MXS;1;NVT',
+                             'MXW;2;%i'%(waarnemingssoort),
+                             'MXP;2;%s'%(grootheid),
+                             'MXC;2;10;Oppervlaktewater',
+                             'MXE;2;I;cm',
+                             'MXH;2;%s;%s'%(vertref, vertreflong),
+                             #'MXO;2;NVT;Niet van toepassing',
+                             #'MXS;2;NVT',
+                             '[TYP]',
+                             'TVL;1;1;hoogwater',
+                             'TVL;1;2;laagwater',
+                             'TVL;1;3;laagwater 1',
+                             'TVL;1;4;topagger',
+                             'TVL;1;5;laagwater 2',
+                             '[RKS]',
+                             'TYD;%10s;%10s'%(tstart_str,tstop_str),
+                             #PLT;NVT;-999999999;6793000;44400000
+                             #'SYS;CENT',
+                             '[TPS]',
+                             'STA;%10s;%10s;O'%(tstart_str,tstop_str),
+                             '[WRD]'])
+    if headerformat=='wia':
+        for metalinestart in ['[IDT;','MXW']:
+            bool_drop = metadata_pd.str.startswith(metalinestart)
+            metadata_pd = metadata_pd[~bool_drop]
+        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)#.split(';')[0])
+        metadata_pd[metadata_pd.str.startswith('MXP;1')] = 'MXT;1;GETETTPE' # GETETCDE;Getijextreem code naar GETETTPE
+        metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater'
+        metadata_pd[metadata_pd.str.startswith('MXP;2')] = 'MXG;2;%s'%(grootheid)
+        metadata_pd[metadata_pd.str.startswith('MXC;2')] = 'MXC;2;OW;Oppervlaktewater'
+
+    data_todia = ts_ext.index.strftime('%Y%m%d;%H%M')+';'+ts_ext['HWLWcode'].astype(str)+'/0;'+(ts_ext['values']*100).round().astype(int).astype(str)+':'
+
     with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
-        metadata_dict = {'[IDT;*DIF*;A;;%6s]'%(dt.datetime.today().strftime('%Y%m%d')):[],
-                        '[W3H]':[
-                        'MUX;%s'%(parameterX),
-                        'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
-                        'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
-                        'BMI;NVT;Niet van toepassing',
-                        'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens',
-                        'LOC;%s'%(station),
-                        'ANA;F012;Waterhoogte astronomisch mbv harmonische analyse', #HW en LW uit 1 min. waterhoogten gefilterd uit 10 min. gem.
-                        'BEM;NVT;Niet van toepassing',
-                        'BEW;NVT;Niet van toepassing',
-                        'VAT;NVT;Niet van toepassing',
-                        'TYP;TN'],
-                        '[MUX]':[
-                        'MXW;1;15',
-                        'MXP;1;GETETCDE;Getijextreem code;J',
-                        'MXC;1;10;Oppervlaktewater',
-                        'MXE;1;T;DIMSLS',
-                        'MXH;1;NVT;Niet van toepassing',
-                        'MXO;1;NVT;Niet van toepassing',
-                        'MXS;1;NVT',
-                        'MXW;2;%i'%(waarnemingssoort),
-                        'MXP;2;%s'%(grootheid),
-                        'MXC;2;10;Oppervlaktewater',
-                        'MXE;2;I;cm',
-                        'MXH;2;%s;%s'%(vertref, vertreflong),
-                        'MXO;2;NVT;Niet van toepassing',
-                        'MXS;2;NVT'],
-                        '[TYP]':[
-                        'TVL;1;1;hoogwater',
-                        'TVL;1;2;laagwater',
-                        'TVL;1;3;laagwater 1',
-                        'TVL;1;4;topagger',
-                        'TVL;1;5;laagwater 2'],
-                        '[RKS]':[
-                        'TYD;%6s;%4s;%6s;%4s'%(data_HWLW.index[0].strftime('%Y%m%d'),data_HWLW.index[0].strftime('%H%M'),data_HWLW.index[-1].strftime('%Y%m%d'),data_HWLW.index[-1].strftime('%H%M')),
-                        'SYS;CENT'],
-                        '[TPS]':[
-                        'STA;%6s;%4s;%6s;%4s;O'%(data_HWLW.index[0].strftime('%Y%m%d'),data_HWLW.index[0].strftime('%H%M'),data_HWLW.index[-1].strftime('%Y%m%d'),data_HWLW.index[-1].strftime('%H%M'))],
-                        '[WRD]':[]}
-        
-        for metakey in metadata_dict.keys():
-            f.write('%s\n'%(metakey))
-            for metakeyline in metadata_dict[metakey]:
-                f.write('%s\n'%(metakeyline))
-        
-        data_todia = data_HWLW.index.strftime('%Y%m%d')+';'+data_HWLW.index.strftime('%H%M')+';'+data_HWLW['HWLWcode'].astype(str)+'/0;'+(data_HWLW['values']*100).round().astype(int).astype(str)+':'
+        for metaline in metadata_pd:
+            f.write('%s\n'%(metaline))
         data_todia.to_csv(f,index=False,header=False)
 
 
@@ -1110,7 +1135,7 @@ def get_diablocks(filename):
     for block_id in diablocks_pd.index.tolist():
         data_meta_nrows = diablocks_pd.loc[block_id,'data_starts'] - diablocks_pd.loc[block_id,'block_starts']
         #diablocks_pd['data_metanrows'] = data_meta_nrows
-        data_meta_pd = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,sep=';',names=range(7),header=None)
+        data_meta_pd = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,sep=';',names=range(7),header=None,dtype=str)
         data_meta_series = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,header=None,names=[0])[0] #series of metadata
         #data_meta_pd = data_meta_series.str.split(';',expand=True)
         bool_startswithmux = data_meta_series.str.startswith('MUX')
