@@ -685,8 +685,12 @@ def write_tsdia(ts, station, vertref, filename):
     
     if vertref == 'NAP':
         waarnemingssoort = 18
+        vertreflong = 'T.o.v. Normaal Amsterdams Peil'
+        grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
     elif vertref == 'MSL':
         waarnemingssoort = 55
+        vertreflong = 'T.o.v. Mean Sea Level'
+        grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
 
@@ -695,24 +699,32 @@ def write_tsdia(ts, station, vertref, filename):
     metadata_dict = {'[IDT;*DIF*;A;;%6s]'%(dt.datetime.today().strftime('%Y%m%d')):[],
                     '[W3H]':[
                     'WNS;%i'%(waarnemingssoort),
-                    'PAR;WATHTBRKD;;;', #parameter, gelijk voor waarnemingssoorten 18 en 55
-                    'CPM;10', #compartiment, gelijk voor waarnemingssoorten 18 en 55
+                    'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55
+                    'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
                     'EHD;I;cm', #eenheid, gelijk voor waarnemingssoorten 18 en 55
-                    'HDH;%s'%(vertref),
-                    'ANI;RIKZITSDHG',
-                    'BHI;RIKZITSDHG',
-                    'BMI;NVT',
-                    'OGI;RIKZMON_WAT',
-                    'LOC;%s'%(station),
+                    'HDH;%s;%s'%(vertref,vertreflong),
+                    #'ORG;NVT;Niet van toepassing',
+                    #'SGK;NVT',
+                    #'IVS;NVT;Niet van toepassing',
+                    #'BTX;NVT;NVT;Niet van toepassing',
+                    #'BTN;Niet van toepassing',
+                    'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
+                    'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
+                    'BMI;NVT;Niet van toepassing', #niet essentieel?
+                    'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet essentieel?
+                    #'GBD;NIEUWWTWG;Nieuwe Waterweg',
+                    'LOC;%s'%(station), #;Hoek van Holland;P;RD;6793000;44400000
                     'ANA;F012;Waterhoogte astronomisch mbv harmonische analyse',
                     'BEM;NVT',
                     'BEW;NVT',
                     'VAT;NVT',
                     'TYP;TE'],
-                    '[TPS]':[
-                    'STA;%6s;%4s;%6s;%4s;O'%(ts_times[0].strftime('%Y%m%d'),ts_times[0].strftime('%H%M'),ts_times[-1].strftime('%Y%m%d'),ts_times[-1].strftime('%H%M'))],
                     '[RKS]':[
-                    'TYD;%6s;%4s;%6s;%4s;%i;min'%(ts_times[0].strftime('%Y%m%d'),ts_times[0].strftime('%H%M'),ts_times[-1].strftime('%Y%m%d'),ts_times[-1].strftime('%H%M'), (ts_times[1]-ts_times[0]).total_seconds()/60)],
+                    'TYD;%10s;%10s;%i;min'%(ts_times[0].strftime('%Y%m%d;%H%M'),ts_times[-1].strftime('%Y%m%d;%H%M'), (ts_times[1]-ts_times[0]).total_seconds()/60)],
+                    #'PLT;NVT;-999999999;6793000;44400000',
+                    #'SYS;CENT',
+                    '[TPS]':[
+                    'STA;%10s;%10s;O'%(ts_times[0].strftime('%Y%m%d;%H%M'),ts_times[-1].strftime('%Y%m%d;%H%M'))],
                     '[WRD]':[]}
     
     linestr_list = []
@@ -769,15 +781,14 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
     if vertref == 'NAP':
         waarnemingssoort = 18
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
-        parameter = 'GETETBRKD2'
-        parameterlong = 'Getijextreem berekend'
+        parameterX = 'GETETBRKD2;Getijextreem berekend'
     elif vertref == 'MSL':
         waarnemingssoort = 55
         vertreflong = 'T.o.v. Mean Sea Level'
-        parameter = 'GETETBRKDMSL2'
-        parameterlong = 'Getijextreem berekend t.o.v. MSL'
+        parameterX = 'GETETBRKDMSL2;Getijextreem berekend t.o.v. MSL'
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
+    grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
             
     data_HWLW = ts_ext.copy()
     if 11 in data_HWLW['HWLWcode'].values or 22 in data_HWLW['HWLWcode'].values:
@@ -786,7 +797,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
     with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
         metadata_dict = {'[IDT;*DIF*;A;;%6s]'%(dt.datetime.today().strftime('%Y%m%d')):[],
                         '[W3H]':[
-                        'MUX;%s;%s'%(parameter, parameterlong),
+                        'MUX;%s'%(parameterX),
                         'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
                         'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
                         'BMI;NVT;Niet van toepassing',
@@ -806,7 +817,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename):
                         'MXO;1;NVT;Niet van toepassing',
                         'MXS;1;NVT',
                         'MXW;2;%i'%(waarnemingssoort),
-                        'MXP;2;WATHTBRKD;Waterhoogte berekend;J',
+                        'MXP;2;%s'%(grootheid),
                         'MXC;2;10;Oppervlaktewater',
                         'MXE;2;I;cm',
                         'MXH;2;%s;%s'%(vertref, vertreflong),
@@ -1086,37 +1097,59 @@ def get_diablocks_startstopstation(filename):
 
 def get_diablocks(filename):
     import datetime as dt
-    import numpy as np
+    #import numpy as np
     import pandas as pd
     
-    mincontent_equidistant = ['PAR','GHD','LOC','HDH','TYD','EHD'] # PAR is for dia, GHD is for wia
-    mincontent_nonequidistant = ['MUX','LOC','MXH;2','MXE']
-    getpossible = mincontent_equidistant+mincontent_nonequidistant
+    mincontent_equidistant =          ['PAR',  'GHD',  'LOC','HDH',  'EHD',  'TYD'] # PAR is for dia, GHD is for wia
+    mincontent_nonequidistant = ['MUX','MXP;2','MXG;2','LOC','MXH;2','MXE;2','TYD'] # MXP is for dia, MXG is for wia
+    #getpossible = mincontent_equidistant+mincontent_nonequidistant
+    valid_grootheidnames = ['WATHTE','WATHTBRKD']
     
     diablocks_pd_startstopstation = get_diablocks_startstopstation(filename)
     diablocks_pd = diablocks_pd_startstopstation.copy()
     for block_id in diablocks_pd.index.tolist():
         data_meta_nrows = diablocks_pd.loc[block_id,'data_starts'] - diablocks_pd.loc[block_id,'block_starts']
+        #diablocks_pd['data_metanrows'] = data_meta_nrows
         data_meta_pd = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,sep=';',names=range(7),header=None)
+        data_meta_series = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,header=None,names=[0])[0] #series of metadata
+        #data_meta_pd = data_meta_series.str.split(';',expand=True)
+        bool_startswithmux = data_meta_series.str.startswith('MUX')
+        if bool_startswithmux.any():
+            is_equidistant = False #extreme waterlevel timeseries (non-equidistant)
+            getpossible = mincontent_nonequidistant
+            groeperingcode = data_meta_pd.loc[bool_startswithmux,1].iloc[0]
+            print('equidistant file, GroeperingCode: %s'%(groeperingcode))
+        else:
+            is_equidistant = True #normal waterlevel timeseries (equidistant)
+            getpossible = mincontent_equidistant
+            groeperingcode = 'NVT' #for normal waterlevels
+        diablocks_pd.loc[block_id,'groepering'] = groeperingcode
+        
         for get_content_sel in getpossible:
-            bool_mincontent = data_meta_pd[0]==get_content_sel
+            #bool_mincontent = data_meta_pd[0]==get_content_sel
+            bool_mincontent = data_meta_series.str.startswith(get_content_sel)
             if bool_mincontent.any(): #if get_content_sel available in diafile
-                id_mincontent = np.where(bool_mincontent)[0][0]
-                if get_content_sel in ['PAR','GHD','MUX']: # Grootheid (dia, wia, and dia/wia equidistant)
-                    pardef = data_meta_pd.loc[id_mincontent,0]
-                    file_parametername = data_meta_pd.loc[id_mincontent,1]
-                    if file_parametername in ['NVT']:
-                        print('WARNING: "PAR;NVT" found in header. You are probably reading a wia file, if that is not the case, this is where it went wrong')
-                        continue
-                    if pardef in ['PAR','GHD']: # for equidistant dia/wia files
-                        valid_parameternames = ['WATHTE','WATHTBRKD']
-                    else:
-                        valid_parameternames = ['GETETBRKD2','GETETBRKDMSL2','GETETM2']
-                    if file_parametername not in valid_parameternames:
-                        raise Exception('ERROR: parameter name (%s) should be in %s but is %s'%(pardef, valid_parameternames, file_parametername))
-                    diablocks_pd.loc[block_id,'parameter'] = file_parametername
-                elif get_content_sel in ['LOC']: # Locatie
-                    file_station_coord_pd = data_meta_pd.loc[id_mincontent,4:6]
+                #id_mincontent = np.where(bool_mincontent)[0]
+                data_meta_pd_mincontent = data_meta_pd.loc[bool_mincontent]
+                if len(data_meta_pd_mincontent)==1:
+                    data_meta_pd_mincontent = data_meta_pd_mincontent.iloc[0]
+                elif len(data_meta_pd_mincontent)==2: # for 'MXP;2' and 'MXE;2'
+                    data_meta_pd_mincontent = data_meta_pd_mincontent.iloc[1]
+                else:
+                    raise Exception('unexpected amount of matched metadatalines for %s'%(get_content_sel))
+                if get_content_sel in ['PAR','GHD','MXP;2','MXG;2']:#'MUX']: # Grootheid (dia, wia, dia equidistant, wia equidistant)
+                    if get_content_sel in ['PAR','GHD']: #equidistant
+                        file_grootheidname = data_meta_pd_mincontent[1]
+                    else: # for 'MXP;2' and 'MXE;2' #non-equidistant
+                        file_grootheidname = data_meta_pd_mincontent[2]
+                    if file_grootheidname in ['NVT']:
+                        print('WARNING: "PAR;NVT" or "MXP;NVT" found in header. You are probably reading a wia file, if that is not the case, this is where it went wrong')
+                        continue #skip this metadata
+                    if file_grootheidname not in valid_grootheidnames:
+                        raise Exception('ERROR: grootheid name (%s) should be in %s but is %s'%(get_content_sel, valid_grootheidnames, file_grootheidname))
+                    diablocks_pd.loc[block_id,'grootheid'] = file_grootheidname
+                elif get_content_sel in ['LOC']: # Locatie. same in all files
+                    file_station_coord_pd = data_meta_pd_mincontent[4:]
                     if file_station_coord_pd.isnull().any():
                         print('no coordinate data available in LOC line of dia file')
                     else:
@@ -1138,39 +1171,42 @@ def get_diablocks(filename):
                         diablocks_pd.loc[block_id,'y'] = int(file_station_coord[2])/factor
                         diablocks_pd.loc[block_id,'coordsys'] = file_station_coord[0]
                         diablocks_pd.loc[block_id,'epsg'] = epsg_in
-                elif get_content_sel in ['EHD','MXE;2']: # Eenheid
-                    file_eenheid = data_meta_pd.loc[id_mincontent,2]
+                elif get_content_sel in ['EHD','MXE;2']: # Eenheid. equidistant dia/wia, non-equidistant dia/wia
+                    if get_content_sel in ['EHD']:
+                        file_eenheid = data_meta_pd_mincontent[2]
+                    else:
+                        file_eenheid = data_meta_pd_mincontent[3]
                     if file_eenheid == 'cm':
                         pass
                     else:
                         raise Exception('unknown eenheid in diafile: %s'%(file_eenheid))
-                elif get_content_sel in ['HDH','MXH;2']: # Hoedanigheid
+                    diablocks_pd.loc[block_id,'eenheid'] = file_eenheid
+                elif get_content_sel in ['HDH','MXH;2']: # Hoedanigheid (NAP/MSL). equidistant dia/wia, non-equidistant dia/wia
                     if get_content_sel in ['HDH']:
-                        file_vertref = data_meta_pd.loc[id_mincontent,1]
+                        file_vertref = data_meta_pd_mincontent[1]
                     else:
-                        file_vertref = data_meta_pd.loc[id_mincontent,2]
-                    diablocks_pd.loc[block_id,'vertref'] = file_vertref
+                        file_vertref = data_meta_pd_mincontent[2]
                     print('the vertical reference level in the imported file is: %s'%(file_vertref))
                     if not isinstance(file_vertref,str): #in case of nan value
                         raise Exception('ERROR: the imported file does not have a vertical reference in the metadata')
-                elif get_content_sel in ['TYD']: #Tijdstip
-                    data_timeext_raw = data_meta_pd.loc[id_mincontent,1:4]
-                    data_timeext = data_timeext_raw.astype(str).str.replace('.0','',regex=False) #to make sure there are no floats
-                    datestart = dt.datetime.strptime(data_timeext.loc[:2].str.cat(), "%Y%m%d%H%M")
-                    datestop = dt.datetime.strptime(data_timeext.loc[3:].str.cat(), "%Y%m%d%H%M")
-                    timestep_value_raw = data_meta_pd.loc[id_mincontent,5]
-                    if isinstance(timestep_value_raw,str): #if equidistant timeseries
-                        timestep_value = int(timestep_value_raw)
-                        timestep_unit = data_meta_pd.loc[id_mincontent,6]
+                    diablocks_pd.loc[block_id,'vertref'] = file_vertref
+                elif get_content_sel in ['TYD']: #Tijdstip. same in all files
+                    datestart = dt.datetime.strptime(data_meta_pd_mincontent[1:3].str.cat(), "%Y%m%d%H%M")
+                    datestop = dt.datetime.strptime(data_meta_pd_mincontent[3:5].str.cat(), "%Y%m%d%H%M")
+                    #timestep_value_raw = data_meta_pd_mincontent[5]
+                    if is_equidistant:#isinstance(timestep_value_raw,str): #if equidistant timeseries
+                        timestep_unit = data_meta_pd_mincontent[6]
                         if timestep_unit != 'min':
                             raise Exception('ERROR: time unit from TYD is in unknown format (not "min")')
+                        timestep_value = int(data_meta_pd_mincontent[5]) #int(timestep_value_raw)
                     else: #when nan
-                        timestep_value = timestep_value_raw
+                        timestep_value = None
                     diablocks_pd.loc[block_id,'tstart'] = datestart
                     diablocks_pd.loc[block_id,'tstop'] = datestop
                     diablocks_pd.loc[block_id,'timestep_min'] = timestep_value
-            
-    print_cols = ['block_starts', 'station', 'parameter', 'tstart', 'tstop']
+    pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
+    pd.set_option('display.width', 200) #default was 80, but need more to display groepering
+    print_cols = ['block_starts', 'station', 'grootheid','groepering', 'tstart', 'tstop']
     print('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))    
     return diablocks_pd
 

@@ -55,15 +55,18 @@ for current_station in selected_stations:
     file_wia_wl = os.path.join(dir_testdata,'other','diawia_HOEKVHLD_astro_tijdreeks.wia')
     file_wia_ext = os.path.join(dir_testdata,'other','diawia_HOEKVHLD_astro_extremen.wia')
     
+   
     ts_dia_wl = hatyan.readts_dia(filename=file_dia_wl, station=current_station)
     ts_dia_ext = hatyan.readts_dia(filename=file_dia_ext, station=current_station)
     ts_wia_wl = hatyan.readts_dia(filename=file_wia_wl, station=current_station)
     ts_wia_ext = hatyan.readts_dia(filename=file_wia_ext, station=current_station)
+    #import pandas as pd
+    #test = pd.concat([ts_dia_wl,ts_dia_ext,ts_wia_wl,ts_wia_ext],axis=0)
     
     hatyan.write_tsdia(ts=ts_dia_wl, station=current_station, vertref=vertref, filename='diawia_HOEKVHLD_astro_tijdreeks_out.dia')
     hatyan.write_tsdia_HWLW(ts_ext=ts_dia_ext, station=current_station, vertref=vertref, filename='diawia_HOEKVHLD_astro_extremen_out.dia')
-    #hatyan.write_tsdia(ts=ts_wia_wl, station=current_station, vertref=vertref, filename='diawia_HOEKVHLD_astro_tijdreeks_out.wia')
-    #hatyan.write_tsdia_HWLW(ts_ext=ts_wia_ext, station=current_station, vertref=vertref, filename='diawia_HOEKVHLD_astro_extremen_out.wia')
+    hatyan.write_tsdia(ts=ts_wia_wl, station=current_station, vertref=vertref, filename='diawia_HOEKVHLD_astro_tijdreeks_out.wia')
+    hatyan.write_tsdia_HWLW(ts_ext=ts_wia_ext, station=current_station, vertref=vertref, filename='diawia_HOEKVHLD_astro_extremen_out.wia')
     
     assert (ts_dia_wl==ts_wia_wl).all().all()
     assert (ts_dia_ext==ts_wia_ext).all().all()
