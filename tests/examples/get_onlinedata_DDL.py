@@ -47,12 +47,12 @@ if 0: #for RWS
 
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
-if 0: #for CMEMS
+if 1: #for CMEMS
     #list of all waterlevel stations
     #cat_aquometadatalijst_sel, cat_locatielijst_sel = get_DDL_stationmetasubset(catalog_dict=catalog_dict,station=None,stationcolumn='Code',
     #                                                                            meta_dict={'Grootheid.Omschrijving':'waterhoogte','Groepering.Code':'NVT'})
     cat_locatielijst_sel = catalog_dict['LocatieLijst'] #list of all stations
-    cat_locatielijst_sel = cat_locatielijst_sel[cat_locatielijst_sel['Code']=='VLISSGN']
+    #cat_locatielijst_sel = cat_locatielijst_sel[cat_locatielijst_sel['Code']=='VLISSGN']
     for iR, row in cat_locatielijst_sel.iterrows(): 
         query_station=dict(row)
         ts_meas_pd, metadata = hatyan.get_DDL_waterlevelquery(stationcode=query_station,query_tstart=tstart_dt,query_tstop=tstop_dt,tzone='UTC',catalog_dict=catalog_dict)
