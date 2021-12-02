@@ -58,12 +58,18 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     check get_DDL_data() for details
     """
     import requests
-        
+    import pandas as pd
+    
     tzinfo_numraw = query_tstart.strftime('%z') #'+0100'
     tzinfo_numstr = tzinfo_numraw[:3]+':'+tzinfo_numraw[-2:] #'+01:00'
     query_tstart_str = query_tstart.strftime('%Y-%m-%dT%H:%M:%S.000'+tzinfo_numstr) #"2021-01-14T09:47:00.000+01:00"
     query_tstop_str  = query_tstop.strftime('%Y-%m-%dT%H:%M:%S.000'+tzinfo_numstr) #"2021-11-27T10:00:00.000+01:00"
     
+    if isinstance(query_station,(pd.Series,dict)):
+        query_station = pd.Series(query_station).to_dict() # converts pd.Series/dict to_dict(). This avoids issue with query_station['Locatie_MessageID'] of type np.int64 (TypeError: Object of type int64 is not JSON serializable)
+    else:
+        raise Exception('provide pd.Series or dict as query_station argument')
+
     if check_available: # Check if data is available
         url_ddl = 'https://waterwebservices.rijkswaterstaat.nl/ONLINEWAARNEMINGENSERVICES_DBO/CheckWaarnemingenAanwezig'
         request_ddl = {"AquoMetadataLijst" :[query_metadata],
@@ -93,10 +99,11 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
         #retrieve data
         url_ddl = 'https://waterwebservices.rijkswaterstaat.nl/ONLINEWAARNEMINGENSERVICES_DBO/OphalenWaarnemingen'
         request_ddl = {"AquoPlusWaarnemingMetadata":{"AquoMetadata":query_metadata},
-                      "Locatie":query_station,#{"X":518882.333320247,"Y":5760829.11729589,"Code":"EURPFM"}, # TODO IMPROVEMENT: it seems not not possible to retreive by station Naam/Code/Locatie_MessageID only. X+Y+Code is minimum, so supplying entire dict. Why is this so strict? It seems odd that one needs to supply a six decimal RD coordinate (so micrometer accuracy) while the Code is in itself already unique. Also supplying Locatie_MessageID only is not possible
+                      "Locatie":query_station,#{"X":518882.333320247,"Y":5760829.11729589,"Code":"EURPFM"}, # TODO IMPROVEMENT: it seems not not possible to retreive by station Naam/Code/Locatie_MessageID only. X+Y+Code is minimum, so supplying entire dict. Why is this so strict? It seems odd that one needs to supply a six decimal RD coordinate (so micrometer accuracy) while 'Code' and 'Locatie_MessageID' are both already unique.
                       "Periode":{"Begindatumtijd":query_tstart_str, # TODO IMPROVEMENT: longer timeseries (eg 4 years) take a long time or return error (Foutmelding: Het max aantal waarnemingen (157824) is overschreven, beperk uw request.). Can this not be extended? >> now retrieving per year, is that always possible with this limit?
                                  "Einddatumtijd":query_tstop_str} # TODO IMPROVEMENT: recent data for eg HOEKVLD is not available but it is as station HOEK, can these stations not be one, but with a different kaliteitscode/statuswaarde/GrootheidCode/GroeperingCode etc? I was a bit surprised that 'ongecontroleerd' (and HOEK in general) also has kwaliteitscode=0
                       }
+        
     #print(request_ddl)
     resp = requests.post(url_ddl, json=request_ddl)
     if not resp.ok:
@@ -107,7 +114,7 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     return result
 
 
-def get_DDL_data(query_station,query_tstart,query_tstop,query_tzone='UTC+01:00',meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},allow_multipleresultsfor=None):
+def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',allow_multipleresultsfor=None):
     """
     ddl tutorial: https://rijkswaterstaat.github.io/wm-ws-dl/?python#tutorial-locations
     normalizing json output: https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8
@@ -126,39 +133,40 @@ def get_DDL_data(query_station,query_tstart,query_tstop,query_tzone='UTC+01:00',
         metakeysub = metakeypoint.split('.')[1]
         query_metadata[metakeymain] = {metakeysub:meta_dict[metakeypoint]}
 
-    if query_tzone.startswith('UTC+') or query_tzone.startswith('UTC-'): #parse to fixed offset like 'Etc/GMT-1'. +/- are counter intuitive but it works: https://pvlib-python.readthedocs.io/en/stable/timetimezones.html#fixedoffsets)
-        if len(query_tzone)!=9 or not query_tzone.endswith(':00'):
-            raise Exception('if query_tzone starts with UTC+ or UTC-, the string should be 9 characters long and have 0 minutes, like "UTC+01:00"')
-        query_tzone_hr = int(query_tzone[4:6])
-        if query_tzone[3]=='+':
-            query_tzone = 'Etc/GMT-%d'%(query_tzone_hr)
+    if tzone.startswith('UTC+') or tzone.startswith('UTC-'): #parse to fixed offset like 'Etc/GMT-1'. +/- are counter intuitive but it works: https://pvlib-python.readthedocs.io/en/stable/timetimezones.html#fixedoffsets)
+        if len(tzone)!=9 or not tzone.endswith(':00'):
+            raise Exception('if tzone starts with UTC+ or UTC-, the string should be 9 characters long and have 0 minutes, like "UTC+01:00"')
+        tzone_hr = int(tzone[4:6])
+        if tzone[3]=='+':
+            tzone = 'Etc/GMT-%d'%(tzone_hr)
         else:
-            query_tzone = 'Etc/GMT+%d'%(query_tzone_hr)
-    tzinfo = pytz.timezone(query_tzone)
-    query_tstart = query_tstart.replace(tzinfo=tzinfo)
-    query_tstop = query_tstop.replace(tzinfo=tzinfo)
-    year_list = range(query_tstart.year, query_tstop.year+1)
+            tzone = 'Etc/GMT+%d'%(tzone_hr)
+    tzinfo = pytz.timezone(tzone)
+    tstart_dt = tstart_dt.replace(tzinfo=tzinfo)
+    tstop_dt = tstop_dt.replace(tzinfo=tzinfo)
+    year_list = range(tstart_dt.year, tstop_dt.year+1)
     
-    print('processing station %s/%s: %s to %s (%d years)'%(query_station['Code'],query_station['Naam'],query_tstart,query_tstop,len(year_list)))
-    result_available = get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,check_available=True)
+    station_str = '/'.join([str(station_dict[x]) for x in station_dict.keys() if x not in ['X','Y','Coordinatenstelsel']])
+    print('processing station %s: %s to %s (%d years)'%(station_str,tstart_dt,tstop_dt,len(year_list)))
+    result_available = get_DDL_queryserver(station_dict,query_metadata,tstart_dt,tstop_dt,check_available=True)
     if result_available['WaarnemingenAanwezig']!='true': # TODO IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
         print('WARNING: no values present for this query, returning None')
     else:
         result_wl0_metingenlijst_alldates = pd.DataFrame()
         result_wl0_aquometadata_unique = pd.DataFrame()
+        result_wl0_locatie_unique = pd.DataFrame()
         for year in year_list:
-            query_tstart_oneyear = np.maximum(query_tstart,dt.datetime(year,1,1,tzinfo=tzinfo))
-            query_tstop_oneyear = np.minimum(query_tstop,dt.datetime(year+1,1,1,tzinfo=tzinfo))
+            tstart_dt_oneyear = np.maximum(tstart_dt,dt.datetime(year,1,1,tzinfo=tzinfo))
+            tstop_dt_oneyear = np.minimum(tstop_dt,dt.datetime(year+1,1,1,tzinfo=tzinfo))
     
-            result_available = get_DDL_queryserver(query_station,query_metadata,query_tstart_oneyear,query_tstop_oneyear,check_available=True)
+            result_available = get_DDL_queryserver(station_dict,query_metadata,tstart_dt_oneyear,tstop_dt_oneyear,check_available=True)
             if result_available['WaarnemingenAanwezig']!='true': # TODO IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
                 print('year %d: no values'%(year))
                 continue
             print('year %d: retrieving data'%(year))
             
-            result_wl = get_DDL_queryserver(query_station,query_metadata,query_tstart_oneyear,query_tstop_oneyear,check_available=False)
+            result_wl = get_DDL_queryserver(station_dict,query_metadata,tstart_dt_oneyear,tstop_dt_oneyear,check_available=False)
             
-            #print('json result keys: %s'%(result_wl.keys())) #['WaarnemingenLijst', 'Succesvol'] or ['Succesvol', 'Foutmelding']
             if not result_wl['Succesvol']:
                 raise Exception('measurement query not succesful, Foutmelding: %s'%(result_wl['Foutmelding']))
             
@@ -170,13 +178,14 @@ def get_DDL_data(query_station,query_tstart,query_tstop,query_tzone='UTC+01:00',
                 if not result_wl0_metingenlijst['Tijdstip'].is_monotonic_increasing:
                     #print('WARNING: retrieved timeseries is not monotonic increasing, so it was sorted')
                     result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values('Tijdstip').reset_index(drop=True) # TODO IMPROVEMENT: data in response is not always sorted on time
-                last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst['Tijdstip'].iloc[-1]).tz_convert(query_tstart.tzinfo)
-                if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 january in next year (correct for timezone first and this does not happen for eg extremes since they probably do not have a value on that exact datetime)
+                last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst['Tijdstip'].iloc[-1]).tz_convert(tstart_dt.tzinfo)
+                if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
                     result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
                 result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
-                #result_wl0_locatie = pd.json_normalize(result_wl0['Locatie'])
+                result_wl0_locatie = pd.json_normalize(result_wl0['Locatie']) 
+                result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
                 result_wl0_aquometadata = pd.json_normalize(result_wl0['AquoMetadata'])
-                result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates()
+                result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the 'WaardeBepalingsmethode' changes
             
             if allow_multipleresultsfor is None:
                 result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
@@ -204,6 +213,7 @@ def get_DDL_data(query_station,query_tstart,query_tstop,query_tzone='UTC+01:00',
         # TODO IMPROVEMENT: WaarnemingMetadata: all values are nested lists of length 1, can be flattened (they are actually not list/lijst, but statuswaarde instead of statuswaardelijst and kwaliteitswaardecode instead of kwaliteitswaardecodelijst).
         # TODO IMPROVEMENT: WaarnemingMetadata: Bemonsteringshoogte/Referentievlak/OpdrachtgevendeInstantie is probably constant for each query result, so could be added to aquometadata frame instead of a value per timestep (probably makes query faster and can be longer)
         # TODO IMPROVEMENT: WaarnemingMetadata: there seems to be no explanation in the catalog or metadata of the KwaliteitswaardecodeLijst values
+        # TODO IMPROVEMENT: when retrieving waterlevel extremes, it is not possible to distinguish between HW and LW, since the codes are not available in the output
         # create improved pandas DataFrame
         ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates['Meetwaarde.Waarde_Numeriek'].values,
                                    'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int).values, 
@@ -214,13 +224,13 @@ def get_DDL_data(query_station,query_tstart,query_tstop,query_tzone='UTC+01:00',
                                    },
                                   index=pd.to_datetime(result_wl0_metingenlijst_alldates['Tijdstip']))
         #convert timezone from MET to requested timezone
-        ts_meas_pd.index = ts_meas_pd.index.tz_convert(query_tstart.tzinfo)
+        ts_meas_pd.index = ts_meas_pd.index.tz_convert(tstart_dt.tzinfo)
 
         bool_timeduplicated = ts_meas_pd.index.duplicated()
         if bool_timeduplicated.any():
             print('WARNING: query returned %d duplicate times, use less extensive allow_multipleresultsfor'%bool_timeduplicated.sum())
  
-        return ts_meas_pd, result_wl0_aquometadata_unique
+        return ts_meas_pd, result_wl0_aquometadata_unique, result_wl0_locatie_unique
 
 
 def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',meta_dict=None, error_empty=True):
