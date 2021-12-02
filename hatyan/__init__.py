@@ -5,7 +5,7 @@
 
 __author__ = """Jelmer Veenstra"""
 __email__ = 'jelmer.veenstra@deltares.nl'
-__version__ = '2.3.6'
+__version__ = '2.3.7'
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
