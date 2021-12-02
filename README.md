@@ -3,7 +3,7 @@
 [![sigrid-publish](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml)
 [![rpm-build-core](https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml/badge.svg?event=release)](https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml)
 
-# hatyan
+# Hatyan
 
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
 Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
