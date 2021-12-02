@@ -107,7 +107,7 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     return result
 
 
-def get_DDL_data(query_station,query_metadata,query_tstart,query_tstop,query_tzone='UTC+01:00',allow_multipleresultsfor=None):
+def get_DDL_data(query_station,query_tstart,query_tstop,query_tzone='UTC+01:00',meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},allow_multipleresultsfor=None):
     """
     ddl tutorial: https://rijkswaterstaat.github.io/wm-ws-dl/?python#tutorial-locations
     normalizing json output: https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8
@@ -118,7 +118,14 @@ def get_DDL_data(query_station,query_metadata,query_tstart,query_tstop,query_tzo
     import numpy as np
     import datetime as dt
     import pytz
-    
+
+    #parse meta_dict to query_metadata dict
+    query_metadata = {}
+    for metakeypoint in meta_dict:
+        metakeymain = metakeypoint.split('.')[0]
+        metakeysub = metakeypoint.split('.')[1]
+        query_metadata[metakeymain] = {metakeysub:meta_dict[metakeypoint]}
+
     if query_tzone.startswith('UTC+') or query_tzone.startswith('UTC-'): #parse to fixed offset like 'Etc/GMT-1'. +/- are counter intuitive but it works: https://pvlib-python.readthedocs.io/en/stable/timetimezones.html#fixedoffsets)
         if len(query_tzone)!=9 or not query_tzone.endswith(':00'):
             raise Exception('if query_tzone starts with UTC+ or UTC-, the string should be 9 characters long and have 0 minutes, like "UTC+01:00"')
@@ -272,37 +279,6 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',me
         
     return cat_aquometadatalijst_sel, cat_locatielijst_sel
 
-
-def get_DDL_waterlevelquery(stationcode,query_tstart,query_tstop,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},tzone='UTC+01:00',catalog_dict=None):
-    """
-    wrapper for get_DDL_data to get waterlevel data
-    """
-    if catalog_dict is None:
-        print('WARNING: to speed up data retrieval for multiple stations, provide catalog_dict argument: catalog_dict = get_DDL_catalog()')
-        catalog_dict = get_DDL_catalog()
-    
-    if isinstance(stationcode,str):
-        cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Locatie_MessageID')
-        query_station = dict(cat_locatielijst[cat_locatielijst['Code']==stationcode].iloc[0])
-    elif isinstance(stationcode,dict):
-        query_station = stationcode
-    else:
-        raise Exception('invalid stationcode type')
-    
-    query_metadata = {}
-    for metakeypoint in meta_dict:
-        metakeymain = metakeypoint.split('.')[0]
-        metakeysub = metakeypoint.split('.')[1]
-        query_metadata[metakeymain] = {metakeysub:meta_dict[metakeypoint]}
-    
-    request_output = get_DDL_data(query_station=query_station,query_metadata=query_metadata,
-                                  query_tstart=query_tstart,query_tstop=query_tstop,query_tzone=tzone,
-                                  allow_multipleresultsfor=['WaardeBepalingsmethode'])
-    if request_output is not None:
-        ts_meas_pd, result_wl0_aquometadata_unique = request_output
-    else:
-        ts_meas_pd = result_wl0_aquometadata_unique = None
-    return ts_meas_pd, result_wl0_aquometadata_unique
 
 
 

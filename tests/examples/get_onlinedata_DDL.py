@@ -23,22 +23,25 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten'])
 
+
 ######### oneline waterlevel data retrieval for one station
 if 0: #for RWS
-    cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='HOEKVHLD',stationcolumn='Code',meta_dict=None)
     stationcode = 'HOEKVHLD'
-    ts_astro, metadata = hatyan.get_DDL_waterlevelquery(stationcode=stationcode,query_tstart=tstart_dt,query_tstop=tstop_dt,catalog_dict=catalog_dict,
-                                                        meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'NVT'})
+    cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Locatie_MessageID',drop=True) # TODO IMPROVEMENT: list of all stations, setting index is necessary since it 'Locatie_MessageID' is not allowed to be in the dict
+    query_station = dict(cat_locatielijst[cat_locatielijst['Code']==stationcode].iloc[0])
+    
+    ts_astro, metadata = hatyan.get_DDL_data(query_station=query_station,query_tstart=tstart_dt,query_tstop=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
+                                             meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'NVT'})
     ts_astro['values'] = ts_astro['values']/100 #convert from cm to m
-    ts_measwl, metadata = hatyan.get_DDL_waterlevelquery(stationcode=stationcode,query_tstart=tstart_dt,query_tstop=tstop_dt,catalog_dict=catalog_dict) #default meta_dict selects waterlevels
+    ts_measwl, metadata = hatyan.get_DDL_data(query_station=query_station,query_tstart=tstart_dt,query_tstop=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode']) #default meta_dict selects waterlevels
     ts_measwl['values'] = ts_measwl['values']/100 #convert from cm to m
     """
     # TODO IMPROVEMENT: not possible to distinguish between HW and LW, since the codes are not available in the output
-    ts_measwlHWLW, metadata = hatyan.get_DDL_waterlevelquery(stationcode=stationcode,query_tstart=tstart_dt,query_tstop=tstop_dt,catalog_dict=catalog_dict,
-                                                       meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+    ts_measwlHWLW, metadata = hatyan.get_DDL_data(query_station=query_station,query_tstart=tstart_dt,query_tstop=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
+                                                  meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
     ts_measwlHWLW['values'] = ts_measwlHWLW['values']/100 #convert from cm to m
-    ts_astroHWLW, metadata = hatyan.get_DDL_waterlevelquery(stationcode=stationcode,query_tstart=tstart_dt,query_tstop=tstop_dt,catalog_dict=catalog_dict,
-                                                      meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'GETETBRKD2'})
+    ts_astroHWLW, metadata = hatyan.get_DDL_data(query_station=query_station,query_tstart=tstart_dt,query_tstop=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
+                                                 meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'GETETBRKD2'})
     ts_measwlHWLW['values'] = ts_measwlHWLW['values']/100 #convert from cm to m
     """
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl)
@@ -47,22 +50,22 @@ if 0: #for RWS
 
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
-if 1: #for CMEMS
+if 0: #for CMEMS
     #list of all waterlevel stations
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = get_DDL_stationmetasubset(catalog_dict=catalog_dict,station=None,stationcolumn='Code',
-    #                                                                            meta_dict={'Grootheid.Omschrijving':'waterhoogte','Groepering.Code':'NVT'})
+    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station=None,stationcolumn='Code',
+    #                                                                                   meta_dict={'Grootheid.Omschrijving':'waterhoogte','Groepering.Code':'NVT'})
     cat_locatielijst_sel = catalog_dict['LocatieLijst'] #list of all stations
     #cat_locatielijst_sel = cat_locatielijst_sel[cat_locatielijst_sel['Code']=='VLISSGN']
     for iR, row in cat_locatielijst_sel.iterrows(): 
         query_station=dict(row)
-        ts_meas_pd, metadata = hatyan.get_DDL_waterlevelquery(stationcode=query_station,query_tstart=tstart_dt,query_tstop=tstop_dt,tzone='UTC',catalog_dict=catalog_dict)
+        ts_meas_pd, metadata = hatyan.get_DDL_data(query_station=query_station,query_tstart=tstart_dt,query_tstop=tstop_dt,query_tzone='UTC',allow_multipleresultsfor=['WaardeBepalingsmethode'])
         if ts_meas_pd is not None:
             ts_meas_pd['values'] = ts_meas_pd['values']/100 #convert from cm to m
             print(ts_meas_pd)
 
 
 ######### more complex retrieval of selection of data from DDL from selection of stations
-if 0:
+if 1:
     import os
     import pandas as pd
     import matplotlib.pyplot as plt
@@ -83,15 +86,15 @@ if 0:
     print('station selection:\n', cat_locatielijst_sel[['Naam','Code']])
     
     # construct query_metadata dict, use cat_aquometadatalijst_sel to select the data you are interested in
-    query_metadata = {#'Compartiment':{'Code':'OW'}, #OW (oppervlaktewater)
-                      #'Eenheid':{'Code':'cm'}, #cm (centimeter)
-                      #'MeetApparaat':{'Code':'109'},
-                      #'Hoedanigheid':{'Code':'NAP'}, #MSL, NAP, PLAATSLR, TAW, NVT (from cat_aquometadatalijst['Hoedanigheid.Code'])
-                      'Grootheid':{'Code':'WATHTE'}, #WATHTBRKD (Waterhoogte berekend), WATHTE (Waterhoogte), WATHTEASTRO (Waterhoogte astronomisch), WATHTEVERWACHT (Waterhoogte verwacht), STROOMSHD (Stroomsnelheid), STROOMRTG (Stroomrichting) (from cat_aquometadatalijst['Grootheid.Code'])
-                      'Groepering':{'Code':'NVT'}, #GETETBRKD2 (Getijextreem berekend), GETETBRKDMSL2 (Getijextreem berekend t.o.v. MSL), GETETM2 (Getijextremen), GETETMSL2 (Getijextremen t.o.v. MSL), NVT (entire waterlevel timeseries) (from cat_aquometadatalijst['Groepering.Code'])
-                      #'WaardeBepalingsmethode': {'Code': 'other:F007'}, #other:F009 ('Visuele aflezing van blad'), other:F001 (Rekenkundig gemiddelde waarde over vorige 10 minuten), other:F007 (Rekenkundig gemiddelde waarde over vorige 5 en volgende 5 minuten)
+    query_metadata = {#'Compartiment.Code':'OW', #OW (oppervlaktewater)
+                      #'Eenheid.Code':'cm', #cm (centimeter)
+                      #'MeetApparaat.Code':'109',
+                      #'Hoedanigheid.Code':'NAP', #MSL, NAP, PLAATSLR, TAW, NVT (from cat_aquometadatalijst['Hoedanigheid.Code'])
+                      'Grootheid.Code':'WATHTE', #WATHTBRKD (Waterhoogte berekend), WATHTE (Waterhoogte), WATHTEASTRO (Waterhoogte astronomisch), WATHTEVERWACHT (Waterhoogte verwacht), STROOMSHD (Stroomsnelheid), STROOMRTG (Stroomrichting) (from cat_aquometadatalijst['Grootheid.Code'])
+                      'Groepering.Code':'NVT', #GETETBRKD2 (Getijextreem berekend), GETETBRKDMSL2 (Getijextreem berekend t.o.v. MSL), GETETM2 (Getijextremen), GETETMSL2 (Getijextremen t.o.v. MSL), NVT (entire waterlevel timeseries) (from cat_aquometadatalijst['Groepering.Code'])
+                      #'WaardeBepalingsmethode.Code': 'other:F007', #other:F009 ('Visuele aflezing van blad'), other:F001 (Rekenkundig gemiddelde waarde over vorige 10 minuten), other:F007 (Rekenkundig gemiddelde waarde over vorige 5 en volgende 5 minuten)
                       }
-    
+
     if plot_stations: #plot all stations
         file_ldb = os.path.join(dir_testdata,'other','wvs_coastline3.ldb') #WGS84 ldb is converted to RD, but does not change anything wrt to matlab converted ldb, which is good
         ldb_pd_wgs = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['x','y'],na_values=[999.999])
@@ -111,7 +114,7 @@ if 0:
     for iR, row in cat_locatielijst_sel.iterrows(): #loop over the each station
         query_station=dict(row)
         #query_station = {cat_locatielijst_sel.loc[[iR]].index.name: str(cat_locatielijst_sel.loc[[iR]].index[0])}
-        request_output = hatyan.get_DDL_data(query_station=query_station,query_metadata=query_metadata,
+        request_output = hatyan.get_DDL_data(query_station=query_station,meta_dict=query_metadata,
                                              query_tstart=tstart_dt,query_tstop=tstop_dt,query_tzone='UTC+01:00')#,allow_multipleresultsfor=['WaardeBepalingsmethode'])
         if request_output is not None:
             ts_meas_pd, metadata = request_output
