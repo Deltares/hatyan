@@ -149,7 +149,7 @@ if 0:
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_pred,ts_validation=ts_pred_validation)
             else:
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
-            ax1.set_title('%s (%s)'%(stationdata['Naam'],stationdata['Code']))
+            ax1.set_title('%s (%s)'%(stationdata['Naam'][0],stationdata['Code'][0]))
 
 
 #hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
