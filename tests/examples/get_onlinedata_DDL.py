@@ -65,14 +65,14 @@ if 0: #for CMEMS
 
 
 ######### more complex retrieval of selection of data from DDL from selection of stations
-if 1:
+if 0:
     import os
     import pandas as pd
     import matplotlib.pyplot as plt
     plt.close('all')
     
     plot_stations = False
-    write_measurement_files = True
+    write_measurement_files = False
     
     #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='Hoek van holland',stationcolumn='Naam',meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
     #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='HOEKVHLD',stationcolumn='Code',meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
