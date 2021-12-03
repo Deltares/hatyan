@@ -5,7 +5,7 @@
 
 # Hatyan
 
-hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
+Hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
 Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
 Source code available at: https://github.com/Deltares/hatyan
 
