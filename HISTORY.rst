@@ -2,6 +2,10 @@
 History
 =======
 
+* Sun Dec 12 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.4.0
+- bugfix in diafile writing that solves rounding issue. Made dia writing more efficient by writing values with pd.to_csv instead of in loop
+- added DDL to hatyan (might be merged with ddlpy package on github later)
+
 * Fri Oct 22 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.3.3
 - improvement in get_components_from_ts() to support analysis_peryear=True and CS_comps=!None at the same time. Now possible to remove stats_anaperyear from configfiles
 - updated example in readme to work with online UHSLC file

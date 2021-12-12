@@ -707,26 +707,26 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
                              'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
                              'EHD;I;cm', #eenheid, gelijk voor waarnemingssoorten 18 en 55
                              'HDH;%s;%s'%(vertref,vertreflong),
-                              ##'ORG;NVT;Niet van toepassing',
-                              ##'SGK;NVT',
-                              ##'IVS;NVT;Niet van toepassing',
-                              ##'BTX;NVT;NVT;Niet van toepassing',
-                              ##'BTN;Niet van toepassing',
-                              #'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
-                              #'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet essentieel?
-                              #'BMI;NVT;Niet van toepassing', #niet essentieel?
-                              #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet essentieel?
-                              ##'GBD;NIEUWWTWG;Nieuwe Waterweg',
+                             ##'ORG;NVT;Niet van toepassing',
+                             ##'SGK;NVT',
+                             ##'IVS;NVT;Niet van toepassing',
+                             ##'BTX;NVT;NVT;Niet van toepassing',
+                             ##'BTN;Niet van toepassing',
+                             'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel?
+                             'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel?
+                             'BMI;NVT;Niet van toepassing', #niet_essentieel?
+                             'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel?
+                             ##'GBD;NIEUWWTWG;Nieuwe Waterweg',
                              'LOC;%s'%(station), #;Hoek van Holland;P;RD;6793000;44400000
                              'ANA;%s'%(ana),
-                              #'BEM;NVT',
-                              #'BEW;NVT',
-                              #'VAT;NVT',
+                             'BEM;NVT', #niet_essentieel?
+                             'BEW;NVT', #niet_essentieel?
+                             'VAT;NVT', #niet_essentieel?
                              'TYP;TE',
                              '[RKS]',
                              'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min),
-                              ##'PLT;NVT;-999999999;6793000;44400000',
-                              ##'SYS;CENT',
+                             ##'PLT;NVT;-999999999;6793000;44400000',
+                             ##'SYS;CENT',
                              '[TPS]',
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str),
                              '[WRD]'])
@@ -813,32 +813,32 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
                              ##IVS;NVT;Niet van toepassing
                              ##BTX;NVT;NVT;Niet van toepassing
                              ##BTN;Niet van toepassing
-                             #'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
-                             #'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag',
-                             #'BMI;NVT;Niet van toepassing',
-                             #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens',
+                             'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel?
+                             'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel?
+                             'BMI;NVT;Niet van toepassing', #niet_essentieel?
+                             'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel?
                              ##GBD;NIEUWWTWG;Nieuwe Waterweg
                              'LOC;%s'%(station),
                              'ANA;%s'%(ana),
-                             #'BEM;NVT;Niet van toepassing',
-                             #'BEW;NVT;Niet van toepassing',
-                             #'VAT;NVT;Niet van toepassing',
+                             'BEM;NVT;Niet van toepassing', #niet_essentieel?
+                             'BEW;NVT;Niet van toepassing', #niet_essentieel?
+                             'VAT;NVT;Niet van toepassing', #niet_essentieel?
                              'TYP;TN',
                              '[MUX]',
                              'MXW;1;15',
                              'MXP;1;GETETCDE;Getijextreem code;J',
                              'MXC;1;10;Oppervlaktewater',
                              'MXE;1;T;DIMSLS',
-                             #'MXH;1;NVT;Niet van toepassing',
-                             #'MXO;1;NVT;Niet van toepassing',
-                             #'MXS;1;NVT',
+                             'MXH;1;NVT;Niet van toepassing', #niet_essentieel?
+                             'MXO;1;NVT;Niet van toepassing', #niet_essentieel?
+                             'MXS;1;NVT', #niet_essentieel?
                              'MXW;2;%i'%(waarnemingssoort),
                              'MXP;2;%s'%(grootheid),
                              'MXC;2;10;Oppervlaktewater',
                              'MXE;2;I;cm',
                              'MXH;2;%s;%s'%(vertref, vertreflong),
-                             #'MXO;2;NVT;Niet van toepassing',
-                             #'MXS;2;NVT',
+                             'MXO;2;NVT;Niet van toepassing', #niet_essentieel?
+                             'MXS;2;NVT', #niet_essentieel?
                              '[TYP]',
                              'TVL;1;1;hoogwater',
                              'TVL;1;2;laagwater',
@@ -847,8 +847,8 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
                              'TVL;1;5;laagwater 2',
                              '[RKS]',
                              'TYD;%10s;%10s'%(tstart_str,tstop_str),
-                             #PLT;NVT;-999999999;6793000;44400000
-                             #'SYS;CENT',
+                             'PLT;NVT;-999999999;6793000;44400000', #niet_essentieel?
+                             'SYS;CENT', #niet_essentieel?
                              '[TPS]',
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str),
                              '[WRD]'])

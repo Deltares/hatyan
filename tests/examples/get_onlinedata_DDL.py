@@ -45,7 +45,7 @@ if 0: #for RWS
     ts_astroHWLW['values'] = ts_astroHWLW['values']/100 #convert from cm to m
     """
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl)
-    ax1.set_title('waterlevels for %s'%(stationcode))
+    ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))
     ax2.set_ylim(-0.5,0.5)
 
 
@@ -62,6 +62,7 @@ if 0: #for CMEMS
         if request_output is not None:
             ts_meas_pd, metadata, stationdata = request_output
             ts_meas_pd['values'] = ts_meas_pd['values']/100 #convert from cm to m
+            print(stationdata['Naam'][0])
             print(ts_meas_pd)
 
 
@@ -122,6 +123,7 @@ if 0:
             ts_meas_pd, metadata, stationdata = request_output
             if (metadata['Eenheid.Code']=='cm').all():
                 ts_meas_pd['values'] = ts_meas_pd['values']/100 #convert from cm to m in case of waterstanden
+            print(stationdata['Naam'][0])
             print(ts_meas_pd)
             if write_measurement_files and ts_meas_pd is not None:
                 ts_meas_pd.to_csv('waterlevel_%s.txt'%(stationdata['Code']))
@@ -147,7 +149,7 @@ if 0:
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_pred,ts_validation=ts_pred_validation)
             else:
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
-            ax1.set_title('%s (%s)'%(stationdata['Naam'],stationdata['Code']))
+            ax1.set_title('%s (%s)'%(stationdata['Naam'][0],stationdata['Code'][0]))
 
 
 #hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
