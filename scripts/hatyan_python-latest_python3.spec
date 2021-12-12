@@ -33,7 +33,7 @@ cp %{_topdir}/BUILD/hatyan_github/scripts/hatyan.sh $EXECFILE
 chmod +x $EXECFILE
 #create folder for hatyan_env and potentially other folders/files
 mkdir -p $RPM_BUILD_ROOT/opt/hatyan_python
-cp -r %{_topdir}/BUILD/hatyan_github/doc $RPM_BUILD_ROOT/opt/hatyan_python
+cp -r %{_topdir}/BUILD/hatyan_github/docs $RPM_BUILD_ROOT/opt/hatyan_python
 cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 #cp -r %{_topdir}/BUILD/hatyan_github/hatyan $RPM_BUILD_ROOT/opt/hatyan_python
 # create python3 venv hatyan_env
