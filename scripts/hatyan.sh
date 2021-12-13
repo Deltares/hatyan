@@ -4,7 +4,7 @@ set -e
 source /opt/hatyan_python/hatyan_env/bin/activate
 if [ -z $1 ]; then echo "ERROR: no argument provided, possible are: (path to) configfile, --version, --test or --testmodules."
 elif [ "$1" == "--version" ]; then echo hatyan-$(python -c "import hatyan; print(hatyan.__version__)") 
-elif [ "$1" == "--test" ]; then hatyan /opt/hatyan_python/tests/configfiles/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py
+elif [ "$1" == "--test" ]; then hatyan /opt/hatyan_python/tests/examples/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py
 elif [ "$1" == "--testmodules" ]; then
 	echo "testing if all dependencies for hatyan are installed";
 	for LIBRARYNAME in rh-python36-python rh-python36-python-libs glibc coreutils expect stix-fonts fontconfig freetype libstdc++ jasper libXcursor libXrender xorg-x11-xauth mesa-libGL mesa-libEGL libXi; do 

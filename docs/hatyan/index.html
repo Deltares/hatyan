@@ -61,13 +61,13 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 <li>upgrade hatyan on CentOS: <code>rpm -U hatyan_python-2.2.31-1.x86_64.rpm</code></li>
 <li>installing the RPM results in a hatyan command in linux, this activates a Python virtual environment and sets necessary Qt environment variables. It creates a folder with a python environment hatyan_env, doc en tests (/opt/hatyan_python/hatyan_env/) and a file that provides the hatyan command (/usr/bin/hatyan)</li>
 <li>check version: <code>hatyan --version</code></li>
-<li>test installation: <code>hatyan /opt/hatyan_python/tests/configfiles/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py</code> (or use the <code>hatyan --test</code> shortcut)</li>
+<li>test installation: <code>hatyan /opt/hatyan_python/tests/examples/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py</code> (or use the <code>hatyan --test</code> shortcut)</li>
 <li>this should result in several interactive figures popping up, described in chapter 5 (Quick start guide) of the hatyan user manual (gebruikershandleiding).</li>
 <li>if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.</li>
 <li>the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings &gt; Configuration &gt; X11)</li>
 </ul>
 <h2 id="getting-started">Getting Started</h2>
-<p><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html">Documentation is available on Github</a> (replace 'main' in the url with any tagname to view older versions) and there is background information in <a href="https://github.com/Deltares/hatyan/tree/main/doc">the doc folder</a>. Copy the code below to your own script to get started. For more examples, check <a href="https://github.com/Deltares/hatyan/tree/main/tests/configfiles">the configfiles folder</a>.</p>
+<p><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html">Documentation is available on Github</a> (replace 'main' in the url with any tagname to view older versions) and there is background information in <a href="https://github.com/Deltares/hatyan/tree/main/doc">the doc folder</a>. Copy the code below to your own script to get started. For more examples, check <a href="https://github.com/Deltares/hatyan/tree/main/tests/examples">the examples folder</a>.</p>
 <pre><code class="language-python">import datetime as dt
 import pandas as pd
 from netCDF4 import Dataset, num2date
@@ -146,7 +146,7 @@ fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_valida
 <li><code>pytest</code> (runs all tests)</li>
 <li><code>pytest -m unittest</code></li>
 <li><code>pytest -m systemtest</code></li>
-<li><code>pytest -m acceptance</code> (runs the acceptance tests, which are the scripts in <a href="https://github.com/Deltares/hatyan/tree/main/tests/configfiles">the configfiles folder</a>)</li>
+<li><code>pytest -m acceptance</code> (runs the acceptance tests, which are the scripts in <a href="https://github.com/Deltares/hatyan/tree/main/tests/examples">the examples folder</a>)</li>
 <li><code>pytest -m "not acceptance"</code> (excludes all acceptance tests)</li>
 <li>the following arguments are automatically provided via pytest.ini: <code>-v --tb=short</code>, add <code>--cov=hatyan</code> for a coverage summary</li>
 </ul>
@@ -178,7 +178,7 @@ fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_valida
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.4.0&#39;
+__version__ = &#39;2.4.2&#39;
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *

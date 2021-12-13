@@ -13,7 +13,7 @@ import glob
 import hatyan
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output = os.path.join(dir_tests,'output_configfiles')
+dir_output = os.path.join(dir_tests,'output_examples')
 if not os.path.exists(dir_output):
     os.mkdir(dir_output)
 os.chdir(dir_output)
@@ -22,16 +22,16 @@ os.chdir(dir_output)
 # High level acceptance tests, these are the ones who are only meant to generate output files
 # for the testers to verify (in Teamcity) whether the runs generate the expected files or not.
 """ Run hatyan_main.py with test-configfiles as input """
-list_configfiles = glob.glob(os.path.join(dir_tests,'examples','*.py'))
-list_configfiles = [x for x in list_configfiles if '_interactive' not in x]
-#list_configfiles = ['predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py']
+list_examplescripts = glob.glob(os.path.join(dir_tests,'examples','*.py'))
+list_examplescripts = [x for x in list_examplescripts if '_interactive' not in x]
+#list_examplescripts = ['predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py']
 
 
 @pytest.mark.acceptance
-@pytest.mark.parametrize("file_config", [pytest.param(file_config, id=os.path.basename(file_config).replace('.py','')) for file_config in list_configfiles])
-def test_configfiles(file_config):
+@pytest.mark.parametrize("file_config", [pytest.param(file_config, id=os.path.basename(file_config).replace('.py','')) for file_config in list_examplescripts])
+def test_examplescripts(file_config):
     """
-    file_config = os.path.join(dir_tests,'configfiles','predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py')
+    file_config = os.path.join(dir_tests,'examples','predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py')
     """
     # 1. Set up test data
     dir_output = hatyan.get_outputfoldername(file_config)

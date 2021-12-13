@@ -35,4 +35,4 @@ sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $HATYANENVDIR/bin/act
 sed -i "s#/opt/hatyan_python/hatyan_env#${HATYANENVDIR}#g" $HATYANEXEC
 
 echo "If all went well, there is now a hatyan_env copied from the RPM BUILDROOT in $HATYANENVDIR and $HATYANEXEC can be used to execute hatyan:"
-echo "EXAMPLE: ./hatyan_fromhome.sh hatyan_github/tests/configfiles/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py"
+echo "EXAMPLE: ./hatyan_fromhome.sh hatyan_github/tests/examples/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py"
