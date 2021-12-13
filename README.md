@@ -43,7 +43,7 @@ Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 - upgrade hatyan on CentOS: ``rpm -U hatyan_python-2.2.31-1.x86_64.rpm``
 - installing the RPM results in a hatyan command in linux, this activates a Python virtual environment and sets necessary Qt environment variables. It creates a folder with a python environment hatyan_env, doc en tests (/opt/hatyan_python/hatyan_env/) and a file that provides the hatyan command (/usr/bin/hatyan)
 - check version: ``hatyan --version``
-- test installation: ``hatyan /opt/hatyan_python/tests/configfiles/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py`` (or use the ``hatyan --test`` shortcut)
+- test installation: ``hatyan /opt/hatyan_python/tests/examples/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py`` (or use the ``hatyan --test`` shortcut)
 - this should result in several interactive figures popping up, described in chapter 5 (Quick start guide) of the hatyan user manual (gebruikershandleiding).
 - if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.
 - the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings > Configuration > X11)
@@ -52,7 +52,7 @@ Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 Getting started
 --------
 
-[Documentation is available on Github](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html) (replace 'main' in the url with any tagname to view older versions) and there is background information in [the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles).
+[Documentation is available on Github](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/doc/hatyan/index.html) (replace 'main' in the url with any tagname to view older versions) and there is background information in [the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check [the examples folder](https://github.com/Deltares/hatyan/tree/main/tests/examples).
 
 ```python
 import datetime as dt
@@ -136,7 +136,7 @@ Running the testbank:
 - ``pytest`` (runs all tests)
 - ``pytest -m unittest``
 - ``pytest -m systemtest``
-- ``pytest -m acceptance`` (runs the acceptance tests, which are the scripts in [the configfiles folder](https://github.com/Deltares/hatyan/tree/main/tests/configfiles))
+- ``pytest -m acceptance`` (runs the acceptance tests, which are the scripts in [the examples folder](https://github.com/Deltares/hatyan/tree/main/tests/examples))
 - ``pytest -m "not acceptance"`` (excludes all acceptance tests)
 - the following arguments are automatically provided via pytest.ini: ``-v --tb=short``, add ``--cov=hatyan`` for a coverage summary
 
