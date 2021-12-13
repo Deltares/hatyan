@@ -847,7 +847,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
                              'TVL;1;5;laagwater 2',
                              '[RKS]',
                              'TYD;%10s;%10s'%(tstart_str,tstop_str),
-                             'PLT;NVT;-999999999;6793000;44400000', #niet_essentieel?
+                             ##'PLT;NVT;-999999999;6793000;44400000',
                              'SYS;CENT', #niet_essentieel?
                              '[TPS]',
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str),
