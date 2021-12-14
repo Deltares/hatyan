@@ -2,7 +2,8 @@
 History
 =======
 
-* Sun Dec 12 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.4.0
+* Thu Dec 14 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.4.4
+- bugfix in diawriting for last entries of timeseries
 - bugfix in diafile writing that solves rounding issue. Made dia writing more efficient by writing values with pd.to_csv instead of in loop
 - added DDL to hatyan (might be merged with ddlpy package on github later)
 
