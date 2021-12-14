@@ -741,16 +741,11 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
     linestr_list = []
     linestr = ''
     for iV, ts_value in enumerate(ts_values): # iterate over ts_values
-        #blocklength = 720
         linestr_add = "%i/0:"%(np.round(ts_value*100))
-        if len(linestr+linestr_add) <= 120: # append linestr_add to linestring if the result will be shorter than max_linelength
-            linestr = linestr + linestr_add
-            if iV==len(ts_values)-1:# or iV%blocklength==blocklength-1: #if the last ts_value is reached, the linestr should also be written to the file
-                linestr_list.append(linestr) #f.write(linestr+'\n')
-                linestr = ''
-        else: #otherwise write linestr to file and start a new linestr with linestr_add
-            linestr_list.append(linestr) #f.write(linestr+'\n')
-            linestr = linestr_add
+        linestr = linestr + linestr_add
+        if (len(linestr) > 114) or (iV==len(ts_values)-1): # append linestr to linestr_list if linestr is longer than n characters or last item of ts_values was reached
+            linestr_list.append(linestr)
+            linestr = ''
     data_todia = pd.Series(linestr_list)
     
     with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
