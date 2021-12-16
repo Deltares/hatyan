@@ -6,7 +6,6 @@ Created on Wed Dec  1 17:03:03 2021
 """
 
 
-
 def get_DDL_catalog(catalog_extrainfo=[]):
     """
     check get_DDL_data() for details
@@ -49,7 +48,11 @@ def get_DDL_catalog(catalog_extrainfo=[]):
     result_cat_dict = {}
     for catalog_key in result_cat.keys():
         if catalog_key!='Succesvol':
-            result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
+            #result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
+            if isinstance(result_cat[catalog_key][0],dict):
+                result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
+            else:
+                result_cat_dict[catalog_key] = result_cat[catalog_key]
     return result_cat_dict
 
 
@@ -57,6 +60,7 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     """
     check get_DDL_data() for details
     """
+    import json
     import requests
     import pandas as pd
     
@@ -66,10 +70,10 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     query_tstop_str  = query_tstop.strftime('%Y-%m-%dT%H:%M:%S.000'+tzinfo_numstr) #"2021-11-27T10:00:00.000+01:00"
     
     if isinstance(query_station,(pd.Series,dict)):
-        query_station = pd.Series(query_station).to_dict() # converts pd.Series/dict to_dict(). This avoids issue with query_station['Locatie_MessageID'] of type np.int64 (TypeError: Object of type int64 is not JSON serializable)
+        query_station = json.loads(pd.Series(query_station).to_json()) # converts pd.Series/dict to_json() and back to dict. This avoids issue with query_station['Locatie_MessageID'] of type np.int64 (TypeError: Object of type int64 is not JSON serializable)
     else:
         raise Exception('provide pd.Series or dict as query_station argument')
-
+    
     if check_available: # Check if data is available
         url_ddl = 'https://waterwebservices.rijkswaterstaat.nl/ONLINEWAARNEMINGENSERVICES_DBO/CheckWaarnemingenAanwezig'
         request_ddl = {"AquoMetadataLijst" :[query_metadata],
