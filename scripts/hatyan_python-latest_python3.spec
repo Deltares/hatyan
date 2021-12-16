@@ -3,7 +3,7 @@
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG main"
 
 Name:        hatyan_python
-Version:     2.5.3
+Version:     2.5.4
 Release:     1
 BuildArch:   x86_64
 URL:         https://github.com/Deltares/hatyan
