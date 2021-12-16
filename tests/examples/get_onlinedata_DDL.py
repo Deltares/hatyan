@@ -11,7 +11,7 @@ hatyan.close('all')
 
 # input parameters
 tstart_dt = dt.datetime(2020,11,25,9,47,0) #quite recent period
-tstop_dt = dt.datetime(2020,11,30,9,50,0)
+tstop_dt = dt.datetime(2021,1,30,9,50,0)
 #tstart_dt = dt.datetime(1993,8,25,9,47,0) #VLISSGN got new Waardebepalingsmethode in this year
 #tstop_dt = dt.datetime(1994,11,30,9,50,0)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
