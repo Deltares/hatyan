@@ -207,7 +207,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
                 metakeys_forCode_nonunique = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.loc[:,bool_nonuniquecols].columns if x.endswith('.Code')]
                 for iR, result_one in enumerate(result_wl['WaarnemingenLijst']):
                     print(f'Result {iR+1}:')
-                    metakey_list = ['Compartiment','Eenheid','Grootheid','Hoedanigheid','Groepering']+metakeys_forCode_nonunique
+                    metakey_list = sorted(set(['Compartiment','Eenheid','Grootheid','Hoedanigheid','Groepering']+metakeys_forCode_nonunique))
                     for metakey in metakey_list:
                         print('%28s: %s,'%("'%s'"%metakey,result_one['AquoMetadata'][metakey]))
                 raise Exception('query returned more than one result (differences in %s, details above), use more specific query_metadata argument or more extensive allow_multipleresultsfor argument (the latter might result in duplicate timesteps)'%(metakeys_forCode_nonunique))
@@ -219,7 +219,10 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
         # TODO IMPROVEMENT: WaarnemingMetadata: there seems to be no explanation in the catalog or metadata of the KwaliteitswaardecodeLijst values
         # TODO IMPROVEMENT: when retrieving waterlevel extremes, it is not possible to distinguish between HW and LW, since the codes are not available in the output
         # create improved pandas DataFrame
-        ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates['Meetwaarde.Waarde_Numeriek'].values,
+        key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
+        if not key_numericvalues in result_wl0_metingenlijst_alldates.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #TODO IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
+            key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
+        ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates[key_numericvalues].values,
                                    'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int).values, 
                                    'Status':result_wl0_metingenlijst_alldates['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
                                    #'Bemonsteringshoogte':result_wl0_metingenlijst_alldates['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 

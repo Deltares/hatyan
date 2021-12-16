@@ -11,7 +11,7 @@ hatyan.close('all')
 
 # input parameters
 tstart_dt = dt.datetime(2020,11,25,9,47,0) #quite recent period
-tstop_dt = dt.datetime(2021,11,30,9,50,0)
+tstop_dt = dt.datetime(2020,11,30,9,50,0)
 #tstart_dt = dt.datetime(1993,8,25,9,47,0) #VLISSGN got new Waardebepalingsmethode in this year
 #tstop_dt = dt.datetime(1994,11,30,9,50,0)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
@@ -21,10 +21,27 @@ tstop_dt = dt.datetime(2021,11,30,9,50,0)
 #dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
-catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten'])
+catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
 
 ######### oneline waterlevel data retrieval for one station
 if 0: #for RWS
+    def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
+        """
+        TVL;1;1;hoogwater
+        TVL;1;2;laagwater
+        TVL;1;3;laagwater 1
+        TVL;1;4;topagger
+        TVL;1;5;laagwater 2
+        """
+        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='hoogwater','HWLWcode'] = 1
+        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater','HWLWcode'] = 2
+        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 1','HWLWcode'] = 3
+        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='topagger','HWLWcode'] = 4
+        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 2','HWLWcode'] = 5
+        ts_measwlHWLW['HWLWcode'] = ts_measwlHWLW['HWLWcode'].astype(int)
+        return ts_measwlHWLW
+    
+    include_extremes = True
     stationcode = 'HOEKVHLD'
     cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
     station_dict = cat_locatielijst[cat_locatielijst['Code']==stationcode].iloc[0]
@@ -35,18 +52,29 @@ if 0: #for RWS
     ts_measwl, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,
                                                            meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},allow_multipleresultsfor=['WaardeBepalingsmethode']) #default meta_dict selects waterlevels
     ts_measwl['values'] = ts_measwl['values']/100 #convert from cm to m
-    """
-    ts_measwlHWLW, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
-                                                               meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
-    ts_measwlHWLW['values'] = ts_measwlHWLW['values']/100 #convert from cm to m
-    
-    ts_astroHWLW, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
-                                                              meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'GETETBRKD2'})
-    ts_astroHWLW['values'] = ts_astroHWLW['values']/100 #convert from cm to m
-    """
-    fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl)
-    ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))
-    ax2.set_ylim(-0.5,0.5)
+    if include_extremes:
+        ts_measwlHWLW, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
+                                                                   meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+        ts_measwlHWLW['values'] = ts_measwlHWLW['values']/100 #convert from cm to m
+        ts_measwlHWLWtype, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
+                                                                       meta_dict={'Groepering.Code':'GETETM2','Typering.Code':'GETETTPE'})
+        ts_measwlHWLW = convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
+        
+        ts_astroHWLW, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
+                                                                  meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'GETETBRKD2'})
+        ts_astroHWLW['values'] = ts_astroHWLW['values']/100 #convert from cm to m
+        ts_astroHWLWtype, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
+                                                                      meta_dict={'Groepering.Code':'GETETBRKD2','Typering.Code':'GETETTPE'})
+        ts_astrolHWLW = convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
+
+    if include_extremes:
+        fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl,ts_ext=ts_astroHWLW,ts_ext_validation=ts_measwlHWLW)
+        ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))
+        ax2.set_ylim(-0.5,0.5)
+    else:
+        fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl)
+        ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))
+        ax2.set_ylim(-0.5,0.5)
 
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
