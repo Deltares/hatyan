@@ -1,8 +1,8 @@
 name: sigrid-publish
 on:
   push:
-    branches:
-      - "main"
+    branches: [ main ]
+  workflow_dispatch:
 jobs:
   sigridci:
     runs-on: ubuntu-latest
