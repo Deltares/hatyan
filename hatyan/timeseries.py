@@ -1094,10 +1094,6 @@ def get_diablocks_startstopstation(filename):
     with open(filename, encoding='latin1') as f: #'latin1 is nodig om predictie diafile die rechtstreeks uit hatyan komen in te lezen (validatietijdserie met op regel 4 (PAR) ongeldige tekens aan het einde)
         block_id = -1
         for linenum, line in enumerate(f, 1):
-            if linenum == 1:
-                if '[IDT;*DIF*;A;' not in line:
-                    #raise Exception('ERROR: not a valid dia-file, first line should contain "[IDT;*DIF*;A;"')
-                    pass
             if '[W3H]' in line:
                 block_id += 1
                 diablocks_pd_startstopstation.loc[block_id,'block_starts'] = linenum
@@ -1129,10 +1125,8 @@ def get_diablocks(filename):
     diablocks_pd = diablocks_pd_startstopstation.copy()
     for block_id in diablocks_pd.index.tolist():
         data_meta_nrows = diablocks_pd.loc[block_id,'data_starts'] - diablocks_pd.loc[block_id,'block_starts']
-        #diablocks_pd['data_metanrows'] = data_meta_nrows
         data_meta_pd = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,sep=';',names=range(7),header=None,dtype=str)
         data_meta_series = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,header=None,names=[0])[0] #series of metadata
-        #data_meta_pd = data_meta_series.str.split(';',expand=True)
         bool_startswithmux = data_meta_series.str.startswith('MUX')
         if bool_startswithmux.any():
             is_equidistant = False #extreme waterlevel timeseries (non-equidistant)
@@ -1146,10 +1140,8 @@ def get_diablocks(filename):
         diablocks_pd.loc[block_id,'groepering'] = groeperingcode
         
         for get_content_sel in getpossible:
-            #bool_mincontent = data_meta_pd[0]==get_content_sel
             bool_mincontent = data_meta_series.str.startswith(get_content_sel)
             if bool_mincontent.any(): #if get_content_sel available in diafile
-                #id_mincontent = np.where(bool_mincontent)[0]
                 data_meta_pd_mincontent = data_meta_pd.loc[bool_mincontent]
                 if len(data_meta_pd_mincontent)==1:
                     data_meta_pd_mincontent = data_meta_pd_mincontent.iloc[0]
@@ -1213,8 +1205,7 @@ def get_diablocks(filename):
                 elif get_content_sel in ['TYD']: #Tijdstip. same in all files
                     datestart = dt.datetime.strptime(data_meta_pd_mincontent[1:3].str.cat(), "%Y%m%d%H%M")
                     datestop = dt.datetime.strptime(data_meta_pd_mincontent[3:5].str.cat(), "%Y%m%d%H%M")
-                    #timestep_value_raw = data_meta_pd_mincontent[5]
-                    if is_equidistant:#isinstance(timestep_value_raw,str): #if equidistant timeseries
+                    if is_equidistant:#if equidistant timeseries
                         timestep_unit = data_meta_pd_mincontent[6]
                         if timestep_unit != 'min':
                             raise Exception('ERROR: time unit from TYD is in unknown format (not "min")')
