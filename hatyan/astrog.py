@@ -568,6 +568,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # constants - lunar orbital disturbances
     # selected from Brown's Tables of the Motion of the Moon (1909)
     # in longitude
+    #TODO: tabellen naar file
     distP = {'col1':[        0,            0,            1,            1,        1,        1,            1,            0,            0,            0,            0,            0,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            0,            3,            3,            3,            3,            2,            2,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            1,            1,            0,            0,            2,            2,            1,            1,            4,            4,            2,            2],
              'col2':[        0,            0,            0,            0,        0,        0,            0,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            1,           -1,           -1,           -1,            2,            2,            0,            0,            0,            0,            0,            0,            1,            0,            0,            0,            0,            1,            1,            1,           -1,           -1,           -1,            2,            2,           -2,           -2,            0,            0,            0,            0,            0,            1,            1,            0,            0,            1,           -1,            0,            0,            0,            0],
              'col3':[        0,            0,            0,            0,        0,        0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,            2,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,           -2,           -2,           -2,            2,           -2,            0,            0,            0,            0,            0,            0,            2,           -2],
@@ -681,6 +682,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     DISSUN=1.000140 - 0.016712*np.cos(ANS) - 0.000140*np.cos(2.*ANS) # output value 11: relative distance earth-sun (astronomical units)
     # longitude moon with all disturbances
     CLONM=0
+    # TODO: for loopjes vervangen door array multiplicatie
     for i in range(0,len(distP)):
         CLONM=CLONM+np.sin(distP['col1'][i]*ANM+distP['col2'][i]*ANS+distP['col3'][i]*FNO+distP['col4'][i]*ELO) * distP['col5'][i]
     LONMOO=LABMOO+np.deg2rad((CNULON+CLONM)/3600) # output value 15: lunar longitude (rad)
@@ -741,6 +743,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     ALTMOO=np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
 
     # summarize in dataframe and convert output to degrees
+    #TODO: kan met minder output en zonder dict?
     astrabOutput = {'EHMOON':((np.rad2deg(EHMOON)+ 720.-90.) % 360.)+90.,
                     'DECMOO':  np.rad2deg(DECMOO),
                     'PARLAX':  PARLAX,
@@ -832,6 +835,7 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
         RATE=RATE*np.cos(np.deg2rad(lat))
 
     # define astrab output parameter corresponding to requested mode
+    #TODO: mode omschrijven naar leesbare naam en code verwerken?
     if ((mode== 1) | (mode== 2)).all():
         IPAR = 'EHMOON'
     elif ((mode>= 3) & (mode<= 6)).all():

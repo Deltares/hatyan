@@ -21,19 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
-v0uf_calculatewrite = False #master switch to determine whether the doodson table is calculated+written with calcwrite_baseforv0uf() or read from data_components_hatyan.pkl. The default is False.
-file_pkl_fname = 'data_components_hatyan.pkl'
-
-
-def get_v0uf_allT_frompkl():
-    import os
-    import pandas as pd
-    
-    file_path = os.path.realpath(__file__)
-    file_pkl = os.path.join(os.path.dirname(file_path),file_pkl_fname)
-    v0uf_allT_frompkl = pd.read_pickle(file_pkl)
-    
-    return v0uf_allT_frompkl
+import pandas as pd
+import functools #to Memoize v0uf table (https://en.wikipedia.org/wiki/Memoization)
 
 
 def get_v0uf_sel(const_list):
@@ -54,10 +43,7 @@ def get_v0uf_sel(const_list):
     
     import pandas as pd
 
-    if v0uf_calculatewrite:
-        v0uf_allT = calcwrite_baseforv0uf()
-    else:
-        v0uf_allT = get_v0uf_allT_frompkl()
+    v0uf_allT = calcwrite_baseforv0uf()
     
     const_list_pd = pd.Series(const_list,index=const_list)
     const_list_avaibool = const_list_pd.isin(v0uf_allT.index)
@@ -100,8 +86,8 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         A list of component names.
 
     """
-    v0uf_allT_frompkl = get_v0uf_allT_frompkl()
-    const_list_all = v0uf_allT_frompkl.index.tolist()
+    v0uf_allT = calcwrite_baseforv0uf()
+    const_list_all = v0uf_allT.index.tolist()
     
     const_lists_dict = {'all':
                             #alle binnen hatyan beschikbare componenten
@@ -364,6 +350,7 @@ def get_hatyan_constants(dood_date):
     return DOMEGA, DIKL, DC1681, DC5023, DC0365
 
 
+@functools.lru_cache() #TODO: phase out pickle file
 def calcwrite_baseforv0uf():
     """
     Calculate and write table for all constituents. Alternatively (faster), this data can be read from data_components_hatyan.pkl. Whether to calculate or read the table is controlled with the v0uf_calculatewrite boolean in the top of this script 
@@ -374,10 +361,9 @@ def calcwrite_baseforv0uf():
         DESCRIPTION.
     
     """
-    
-    import os
-    import pandas as pd
-    
+        
+    #TODO: v0uf_base.T naar csv file en van daaruit inlezen. feqsstr als comment en ook comments meegeven
+    #TODO: hatyan naar schureman hernoemen
     # in solar days T=Cs=w0 (s is van solar, er is ook een Cl=w1=ia for lunar), S=w2=ib, H=w3=ic, P=w4=id, N=w5=ie, P1=w6=if, EDN=ExtendedDoodsonNumber
     # N zit is hier altijd 0 (regression of moons node), want dat wordt apart als knoopfactor gedaan
     #                         comp       T, S, H, P, N,P1,EDN,     u eqs                    f eqs 73-79           f M1 K1 L2 K2 M1C feqsstr          #comparison of v0 columns with lunar conversion to SLS and IHO
@@ -441,14 +427,14 @@ def calcwrite_baseforv0uf():
                               'K2':     [2, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0,['DFK2' ]],  # 79
                               'ETA2':   [2, 1, 2,-1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,['DND79']],  # 81 #not in SLS
                               'M3':     [3,-3, 3, 0, 0, 0,  0,     3,-3, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,1.5,0,     0, 0, 0, 0, 0,['78f1p5']]})# 96 #EDN 180 instead of 0 in SLS and IHO (mistake in hatyan?)
-    index_v0 =  ['T','S','H','P','N','P1','EDN']
-    index_u =   ['DKSI','DNU','DQ','DQU','DR','DUK1','DUK2']
-    index_f =   ['DND73','DND74','DND75','DND76','DND77','DND78','DND79',
-                 'DFM1','DFK1','DFL2','DFK2','DFM1C']
+    index_v0 = ['T','S','H','P','N','P1','EDN']
+    index_u = ['DKSI','DNU','DQ','DQU','DR','DUK1','DUK2']
+    index_f = ['DND73','DND74','DND75','DND76','DND77','DND78','DND79','DFM1','DFK1','DFL2','DFK2','DFM1C']
     index_fstr =['f_eqs']
     v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     v0uf_base = v0uf_base.loc[index_v0 + index_u + index_f].astype(float)
     
+    #TODO: definitie eruit halen
     #conversion to lunar for comparison with SLS and IHO
     def get_lunarSLSIHO_fromsolar(v0uf_base):
         v0uf_baseT_solar = v0uf_base.loc[['T','S','H','P','N','P1','EDN']].T
@@ -460,7 +446,7 @@ def calcwrite_baseforv0uf():
         v0uf_baseT_lunar_SLS['EDN'] = -v0uf_baseT_lunar['EDN']%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
         #lunar IHO (compare to c
         v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
-        v0uf_baseT_lunar_IHO['EDN'] = -v0uf_baseT_lunar['EDN']/90+5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
+        v0uf_baseT_lunar_IHO['EDN'] = -v0uf_baseT_lunar['EDN']/90 + 5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
         v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO['EDN']==3,'EDN'] = 7 # convert -180 (3) to +180 (7)
         v0uf_baseT_lunar_IHO[['S','H','P','N','P1']] += 5
         return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO
@@ -470,6 +456,7 @@ def calcwrite_baseforv0uf():
     #v0uf_test = pd.DataFrame([[0,4,-2,0,0,0,0]],columns=['T','S','H','P','N','P1','EDN'],index=['MSQM']).T #solar hatyan convention
     #v0uf_testT_lunar, v0uf_testT_lunar_SLS, v0uf_testT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_test)
     
+    #TODO: tabel naar textfile en samenvoegen met foreman
     #shallow water components
     shallow_eqs = {'SM': 'S2 - M2',                        #[ 6]      
                    'SNU2': 'S2 - NU2',                     #[ 8]      
@@ -635,6 +622,7 @@ def calcwrite_baseforv0uf():
     v0uf_base_forv0u.eval(shallow_eqs_sel_str, inplace=True)
     v0uf_base_forf.eval(shallow_eqs_sel_str.replace('-','+'), inplace=True) #for f only multiplication is applied, never division
     
+    #TODO: kan deels weg?
     if 1:
         v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
     else: #option does not work at f definition yet
@@ -652,6 +640,7 @@ def calcwrite_baseforv0uf():
         new_cols = [x.replace(comp.replace('(','').replace(')',''),comp) for x in new_cols]
     v0uf_all.columns.values[:] = new_cols
     
+    #TODO: kan deels weg?
     if 1:
         v0uf_allT = v0uf_all.T
     else: #option does not work at f definition yet
@@ -660,10 +649,6 @@ def calcwrite_baseforv0uf():
         v0uf_allT[index_fstr] = v0uf_allT_obj.loc[:,index_fstr]
     
     v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
-    
-    file_path = os.path.realpath(__file__)
-    file_pkl = os.path.join(os.path.dirname(file_path),file_pkl_fname)
-    pd.to_pickle(v0uf_allT,file_pkl)
     
     return v0uf_allT
 

@@ -21,6 +21,94 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+import pandas as pd
+import datetime as dt
+from packaging import version
+
+from hatyan.hatyan_core import get_hatyan_freqs, get_hatyan_v0, get_hatyan_u, get_hatyan_f, get_const_list_hatyan, robust_timedelta_sec, robust_daterange_fromtimesextfreq
+from hatyan.foreman_core import get_foreman_v0_freq, get_foreman_nodalfactors
+from hatyan.timeseries import check_ts
+
+
+
+class HatyanSettings:
+    """
+    Settings class containing default hatyan settings, to be overwritten by input, initiate with:
+    hatyan_settings = hatyan.HatyanSettings(nodalfactors=False)
+
+    source : TYPE, optional
+        DESCRIPTION. The default is 'schureman'.
+    nodalfactors : bool/int, optional
+        Whether or not to apply nodal factors. The default is True.
+    fu_alltimes : bool/int, optional
+        Whether to calculate nodal factors in middle of the analysis/prediction period (default) or on every timestep. The default is True.
+    xfac : bool/int, optional
+        Whether or not to apply x-factors. The default is False.
+    
+    #following are only for analysis
+    CS_comps : pandas.DataFrame, optional
+        contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. The default is None.
+    
+    #following are only for get_components_from_ts
+    analysis_peryear : bool/int, optional
+        DESCRIPTION. The default is False.
+    analysis_permonth : bool/int, optional
+        caution, it tries to analyse each month, but skips it if it fails. analysis_peryear argument has priority. The default is False.
+    return_allyears : bool/int, optional
+        DESCRIPTION. The default is False.
+    return_prediction : bool/int, optional
+        Whether to generate a prediction for the ts time array. The default is False.
+    
+    """
+    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    
+    def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
+                 CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, return_prediction=False): #analysis only
+        if not isinstance(source,str):
+            raise Exception('invalid source type, should be str')
+        source = source.lower()
+        if source not in ['schureman','foreman']:
+            raise Exception('invalid source {source}, should be schureman or foreman)')
+        
+        for var_in in [nodalfactors,fu_alltimes,xfac,
+                       analysis_peryear,analysis_permonth,return_allyears,return_prediction]:
+            if not isinstance(var_in,bool):
+                raise Exception(f'invalid {var_in} type, should be bool')
+        
+        if CS_comps is not None:
+            if not isinstance(CS_comps,(dict,pd.DataFrame)):
+                raise Exception('invalid CS_comps type, should be dict')
+            CS_comps = pd.DataFrame(CS_comps) #TODO: convert all to dict or pd.DataFrame
+            CS_comps_expectedkeys = ['CS_comps_derive', 'CS_comps_from', 'CS_ampfacs', 'CS_degincrs']
+            for CS_comps_key in CS_comps_expectedkeys:
+                if CS_comps_key not in CS_comps.keys():
+                    raise Exception(f'CS_comps does not contain {CS_comps_key}')
+            CS_comps_lenvals = [len(CS_comps[key]) for key in CS_comps]
+            if len(np.unique(CS_comps_lenvals)) != 1:
+                raise Exception(f'CS_comps keys do not have equal lengths:\n{CS_comps}')
+        
+        self.source = source
+        self.nodalfactors = nodalfactors
+        self.fu_alltimes = fu_alltimes
+        self.xfac = xfac
+        self.CS_comps = CS_comps
+        self.analysis_peryear = analysis_peryear
+        self.analysis_permonth = analysis_permonth
+        self.return_allyears = return_allyears
+        self.return_prediction = return_prediction
+        
+    def __str__(self):
+        self_dict = vars(self)
+        str_append = ''
+        for key,val in self_dict.items():
+            if key=='CS_comps' and self.CS_comps is not None:
+                for CS_key in ['CS_comps_derive','CS_comps_from']:
+                    str_append += f"{CS_key:20s} = {val[CS_key].tolist()}\n"#%('CS_comps from',CS_comps['CS_comps_from'].tolist()))
+            else:
+                str_append += f'{key:20s} = {val}\n'
+        return str_append
+
 
 def vectoravg(A_all, phi_deg_all):
     """
@@ -43,9 +131,7 @@ def vectoravg(A_all, phi_deg_all):
         DESCRIPTION.
 
     """
-    
-    import numpy as np
-    
+        
     phi_rad_all = np.deg2rad(phi_deg_all)
     v_cos = A_all*np.cos(phi_rad_all)
     v_sin = A_all*np.sin(phi_rad_all)
@@ -65,7 +151,7 @@ def vectoravg(A_all, phi_deg_all):
     return A_mean, phi_deg_mean
 
 
-def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, source='schureman'):
+def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_peryear=False, analysis_permonth=False, source='schureman'):
     """
     Wrapper around the analysis() function, 
     it optionally processes a timeseries per year and vector averages the results afterwards, 
@@ -79,20 +165,8 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
     const_list : list, pandas.Series or str
         list or pandas.Series: contains the tidal constituent names for which to analyse the provided timeseries ts. 
         str: a predefined name of a component set for hatyan_core.get_const_list_hatyan()
-    nodalfactors : bool/int, optional
-        Whether or not to apply nodal factors. The default is True.
-    xfac : bool/int, optional
-        Whether or not to apply x-factors. The default is False.
-    fu_alltimes : bool/int, optional
-        determines whether to calculate nodal factors in middle of analysis period (default) or on every timestep. The default is True.
-    analysis_peryear : bool/int, optional
-        DESCRIPTION. The default is False.
-    analysis_permonth : bool/int, optional
-        caution, it tries to analyse each month, but skips it if it fails. analysis_peryear argument has priority. The default is False.
-    return_allyears : bool/int, optional
-        DESCRIPTION. The default is False.
-    CS_comps : pandas.DataFrame, optional
-        contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. The default is None.
+    hatyan_settings : hatyan.HatyanSettings()
+        Contains the used settings
 
     Raises
     ------
@@ -107,14 +181,10 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
     ts_pd = ts
+        
+    if hatyan_settings is None:
+        hatyan_settings = HatyanSettings(**kwargs)
     
-    import pandas as pd
-    import numpy as np
-    
-    from hatyan.analysis_prediction import analysis
-    from hatyan.analysis_prediction import vectoravg
-    from hatyan.hatyan_core import get_const_list_hatyan
-       
     print('-'*100)
     print('running: get_components_from_ts')
     
@@ -124,8 +194,8 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
         const_list = const_list.tolist()
     n_const = len(const_list)
 
-    if analysis_peryear or analysis_permonth:
-        if analysis_peryear:
+    if hatyan_settings.analysis_peryear or hatyan_settings.analysis_permonth:
+        if hatyan_settings.analysis_peryear:
             print('analysis_peryear=True, separate years are automatically determined from unique calendar years in timeseries')
             ts_years_dt = ts_pd.index.year.unique()
             ts_years = ts_pd.index.year.unique()
@@ -135,24 +205,24 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
             ts_years = ['%d-%02d'%(x.year,x.month) for x in ts_years_dt]
 
         n_years = len(ts_years)
-        if CS_comps is None:
+        if hatyan_settings.CS_comps is None:
             A_i_all = np.zeros((n_const,n_years))
             phi_i_deg_all = np.zeros((n_const,n_years))
         else:
-            A_i_all = np.zeros((n_const+len(CS_comps),n_years))
-            phi_i_deg_all = np.zeros((n_const+len(CS_comps),n_years))
+            A_i_all = np.zeros((n_const+len(hatyan_settings.CS_comps),n_years))
+            phi_i_deg_all = np.zeros((n_const+len(hatyan_settings.CS_comps),n_years))
         for iY, year_dt in enumerate(ts_years_dt):
-            if analysis_peryear:
+            if hatyan_settings.analysis_peryear:
                 print('analyzing %d of sequence %s'%(year_dt,ts_years))
                 ts_oneyear_pd = ts_pd[ts_pd.index.year==year_dt]
-                COMP_one = analysis(ts_oneyear_pd, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, CS_comps=CS_comps, source=source)
+                COMP_one = analysis(ts_oneyear_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iY] = COMP_one.loc[:,'A']
                 phi_i_deg_all[:,iY] = COMP_one.loc[:,'phi_deg']
             else:
                 print('analyzing %d-%02d of sequence [%s]'%(year_dt.year, year_dt.month, ', '.join(ts_years)))
                 ts_oneyear_pd = ts_pd[(ts_pd.index.dt.year==year_dt.year) & (ts_pd.index.dt.month==year_dt.month)]
                 try:
-                    COMP_one = analysis(ts_oneyear_pd, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, CS_comps=CS_comps, source=source)
+                    COMP_one = analysis(ts_oneyear_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                     A_i_all[:,iY] = COMP_one.loc[:,'A']
                     phi_i_deg_all[:,iY] = COMP_one.loc[:,'phi_deg']
                 except Exception as e:
@@ -164,45 +234,33 @@ def get_components_from_ts(ts, const_list, nodalfactors=True, xfac=False, fu_all
         COMP_mean_pd = pd.DataFrame({ 'A': A_i_mean, 'phi_deg': phi_i_deg_mean},index=COMP_one.index)
 
     else: #dummy values, COMP_years should be equal to COMP_mean
-        COMP_mean_pd = analysis(ts_pd, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, CS_comps=CS_comps, source=source)
+        COMP_mean_pd = analysis(ts_pd, const_list=const_list, hatyan_settings=hatyan_settings)
         COMP_all_pd = None
     
-    if return_allyears:
+    if hatyan_settings.return_allyears:
         return COMP_mean_pd, COMP_all_pd
     else:
         return COMP_mean_pd
 
 
-def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
+def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
     """
     harmonic analysis with matrix transformations (least squares fit), optionally with component splitting
     for details about arguments and return variables, see get_components_from_ts() definition
     
-    return_prediction : bool/int, optional
-        Whether to generate a prediction for the ts time array. The default is False.
     """
+    #TODO: nodalfactors en Rayleigh apart zetten
+    #TODO: imports naar bovenin scripts (hatyan breed)
     
-    import numpy as np
-    import pandas as pd
-    import datetime as dt
-    
-    from hatyan.hatyan_core import get_hatyan_freqs, get_hatyan_v0, get_hatyan_u, get_hatyan_f, get_const_list_hatyan, robust_timedelta_sec
-    from hatyan.foreman_core import get_foreman_v0_freq, get_foreman_nodalfactors
-    from hatyan.timeseries import check_ts
-    
+    if hatyan_settings is None:
+        hatyan_settings = HatyanSettings(**kwargs) #TODO: kwargs are not read if hatyan_settings is not None, so add exception if both are not empty
+
     #drop duplicate times
-    ts_pd = ts[~ts.index.duplicated(keep='first')]
-    print('-'*100)
+    print('-'*50)
     print('ANALYSIS initializing')
-    print('%-20s = %s'%('nodalfactors',nodalfactors))
-    print('%-20s = %s'%('xfac',xfac))
-    print('%-20s = %s'%('fu_alltimes',fu_alltimes))
-    if CS_comps is not None:
-        print('%-20s = %s'%('CS_comps derive',CS_comps['CS_comps_derive'].tolist()))
-        print('%-20s = %s'%('CS_comps from',CS_comps['CS_comps_from'].tolist()))
-    else:
-        print('%-20s = %s'%('CS_comps', CS_comps))
+    print(hatyan_settings)
         
+    ts_pd = ts[~ts.index.duplicated(keep='first')]
     if len(ts_pd) != len(ts):
         print('WARNING: %i duplicate times of the input timeseries were dropped prior to the analysis'%(len(ts)-len(ts_pd)))
     
@@ -211,6 +269,7 @@ def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS
     elif type(const_list) is not list:
         const_list = const_list.tolist()
     
+    #TODO: nieuwe string formatting gebruiken
     print('%-20s = %s'%('components analyzed',len(const_list)))
     print('%-20s = %s'%('#timesteps',len(ts)))
     print('%-20s = %s'%('tstart',ts.index[0].strftime('%Y-%m-%d %H:%M:%S')))
@@ -234,16 +293,15 @@ def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS
     print('percentage_nan in values_meas_sel: %.2f%%'%(percentage_nan))
 
     #retrieve const_list and frequency in correct order, then retrieve again but now with sorted const_list
-    if source.lower()=='schureman':
+    if hatyan_settings.source=='schureman':
         t_const_freq_pd = get_hatyan_freqs(const_list)
         const_list = t_const_freq_pd.index.tolist()
         t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
-    elif source.lower()=='foreman':
+    elif hatyan_settings.source=='foreman':
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
         t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
         print('WARNING: foreman does not support retrieval of sorted freq list yet, rayleigh check can be wrong')
-    else:
-        raise Exception('invalid source value (schureman or foreman)')
+    
     t_const_freq = t_const_freq_pd['freq']
             
     #check Rayleigh
@@ -264,27 +322,25 @@ def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS
             print(t_const_freq.iloc[[ray_id,ray_id+1]])
     
     #get f and v, only needed after matrix calculations
-    if source.lower()=='schureman':
+    if hatyan_settings.source=='schureman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         v_0i_rad = get_hatyan_v0(const_list, dood_date_start).T #at start of timeseries
-    elif source.lower()=='foreman':
+    elif hatyan_settings.source=='foreman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         v_0i_rad, dummy = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
         v_0i_rad = v_0i_rad.T
-    else:
-        raise Exception('invalid source value (schureman or foreman)')
     
-    if nodalfactors:
-        if fu_alltimes:
+    if hatyan_settings.nodalfactors:
+        if hatyan_settings.fu_alltimes:
             print('nodal factors (f and u) are calculated for all timesteps')
             dood_date_fu = times_pred_all_pdDTI
         else:
             print('nodal factors (fu) are calculated for center of period: %s'%(dood_date_mid[0]))
             dood_date_fu = dood_date_mid
-        if source.lower()=='schureman':
-            f_i = get_hatyan_f(xfac=xfac, const_list=const_list, dood_date=dood_date_fu).T
+        if hatyan_settings.source=='schureman':
+            f_i = get_hatyan_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
             u_i_rad = get_hatyan_u(const_list=const_list, dood_date=dood_date_fu).T
-        elif source.lower()=='foreman':
+        elif hatyan_settings.source=='foreman':
             f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
             f_i, u_i_rad = f_i.T, u_i_rad.T
     else:
@@ -345,32 +401,30 @@ def analysis(ts, const_list, nodalfactors=True, xfac=False, fu_alltimes=True, CS
             COMP_pd.loc['A0','A'] = -COMP_pd.loc['A0','A']
             COMP_pd.loc['A0','phi_deg'] = 0
     
-    if CS_comps is not None:
-        COMP_pd = split_components(comp=COMP_pd, CS_comps=CS_comps, dood_date_mid=dood_date_mid, xfac=xfac)
+    if hatyan_settings.CS_comps is not None:
+        COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid, hatyan_settings=hatyan_settings)
         
     print('ANALYSIS finished')
     
-    if return_prediction:
+    if hatyan_settings.return_prediction:
         print('immediately generating a prediction for the same time array as the input ts')
-        ts_prediction = prediction(comp=COMP_pd, times_pred_all=ts_pd.index, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, source=source)
+        ts_prediction = prediction(comp=COMP_pd, times_pred_all=ts_pd.index, hatyan_settings=hatyan_settings)
         return COMP_pd, ts_prediction
     else:
         return COMP_pd
 
 
-def split_components(comp, CS_comps, dood_date_mid, xfac=False):
+def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     """
     component splitting function
     for details about arguments and return variables, see get_components_from_ts() definition
 
     """
     
-    import numpy as np
-    import pandas as pd
-    
-    from hatyan.hatyan_core import get_hatyan_v0, get_hatyan_u, get_hatyan_f, get_hatyan_freqs
+    if hatyan_settings is None:
+        hatyan_settings = HatyanSettings(**kwargs)
 
-    const_list_inclCS_raw = comp.index.tolist() + CS_comps['CS_comps_derive'].tolist()
+    const_list_inclCS_raw = comp.index.tolist() + hatyan_settings.CS_comps['CS_comps_derive'].tolist()
     #retrieve const_list and frequency in correct order
     t_const_freq_pd = get_hatyan_freqs(const_list_inclCS_raw)
     const_list_inclCS = t_const_freq_pd.index.tolist()
@@ -385,7 +439,7 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
     A_i_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
     phi_i_rad_str_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
     CS_v_0i_rad = get_hatyan_v0(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values #with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    CS_f_i = get_hatyan_f(xfac=xfac, const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
+    CS_f_i = get_hatyan_f(xfac=hatyan_settings.xfac, const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
     CS_u_i_rad = get_hatyan_u(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
     for iC,comp_sel in enumerate(const_list_inclCS):
         if comp_sel in const_list:
@@ -413,19 +467,19 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
             DBETA = DBETA
         return DTHETA, DALPHA, DBETA
     
-    if len(np.unique(CS_comps['CS_comps_derive'])) != len(CS_comps['CS_comps_derive']):
+    if len(np.unique(hatyan_settings.CS_comps['CS_comps_derive'])) != len(hatyan_settings.CS_comps['CS_comps_derive']):
         raise Exception('ERROR: CS_comps_derive contains duplicate components')
         
-    for comp_main in np.unique(CS_comps['CS_comps_from']):
-        main_ids = np.where(CS_comps['CS_comps_from'] == comp_main)[0]
-        comp_slave = CS_comps.loc[main_ids,'CS_comps_derive'].tolist()
+    for comp_main in np.unique(hatyan_settings.CS_comps['CS_comps_from']):
+        main_ids = np.where(hatyan_settings.CS_comps['CS_comps_from'] == comp_main)[0]
+        comp_slave = hatyan_settings.CS_comps.loc[main_ids,'CS_comps_derive'].tolist()
         print('splitting component %s into %s'%(comp_main, comp_slave))
         
         iC_main = const_list_inclCS.index(comp_main)
         iC_slave = const_list_inclCS.index(comp_slave[0])
-        idslave_CScomp = CS_comps['CS_comps_derive'].tolist().index(comp_slave[0])
-        degincr = CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
-        ampfac = CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
+        idslave_CScomp = hatyan_settings.CS_comps['CS_comps_derive'].tolist().index(comp_slave[0])
+        degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
+        ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
         
         DTHETA, DALPHA, DBETA = get_CS_vars(iC_slave,0)
         A_i_inclCS[iC_main] = A_i_inclCS[iC_main]/DALPHA
@@ -437,9 +491,9 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
         elif len(comp_slave) == 2:
             #T2
             iC_slave2 = const_list_inclCS.index(comp_slave[1])
-            idslave_CScomp2 = CS_comps['CS_comps_derive'].tolist().index(comp_slave[1])
-            degincr = CS_comps['CS_degincrs'].tolist()[idslave_CScomp2]
-            ampfac = CS_comps['CS_ampfacs'].tolist()[idslave_CScomp2]
+            idslave_CScomp2 = hatyan_settings.CS_comps['CS_comps_derive'].tolist().index(comp_slave[1])
+            degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp2]
+            ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp2]
             
             DTHETA, DALPHA, DBETA = get_CS_vars(iC_slave2, DBETA)
             A_i_inclCS[iC_main] = A_i_inclCS[iC_main]/DALPHA
@@ -449,8 +503,8 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
             phi_i_rad_str_inclCS[iC_slave2] = (phi_i_rad_str_inclCS[iC_main]+np.deg2rad(degincr))%(2*np.pi)
             
             #revert back to K2
-            degincr = CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
-            ampfac = CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
+            degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
+            ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
             A_i_inclCS[iC_slave] = A_i_inclCS[iC_main]*ampfac
             phi_i_rad_str_inclCS[iC_slave] = (phi_i_rad_str_inclCS[iC_main]+np.deg2rad(degincr))%(2*np.pi)
         else:
@@ -463,7 +517,7 @@ def split_components(comp, CS_comps, dood_date_mid, xfac=False):
     return comp_CS
 
 
-def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nodalfactors=True, xfac=False, fu_alltimes=True, source='schureman'):
+def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hatyan_settings=None, **kwargs):
     """
     generates a tidal prediction from a set of components A and phi values.
     The component set has the same timezone as the timeseries used to create it, therefore the resulting prediction will also be in that original timezone.
@@ -478,12 +532,8 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
         Prediction time extents (list of start time and stop time). The default is None.
     timestep_min : int, optional
         Prediction timestep in minutes. The default is None.
-    nodalfactors : bool/int, optional
-        Whether or not to apply nodal factors. The default is True.
-    xfac : bool/int, optional
-        Whether or not to apply x-factors. The default is False.
-    fu_alltimes : bool/int, optional
-        determines whether to calculate nodal factors in middle of the prediction period (default) or on every timestep. The default is True.
+    hatyan_settings : hatyan.HatyanSettings()
+        Contains the used settings
 
     Raises
     ------
@@ -497,18 +547,13 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     
     """
     
-    print('-'*100)
+    if hatyan_settings is None:
+        hatyan_settings = HatyanSettings(**kwargs)
+
+    print('-'*50)
     print('PREDICTION initializing')
-    print('%-20s = %s'%('nodalfactors',nodalfactors))
-    print('%-20s = %s'%('xfac',xfac))
-    print('%-20s = %s'%('fu_alltimes',fu_alltimes))
-    
-    import numpy as np
-    import pandas as pd
-    from packaging import version
-    from hatyan.hatyan_core import get_hatyan_freqs, get_hatyan_v0, get_hatyan_u, get_hatyan_f, robust_daterange_fromtimesextfreq
-    from hatyan.foreman_core import get_foreman_v0_freq, get_foreman_nodalfactors
-    
+    print(hatyan_settings)
+        
     COMP = comp.copy()
     
     if times_pred_all is None:
@@ -538,11 +583,11 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     dood_date_start = times_pred_all_pdDTI[:1] #first date (for v0, also freq?)
     
     #retrieve const_list and frequency in correct order, then retrieve again but now with sorted const_list
-    if source.lower()=='schureman':
+    if hatyan_settings.source=='schureman':
         t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
         const_list = t_const_freq_pd.index.tolist()
         t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
-    elif source.lower()=='foreman':
+    elif hatyan_settings.source=='foreman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=COMP.index.tolist(), dood_date=dood_date_start)
         const_list = t_const_freq_pd.index.tolist()
@@ -556,27 +601,27 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     A = np.array(COMP['A'])
     phi_rad = np.array(np.deg2rad(COMP['phi_deg']))
     
-    if source.lower()=='schureman':
+    if hatyan_settings.source=='schureman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         v_0i_rad = get_hatyan_v0(const_list, dood_date_start).T #at start of timeseries
-    elif source.lower()=='foreman':
+    elif hatyan_settings.source=='foreman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         v_0i_rad, dummy = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
         v_0i_rad = v_0i_rad.T
     else:
         raise Exception('invalid source value (schureman or foreman)')
     
-    if nodalfactors:
-        if fu_alltimes:
+    if hatyan_settings.nodalfactors:
+        if hatyan_settings.fu_alltimes:
             print('nodal factors (f and u) are calculated for all timesteps')
             dood_date_fu = times_pred_all_pdDTI
         else:
             print('nodal factors (fu) are calculated for center of period: %s'%(dood_date_mid[0]))
             dood_date_fu = dood_date_mid
-        if source.lower()=='schureman':
-            f_i = get_hatyan_f(xfac=xfac, const_list=const_list, dood_date=dood_date_fu).T
+        if hatyan_settings.source=='schureman':
+            f_i = get_hatyan_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
             u_i_rad = get_hatyan_u(const_list=const_list, dood_date=dood_date_fu).T
-        elif source.lower()=='foreman':
+        elif hatyan_settings.source=='foreman':
             f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
             f_i, u_i_rad = f_i.T, u_i_rad.T
     else:
@@ -604,7 +649,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, nod
     return ts_prediction_pd
 
 
-def prediction_peryear(comp_allyears, timestep_min, nodalfactors=True, xfac=False, fu_alltimes=True, source='schureman'):
+def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwargs):
     """
     Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.
 
@@ -614,15 +659,9 @@ def prediction_peryear(comp_allyears, timestep_min, nodalfactors=True, xfac=Fals
         DESCRIPTION.
     timestep_min : TYPE
         DESCRIPTION.
-    nodalfactors : TYPE, optional
-        DESCRIPTION. The default is True.
-    xfac : TYPE, optional
-        DESCRIPTION. The default is False.
-    fu_alltimes : TYPE, optional
-        DESCRIPTION. The default is True.
-    source : TYPE, optional
-        DESCRIPTION. The default is 'schureman'.
-
+    hatyan_settings : hatyan.HatyanSettings()
+        Contains the used settings
+        
     Returns
     -------
     ts_prediction_peryear : TYPE
@@ -630,9 +669,9 @@ def prediction_peryear(comp_allyears, timestep_min, nodalfactors=True, xfac=Fals
 
     """
     
-    import pandas as pd
-    import datetime as dt
-    
+    if hatyan_settings is None:
+        hatyan_settings = HatyanSettings(**kwargs)
+
     list_years = comp_allyears.columns.levels[1]
     ts_prediction_peryear = pd.DataFrame()
     for year in list_years:
@@ -640,6 +679,6 @@ def prediction_peryear(comp_allyears, timestep_min, nodalfactors=True, xfac=Fals
         comp_oneyear = comp_allyears.loc[:,(slice(None),year)]
         comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
         times_ext = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)-dt.timedelta(minutes=timestep_min)]
-        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=fu_alltimes, source=source)
+        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
         ts_prediction_peryear = ts_prediction_peryear.append(ts_prediction_oneyear)
     return ts_prediction_peryear
