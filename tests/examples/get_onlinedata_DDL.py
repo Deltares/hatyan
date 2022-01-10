@@ -24,7 +24,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
 
 ######### oneline waterlevel data retrieval for one station
-if 0: #for RWS
+if 1: #for RWS
     def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
         """
         TVL;1;1;hoogwater

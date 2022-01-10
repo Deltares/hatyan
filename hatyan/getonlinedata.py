@@ -155,89 +155,90 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     result_available = get_DDL_queryserver(station_dict,query_metadata,tstart_dt,tstop_dt,check_available=True)
     if result_available['WaarnemingenAanwezig']!='true': # TODO IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
         print('WARNING: no values present for this query, returning None')
-    else:
-        result_wl0_metingenlijst_alldates = pd.DataFrame()
-        result_wl0_aquometadata_unique = pd.DataFrame()
-        result_wl0_locatie_unique = pd.DataFrame()
-        for year in year_list:
-            tstart_dt_oneyear = np.maximum(tstart_dt,dt.datetime(year,1,1,tzinfo=tzinfo))
-            tstop_dt_oneyear = np.minimum(tstop_dt,dt.datetime(year+1,1,1,tzinfo=tzinfo))
-    
-            result_available = get_DDL_queryserver(station_dict,query_metadata,tstart_dt_oneyear,tstop_dt_oneyear,check_available=True)
-            if result_available['WaarnemingenAanwezig']!='true': # TODO IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
-                print('year %d: no values'%(year))
-                continue
-            print('year %d: retrieving data'%(year))
-            
-            result_wl = get_DDL_queryserver(station_dict,query_metadata,tstart_dt_oneyear,tstop_dt_oneyear,check_available=False)
-            
-            if not result_wl['Succesvol']:
-                raise Exception('measurement query not succesful, Foutmelding: %s'%(result_wl['Foutmelding']))
-            
-            range_nresults = range(len(result_wl['WaarnemingenLijst']))
-            for result_idx in range_nresults:
-                result_wl0 = result_wl['WaarnemingenLijst'][result_idx]
-                #print('json result waarnemingenlijst keys: %s'%(result_wl0.keys())) #['Locatie', 'MetingenLijst', 'AquoMetadata']
-                result_wl0_metingenlijst = pd.json_normalize(result_wl0['MetingenLijst']) # the actual waterlevel data for this station
-                if not result_wl0_metingenlijst['Tijdstip'].is_monotonic_increasing:
-                    #print('WARNING: retrieved timeseries is not monotonic increasing, so it was sorted')
-                    result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values('Tijdstip').reset_index(drop=True) # TODO IMPROVEMENT: data in response is not always sorted on time
-                last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst['Tijdstip'].iloc[-1]).tz_convert(tstart_dt.tzinfo)
-                if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
-                    result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
-                result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
-                result_wl0_locatie = pd.json_normalize(result_wl0['Locatie']) 
-                result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
-                result_wl0_aquometadata = pd.json_normalize(result_wl0['AquoMetadata'])
-                result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the 'WaardeBepalingsmethode' changes
-            
-            if allow_multipleresultsfor is None:
-                result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
-            else: #allow multiple results for eg ['MeetApparaat', 'WaardeBepalingsmethode']
-                try:
-                    if not isinstance(allow_multipleresultsfor,list):
-                        allow_multipleresultsfor = [allow_multipleresultsfor]
-                    list_dropcolumns = ['AquoMetadata_MessageID']+['%s.%s'%(colname,postfix) for colname in allow_multipleresultsfor for postfix in ['Code','Omschrijving']]
-                    result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique.drop(list_dropcolumns,axis=1).drop_duplicates()
-                except KeyError as e:
-                    metakeys_forCode = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.keys() if x.endswith('.Code')]
-                    raise Exception('%s, available are: %s'%(e,metakeys_forCode))
-            if len(result_wl0_aquometadata_uniqueallowed)>1:
-                bool_nonuniquecols = (result_wl0_aquometadata_unique.iloc[0]!=result_wl0_aquometadata_unique).any(axis=0)
-                metakeys_forCode_nonunique = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.loc[:,bool_nonuniquecols].columns if x.endswith('.Code')]
-                for iR, result_one in enumerate(result_wl['WaarnemingenLijst']):
-                    print(f'Result {iR+1}:')
-                    metakey_list = sorted(set(['Compartiment','Eenheid','Grootheid','Hoedanigheid','Groepering']+metakeys_forCode_nonunique))
-                    for metakey in metakey_list:
-                        print('%28s: %s,'%("'%s'"%metakey,result_one['AquoMetadata'][metakey]))
-                raise Exception('query returned more than one result (differences in %s, details above), use more specific query_metadata argument or more extensive allow_multipleresultsfor argument (the latter might result in duplicate timesteps)'%(metakeys_forCode_nonunique))
-                
-                
-        result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.reset_index(drop=True)
-        # TODO IMPROVEMENT: WaarnemingMetadata: all values are nested lists of length 1, can be flattened (they are actually not list/lijst, but statuswaarde instead of statuswaardelijst and kwaliteitswaardecode instead of kwaliteitswaardecodelijst).
-        # TODO IMPROVEMENT: WaarnemingMetadata: Bemonsteringshoogte/Referentievlak/OpdrachtgevendeInstantie is probably constant for each query result, so could be added to aquometadata frame instead of a value per timestep (probably makes query faster and can be longer)
-        # TODO IMPROVEMENT: WaarnemingMetadata: there seems to be no explanation in the catalog or metadata of the KwaliteitswaardecodeLijst values
-        # TODO IMPROVEMENT: when retrieving waterlevel extremes, it is not possible to distinguish between HW and LW, since the codes are not available in the output
-        # create improved pandas DataFrame
-        key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
-        if not key_numericvalues in result_wl0_metingenlijst_alldates.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #TODO IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
-            key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
-        ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates[key_numericvalues].values,
-                                   'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int).values, 
-                                   'Status':result_wl0_metingenlijst_alldates['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
-                                   #'Bemonsteringshoogte':result_wl0_metingenlijst_alldates['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 
-                                   #'Referentievlak':result_wl0_metingenlijst_alldates['WaarnemingMetadata.ReferentievlakLijst'].str[0].values,
-                                   #'OpdrachtgevendeInstantie':result_wl0_metingenlijst_alldates['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].str[0].values,
-                                   },
-                                  index=pd.to_datetime(result_wl0_metingenlijst_alldates['Tijdstip']))
-        #convert timezone from MET to requested timezone
-        ts_meas_pd.index = ts_meas_pd.index.tz_convert(tstart_dt.tzinfo)
+        return #preliminary abort of definition
 
-        bool_timeduplicated = ts_meas_pd.index.duplicated()
-        if bool_timeduplicated.any():
-            print('WARNING: query returned %d duplicate times, use less extensive allow_multipleresultsfor'%bool_timeduplicated.sum())
+    result_wl0_metingenlijst_alldates = pd.DataFrame()
+    result_wl0_aquometadata_unique = pd.DataFrame()
+    result_wl0_locatie_unique = pd.DataFrame()
+    for year in year_list:
+        tstart_dt_oneyear = np.maximum(tstart_dt,dt.datetime(year,1,1,tzinfo=tzinfo))
+        tstop_dt_oneyear = np.minimum(tstop_dt,dt.datetime(year+1,1,1,tzinfo=tzinfo))
+
+        result_available = get_DDL_queryserver(station_dict,query_metadata,tstart_dt_oneyear,tstop_dt_oneyear,check_available=True)
+        if result_available['WaarnemingenAanwezig']!='true': # TODO IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
+            print('year %d: no values'%(year))
+            continue
+        print('year %d: retrieving data'%(year))
+        
+        result_wl = get_DDL_queryserver(station_dict,query_metadata,tstart_dt_oneyear,tstop_dt_oneyear,check_available=False)
+        
+        if not result_wl['Succesvol']:
+            raise Exception('measurement query not succesful, Foutmelding: %s'%(result_wl['Foutmelding']))
+        
+        range_nresults = range(len(result_wl['WaarnemingenLijst']))
+        for result_idx in range_nresults:
+            result_wl0 = result_wl['WaarnemingenLijst'][result_idx]
+            #print('json result waarnemingenlijst keys: %s'%(result_wl0.keys())) #['Locatie', 'MetingenLijst', 'AquoMetadata']
+            result_wl0_metingenlijst = pd.json_normalize(result_wl0['MetingenLijst']) # the actual waterlevel data for this station
+            if not result_wl0_metingenlijst['Tijdstip'].is_monotonic_increasing:
+                #print('WARNING: retrieved timeseries is not monotonic increasing, so it was sorted')
+                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values('Tijdstip').reset_index(drop=True) # TODO IMPROVEMENT: data in response is not always sorted on time
+            last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst['Tijdstip'].iloc[-1]).tz_convert(tstart_dt.tzinfo)
+            if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
+                result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
+            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
+            result_wl0_locatie = pd.json_normalize(result_wl0['Locatie']) 
+            result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
+            result_wl0_aquometadata = pd.json_normalize(result_wl0['AquoMetadata'])
+            result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the 'WaardeBepalingsmethode' changes
+        
+        if allow_multipleresultsfor is None:
+            result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
+        else: #allow multiple results for eg ['MeetApparaat', 'WaardeBepalingsmethode']
+            try:
+                if not isinstance(allow_multipleresultsfor,list):
+                    allow_multipleresultsfor = [allow_multipleresultsfor]
+                list_dropcolumns = ['AquoMetadata_MessageID']+['%s.%s'%(colname,postfix) for colname in allow_multipleresultsfor for postfix in ['Code','Omschrijving']]
+                result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique.drop(list_dropcolumns,axis=1).drop_duplicates()
+            except KeyError as e:
+                metakeys_forCode = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.keys() if x.endswith('.Code')]
+                raise Exception('%s, available are: %s'%(e,metakeys_forCode))
+        if len(result_wl0_aquometadata_uniqueallowed)>1:
+            bool_nonuniquecols = (result_wl0_aquometadata_unique.iloc[0]!=result_wl0_aquometadata_unique).any(axis=0)
+            metakeys_forCode_nonunique = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.loc[:,bool_nonuniquecols].columns if x.endswith('.Code')]
+            for iR, result_one in enumerate(result_wl['WaarnemingenLijst']):
+                print(f'Result {iR+1}:')
+                metakey_list = sorted(set(['Compartiment','Eenheid','Grootheid','Hoedanigheid','Groepering']+metakeys_forCode_nonunique))
+                for metakey in metakey_list:
+                    print('%28s: %s,'%("'%s'"%metakey,result_one['AquoMetadata'][metakey]))
+            raise Exception('query returned more than one result (differences in %s, details above), use more specific query_metadata argument or more extensive allow_multipleresultsfor argument (the latter might result in duplicate timesteps)'%(metakeys_forCode_nonunique))
+            
+            
+    result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.reset_index(drop=True)
+    # TODO IMPROVEMENT: WaarnemingMetadata: all values are nested lists of length 1, can be flattened (they are actually not list/lijst, but statuswaarde instead of statuswaardelijst and kwaliteitswaardecode instead of kwaliteitswaardecodelijst).
+    # TODO IMPROVEMENT: WaarnemingMetadata: Bemonsteringshoogte/Referentievlak/OpdrachtgevendeInstantie is probably constant for each query result, so could be added to aquometadata frame instead of a value per timestep (probably makes query faster and can be longer)
+    # TODO IMPROVEMENT: WaarnemingMetadata: there seems to be no explanation in the catalog or metadata of the KwaliteitswaardecodeLijst values
+    # TODO IMPROVEMENT: when retrieving waterlevel extremes, it is not possible to distinguish between HW and LW, since the codes are not available in the output
+    # create improved pandas DataFrame
+    key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
+    if not key_numericvalues in result_wl0_metingenlijst_alldates.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #TODO IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
+        key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
+    ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates[key_numericvalues].values,
+                               'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int).values, 
+                               'Status':result_wl0_metingenlijst_alldates['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
+                               #'Bemonsteringshoogte':result_wl0_metingenlijst_alldates['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 
+                               #'Referentievlak':result_wl0_metingenlijst_alldates['WaarnemingMetadata.ReferentievlakLijst'].str[0].values,
+                               #'OpdrachtgevendeInstantie':result_wl0_metingenlijst_alldates['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].str[0].values,
+                               },
+                              index=pd.to_datetime(result_wl0_metingenlijst_alldates['Tijdstip']))
+    #convert timezone from MET to requested timezone
+    ts_meas_pd.index = ts_meas_pd.index.tz_convert(tstart_dt.tzinfo)
+
+    bool_timeduplicated = ts_meas_pd.index.duplicated()
+    if bool_timeduplicated.any():
+        print('WARNING: query returned %d duplicate times, use less extensive allow_multipleresultsfor'%bool_timeduplicated.sum())
  
-        return ts_meas_pd, result_wl0_aquometadata_unique, result_wl0_locatie_unique
+    return ts_meas_pd, result_wl0_aquometadata_unique, result_wl0_locatie_unique
 
 
 def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',meta_dict=None, error_empty=True):
