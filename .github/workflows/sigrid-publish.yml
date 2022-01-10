@@ -2,7 +2,6 @@ name: sigrid-publish
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   sigridci:
