@@ -60,8 +60,9 @@ class HatyanSettings:
     return_prediction : bool/int, optional
         Whether to generate a prediction for the ts time array. The default is False.
     
-    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, merge analysis and get_components_from_ts?
     """
+    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
                  CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, return_prediction=False): #analysis only
         if not isinstance(source,str):
