@@ -61,7 +61,7 @@ class HatyanSettings:
         Whether to generate a prediction for the ts time array. The default is False.
     
     """
-    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, return_prediction only for analysis. Merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
                  CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, return_prediction=False): #analysis only
@@ -249,7 +249,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     for details about arguments and return variables, see get_components_from_ts() definition
     
     """
-    #TODO: nodalfactors en Rayleigh apart zetten
+    #TODO: nodalfactors en Rayleigh apart zetten (nodalfactors zit ook in prediction)
     #TODO: imports naar bovenin scripts (hatyan breed)
     
     if hatyan_settings is None:
