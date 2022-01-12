@@ -21,10 +21,7 @@ v_0i_rad_harmonic_pd = hatyan.get_foreman_v0freq_fromfromharmonicdood(dood_date=
 foreman_shallowrelations = hatyan.get_foreman_shallowrelations()
 const_list_foreman = v_0i_rad_harmonic_pd.index.tolist() + foreman_shallowrelations.index.tolist()
 
-#for const_notav in ['SA_IHO1','SA_IHO2','MFM','MSQM','SIGMA1','RO1',
-#                    'M1B','M1B_IHO1','M1B_IHO2','M1D','M1A','M1','M1_IHO1','M1_IHO2','M1_IHO3',
-#                    'S1_IHO1','S1_IHO2','S1_IHO3','K1_IHO1','K1_IHO2','FI1','THETA1','MA2','MB2','L2A','L2B']:
-#    const_list.remove(const_notav)
+#TODO: add translate table for different naming conventions >> or add duplicates to foreman/schureman table?
 freqs_pd_for = hatyan.get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date)
 
 freqs_pd = pd.concat([freqs_pd_hat['freq'],freqs_pd_for[1]],axis=1)
