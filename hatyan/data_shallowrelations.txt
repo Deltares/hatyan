@@ -149,4 +149,4 @@ MKNU6 3 1.0 M2 1.0 K2 1.0 NU2
 # 3KM5 relation in foreman seems wrong, below is from hatyan docs
 #3KM5 2 3.0 K1 1.0 M2
 #M7 2 3.0 M2 1.0 M1
-OQ2 2 1.0 O1 1.0 Q1
+#OQ2 2 1.0 O1 1.0 Q1 #shallow water in hatyan, but harmonic in foreman
