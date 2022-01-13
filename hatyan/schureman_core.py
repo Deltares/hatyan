@@ -613,20 +613,15 @@ def get_schureman_table():
     v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     v0uf_base = v0uf_base.loc[index_v0 + index_u + index_f].astype(float)
         
+    #get shallow water component equations, calculate them and rename back
     shallow_eqs_pd = pd.DataFrame(get_schureman_shallowrelations(),columns=['shallow_eq'])
-    #from hatyan.foreman_core import get_foreman_shallowrelations
-    #shallow_eqs_pd_for = get_foreman_shallowrelations()
-    
-    v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
-    v0uf_base_forf = v0uf_base.loc[index_f,:].astype(float)
-    
     shallow_eqs_pd['shallow_const'] = shallow_eqs_pd.index
     shallow_eqs_pd.index = 'comp_'+shallow_eqs_pd.index.str.replace('(','',regex=False).str.replace(')','',regex=False)#brackets are temporarily removed in order to evaluate functions
-    
     shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].iteritems()) 
+    v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
     v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=True)
+    v0uf_base_forf = v0uf_base.loc[index_f,:].astype(float)
     v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=True) #for f only multiplication is applied, never division
-    
     v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
     v0uf_all.rename(columns=shallow_eqs_pd['shallow_const'],inplace=True)
     v0uf_allT = v0uf_all.T
