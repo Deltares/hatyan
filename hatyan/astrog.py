@@ -218,13 +218,14 @@ def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
-    date_first = tFirst.date()-dt.timedelta(days=1)
-    date_last = tLast.date()+dt.timedelta(days=1)
-
+    date_first = tFirst - dt.timedelta(days=1)
+    date_last = tLast + dt.timedelta(days=1)
+    
     # --- sunrise and -set ---
     # estimate times: starting at tFirst, 0h local solar time
-    OPEST  = pd.date_range(start=date_first+dt.timedelta(days=-lon/180/24.+.25),end=date_last,freq='%iN'%(24*3600*1e9)) # 'floor' date to 00:00 +6h
-    ONEST  = pd.date_range(start=date_first+dt.timedelta(days=-lon/180/24.+.75),end=date_last,freq='%iN'%(24*3600*1e9)) # 'floor' date to 00:00 +18h
+    DAYEST = pd.date_range(start=date_first,end=date_last,freq='%iN'%(24*3600*1e9))
+    OPEST  = DAYEST + dt.timedelta(days=-lon/360.+.25) # correct for longitude and 'floor' date to 00:00 +6h
+    ONEST  = DAYEST + dt.timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
     # calculate exact times
     TIMDIF = pd.TimedeltaIndex(-dT(OPEST,mode_dT=mode_dT)+1./2880.,unit='D')
@@ -859,6 +860,9 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     # iterate until criterium is reached or max 20 times
     ITER=1
     while (abs(ANG-PNEW) > CRIT).any():# and ITER <=20:
+        if ITER==11:
+            print(ITER)
+            print('')
         TOLD=TNEW
         POLD=PNEW
         if (mode==7).any() or (mode==8).any(): # correction for semidiameter moon
