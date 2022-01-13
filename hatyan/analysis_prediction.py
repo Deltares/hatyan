@@ -26,7 +26,7 @@ import pandas as pd
 import datetime as dt
 from packaging import version
 
-from hatyan.hatyan_core import get_hatyan_freqs, get_hatyan_v0, get_hatyan_u, get_hatyan_f, get_const_list_hatyan, robust_timedelta_sec, robust_daterange_fromtimesextfreq
+from hatyan.schureman_core import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f, get_const_list_hatyan, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.foreman_core import get_foreman_v0_freq, get_foreman_nodalfactors
 from hatyan.timeseries import check_ts
 
@@ -61,7 +61,7 @@ class HatyanSettings:
         Whether to generate a prediction for the ts time array. The default is False.
     
     """
-    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, return_prediction only for analysis. Merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
                  CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, return_prediction=False): #analysis only
@@ -249,7 +249,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     for details about arguments and return variables, see get_components_from_ts() definition
     
     """
-    #TODO: nodalfactors en Rayleigh apart zetten
+    #TODO: nodalfactors en Rayleigh apart zetten (nodalfactors zit ook in prediction)
     #TODO: imports naar bovenin scripts (hatyan breed)
     
     if hatyan_settings is None:
@@ -294,9 +294,9 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
 
     #retrieve const_list and frequency in correct order, then retrieve again but now with sorted const_list
     if hatyan_settings.source=='schureman':
-        t_const_freq_pd = get_hatyan_freqs(const_list)
+        t_const_freq_pd = get_schureman_freqs(const_list)
         const_list = t_const_freq_pd.index.tolist()
-        t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+        t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
     elif hatyan_settings.source=='foreman':
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
         t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
@@ -324,7 +324,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     #get f and v, only needed after matrix calculations
     if hatyan_settings.source=='schureman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
-        v_0i_rad = get_hatyan_v0(const_list, dood_date_start).T #at start of timeseries
+        v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
     elif hatyan_settings.source=='foreman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         v_0i_rad, dummy = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
@@ -338,8 +338,8 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
             print('nodal factors (fu) are calculated for center of period: %s'%(dood_date_mid[0]))
             dood_date_fu = dood_date_mid
         if hatyan_settings.source=='schureman':
-            f_i = get_hatyan_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
-            u_i_rad = get_hatyan_u(const_list=const_list, dood_date=dood_date_fu).T
+            f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
+            u_i_rad = get_schureman_u(const_list=const_list, dood_date=dood_date_fu).T
         elif hatyan_settings.source=='foreman':
             f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
             f_i, u_i_rad = f_i.T, u_i_rad.T
@@ -426,10 +426,10 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
 
     const_list_inclCS_raw = comp.index.tolist() + hatyan_settings.CS_comps['CS_comps_derive'].tolist()
     #retrieve const_list and frequency in correct order
-    t_const_freq_pd = get_hatyan_freqs(const_list_inclCS_raw)
+    t_const_freq_pd = get_schureman_freqs(const_list_inclCS_raw)
     const_list_inclCS = t_const_freq_pd.index.tolist()
     #retrieve again but now with sorted const_list
-    t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list_inclCS, dood_date=dood_date_mid, return_allraw=True)
+    t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list_inclCS, dood_date=dood_date_mid, return_allraw=True)
 
     const_list = comp.index.tolist()
     A_i = comp['A'].tolist()
@@ -438,9 +438,9 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     #if CS_comps is not None: #component splitting
     A_i_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
     phi_i_rad_str_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
-    CS_v_0i_rad = get_hatyan_v0(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values #with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    CS_f_i = get_hatyan_f(xfac=hatyan_settings.xfac, const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
-    CS_u_i_rad = get_hatyan_u(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
+    CS_v_0i_rad = get_schureman_v0(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values #with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
+    CS_f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
+    CS_u_i_rad = get_schureman_u(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
     for iC,comp_sel in enumerate(const_list_inclCS):
         if comp_sel in const_list:
             A_i_inclCS[iC] = A_i[const_list.index(comp_sel)]
@@ -584,9 +584,9 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     #retrieve const_list and frequency in correct order, then retrieve again but now with sorted const_list
     if hatyan_settings.source=='schureman':
-        t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
+        t_const_freq_pd = get_schureman_freqs(COMP.index.tolist())
         const_list = t_const_freq_pd.index.tolist()
-        t_const_freq_pd, t_const_speed_all = get_hatyan_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+        t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
     elif hatyan_settings.source=='foreman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=COMP.index.tolist(), dood_date=dood_date_start)
@@ -603,7 +603,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     if hatyan_settings.source=='schureman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
-        v_0i_rad = get_hatyan_v0(const_list, dood_date_start).T #at start of timeseries
+        v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
     elif hatyan_settings.source=='foreman':
         print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
         v_0i_rad, dummy = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
@@ -619,8 +619,8 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
             print('nodal factors (fu) are calculated for center of period: %s'%(dood_date_mid[0]))
             dood_date_fu = dood_date_mid
         if hatyan_settings.source=='schureman':
-            f_i = get_hatyan_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
-            u_i_rad = get_hatyan_u(const_list=const_list, dood_date=dood_date_fu).T
+            f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
+            u_i_rad = get_schureman_u(const_list=const_list, dood_date=dood_date_fu).T
         elif hatyan_settings.source=='foreman':
             f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
             f_i, u_i_rad = f_i.T, u_i_rad.T

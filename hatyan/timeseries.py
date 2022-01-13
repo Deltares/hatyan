@@ -62,10 +62,10 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
     import datetime as dt
     import scipy.signal as ssig
 
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman_core import get_schureman_freqs
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep
-    M2_period_min = get_hatyan_freqs(['M2']).loc['M2','period [hr]']*60
+    M2_period_min = get_schureman_freqs(['M2']).loc['M2','period [hr]']*60
     ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
     if ts_steps_min_most > 1:
         print('WARNING: the timestep of the series for which to calculate extremes/HWLW is %i minutes, but 1 minute is recommended'%(ts_steps_min_most))
@@ -220,9 +220,9 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     import numpy as np
     import datetime as dt
     
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman_core import get_schureman_freqs
     
-    M2_period_hr = get_hatyan_freqs(['M2']).loc['M2','period [hr]']
+    M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]']
     firstHWcadz_fixed = dt.datetime(2000, 1, 1, 9, 45)
     searchwindow_hr = M2_period_hr/2
     
@@ -284,7 +284,7 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
     import numpy as np
     from scipy.fft import fft, fftfreq
     import scipy.signal as ssig
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman_core import get_schureman_freqs
     
     print('analyzing timeseries with fft and fftfreq')
     
@@ -307,7 +307,7 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    hatyan_freqs = get_hatyan_freqs(const_list='all')[['freq']]
+    hatyan_freqs = get_schureman_freqs(const_list='all')[['freq']]
     const_match = []
     const_closest = []
     for peak_freq_one in peak_freq:
@@ -318,8 +318,8 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         const_match = const_match+hatyan_freqs_match_list
         hatyan_freqs_closest = hatyan_freqs.iloc[np.argmin(np.abs(hatyan_freqs-peak_freq_one)),:]
         const_closest.append(hatyan_freqs_closest.name)
-    hatyan_freqs_matches = get_hatyan_freqs(const_list=const_match)[['freq','period [hr]']]
-    hatyan_freqs_suggestions = get_hatyan_freqs(const_list=const_closest)[['freq','period [hr]']]
+    hatyan_freqs_matches = get_schureman_freqs(const_list=const_match)[['freq','period [hr]']]
+    hatyan_freqs_suggestions = get_schureman_freqs(const_list=const_closest)[['freq','period [hr]']]
     hatyan_freqs_suggestions['peak_freq'] = peak_freq
     hatyan_freqs_suggestions['peak_power'] = peak_power
     print('dominant freqs from fft:\n%s'%(peak_freq))

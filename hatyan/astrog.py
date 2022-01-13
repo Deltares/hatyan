@@ -56,14 +56,14 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     import numpy as np
     import datetime as dt
     
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman_core import get_schureman_freqs
     
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
     
     # constants
     EHMINC       = 346.8                                            # increment of ephemeris hour angle of moon (deg/day)
-    M2_period_hr = get_hatyan_freqs(['M2']).loc['M2','period [hr]'] # interval between lunar culminations (days)
+    M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # interval between lunar culminations (days)
     
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
     date_first = tFirst-dt.timedelta(hours=M2_period_hr+1*24)
@@ -218,13 +218,14 @@ def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
-    date_first = tFirst.date()-dt.timedelta(days=1)
-    date_last = tLast.date()+dt.timedelta(days=1)
-
+    date_first = tFirst - dt.timedelta(days=1)
+    date_last = tLast + dt.timedelta(days=1)
+    
     # --- sunrise and -set ---
     # estimate times: starting at tFirst, 0h local solar time
-    OPEST  = pd.date_range(start=date_first+dt.timedelta(days=-lon/180/24.+.25),end=date_last,freq='%iN'%(24*3600*1e9)) # 'floor' date to 00:00 +6h
-    ONEST  = pd.date_range(start=date_first+dt.timedelta(days=-lon/180/24.+.75),end=date_last,freq='%iN'%(24*3600*1e9)) # 'floor' date to 00:00 +18h
+    DAYEST = pd.date_range(start=date_first,end=date_last,freq='%iN'%(24*3600*1e9))
+    OPEST  = DAYEST + dt.timedelta(days=-lon/360.+.25) # correct for longitude and 'floor' date to 00:00 +6h
+    ONEST  = DAYEST + dt.timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
     # calculate exact times
     TIMDIF = pd.TimedeltaIndex(-dT(OPEST,mode_dT=mode_dT)+1./2880.,unit='D')
@@ -285,8 +286,8 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
 
     # constants
-    from hatyan.hatyan_core import get_hatyan_freqs
-    M2_period_hr = get_hatyan_freqs(['M2']).loc['M2','period [hr]'] # CULINT
+    from hatyan.schureman_core import get_schureman_freqs
+    M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # CULINT
     EHMINC = 346.8 # increment of ephemeris hour angle of moon (deg/day)
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
@@ -685,6 +686,10 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # TODO: for loopjes vervangen door array multiplicatie
     for i in range(0,len(distP)):
         CLONM=CLONM+np.sin(distP['col1'][i]*ANM+distP['col2'][i]*ANS+distP['col3'][i]*FNO+distP['col4'][i]*ELO) * distP['col5'][i]
+    #CLONM2=(np.sin(distP['col1'].values[:,np.newaxis]*ANM + 
+    #              distP['col2'].values[:,np.newaxis]*ANS + 
+    #              distP['col3'].values[:,np.newaxis]*FNO + 
+    #              distP['col4'].values[:,np.newaxis]*ELO) * distP['col5'].values[:,np.newaxis]).sum(axis=0)
     LONMOO=LABMOO+np.deg2rad((CNULON+CLONM)/3600) # output value 15: lunar longitude (rad)
     # latitude moon with all disturbances
     CLM=0
@@ -835,7 +840,7 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
         RATE=RATE*np.cos(np.deg2rad(lat))
 
     # define astrab output parameter corresponding to requested mode
-    #TODO: mode omschrijven naar leesbare naam en code verwerken?
+    #TODO: mode omschrijven naar leesbare naam en code verwerken ipv getal?
     if ((mode== 1) | (mode== 2)).all():
         IPAR = 'EHMOON'
     elif ((mode>= 3) & (mode<= 6)).all():

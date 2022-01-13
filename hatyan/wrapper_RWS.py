@@ -91,17 +91,15 @@ def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False)
     
     timer_start = dt.datetime.now()
     if not silent: #necessary to suppress this in CentOS hatyan command, since print output is interpreted as dir_output variable
-        print('#'*100)
-        print('#'*100)
-        print('#'*100)
-        print('-'*100)
+        print('#'*50)
+        print('-'*50)
         print('hatyan-%s: RWS tidal analysis and prediction'%(version_no))
-        print('-'*100)
+        print('-'*50)
         print('INITIALISATION')
         print('started at %s'%(timer_start.strftime('%Y-%m-%d %H:%M:%S')))
         print('%-45s = %s'%('file_config',file_config))
         print('%-45s = %s'%('dir_output',dir_output))
-        print('-'*100)
+        print('-'*50)
             
         #copy configfile to dir_output
         print('copying configfile to dir_output\\%s'%(os.path.basename(file_config)))
@@ -133,12 +131,12 @@ def exit_RWS(timer_start):
         print('MESSAGE: interactive plots opened, close them to continue')
         plt.show()
     
-    print('-'*100)
+    print('-'*50)
     timer_stop = dt.datetime.now()
     print('calculation finished at %s'%(timer_stop.strftime('%Y-%m-%d %H:%M:%S')))
     timer_elapsed = (timer_stop - timer_start).total_seconds()/60
     print('elapsed time: %.2f minutes (%.2f seconds)'%(timer_elapsed,timer_elapsed*60))
-    print('-'*100)
+    print('-'*50)
     
     os.remove('__NOT_FINISHED__')
 

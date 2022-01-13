@@ -21,32 +21,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+import os
+import pandas as pd
+import numpy as np
+from hatyan.schureman_core import get_const_list_hatyan
+
 #################################################
 ################# FILECONTENTS ##################
 #################################################
-
-
-def get_foreman_content():
-    import pandas as pd
-    import numpy as np
-    import os
-    
-    file_path = os.path.realpath(__file__)
-    foreman_file = os.path.join(os.path.dirname(file_path),'data_components_foreman.txt')
-    content_pd = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=False)
-    content_pd[0] = content_pd[0].str.replace('-0.',' -0.',regex=False) #add spaces where needed
-    content_pd[0] = content_pd[0].str.replace('LDA2','LABDA2',regex=False)
-    content_pd[0] = content_pd[0].str.replace('Z0','A0',regex=False)
-    splitlines = np.where(content_pd[0].isnull())[0]
-    if len(splitlines) != 2:
-        print( 'WARNING: foreman file has less or more than 2 blank lines, fix corrupted file and run again' )
-    
-    #foreman_freqs_harmonic_raw = content_pd.loc[:splitlines[0]-1,0] #derived with doodson table for harmonic components and shallowrelations
-    #foreman_harmonic_head = content_pd.loc[splitlines[0]+1:splitlines[0]+2,0] #not used
-    foreman_harmonic_raw = content_pd.loc[splitlines[0]+3:splitlines[1]-1,0]
-    foreman_shallowrelations_raw = content_pd.loc[splitlines[1]+1:,0]
-
-    return foreman_harmonic_raw, foreman_shallowrelations_raw
 
 
 def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
@@ -72,10 +54,10 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
         DESCRIPTION.
 
     """
-    import numpy as np
-    import pandas as pd
     
-    foreman_harmonic_raw, foreman_shallowrelations_raw = get_foreman_content()
+    file_path = os.path.realpath(__file__)
+    foreman_file = os.path.join(os.path.dirname(file_path),'data_foreman_harmonic.txt')
+    foreman_harmonic_raw = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=True)[0]
     
     lat_rad = np.deg2rad(lat_deg)
     
@@ -119,7 +101,7 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     return foreman_doodson_harmonic, foreman_nodal_harmonic
 
 
-def get_foreman_shallowrelations():
+def get_foreman_shallowrelations(pd_series=False):
     """
     Omzetten van het derde deel van de foremantabel in een pandas DataFrame met shallow water relations.
 
@@ -130,13 +112,36 @@ def get_foreman_shallowrelations():
 
     """
     
-    foreman_harmonic_raw, foreman_shallowrelations_raw = get_foreman_content()
+    file_path = os.path.realpath(__file__)
+    foreman_file = os.path.join(os.path.dirname(file_path),'data_foreman_shallowrelations.txt')
+    foreman_shallowrelations_raw = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=True)[0]
     
     foreman_shallowrelations = foreman_shallowrelations_raw.str.split(' ', expand=True)
     foreman_shallowrelations = foreman_shallowrelations.set_index(0, drop=True)
     foreman_shallowrelations.index.name = None
     
-    return foreman_shallowrelations
+    if not pd_series:
+        return foreman_shallowrelations
+
+    foreman_shallowrelations_pd = pd.Series()
+    for iC,const in enumerate(foreman_shallowrelations.index):
+        foreman_shallow_const = foreman_shallowrelations.loc[const].tolist()
+        num_dependencies = int(foreman_shallow_const[0])
+        shallowrelation_str = ''
+        for iD in range(num_dependencies):
+            id_factor = iD*2+1
+            id_constname = iD*2+2
+            harm_factor = float(foreman_shallow_const[id_factor])
+            #if harm_factor%1==0:
+            #    harm_factor = int(harm_factor)
+            harm_const = foreman_shallow_const[id_constname]
+            if harm_factor>=0:
+                shallowrelation_str += (f' +{harm_factor}*{harm_const}')
+            else:
+                shallowrelation_str += (f' {harm_factor}*{harm_const}')
+            foreman_shallowrelations_pd[const] = shallowrelation_str
+    return foreman_shallowrelations_pd
+    
 
 
 #################################################
@@ -153,7 +158,7 @@ def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
     import pandas as pd
     import datetime as dt
     
-    from hatyan.hatyan_core import get_doodson_eqvals
+    from hatyan.schureman_core import get_doodson_eqvals
     
     if dood_date is None: #in case of frequency
         dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
@@ -187,6 +192,11 @@ def get_foreman_v0_freq(const_list, dood_date):
     import numpy as np
     import pandas as pd
     
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
+    elif type(const_list) is not list:
+        const_list = const_list.tolist()
+
     foreman_freqs = get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode='freq') #list with only harmonic components with more precision than file
     v_0i_rad_harmonic_pd = get_foreman_v0freq_fromfromharmonicdood(dood_date=dood_date, mode=None)
     
@@ -233,7 +243,7 @@ def get_foreman_v0_freq(const_list, dood_date):
 def get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date):
     import numpy as np
         
-    from hatyan.hatyan_core import get_doodson_eqvals
+    from hatyan.schureman_core import get_doodson_eqvals
     dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date)
     
     fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],np.stack([dood_P_rad, dood_N_rad, dood_P1_rad]))
@@ -259,6 +269,11 @@ def get_foreman_nodalfactors(const_list, dood_date):
     import numpy as np
     import pandas as pd
     
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
+    elif type(const_list) is not list:
+        const_list = const_list.tolist()
+
     foreman_shallowrelations = get_foreman_shallowrelations()
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
     

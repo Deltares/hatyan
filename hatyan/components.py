@@ -50,7 +50,7 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     import numpy as np
     import pandas as pd
     
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman_core import get_schureman_freqs
     
     COMP = comp.copy()
     if comp_allyears is not None:
@@ -63,7 +63,7 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     
     const_list = COMP.index.tolist() #is combined const_list
     if sort_freqs:
-        t_const_freq_pd = get_hatyan_freqs(const_list)
+        t_const_freq_pd = get_schureman_freqs(const_list)
         COMP['freq'] = t_const_freq_pd['freq']
         COMP = COMP.sort_values(by='freq')
         const_list = COMP.index.tolist() #now in correct order
@@ -135,11 +135,11 @@ def write_components(comp, filename, metadata=None):
     """
     import numpy as np
     
-    from hatyan.hatyan_core import get_const_list_hatyan, get_hatyan_freqs
+    from hatyan.schureman_core import get_const_list_hatyan, get_schureman_freqs
 
     COMP = comp.copy()
     
-    t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
+    t_const_freq_pd = get_schureman_freqs(COMP.index.tolist())
     COMP['freq'] = t_const_freq_pd['freq']
     COMP = COMP.sort_values(by='freq')
 
@@ -187,7 +187,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
         DESCRIPTION.
 
     """
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman_core import get_schureman_freqs
     
     COMP_merged = comp_main.copy()
     
@@ -196,7 +196,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
         COMP_merged = COMP_merged.drop(comp_sec_list_sel)
     COMP_merged = comp_sec.loc[comp_sec_list].append(COMP_merged)
 
-    t_const_freq = get_hatyan_freqs(COMP_merged.index.tolist())
+    t_const_freq = get_schureman_freqs(COMP_merged.index.tolist())
     COMP_merged['freq'] = t_const_freq['freq']
     COMP_merged = COMP_merged.sort_values(by='freq')
     
@@ -267,14 +267,14 @@ def components_timeshift(comp,hours):
     import pandas as pd
     import numpy as np
     
-    from hatyan.hatyan_core import get_hatyan_v0
+    from hatyan.schureman_core import get_schureman_v0
     
     comp_out = comp.copy()
     
     refdate = dt.datetime(2000,1,1)
     corrdate = refdate+dt.timedelta(hours=hours)
     
-    v0_twodates = get_hatyan_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
+    v0_twodates = get_schureman_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
     hourcorr_v0_deg = np.rad2deg(v0_twodates[1]-v0_twodates[0])#%360
     
     comp_out['phi_deg'] = (comp_out['phi_deg']+hourcorr_v0_deg)%360
