@@ -1,6 +1,6 @@
 # - * - coding: utf - 8 - * - 
 """
-hatyan_core.py contains definitions with data for the hatyan constituents.
+schureman_core.py contains definitions with data for the schureman constituents.
 
 hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
 Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
@@ -43,7 +43,7 @@ def get_v0uf_sel(const_list):
     
     import pandas as pd
 
-    v0uf_allT = calcwrite_baseforv0uf()
+    v0uf_allT = get_schureman_table()
     
     const_list_pd = pd.Series(const_list,index=const_list)
     const_list_avaibool = const_list_pd.isin(v0uf_allT.index)
@@ -86,7 +86,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         A list of component names.
 
     """
-    v0uf_allT = calcwrite_baseforv0uf()
+    v0uf_allT = get_schureman_table()
     const_list_all = v0uf_allT.index.tolist()
     
     const_lists_dict = {'all':
@@ -295,9 +295,9 @@ def get_doodson_eqvals(dood_date, mode=None):
     return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad
 
 
-def get_hatyan_constants(dood_date):
+def get_schureman_constants(dood_date):
     """
-    get_hatyan_constants
+    get_schureman_constants
 
     Parameters
     ----------
@@ -350,7 +350,7 @@ def get_hatyan_constants(dood_date):
     return DOMEGA, DIKL, DC1681, DC5023, DC0365
 
 
-def get_hatyan_shallowrelations():
+def get_schureman_shallowrelations():
     
     #TODO: tabel naar textfile en samenvoegen met foreman
     #shallow water components
@@ -374,7 +374,7 @@ def get_hatyan_shallowrelations():
                    'KQ1': 'K2 - Q1',                       #[ 46]     
                    '3MKS2': '3*M2 - K2 - S2',              #[ 47]     
                    '3MS2': '3*M2 - 2*S2',                  #[ 48]     
-                   'OQ2': 'O1 + Q1',                       #[ 49]     
+                   #'OQ2': 'O1 + Q1',                       #[ 49]     
                    'MNK2': 'M2 + N2 - K2',                 #[ 50]     
                    'MNS2': 'M2 + N2 - S2',                 #[ 51]     
                    '2ML2S2': '2*M2 + L2 - 2*S2',           #[ 52]     
@@ -446,7 +446,7 @@ def get_hatyan_shallowrelations():
                    '2MP5': '2*M2 + P1',                    #[133]     
                    '3MO5': '3*M2 - O1',                    #[134]     
                    'MSK5': 'M2 + S2 + K1',                 #[135]     
-                   '3KM5': '3*K1 + M2',                    #[136]     
+                   '3KM5': '3*K1 + M2',                    #[136] Foreman: '3KM5': 'K2 + K1 + M2',
                    '2(MN)S6': '2*M2 + 2*N2 - S2',            #[137]     
                    '3MNS6': '3*M2 + N2 - S2',              #[138]     
                    '2NM6': '2*N2 + M2',                    #[139]     
@@ -512,9 +512,25 @@ def get_hatyan_shallowrelations():
     return shallow_eqs_pd
 
 
+def get_lunarSLSIHO_fromsolar(v0uf_base):
+    #conversion to lunar for comparison with SLS and IHO
+    v0uf_baseT_solar = v0uf_base.loc[['T','S','H','P','N','P1','EDN']].T
+    v0uf_baseT_lunar = v0uf_baseT_solar.copy()
+    v0uf_baseT_lunar['S'] = v0uf_baseT_solar['S'] + v0uf_baseT_solar['T'] #ib with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+    v0uf_baseT_lunar['H'] = v0uf_baseT_solar['H'] - v0uf_baseT_solar['T'] #ic with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+    #lunar IHO (compare to Sea Level Science book from Woodsworth and Pugh)
+    v0uf_baseT_lunar_SLS = v0uf_baseT_lunar.copy()
+    v0uf_baseT_lunar_SLS['EDN'] = -v0uf_baseT_lunar['EDN']%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
+    #lunar IHO (compare to c
+    v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
+    v0uf_baseT_lunar_IHO['EDN'] = -v0uf_baseT_lunar['EDN']/90 + 5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
+    v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO['EDN']==3,'EDN'] = 7 # convert -180 (3) to +180 (7)
+    v0uf_baseT_lunar_IHO[['S','H','P','N','P1']] += 5
+    return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO
+
 
 @functools.lru_cache()
-def calcwrite_baseforv0uf():
+def get_schureman_table():
     """
     Calculate and write table for all constituents. Alternatively (faster), this data can be read from data_components_hatyan.pkl. Whether to calculate or read the table is controlled with the v0uf_calculatewrite boolean in the top of this script 
 
@@ -526,142 +542,101 @@ def calcwrite_baseforv0uf():
     """
         
     #TODO: v0uf_base.T naar csv file en van daaruit inlezen. feqsstr als comment en ook comments meegeven
-    #TODO: hatyan naar schureman_core.py hernoemen
     # in solar days T=Cs=w0 (s is van solar, er is ook een Cl=w1=ia for lunar), S=w2=ib, H=w3=ic, P=w4=id, N=w5=ie, P1=w6=if, EDN=ExtendedDoodsonNumber
     # N zit is hier altijd 0 (regression of moons node), want dat wordt apart als knoopfactor gedaan
     #                         comp       T, S, H, P, N,P1,EDN,     u eqs                    f eqs 73-79           f M1 K1 L2 K2 M1C feqsstr          #comparison of v0 columns with lunar conversion to SLS and IHO
-    v0uf_base = pd.DataFrame({'A0':     [0, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  0
-                              'SA':     [0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  1 #SA 2nd option from IHO
-                              'SA_IHO1':[0, 0, 1, 0, 0,-1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: SA 1st option from IHO (used in SLS and t_tide). Nulpunt v0 ligt dicht bij jaarwisseling (2015,1,3,21,50,0)
-                              'SA_IHO2':[0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: SA 2nd option from IHO (used in hatyan). Nulpunt v0 ligt dicht bij equinox/lentepunt (2015,3,22,19,50,0)
-                              'SSA':    [0, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #  2
-                              'MSM':    [0, 1,-2, 1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND73']],  #  3 #not in SLS. IHO also called MNum
-                              'MM':     [0, 1, 0,-1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND73']],  #  4 #not in SLS
-                              'MSF':    [0, 2,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND73']],  #  5 #not in SLS
-                              'MF':     [0, 2, 0, 0, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND74']],  #  7 
-                              'MFM':    [0, 3, 0,-1, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND74']],  # 10 #corresponds to MTM in FES2014?
-                              'MSQM':   [0, 4,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: MSQM from IHO, unsure about nodal factor
-                              '2Q1':    [1,-4, 1, 2, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  # 13
-                              'SIGMA1': [1,-4, 3, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  # 15
-                              'Q1':     [1,-3, 1, 1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  # 17
-                              'RO1':    [1,-3, 3,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  # 18 #also called RHO1
-                              'O1':     [1,-2, 1, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  # 20
-                              'TAU1':   [1,-2, 3, 0, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,['DND76']],  # 21 #not in SLS
-                              'M1B':    [1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  # 23 #not in SLS. M1B 2nd option from IHO
-                             'M1B_IHO1':[1,-1, 1,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  #    #newly added: M1B 1st option from IHO
-                             'M1B_IHO2':[1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,['DND75']],  #    #newly added: M1B 2nd option from IHO (used in hatyan)
-                              'M1C':    [1,-1, 1, 0, 0, 0,  0,     1,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1,['DFM1C']],  # 24 #not in SLS
-                              'M1D':    [1,-1, 1, 0, 0, 0,-90,     1,-1, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,['DFM1' ]],  # 25 #not in SLS
-                              'M1A':    [1,-1, 1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,['DND76']],  # 26 #not in SLS
-                              'M1':     [1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,['DFM1' ]],  # 27 #M1 3rd option from IHO
-                              'M1_IHO1':[1,-1, 1, 0, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,['DFM1' ]],  #    #newly added: M1 1st option from IHO
-                              'M1_IHO2':[1,-1, 1, 0, 0, 0,180,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,['DFM1' ]],  #    #newly added: M1 2nd option from IHO (used in SLS
-                              'M1_IHO3':[1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,['DFM1' ]],  #    #newly added: M1 3rd option from IHO (used in hatyan)
-                              'CHI1':   [1,-1, 3,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,['DND76']],  # 29 #lunar conversion EDN different than SLS
-                              'PI1':    [1, 0,-2, 0, 0, 1, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 31
-                              'P1':     [1, 0,-1, 0, 0, 0, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 33
-                              'S1':     [1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 34 #S1 1st option from IHO
-                              'S1_IHO1':[1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 1st option from IHO (used in hatyan)
-                              'S1_IHO2':[1, 0, 0, 0, 0, 0,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 2nd option from IHO 
-                              'S1_IHO3':[1, 0, 0, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  #    #newly added: S1 3rd option from IHO (used in SLS)
-                              'K1':     [1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,['DFK1' ]],  # 35 #S=w2=ib is 0 instead of 1 in SLS (mistake in SLS?). K1 2nd option from IHO. 
-                              'K1_IHO1':[1, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,['DFK1' ]],  #    #newly added: K1 1st option from IHO
-                              'K1_IHO2':[1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,['DFK1' ]],  #    #newly added: K1 2nd option from IHO (used in hatyan)
-                              'PSI1':   [1, 0, 2, 0, 0,-1,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 36 #EDN 270 instead of 90 in SLS (mistake in SLS?)
-                              'FI1':    [1, 0, 3, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 38 #EDN 270 instead of 90 in SLS (mistake in SLS?). IHO also called PHI1
-                              'THETA1': [1, 1,-1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,['DND76']],  # 40 #EDN 0 instead of 90 in SLS (mistake in SLS?).
-                              'J1':     [1, 1, 1,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,['DND76']],  # 42 #EDN 270 instead of 90 in SLS (mistake in SLS?).
-                              'OO1':    [1, 2, 1, 0, 0, 0,-90,    -2,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1, 0, 0,     0, 0, 0, 0, 0,['DND77']],  # 45
-                              'EPS2':   [2,-5, 4, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  #    #newly added: EPS2 (same v0/freq as MNS2 and same u/f as M2)
-                              '2N2':    [2,-4, 2, 2, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  # 55
-                              'MU2':    [2,-4, 4, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  # 56
-                              'N2':     [2,-3, 2, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  # 59
-                              'NU2':    [2,-3, 4,-1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  # 60
-                              'MA2':    [2,-2, 1, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  #    #newly added from IHO table: MA2, α2, H1. Corresponds to MPS2 (except for EDN)
-                              'M2':     [2,-2, 2, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  # 65
-                              'MB2':    [2,-2, 3, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  #    #newly added from IHO table: MB2, β2, H2, Ma2 and MA2*. Corresponds to MSP2 (except for EDN)
-                              'LABDA2': [2,-1, 0, 1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  # 70 IHO also called LAMBDA2, FES2014 calls it LA2
-                              'L2':     [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0,-1, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0,['DFL2' ]],  # 72
-                              'L2A':    [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,['DND78']],  # 73 #not in SLS
-                              'L2B':    [2,-1, 2, 1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,['DND79']],  # 74 #not in SLS
-                              'T2':     [2, 0,-1, 0, 0, 1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 76
-                              'S2':     [2, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 77
-                              'R2':     [2, 0, 1, 0, 0,-1,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,[       ]],  # 78
-                              'K2':     [2, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0,['DFK2' ]],  # 79
-                              'ETA2':   [2, 1, 2,-1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,['DND79']],  # 81 #not in SLS
-                              'M3':     [3,-3, 3, 0, 0, 0,  0,     3,-3, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,1.5,0,     0, 0, 0, 0, 0,['78f1p5']]})# 96 #EDN 180 instead of 0 in SLS and IHO (mistake in hatyan?)
+    v0uf_base = pd.DataFrame({'A0':     [0, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #  0
+                              'SA':     [0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #  1 #SA 2nd option from IHO
+                              'SA_IHO1':[0, 0, 1, 0, 0,-1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #    #newly added: SA 1st option from IHO (used in SLS and t_tide). Nulpunt v0 ligt dicht bij jaarwisseling (2015,1,3,21,50,0)
+                              'SA_IHO2':[0, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #    #newly added: SA 2nd option from IHO (used in hatyan). Nulpunt v0 ligt dicht bij equinox/lentepunt (2015,3,22,19,50,0)
+                              'SSA':    [0, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #  2
+                              'MSM':    [0, 1,-2, 1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND73'],  #  3 #not in SLS. IHO also called MNum
+                              'MM':     [0, 1, 0,-1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND73'],  #  4 #not in SLS
+                              'MSF':    [0, 2,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND73'],  #  5 #not in SLS
+                              'MF':     [0, 2, 0, 0, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND74'],  #  7 
+                              'MFM':    [0, 3, 0,-1, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND74'],  # 10 #corresponds to MTM in FES2014?
+                              'MSQM':   [0, 4,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #    #newly added: MSQM from IHO, unsure about nodal factor
+                              '2Q1':    [1,-4, 1, 2, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  # 13
+                              'SIGMA1': [1,-4, 3, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  # 15
+                              'Q1':     [1,-3, 1, 1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  # 17
+                              'RO1':    [1,-3, 3,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  # 18 #also called RHO1
+                              'O1':     [1,-2, 1, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  # 20
+                              'TAU1':   [1,-2, 3, 0, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0, 'DND76'],  # 21 #not in SLS
+                              'M1B':    [1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  # 23 #not in SLS. M1B 2nd option from IHO
+                             'M1B_IHO1':[1,-1, 1,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  #    #newly added: M1B 1st option from IHO
+                             'M1B_IHO2':[1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  #    #newly added: M1B 2nd option from IHO (used in hatyan)
+                              'M1C':    [1,-1, 1, 0, 0, 0,  0,     1,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1, 'DFM1C'],  # 24 #not in SLS
+                              'M1D':    [1,-1, 1, 0, 0, 0,-90,     1,-1, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 'DFM1' ],  # 25 #not in SLS
+                              'M1A':    [1,-1, 1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0, 'DND76'],  # 26 #not in SLS
+                              'M1':     [1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 'DFM1' ],  # 27 #M1 3rd option from IHO
+                              'M1_IHO1':[1,-1, 1, 0, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 'DFM1' ],  #    #newly added: M1 1st option from IHO
+                              'M1_IHO2':[1,-1, 1, 0, 0, 0,180,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 'DFM1' ],  #    #newly added: M1 2nd option from IHO (used in SLS
+                              'M1_IHO3':[1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 'DFM1' ],  #    #newly added: M1 3rd option from IHO (used in hatyan)
+                              'CHI1':   [1,-1, 3,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0, 'DND76'],  # 29 #lunar conversion EDN different than SLS
+                              'PI1':    [1, 0,-2, 0, 0, 1, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 31
+                              'P1':     [1, 0,-1, 0, 0, 0, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 33
+                              'S1':     [1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 34 #S1 1st option from IHO
+                              'S1_IHO1':[1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #    #newly added: S1 1st option from IHO (used in hatyan)
+                              'S1_IHO2':[1, 0, 0, 0, 0, 0,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #    #newly added: S1 2nd option from IHO 
+                              'S1_IHO3':[1, 0, 0, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  #    #newly added: S1 3rd option from IHO (used in SLS)
+                              'K1':     [1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 'DFK1' ],  # 35 #S=w2=ib is 0 instead of 1 in SLS (mistake in SLS?). K1 2nd option from IHO. 
+                              'K1_IHO1':[1, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 'DFK1' ],  #    #newly added: K1 1st option from IHO
+                              'K1_IHO2':[1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 'DFK1' ],  #    #newly added: K1 2nd option from IHO (used in hatyan)
+                              'PSI1':   [1, 0, 2, 0, 0,-1,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 36 #EDN 270 instead of 90 in SLS (mistake in SLS?)
+                              'FI1':    [1, 0, 3, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 38 #EDN 270 instead of 90 in SLS (mistake in SLS?). IHO also called PHI1
+                              'THETA1': [1, 1,-1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0, 'DND76'],  # 40 #EDN 0 instead of 90 in SLS (mistake in SLS?).
+                              'J1':     [1, 1, 1,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0, 'DND76'],  # 42 #EDN 270 instead of 90 in SLS (mistake in SLS?).
+                              'OO1':    [1, 2, 1, 0, 0, 0,-90,    -2,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1, 0, 0,     0, 0, 0, 0, 0, 'DND77'],  # 45
+                              'OQ2':    [2,-5, 2, 1, 0, 0,180,     4,-2, 0, 0, 0, 0, 0,     0, 0, 2, 0, 0, 0, 0,     0, 0, 0, 0, 0, 'DND75'],  # 49 O1+Q1 moved from shallow relations to harmonics (just like foreman)    
+                              'EPS2':   [2,-5, 4, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  #    #newly added: EPS2 (same v0/freq as MNS2 and same u/f as M2)
+                              '2N2':    [2,-4, 2, 2, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  # 55
+                              'MU2':    [2,-4, 4, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  # 56
+                              'N2':     [2,-3, 2, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  # 59
+                              'NU2':    [2,-3, 4,-1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  # 60
+                              'MA2':    [2,-2, 1, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  #    #newly added from IHO table: MA2, α2, H1. Corresponds to MPS2 (except for EDN)
+                              'M2':     [2,-2, 2, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  # 65
+                              'MB2':    [2,-2, 3, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  #    #newly added from IHO table: MB2, β2, H2, Ma2 and MA2*. Corresponds to MSP2 (except for EDN)
+                              'LABDA2': [2,-1, 0, 1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  # 70 IHO also called LAMBDA2, FES2014 calls it LA2
+                              'L2':     [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0,-1, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 'DFL2' ],  # 72
+                              'L2A':    [2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 'DND78'],  # 73 #not in SLS
+                              'L2B':    [2,-1, 2, 1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 'DND79'],  # 74 #not in SLS
+                              'T2':     [2, 0,-1, 0, 0, 1,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 76
+                              'S2':     [2, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 77
+                              'R2':     [2, 0, 1, 0, 0,-1,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,      ''],  # 78
+                              'K2':     [2, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0,  'DFK2'],  # 79
+                              'ETA2':   [2, 1, 2,-1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 'DND79'],  # 81 #not in SLS
+                              'M3':     [3,-3, 3, 0, 0, 0,  0,     3,-3, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,1.5,0,     0, 0, 0, 0, 0,'78f1p5']})# 96 #EDN 180 instead of 0 in SLS and IHO (mistake in hatyan?)
     index_v0 = ['T','S','H','P','N','P1','EDN']
     index_u = ['DKSI','DNU','DQ','DQU','DR','DUK1','DUK2']
     index_f = ['DND73','DND74','DND75','DND76','DND77','DND78','DND79','DFM1','DFK1','DFL2','DFK2','DFM1C']
     index_fstr =['f_eqs']
     v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     v0uf_base = v0uf_base.loc[index_v0 + index_u + index_f].astype(float)
-    
-    #TODO: definitie eruit halen
-    #conversion to lunar for comparison with SLS and IHO
-    def get_lunarSLSIHO_fromsolar(v0uf_base):
-        v0uf_baseT_solar = v0uf_base.loc[['T','S','H','P','N','P1','EDN']].T
-        v0uf_baseT_lunar = v0uf_baseT_solar.copy()
-        v0uf_baseT_lunar['S'] = v0uf_baseT_solar['S'] + v0uf_baseT_solar['T'] #ib with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
-        v0uf_baseT_lunar['H'] = v0uf_baseT_solar['H'] - v0uf_baseT_solar['T'] #ic with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
-        #lunar IHO (compare to Sea Level Science book from Woodsworth and Pugh)
-        v0uf_baseT_lunar_SLS = v0uf_baseT_lunar.copy()
-        v0uf_baseT_lunar_SLS['EDN'] = -v0uf_baseT_lunar['EDN']%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
-        #lunar IHO (compare to c
-        v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
-        v0uf_baseT_lunar_IHO['EDN'] = -v0uf_baseT_lunar['EDN']/90 + 5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
-        v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO['EDN']==3,'EDN'] = 7 # convert -180 (3) to +180 (7)
-        v0uf_baseT_lunar_IHO[['S','H','P','N','P1']] += 5
-        return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO
-    
-    v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_base)
-    
-    #v0uf_test = pd.DataFrame([[0,4,-2,0,0,0,0]],columns=['T','S','H','P','N','P1','EDN'],index=['MSQM']).T #solar hatyan convention
-    #v0uf_testT_lunar, v0uf_testT_lunar_SLS, v0uf_testT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_test)
-    
-    shallow_eqs_pd = get_hatyan_shallowrelations()
+        
+    shallow_eqs_pd = pd.DataFrame(get_schureman_shallowrelations(),columns=['shallow_eq'])
     #from hatyan.foreman_core import get_foreman_shallowrelations
-    #shallow_eqs_pd = get_foreman_shallowrelations(pd_series=True)
+    #shallow_eqs_pd_for = get_foreman_shallowrelations()
     
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
     v0uf_base_forf = v0uf_base.loc[index_f,:].astype(float)
-    shallow_eqs_sel = shallow_eqs_pd#[const_list_shallow_sel]
-    shallow_eqs_sel_str = '\n'.join('comp_%s = %s'%(key.replace('(','').replace(')',''), val) for key, val in shallow_eqs_sel.iteritems()) #brackets are temporarily removed in order to evaluate functions
-    v0uf_base_forv0u.eval(shallow_eqs_sel_str, inplace=True)
-    v0uf_base_forf.eval(shallow_eqs_sel_str.replace('-','+'), inplace=True) #for f only multiplication is applied, never division
     
-    #TODO: kan deels weg?
-    if 1:
-        v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
-    else: #option does not work at f definition yet
-        v0uf_base_forfstr = v0uf_base.loc[index_fstr,:]
-        shallow_eqs_sel_str_nomult = shallow_eqs_sel_str[:]
-        for mult in [2,3,4,5,6]:
-            for comp in ['M2','N2','K2','K1','S2']:
-                shallow_eqs_sel_str_nomult = shallow_eqs_sel_str_nomult.replace('%i*%s'%(mult,comp),'+'.join(mult*[comp]))
-        v0uf_base_forfstr.eval(shallow_eqs_sel_str_nomult.replace('-','+'), inplace=True) #for f only multiplication is applied, never division
-        v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forfstr])
+    shallow_eqs_pd['shallow_const'] = shallow_eqs_pd.index
+    shallow_eqs_pd.index = 'comp_'+shallow_eqs_pd.index.str.replace('(','',regex=False).str.replace(')','',regex=False)#brackets are temporarily removed in order to evaluate functions
     
-    #remove component_ prefix and restore brackets in component names (was necessary since equation cannot start with number)
-    new_cols = [x.replace('comp_','') for x in v0uf_all.columns]
-    for comp in ['M2(KS)2','2SN(MK)2','2KM(SN)2','3(SM)N2','2(MN)S6','2(MS)K6','2(MN)8','2(MS)8','2(MN)K9','2(MS)N10']:
-        new_cols = [x.replace(comp.replace('(','').replace(')',''),comp) for x in new_cols]
-    v0uf_all.columns.values[:] = new_cols
+    shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].iteritems()) 
+    v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=True)
+    v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=True) #for f only multiplication is applied, never division
     
-    #TODO: kan deels weg?
-    if 1:
-        v0uf_allT = v0uf_all.T
-    else: #option does not work at f definition yet
-        v0uf_allT_obj = v0uf_all.T
-        v0uf_allT = v0uf_allT_obj.loc[:,index_v0+index_u].astype(int)
-        v0uf_allT[index_fstr] = v0uf_allT_obj.loc[:,index_fstr]
+    v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
+    v0uf_all.rename(columns=shallow_eqs_pd['shallow_const'],inplace=True)
+    v0uf_allT = v0uf_all.T
     
-    v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
+    #v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
     
     return v0uf_allT
 
 
-def get_hatyan_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw=False):
+def get_schureman_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw=False):
     """
     Returns the frequencies of the requested list of constituents. Source: beromg.f
 
@@ -718,7 +693,7 @@ def get_hatyan_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw
         return freq_pd
 
 
-def get_hatyan_v0(const_list, dood_date):
+def get_schureman_v0(const_list, dood_date):
     """
     Returns the v-values of the requested list of constituents for the requested date(s)
     
@@ -752,7 +727,7 @@ def get_hatyan_v0(const_list, dood_date):
     return DV0_pd
 
 
-def get_hatyan_u(const_list, dood_date):
+def get_schureman_u(const_list, dood_date):
     """
     Returns the u-values of the requested list of constituents for the requested date(s)
 
@@ -777,7 +752,7 @@ def get_hatyan_u(const_list, dood_date):
     
     T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
     #list of dependencies for U (only P and N are used here)
-    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_hatyan_constants(dood_date)
+    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_schureman_constants(dood_date)
     DHOMI = (DOMEGA-DIKL)*0.5
     DHOPI = (DOMEGA+DIKL)*0.5
     
@@ -819,7 +794,7 @@ def get_hatyan_u(const_list, dood_date):
     return DU_pd
 
 
-def get_hatyan_f(const_list, dood_date, xfac):
+def get_schureman_f(const_list, dood_date, xfac):
     """
     Returns the f-values of the requested list of constituents for the requested date(s)
 
@@ -845,7 +820,7 @@ def get_hatyan_f(const_list, dood_date, xfac):
     T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
 
     #list of dependencies F (only P and N are used here)
-    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_hatyan_constants(dood_date)
+    DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_schureman_constants(dood_date)
     DHOMI = (DOMEGA-DIKL)*0.5
     DHOPI = (DOMEGA+DIKL)*0.5
     DSOMEG = np.sin(DOMEGA)

@@ -11,7 +11,7 @@ from hatyan.analysis_prediction import *
 from hatyan.astrog import *
 from hatyan.components import *
 from hatyan.foreman_core import *
-from hatyan.hatyan_core import *
+from hatyan.schureman_core import *
 from hatyan.timeseries import *
 from hatyan.wrapper_RWS import *
 from hatyan.getonlinedata import *

@@ -210,7 +210,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     #hatyan.exit_RWS(timer_start)
     print(stats)    
     print('')
-    print(hatyan.get_hatyan_freqs(['M2']))
+    print(hatyan.get_schureman_freqs(['M2']))
     
     ax1.set_xlim(times_ext_pred)
     ax2.set_xlim(times_ext_pred_HWLWno)

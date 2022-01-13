@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import pandas as pd
 import numpy as np
-from hatyan.hatyan_core import get_const_list_hatyan
+from hatyan.schureman_core import get_const_list_hatyan
 
 #################################################
 ################# FILECONTENTS ##################
@@ -113,7 +113,7 @@ def get_foreman_shallowrelations(pd_series=False):
     """
     
     file_path = os.path.realpath(__file__)
-    foreman_file = os.path.join(os.path.dirname(file_path),'data_shallowrelations.txt')
+    foreman_file = os.path.join(os.path.dirname(file_path),'data_foreman_shallowrelations.txt')
     foreman_shallowrelations_raw = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=True)[0]
     
     foreman_shallowrelations = foreman_shallowrelations_raw.str.split(' ', expand=True)
@@ -158,7 +158,7 @@ def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
     import pandas as pd
     import datetime as dt
     
-    from hatyan.hatyan_core import get_doodson_eqvals
+    from hatyan.schureman_core import get_doodson_eqvals
     
     if dood_date is None: #in case of frequency
         dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
@@ -243,7 +243,7 @@ def get_foreman_v0_freq(const_list, dood_date):
 def get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date):
     import numpy as np
         
-    from hatyan.hatyan_core import get_doodson_eqvals
+    from hatyan.schureman_core import get_doodson_eqvals
     dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date)
     
     fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],np.stack([dood_P_rad, dood_N_rad, dood_P1_rad]))

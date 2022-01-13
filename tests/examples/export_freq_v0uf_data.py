@@ -111,8 +111,8 @@ v0uffile_2016 = pd.read_csv(file_fwithxfac, skiprows=3, delim_whitespace=True, n
 v0uffile_2016 = v0uffile_2016.set_index('Naam')
 
 hatyan55_freq_conv = np.array([0]+(hatyan55_freq.loc[const_list_freqv0uf_hat55,'HOEKSNELHEID[deg/hr]'].values/360).tolist())
-v_0i_rad_H_195 = hatyan.get_hatyan_v0(const_list_hatyan195_orig, dood_date_hatyan55_v0)
-u_i_rad_195 = hatyan.get_hatyan_u(const_list=const_list_hatyan195_orig, dood_date=dood_date_hatyan55)
+v_0i_rad_H_195 = hatyan.get_schureman_v0(const_list_hatyan195_orig, dood_date_hatyan55_v0)
+u_i_rad_195 = hatyan.get_schureman_u(const_list=const_list_hatyan195_orig, dood_date=dood_date_hatyan55)
 v0u_deg_195 = np.rad2deg(v_0i_rad_H_195+u_i_rad_195)%360
 hatyan55py_v0u_diff = ((v0u_deg_195.iloc[1:,:]-hatyan55_v0u.values)+180)%360-180 #first remove A0 and use .values to ignore column names
 hatyan55_ucorr = (hatyan55_v0u-np.rad2deg(v_0i_rad_H_195.iloc[1:,:].values)+180)%360-180
@@ -181,12 +181,12 @@ print('#####################################################################')
 v_0i_rad_F, t_const_freq_F = hatyan.get_foreman_v0_freq(const_list_freqv0uf, dood_date_v0freq)
 v_0i_deg_F = np.rad2deg(v_0i_rad_F)
 
-t_const_freq_H = hatyan.get_hatyan_freqs(const_list_freqv0uf, dood_date_v0freq) #dood_date is not so relevant
-v_0i_rad_H = hatyan.get_hatyan_v0(const_list_freqv0uf, dood_date_v0freq)
+t_const_freq_H = hatyan.get_schureman_freqs(const_list_freqv0uf, dood_date_v0freq) #dood_date is not so relevant
+v_0i_rad_H = hatyan.get_schureman_v0(const_list_freqv0uf, dood_date_v0freq)
 v_0i_deg_H = np.rad2deg(v_0i_rad_H)
 
 #export hatyan constituents and frequencies
-t_const_freq_pd = hatyan.get_hatyan_freqs(const_list_hatyan195_orig)
+t_const_freq_pd = hatyan.get_schureman_freqs(const_list_hatyan195_orig)
 t_const_freq_pd.to_csv('hatyan_frequencies.csv')
 
 freq_diff = t_const_freq_H['freq']-t_const_freq_F['freq']
@@ -248,7 +248,7 @@ print('calculating and plotting frequency difference over time')
 times_freqdiff_forplot = times_freqdiff[:1].append(times_freqdiff)
 const_list_forplot = ['']+const_list_freqv0uf #to make pcolormesh possible
 
-t_const_freq, t_const_speed_all = hatyan.get_hatyan_freqs(const_list_freqv0uf, dood_date=times_freqdiff, sort_onfreq=False, return_allraw=True)
+t_const_freq, t_const_speed_all = hatyan.get_schureman_freqs(const_list_freqv0uf, dood_date=times_freqdiff, sort_onfreq=False, return_allraw=True)
 t_const_freq_all = t_const_speed_all/(2*np.pi) #aantal rotaties per uur, freq
 np.seterr(divide='ignore') #suppress divide by 0 warning
 t_const_perds_all = 1/t_const_freq_all #period [hr]
@@ -278,10 +278,10 @@ for year_sel in dood_date_fu.year.unique():
     dood_date_mid = pd.DatetimeIndex([dt.datetime(year_sel,7,2)])
     print(year_sel)
     
-    v_0i_rad = hatyan.get_hatyan_v0(const_list=const_list_freqv0uf, dood_date=dood_date_start) #v0 on beginning of year
-    u_i_rad = hatyan.get_hatyan_u(const_list=const_list_freqv0uf, dood_date=dood_date_mid)
-    f_i_xfac0 = hatyan.get_hatyan_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=False) #helemaal geen xfac toepassen, is voor eg S2 anders en dit is hatyan55 berekening
-    f_i_xfac1 = hatyan.get_hatyan_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=True)
+    v_0i_rad = hatyan.get_schureman_v0(const_list=const_list_freqv0uf, dood_date=dood_date_start) #v0 on beginning of year
+    u_i_rad = hatyan.get_schureman_u(const_list=const_list_freqv0uf, dood_date=dood_date_mid)
+    f_i_xfac0 = hatyan.get_schureman_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=False) #helemaal geen xfac toepassen, is voor eg S2 anders en dit is hatyan55 berekening
+    f_i_xfac1 = hatyan.get_schureman_f(const_list=const_list_freqv0uf, dood_date=dood_date_mid,xfac=True)
     
     vuf_v0_deg = np.remainder(np.rad2deg(v_0i_rad),360)
     vuf_u_deg = np.remainder(np.rad2deg(u_i_rad)+180,360)-180
@@ -312,11 +312,11 @@ f_i_FOR, u_i_rad_FOR = hatyan.get_foreman_nodalfactors(const_list_freqv0uf, dood
 u_i_deg_FOR = np.rad2deg(u_i_rad_FOR)
 
 # NODAL FACTORS (F, U) HATYAN
-u_i_rad_HAT = hatyan.get_hatyan_u(const_list_freqv0uf, dood_date_fu)
+u_i_rad_HAT = hatyan.get_schureman_u(const_list_freqv0uf, dood_date_fu)
 u_i_rad_HAT = (u_i_rad_HAT+np.pi)%(2*np.pi)-np.pi
 u_i_deg_HAT = np.rad2deg(u_i_rad_HAT)
-f_i_HAT_xfac0 = hatyan.get_hatyan_f(const_list_freqv0uf, dood_date_fu, xfac=False)
-f_i_HAT_xfac1 = hatyan.get_hatyan_f(const_list_freqv0uf, dood_date_fu, xfac=True)
+f_i_HAT_xfac0 = hatyan.get_schureman_f(const_list_freqv0uf, dood_date_fu, xfac=False)
+f_i_HAT_xfac1 = hatyan.get_schureman_f(const_list_freqv0uf, dood_date_fu, xfac=True)
 
 f_i_diff = f_i_HAT_xfac0-f_i_FOR
 u_i_deg_diff = u_i_deg_HAT-u_i_deg_FOR
