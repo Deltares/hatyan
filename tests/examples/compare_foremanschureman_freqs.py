@@ -9,9 +9,6 @@ import datetime as dt
 import numpy as np
 import hatyan
 
-shallow_eqs_pd_for = hatyan.get_foreman_shallowrelations(pd_series=True)
-shallow_eqs_pd_schu = hatyan.get_schureman_shallowrelations()
-pd.concat([shallow_eqs_pd_schu,shallow_eqs_pd_for],axis=1)
 
 dood_date = pd.DatetimeIndex([dt.datetime(2014,1,1)])
 
