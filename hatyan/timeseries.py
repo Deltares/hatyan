@@ -934,7 +934,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     """
     ts_pd_in = ts
     
-    print('-'*100)
+    print('-'*50)
     print('cropping timeseries')
     if not times_ext[0]<times_ext[1]:
         raise Exception('ERROR: the two times times_ext should be increasing, but they are not: %s.'%(times_ext))
@@ -976,7 +976,7 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     import pandas as pd
     
-    print('-'*100)
+    print('-'*50)
     print('resampling timeseries to %i minutes'%(timestep_min))
     
     bool_duplicated_index = ts.index.duplicated()
@@ -992,6 +992,27 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     check_ts(data_pd_resample)
     return data_pd_resample
+
+
+def check_rayleigh(ts_pd,t_const_freq_pd):
+    import numpy as np
+    
+    t_const_freq = t_const_freq_pd['freq']
+    freq_diffs = np.diff(t_const_freq)
+    rayleigh_tresh = 0.99
+    rayleigh = len(ts_pd['values'])*freq_diffs
+    freq_diff_min = rayleigh_tresh/len(ts_pd['values'])
+    rayleigh_bool = rayleigh>rayleigh_tresh
+    rayleigh_bool_id = np.where(~rayleigh_bool)[0]
+    
+    if rayleigh_bool.all():
+        print('Rayleigh criterion OK (always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
+        print('Frequencies are far enough apart (always >%.6f, minimum is %.6f)'%(freq_diff_min,np.min(freq_diffs)))
+    else:
+        print('Rayleigh criterion vandalised (not always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
+        print('Frequencies with not enough difference (not always >%.6f, minimum is %.6f)'%(freq_diff_min,np.min(freq_diffs)))
+        for ray_id in rayleigh_bool_id:
+            print(t_const_freq.iloc[[ray_id,ray_id+1]])
 
 
 def check_ts(ts):
@@ -1088,7 +1109,7 @@ def get_diablocks_startstopstation(filename):
     import pandas as pd
     
     #get list of starts/ends of datasets in diafile
-    print('-'*100)
+    print('-'*50)
     print('reading file: %s'%(filename))
     linenum_colnames = ['block_starts','data_starts','data_ends']
     diablocks_pd_startstopstation = pd.DataFrame({},columns=linenum_colnames)
@@ -1410,7 +1431,7 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     """
     import pandas as pd
     
-    print('-'*100)
+    print('-'*50)
     print('reading file: %s'%(filename))
     noosheader = []
     noosheader_dict = {}

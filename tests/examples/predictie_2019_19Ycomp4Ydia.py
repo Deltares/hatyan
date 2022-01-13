@@ -34,7 +34,7 @@ stats_noana = []
 stats_no4Y = []
 
 for current_station in selected_stations:
-    print('-'*100)
+    print('-'*50)
     print('%-45s = %s'%('station_name',current_station))
     print('-'*5)
     

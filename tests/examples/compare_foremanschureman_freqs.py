@@ -9,9 +9,13 @@ import datetime as dt
 import numpy as np
 import hatyan
 
-
+from hatyan.schureman_core import get_const_list_hatyan, sort_const_list
 dood_date = pd.DatetimeIndex([dt.datetime(2014,1,1)])
 
+const_list_a = get_const_list_hatyan('all')
+const_list = sort_const_list(const_list_a)
+
+breakit
 freqs_pd_schu = hatyan.get_schureman_freqs(const_list='all',dood_date=dood_date)
 v0_pd_schu = hatyan.get_schureman_v0(const_list=freqs_pd_schu.index,dood_date=dood_date)
 

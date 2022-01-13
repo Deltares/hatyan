@@ -46,7 +46,7 @@ for current_station in selected_stations:
 
 #get data and plot
 for case in case_list:
-    print('-'*100)
+    print('-'*50)
     print('%-45s = %s'%('case',case))
     print('-'*5)
     if '_' in case:

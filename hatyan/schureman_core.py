@@ -59,6 +59,37 @@ def get_v0uf_sel(const_list):
     return v0uf_sel
 
 
+@functools.lru_cache() #TODO: foreman is way slower, so caching this entire function
+def full_const_list():
+    import pandas as pd
+    import datetime as dt
+
+    dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
+    
+    freqs_pd_schu = get_schureman_freqs(const_list='all',dood_date=dood_date)
+    
+    from hatyan.foreman_core import get_foreman_v0freq_fromfromharmonicdood, get_foreman_shallowrelations, get_foreman_v0_freq
+    v_0i_rad_harmonic_pd = get_foreman_v0freq_fromfromharmonicdood() #list with only harmonic components with more precision than file
+    foreman_shallowrelations = get_foreman_shallowrelations()
+    const_list_foreman = v_0i_rad_harmonic_pd.index.tolist() + foreman_shallowrelations.index.tolist()
+    v0_pd_for,freqs_pd_for = get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date) #TODO: this is slower than schureman, cache it instead of this definition. But then first always retrieve everything (currently foreman only retrieves requested components)
+    
+    freqs_pd_combined = pd.concat([freqs_pd_schu[['freq']],freqs_pd_for],axis=0)
+    bool_duplicated = freqs_pd_combined.index.duplicated(keep='first')
+    freqs_pd = freqs_pd_combined.loc[~bool_duplicated] #drop duplicates for OQ2 and M7, different in foreman and schureman, but that close to each other that it does not matter for ordering
+    full_const_list = freqs_pd
+    
+    return full_const_list
+
+
+def sort_const_list(const_list):
+    from hatyan.schureman_core import full_const_list #import necessary since it is a cached function
+    
+    full_const_list = full_const_list()
+    const_list_sorted = full_const_list.loc[const_list].sort_values('freq').index.tolist()
+    return const_list_sorted
+
+
 def get_const_list_hatyan(listtype, return_listoptions=False):
     """
     Definition of several hatyan components lists, taken from the tidegui initializetide.m code, often originating from corresponcence with Koos Doekes
@@ -240,6 +271,43 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         return const_list_hatyan
 
 
+def anapred_get_freqv0uf(hatyan_settings, const_list, dood_date_start, dood_date_mid, times_pred_all_pdDTI):
+    import numpy as np
+    import pandas as pd
+    from hatyan.schureman_core import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f
+    from hatyan.foreman_core import get_foreman_v0_freq, get_foreman_nodalfactors
+    
+    #retrieve frequency and v0
+    print('v0 is calculated for start of period: %s'%(dood_date_start[0]))
+    if hatyan_settings.source=='schureman':
+        t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+        v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
+    elif hatyan_settings.source=='foreman':
+        v_0i_rad, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
+        #t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
+        v_0i_rad = v_0i_rad.T
+    
+    #get f and u
+    if hatyan_settings.nodalfactors:
+        if hatyan_settings.fu_alltimes:
+            print('nodal factors (f and u) are calculated for all timesteps')
+            dood_date_fu = times_pred_all_pdDTI
+        else:
+            print('nodal factors (f and u) are calculated for center of period: %s'%(dood_date_mid[0]))
+            dood_date_fu = dood_date_mid
+        if hatyan_settings.source=='schureman':
+            f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
+            u_i_rad = get_schureman_u(const_list=const_list, dood_date=dood_date_fu).T
+        elif hatyan_settings.source=='foreman':
+            f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
+            f_i, u_i_rad = f_i.T, u_i_rad.T
+    else:
+        print('no nodal factors (f and u) correction applied (f=1, u=0)')
+        f_i = pd.DataFrame(np.ones(len(const_list)),index=const_list).T
+        u_i_rad = pd.DataFrame(np.zeros(len(const_list)),index=const_list).T
+    return t_const_freq_pd, v_0i_rad, u_i_rad, f_i
+
+
 def get_doodson_eqvals(dood_date, mode=None):
     """
     Berekent de doodson waardes T, S, H, P, N en P1 voor het opgegeven tijdstip.
@@ -380,21 +448,22 @@ def get_schureman_table():
         DESCRIPTION.
     
     """
-        
+    
     index_v0 = ['T','S','H','P','N','P1','EDN']
     index_u = ['DKSI','DNU','DQ','DQU','DR','DUK1','DUK2']
     index_f = ['DND73','DND74','DND75','DND76','DND77','DND78','DND79','DFM1','DFK1','DFL2','DFK2','DFM1C']
+    #index_fstr =['f_eqs']
 
     file_schureman_harmonic = os.path.join(os.path.dirname(file_path),'data_schureman_harmonic.csv')
     v0uf_baseT = pd.read_csv(file_schureman_harmonic,comment='#',skipinitialspace=True,index_col='component')
     v0uf_base = v0uf_baseT.T
-    #v0uf_base.index = index_v0 + index_u + index_f + ['f_eqs']
+    #v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     
-    #get shallow water component equations
     file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),'data_schureman_shallowrelations.csv')
     shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment='#',skipinitialspace=True,index_col=0,names=['shallow_eq'])
     shallow_eqs_pd['shallow_eq'] = shallow_eqs_pd['shallow_eq'].str.strip() #remove spaces after
     shallow_eqs_pd['shallow_const'] = shallow_eqs_pd.index
+    
     shallow_eqs_pd.index = 'comp_'+shallow_eqs_pd.index.str.replace('(','',regex=False).str.replace(')','',regex=False)#brackets are temporarily removed in order to evaluate functions
     shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].iteritems()) 
     
