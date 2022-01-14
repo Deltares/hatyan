@@ -62,7 +62,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
     import datetime as dt
     import scipy.signal as ssig
 
-    from hatyan.schureman_core import get_schureman_freqs
+    from hatyan.schureman import get_schureman_freqs
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep
     M2_period_min = get_schureman_freqs(['M2']).loc['M2','period [hr]']*60
@@ -220,7 +220,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     import numpy as np
     import datetime as dt
     
-    from hatyan.schureman_core import get_schureman_freqs
+    from hatyan.schureman import get_schureman_freqs
     
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]']
     firstHWcadz_fixed = dt.datetime(2000, 1, 1, 9, 45)
@@ -284,7 +284,7 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
     import numpy as np
     from scipy.fft import fft, fftfreq
     import scipy.signal as ssig
-    from hatyan.schureman_core import get_schureman_freqs
+    from hatyan.schureman import get_schureman_freqs
     
     print('analyzing timeseries with fft and fftfreq')
     

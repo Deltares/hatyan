@@ -26,9 +26,9 @@ import pandas as pd
 import datetime as dt
 from packaging import version
 
-from hatyan.schureman_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq, anapred_get_freqv0uf
+from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
+from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, check_rayleigh
-
 
 
 class HatyanSettings:
@@ -292,8 +292,14 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
     print('percentage_nan in values_meas_sel: %.2f%%'%(percentage_nan))
     
-    t_const_freq_pd, v_0i_rad, u_i_rad, f_i = anapred_get_freqv0uf(hatyan_settings, const_list, dood_date_start, dood_date_mid, times_pred_all_pdDTI)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
     t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
+
+    if hatyan_settings.fu_alltimes:
+        dood_date_fu = times_pred_all_pdDTI
+    else:
+        dood_date_fu = dood_date_mid
+    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
 
     v_u = np.add(v_0i_rad.values,u_i_rad.values)
     
@@ -370,7 +376,7 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
 
     """
     
-    from hatyan.schureman_core import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f
+    from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
@@ -380,18 +386,25 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     const_list_inclCS = sort_const_list(const_list=const_list_inclCS_raw)
 
     #retrieve freq and speed
+    """from hatyan.schureman import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f #TODO: this is not generic schureman/foreman yet
     t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list_inclCS, dood_date=dood_date_mid, return_allraw=True)
-
-    const_list = comp.index.tolist()
+    CS_v_0i_rad = get_schureman_v0(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
+    CS_f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
+    CS_u_i_rad = get_schureman_u(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
+    """
+    t_const_freq_pd, CS_v_0i_rad = get_freqv0_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
+    CS_v_0i_rad = CS_v_0i_rad.values
+    CS_u_i_rad, CS_f_i = get_uf_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_fu=dood_date_mid)
+    CS_u_i_rad = CS_u_i_rad.values
+    CS_f_i = CS_f_i.values
+    
+    const_list = comp.index.tolist() #TODO: this is not sorted, needs fixing or not?
     A_i = comp['A'].tolist()
     phi_i_rad_str = np.deg2rad(comp['phi_deg'].tolist())
     
     #if CS_comps is not None: #component splitting
     A_i_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
     phi_i_rad_str_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
-    CS_v_0i_rad = get_schureman_v0(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values #TODO: with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    CS_f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
-    CS_u_i_rad = get_schureman_u(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
     for iC,comp_sel in enumerate(const_list_inclCS):
         if comp_sel in const_list:
             A_i_inclCS[iC] = A_i[const_list.index(comp_sel)]
@@ -537,8 +550,14 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     A = np.array(COMP['A'])
     phi_rad = np.array(np.deg2rad(COMP['phi_deg']))
 
-    t_const_freq_pd, v_0i_rad, u_i_rad, f_i = anapred_get_freqv0uf(hatyan_settings, const_list, dood_date_start, dood_date_mid, times_pred_all_pdDTI)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
     t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
+
+    if hatyan_settings.fu_alltimes:
+        dood_date_fu = times_pred_all_pdDTI
+    else:
+        dood_date_fu = dood_date_mid
+    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
 
     print('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
