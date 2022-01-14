@@ -241,9 +241,8 @@ def get_foreman_v0_freq(const_list, dood_date):
                 harm_factor = float(foreman_shallow_const[id_factor])
                 harm_const = foreman_shallow_const[id_constname]
                 v_dependency = v_0i_rad_harmonic_pd.loc[harm_const].values
-                v_0i_rad_temp = v_0i_rad_temp + harm_factor*v_dependency
-                
                 freq_dependency = foreman_freqs.loc[harm_const,'freq'] #should be dependent on harmonic doodson numbers (make foreman_freqs_dood_all variable in foreman.py, in freq or harmonic definition)
+                v_0i_rad_temp = v_0i_rad_temp + harm_factor*v_dependency
                 t_const_freq_temp = t_const_freq_temp + harm_factor*freq_dependency
             v_0i_rad[iC,:] = v_0i_rad_temp
             t_const_freq[iC] = t_const_freq_temp
@@ -298,7 +297,7 @@ def get_foreman_nodalfactors(const_list, dood_date):
     
     foreman_harmonic_doodson_all_list = foreman_doodson_harmonic.index.tolist()
     foreman_harmonic_nodal_all_list = foreman_nodal_harmonic.index.unique().tolist()
-    foreman_shallow_all_list = foreman_shallowrelations.index.tolist()
+    foreman_shallowrelations_list = foreman_shallowrelations.index.tolist()
     
     f_i_FOR = np.ones((len(const_list),len(dood_date)))
     u_i_rad_FOR = np.zeros((len(const_list),len(dood_date)))
@@ -309,7 +308,7 @@ def get_foreman_nodalfactors(const_list, dood_date):
             if const in foreman_harmonic_nodal_all_list:
                 foreman_harmonic_nodal_const = foreman_nodal_harmonic.loc[[const]]
                 f_i_FOR[iC,:], u_i_rad_FOR[iC,:] = get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date)
-        elif const in foreman_shallow_all_list: # component has satellites based on shallow water relations
+        elif const in foreman_shallowrelations_list: # component has satellites based on shallow water relations
             f_i_FOR_temp = 1.0
             u_i_rad_FOR_temp = 0.0
             foreman_shallow_const = foreman_shallowrelations.loc[const].tolist()
@@ -319,13 +318,12 @@ def get_foreman_nodalfactors(const_list, dood_date):
                 id_constname = iD*2+2
                 harm_factor = float(foreman_shallow_const[id_factor])
                 harm_const = foreman_shallow_const[id_constname]
-                if harm_const in foreman_harmonic_nodal_all_list:
-                    foreman_harmonic_nodal_const = foreman_nodal_harmonic.loc[[harm_const]]
-                    f_i_dependency, u_i_rad_dependency = get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date)#foreman_harmonic_nodal_all[foreman_harmonic_nodal_all_list.index()][iS]
-                    f_i_FOR_temp = f_i_FOR_temp * f_i_dependency**abs(harm_factor)
-                    u_i_rad_FOR_temp = u_i_rad_FOR_temp + harm_factor*u_i_rad_dependency
-                else:
+                if harm_const not in foreman_harmonic_nodal_all_list:
                     raise Exception('ERROR: harmonic component %s for shallow water component %s is not available in the harmonic nodal factors (foreman_nodal_harmonic)'%(harm_const,const))
+                foreman_harmonic_nodal_const = foreman_nodal_harmonic.loc[[harm_const]]
+                f_i_dependency, u_i_rad_dependency = get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date)#foreman_harmonic_nodal_all[foreman_harmonic_nodal_all_list.index()][iS]
+                f_i_FOR_temp = f_i_FOR_temp * f_i_dependency**abs(harm_factor)
+                u_i_rad_FOR_temp = u_i_rad_FOR_temp + harm_factor*u_i_rad_dependency
             f_i_FOR[iC,:] = f_i_FOR_temp
             u_i_rad_FOR[iC,:] = u_i_rad_FOR_temp
         else:
