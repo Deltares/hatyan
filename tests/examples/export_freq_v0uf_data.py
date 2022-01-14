@@ -19,7 +19,7 @@ dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plo
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
-const_list_hatyan195_orig = hatyan.get_const_list_hatyan('all_originalorder')
+const_list_hatyan195_orig = hatyan.get_const_list_hatyan('all_schureman_originalorder')
 
 times_doodsonplot = pd.date_range(start=dt.datetime(2018,12,1),end=dt.datetime(2025,1,1),freq='60min')
 

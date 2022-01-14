@@ -101,7 +101,7 @@ ST33 3 4.0 M2 1.0 S2 1.0 K1
 M12 1 6.0 M2
 ST34 2 5.0 M2 1.0 S2
 ST35 4 3.0 M2 1.0 N2 1.0 K2 1.0 S2
-########## ADDED FROM HATYAN-TABLE #########
+########## ADDED FROM SCHUREMAN-TABLE #########
 SM 2 1.0 S2 -1.0 M2
 3MKS2 3 3.0 M2 -1.0 K2 -1.0 S2
 3MS2 2 3.0 M2 -2.0 S2
@@ -146,7 +146,6 @@ MKNU6 3 1.0 M2 1.0 K2 1.0 NU2
 4MSN12 3 4.0 M2 1.0 S2 1.0 N2
 5MS12 2 5.0 M2 1.0 S2
 4M2S12 2 4.0 M2 2.0 S2
-# 3KM5 relation in foreman seems wrong, below is from hatyan docs
-#3KM5 2 3.0 K1 1.0 M2
-#M7 2 3.0 M2 1.0 M1
-#OQ2 2 1.0 O1 1.0 Q1 #shallow water in hatyan, but harmonic in foreman
+#3KM5 2 3.0 K1 1.0 M2 #3KM5 is different in schureman
+#M7 2 3.0 M2 1.0 M1 #M7 is different in schureman
+#OQ2 2 1.0 O1 1.0 Q1 #OQ2 shallow water in schureman, but harmonic in foreman

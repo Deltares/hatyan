@@ -1,2 +1,2 @@
-include hatyan/*.pkl
+include hatyan/*.csv
 include hatyan/*.txt

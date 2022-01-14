@@ -50,7 +50,7 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     import numpy as np
     import pandas as pd
     
-    from hatyan.schureman_core import get_schureman_freqs
+    from hatyan.hatyan_core import sort_const_list
     
     COMP = comp.copy()
     if comp_allyears is not None:
@@ -63,10 +63,8 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     
     const_list = COMP.index.tolist() #is combined const_list
     if sort_freqs:
-        t_const_freq_pd = get_schureman_freqs(const_list)
-        COMP['freq'] = t_const_freq_pd['freq']
-        COMP = COMP.sort_values(by='freq')
-        const_list = COMP.index.tolist() #now in correct order
+        const_list = sort_const_list(const_list=const_list)
+        COMP = COMP.loc[const_list] #sorted
     
     size_figure = (15,9)
     size_line_ts = 0.7
@@ -135,7 +133,7 @@ def write_components(comp, filename, metadata=None):
     """
     import numpy as np
     
-    from hatyan.schureman_core import get_const_list_hatyan, get_schureman_freqs
+    from hatyan.schureman import get_const_list_hatyan, get_schureman_freqs #TODO: this is not generic foreman/schureman
 
     COMP = comp.copy()
     
@@ -143,7 +141,7 @@ def write_components(comp, filename, metadata=None):
     COMP['freq'] = t_const_freq_pd['freq']
     COMP = COMP.sort_values(by='freq')
 
-    const_list_hatyan195_orig = get_const_list_hatyan('all_originalorder')
+    const_list_hatyan195_orig = get_const_list_hatyan('all_schureman_originalorder')
     const_no = [const_list_hatyan195_orig.index(x) for x in COMP.index]
     const_speed = t_const_freq_pd['freq'].values*360
     
@@ -187,7 +185,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
         DESCRIPTION.
 
     """
-    from hatyan.schureman_core import get_schureman_freqs
+    from hatyan.schureman import get_schureman_freqs #TODO: this is not generic foreman/schureman
     
     COMP_merged = comp_main.copy()
     
@@ -267,7 +265,7 @@ def components_timeshift(comp,hours):
     import pandas as pd
     import numpy as np
     
-    from hatyan.schureman_core import get_schureman_v0
+    from hatyan.schureman import get_schureman_v0 #TODO: this is not generic for foreman/schureman
     
     comp_out = comp.copy()
     

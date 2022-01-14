@@ -56,7 +56,7 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     import numpy as np
     import datetime as dt
     
-    from hatyan.schureman_core import get_schureman_freqs
+    from hatyan.schureman import get_schureman_freqs
     
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -286,7 +286,7 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
 
     # constants
-    from hatyan.schureman_core import get_schureman_freqs
+    from hatyan.schureman import get_schureman_freqs
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # CULINT
     EHMINC = 346.8 # increment of ephemeris hour angle of moon (deg/day)
 

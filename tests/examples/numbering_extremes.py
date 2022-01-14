@@ -81,7 +81,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     n_colors = len(selected_stations)
     colors = plt.cm.jet(np.linspace(0,1,n_colors))
     for i_stat, current_station in enumerate(selected_stations):
-        print('-'*100)
+        print('-'*50)
         print('%-45s = %s'%('station_name',current_station))
         print('-'*5)
         

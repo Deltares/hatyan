@@ -24,7 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import pandas as pd
 import numpy as np
-from hatyan.schureman_core import get_const_list_hatyan
+import functools
+
+file_path = os.path.realpath(__file__)
 
 #################################################
 ################# FILECONTENTS ##################
@@ -55,7 +57,6 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
 
     """
     
-    file_path = os.path.realpath(__file__)
     foreman_file = os.path.join(os.path.dirname(file_path),'data_foreman_harmonic.txt')
     foreman_harmonic_raw = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=True)[0]
     
@@ -112,7 +113,6 @@ def get_foreman_shallowrelations(pd_series=False):
 
     """
     
-    file_path = os.path.realpath(__file__)
     foreman_file = os.path.join(os.path.dirname(file_path),'data_foreman_shallowrelations.txt')
     foreman_shallowrelations_raw = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=True)[0]
     
@@ -148,6 +148,25 @@ def get_foreman_shallowrelations(pd_series=False):
 #################### FREQ V0 ####################
 #################################################
 
+@functools.lru_cache() #only caching this already makes foreman slightly faster
+def get_foreman_table(): #TODO: only harmonic and only v0
+    
+    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    const_list = foreman_doodson_harmonic.index
+    t_const_doodson_lun = np.concatenate([np.zeros((len(const_list),1)),foreman_doodson_harmonic.loc[:,:7].values],axis=1)
+    omega1 = t_const_doodson_lun[:,1:2]
+    corr_array = np.concatenate([omega1,np.zeros((len(const_list),1)),-omega1,omega1,np.zeros((len(const_list),4))],axis=1)
+    t_const_doodson_sol = t_const_doodson_lun+corr_array
+    t_const_doodson_sol[:,1] = 0
+    
+    index_v0 = ['T','S','H','P','N','P1','EDN']
+    index_v0_incldummy = ['T','dummy','S','H','P','N','P1','EDN']
+    v0_baseT_for_raw = pd.DataFrame(t_const_doodson_sol,index=const_list,columns=index_v0_incldummy)
+    v0_baseT_for = v0_baseT_for_raw.loc[:,index_v0]
+    
+    return v0_baseT_for
+
+
 def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
     """
     Zoekt de frequentie of v0 voor alle harmonische componenten, in geval van v0 op de gegeven datum (dood_date). Hiervoor zijn de harmonische doodson getallen
@@ -158,25 +177,22 @@ def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
     import pandas as pd
     import datetime as dt
     
-    from hatyan.schureman_core import get_doodson_eqvals
+    from hatyan.schureman import get_doodson_eqvals
     
     if dood_date is None: #in case of frequency
         dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
-    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    
+    t_const_doodson_sol = get_foreman_table()
+    const_list = t_const_doodson_sol.index
+
     dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date=dood_date, mode=mode)
-    const_list = foreman_doodson_harmonic.index
-    t_const_doodson_lun = np.concatenate([np.zeros((len(const_list),1)),foreman_doodson_harmonic.loc[:,:7].values],axis=1)
-    omega1 = t_const_doodson_lun[:,1:2]
-    corr_array = np.concatenate([omega1,np.zeros((len(const_list),1)),-omega1,omega1,np.zeros((len(const_list),4))],axis=1)
-    t_const_doodson_sol = t_const_doodson_lun+corr_array
-    t_const_doodson_sol[:,1] = 0
     if mode=='freq':
-        dood_rad_array = np.stack([dood_T_rad,np.zeros((dood_T_rad.shape)),dood_S_rad,dood_H_rad,dood_P_rad,np.zeros((dood_N_rad.shape)),dood_P1_rad,np.zeros((dood_T_rad.shape))])
+        dood_rad_array = np.stack([dood_T_rad,dood_S_rad,dood_H_rad,dood_P_rad,np.zeros((dood_N_rad.shape)),dood_P1_rad,np.zeros((dood_T_rad.shape))])
         t_const_freq_dood = np.dot(t_const_doodson_sol,dood_rad_array)/(2*np.pi)
         t_const_freqv0_dood_pd = pd.DataFrame({'freq':t_const_freq_dood[:,0]},index=const_list)
         freqv0_dood_pd = t_const_freqv0_dood_pd
     else:
-        dood_rad_array = np.stack([dood_T_rad,np.zeros((dood_T_rad.shape)),dood_S_rad,dood_H_rad,dood_P_rad,dood_N_rad,dood_P1_rad,np.zeros((dood_T_rad.shape))+2*np.pi])
+        dood_rad_array = np.stack([dood_T_rad,dood_S_rad,dood_H_rad,dood_P_rad,dood_N_rad,dood_P1_rad,np.zeros((dood_T_rad.shape))+2*np.pi])
         v_0i_rad = np.dot(t_const_doodson_sol,dood_rad_array)
         v_0i_rad_pd = pd.DataFrame(v_0i_rad,index=const_list)
         freqv0_dood_pd = v_0i_rad_pd
@@ -191,6 +207,8 @@ def get_foreman_v0_freq(const_list, dood_date):
     """
     import numpy as np
     import pandas as pd
+    
+    from hatyan.schureman import get_const_list_hatyan
     
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
@@ -243,7 +261,7 @@ def get_foreman_v0_freq(const_list, dood_date):
 def get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date):
     import numpy as np
         
-    from hatyan.schureman_core import get_doodson_eqvals
+    from hatyan.hatyan_core import get_doodson_eqvals
     dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date)
     
     fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],np.stack([dood_P_rad, dood_N_rad, dood_P1_rad]))
@@ -268,6 +286,7 @@ def get_foreman_nodalfactors(const_list, dood_date):
     """
     import numpy as np
     import pandas as pd
+    from hatyan.hatyan_core import get_const_list_hatyan
     
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)

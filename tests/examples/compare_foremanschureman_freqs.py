@@ -9,13 +9,9 @@ import datetime as dt
 import numpy as np
 import hatyan
 
-shallow_eqs_pd_for = hatyan.get_foreman_shallowrelations(pd_series=True)
-shallow_eqs_pd_schu = hatyan.get_schureman_shallowrelations()
-pd.concat([shallow_eqs_pd_schu,shallow_eqs_pd_for],axis=1)
-
 dood_date = pd.DatetimeIndex([dt.datetime(2014,1,1)])
 
-freqs_pd_schu = hatyan.get_schureman_freqs(const_list='all',dood_date=dood_date)
+freqs_pd_schu = hatyan.get_schureman_freqs(const_list='all_schureman',dood_date=dood_date)
 v0_pd_schu = hatyan.get_schureman_v0(const_list=freqs_pd_schu.index,dood_date=dood_date)
 
 v_0i_rad_harmonic_pd = hatyan.get_foreman_v0freq_fromfromharmonicdood(dood_date=dood_date, mode=None) #list with only harmonic components with more precision than file
