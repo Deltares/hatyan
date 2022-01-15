@@ -570,42 +570,42 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # selected from Brown's Tables of the Motion of the Moon (1909)
     # in longitude
     #TODO: tabellen naar file (of aparte definitie)
-    distP = {'col1':[        0,            0,            1,            1,        1,        1,            1,            0,            0,            0,            0,            0,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            0,            3,            3,            3,            3,            2,            2,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            1,            1,            0,            0,            2,            2,            1,            1,            4,            4,            2,            2],
-             'col2':[        0,            0,            0,            0,        0,        0,            0,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            1,           -1,           -1,           -1,            2,            2,            0,            0,            0,            0,            0,            0,            1,            0,            0,            0,            0,            1,            1,            1,           -1,           -1,           -1,            2,            2,           -2,           -2,            0,            0,            0,            0,            0,            1,            1,            0,            0,            1,           -1,            0,            0,            0,            0],
-             'col3':[        0,            0,            0,            0,        0,        0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,            2,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,           -2,           -2,           -2,            2,           -2,            0,            0,            0,            0,            0,            0,            2,           -2],
-             'col4':[        4,            2,            4,            2,        0,       -2,           -4,            2,            0,           -2,           -4,            1,            2,            0,           -2,           -4,            2,            0,           -2,           -4,            2,            0,           -2,            0,           -2,            2,            0,           -2,            1,           -1,           -3,            1,            2,            0,           -2,           -4,            0,           -2,           -4,            2,            0,           -2,            0,           -2,            0,           -2,            2,            0,            2,            0,           -2,           -2,            2,           -1,           -3,            1,           -1,            0,           -2,            0,            0],
-             'col5':[   13.902,     2369.902,        1.979,      191.953,22639.500,-4586.426,      -38.428,      -24.420,     -666.608,     -164.773,       -1.877,     -125.154,       14.387,      769.016,     -211.656,      -30.773,       -2.921,     -109.420,     -205.499,       -4.391,       14.577,      147.361,       28.475,       -7.486,       -8.096,       -5.741,     -411.608,      -55.173,       -8.466,       18.609,        3.215,       18.023,        1.060,       36.124,      -13.193,       -1.187,       -7.649,       -8.627,       -2.740,        1.181,        9.703,       -2.494,       -1.167,       -7.412,        2.580,        2.533,        -.992,      -45.099,       -6.382,       39.532,        9.366,       -2.152,       -1.440,        1.750,        1.225,        1.267,       -1.089,        1.938,        -.952,       -3.996,       -1.298],}
-    distP = pd.DataFrame(distP)
+    distP = [[        0,            0,            1,            1,        1,        1,            1,            0,            0,            0,            0,            0,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            0,            3,            3,            3,            3,            2,            2,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            1,            1,            0,            0,            2,            2,            1,            1,            4,            4,            2,            2],
+             [        0,            0,            0,            0,        0,        0,            0,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            1,           -1,           -1,           -1,            2,            2,            0,            0,            0,            0,            0,            0,            1,            0,            0,            0,            0,            1,            1,            1,           -1,           -1,           -1,            2,            2,           -2,           -2,            0,            0,            0,            0,            0,            1,            1,            0,            0,            1,           -1,            0,            0,            0,            0],
+             [        0,            0,            0,            0,        0,        0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,            2,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,           -2,           -2,           -2,            2,           -2,            0,            0,            0,            0,            0,            0,            2,           -2],
+             [        4,            2,            4,            2,        0,       -2,           -4,            2,            0,           -2,           -4,            1,            2,            0,           -2,           -4,            2,            0,           -2,           -4,            2,            0,           -2,            0,           -2,            2,            0,           -2,            1,           -1,           -3,            1,            2,            0,           -2,           -4,            0,           -2,           -4,            2,            0,           -2,            0,           -2,            0,           -2,            2,            0,            2,            0,           -2,           -2,            2,           -1,           -3,            1,           -1,            0,           -2,            0,            0],
+             [   13.902,     2369.902,        1.979,      191.953,22639.500,-4586.426,      -38.428,      -24.420,     -666.608,     -164.773,       -1.877,     -125.154,       14.387,      769.016,     -211.656,      -30.773,       -2.921,     -109.420,     -205.499,       -4.391,       14.577,      147.361,       28.475,       -7.486,       -8.096,       -5.741,     -411.608,      -55.173,       -8.466,       18.609,        3.215,       18.023,        1.060,       36.124,      -13.193,       -1.187,       -7.649,       -8.627,       -2.740,        1.181,        9.703,       -2.494,       -1.167,       -7.412,        2.580,        2.533,        -.992,      -45.099,       -6.382,       39.532,        9.366,       -2.152,       -1.440,        1.750,        1.225,        1.267,       -1.089,        1.938,        -.952,       -3.996,       -1.298]]
+    distP = np.array(distP)
     # in latitude
-    distC = {'col1':[     0,     2,     3,     0,     0,     1,     1,    -1,    -1],
-             'col2':[     0,     0,     0,     1,     2,     1,     1,     1,     1],
-             'col3':[     0,     0,     0,     0,     0,     0,     0,     0,     0],
-             'col4':[     1,    -2,     0,     0,    -2,     2,    -2,     0,    -2],
-             'col5':[ -.725, 5.679,-1.300,-1.302, -.740,  .787, 2.056,  .679,-1.540]}
-    distC = pd.DataFrame(distC)
-    distS = {'col1':[       0,       0,       0,       1,       1,       1,       1,       1,       1,       2,       2,       2,       2,       3,       3,       0,       0,       0,       0,       0,       0,       1,       1,       1,       1,      -1,      -1,      -1,       2,       2,       2,       1,       0,       1,      -1],
-             'col2':[       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       1,       1,       1,       1,       1,       2,       1,       1,       1,       1,       1,       1,       1,       1,       1,      -1,       2,       0,       0,       0],
-             'col3':[       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       2,       2,       2],
-             'col4':[       1,       2,       4,       4,       2,       0,      -2,      -3,      -4,       2,       0,      -2,      -4,       0,      -2,       2,       1,       0,      -2,      -4,      -2,       2,       0,      -2,      -4,       2,       0,      -2,       0,      -2,       0,      -2,      -2,      -2,       0],
-             'col5':[ -112.79, 2373.36,   14.06,    6.98,  192.72,22609.07,-4578.13,    5.44,  -38.64,   14.78,  767.96, -152.53,  -34.07,   50.64,  -16.40,  -25.10,   17.93, -126.98, -165.06,   -6.46,  -16.35,  -11.75, -115.18, -182.36,   -9.66,  -23.59, -138.76,  -31.70,  -10.56,   -7.59,   11.67,   -6.12,  -52.14,   -9.52,  -85.13]}
-    distS = pd.DataFrame(distS)
-    distN = {'col1':[       0,       0,       1,       1,      -1,      -1,      -2,      -2,       0,       0],
-             'col2':[       0,       0,       0,       0,       0,       0,       0,       0,       1,      -1],
-             'col3':[       1,       1,       1,       1,       1,       1,       1,       1,       1,       1],
-             'col4':[      -2,      -4,      -2,      -4,       0,      -2,       0,      -2,      -2,      -2],
-             'col5':[-526.069,  -3.352,  44.297,  -6.000,  20.599, -30.598, -24.649,  -2.000, -22.571,  10.985]}
-    distN = pd.DataFrame(distN)
+    distC = [[     0,     2,     3,     0,     0,     1,     1,    -1,    -1],
+             [     0,     0,     0,     1,     2,     1,     1,     1,     1],
+             [     0,     0,     0,     0,     0,     0,     0,     0,     0],
+             [     1,    -2,     0,     0,    -2,     2,    -2,     0,    -2],
+             [ -.725, 5.679,-1.300,-1.302, -.740,  .787, 2.056,  .679,-1.540]]
+    distC = np.array(distC)
+    distS = [[       0,       0,       0,       1,       1,       1,       1,       1,       1,       2,       2,       2,       2,       3,       3,       0,       0,       0,       0,       0,       0,       1,       1,       1,       1,      -1,      -1,      -1,       2,       2,       2,       1,       0,       1,      -1],
+             [       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       1,       1,       1,       1,       1,       2,       1,       1,       1,       1,       1,       1,       1,       1,       1,      -1,       2,       0,       0,       0],
+             [       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       2,       2,       2],
+             [       1,       2,       4,       4,       2,       0,      -2,      -3,      -4,       2,       0,      -2,      -4,       0,      -2,       2,       1,       0,      -2,      -4,      -2,       2,       0,      -2,      -4,       2,       0,      -2,       0,      -2,       0,      -2,      -2,      -2,       0],
+             [ -112.79, 2373.36,   14.06,    6.98,  192.72,22609.07,-4578.13,    5.44,  -38.64,   14.78,  767.96, -152.53,  -34.07,   50.64,  -16.40,  -25.10,   17.93, -126.98, -165.06,   -6.46,  -16.35,  -11.75, -115.18, -182.36,   -9.66,  -23.59, -138.76,  -31.70,  -10.56,   -7.59,   11.67,   -6.12,  -52.14,   -9.52,  -85.13]]
+    distS = np.array(distS)
+    distN = [[       0,       0,       1,       1,      -1,      -1,      -2,      -2,       0,       0],
+             [       0,       0,       0,       0,       0,       0,       0,       0,       1,      -1],
+             [       1,       1,       1,       1,       1,       1,       1,       1,       1,       1],
+             [      -2,      -4,      -2,      -4,       0,      -2,       0,      -2,      -2,      -2],
+             [-526.069,  -3.352,  44.297,  -6.000,  20.599, -30.598, -24.649,  -2.000, -22.571,  10.985]]
+    distN = np.array(distN)
     # in parallax
-    distR = {'col1':[        0,        0,        1,        1,        1,        1,        0,        0,        0,        0,        2,        2,        2,        2,        1,        1,        1,        1,        1,        0,        1,        0,        3,        3,        2,        2,        1],
-             'col2':[        0,        0,        0,        0,        0,        0,        1,        1,        1,        0,        0,        0,        0,        0,        1,        1,       -1,       -1,       -1,        0,        0,        1,        0,        0,        1,       -1,        0],
-             'col3':[        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        2,        0,        0,        0,        0,        0,        0,       -2],
-             'col4':[        4,        2,        2,        0,       -2,       -4,        2,        0,       -2,        1,        2,        0,       -2,       -4,        0,       -2,        2,        0,       -2,       -2,        1,        1,        0,       -2,        0,        0,        0],
-             'col5':[    .2607,  28.2333,   3.0861, 186.5398,  34.3117,    .6008,   -.2993,   -.3988,   1.9135,   -.9781,    .2833,  10.1657,   -.3039,    .3722,   -.9469,   1.4404,    .2297,   1.1502,   -.2252,   -.1052,   -.1093,    .1494,    .6215,   -.1187,   -.1038,    .1268,   -.7136]}
-    distR = pd.DataFrame(distR)
+    distR = [[        0,        0,        1,        1,        1,        1,        0,        0,        0,        0,        2,        2,        2,        2,        1,        1,        1,        1,        1,        0,        1,        0,        3,        3,        2,        2,        1],
+             [        0,        0,        0,        0,        0,        0,        1,        1,        1,        0,        0,        0,        0,        0,        1,        1,       -1,       -1,       -1,        0,        0,        1,        0,        0,        1,       -1,        0],
+             [        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        2,        0,        0,        0,        0,        0,        0,       -2],
+             [        4,        2,        2,        0,       -2,       -4,        2,        0,       -2,        1,        2,        0,       -2,       -4,        0,       -2,        2,        0,       -2,       -2,        1,        1,        0,       -2,        0,        0,        0],
+             [    .2607,  28.2333,   3.0861, 186.5398,  34.3117,    .6008,   -.2993,   -.3988,   1.9135,   -.9781,    .2833,  10.1657,   -.3039,    .3722,   -.9469,   1.4404,    .2297,   1.1502,   -.2252,   -.1052,   -.1093,    .1494,    .6215,   -.1187,   -.1038,    .1268,   -.7136]]
+    distR = np.array(distR)
 
     # process input data
     TIME  = np.array((date-EPOCH).total_seconds()/86400) # days since 1900
-    if (TIME<0).any() or (TIME>70000).any():
+    if (TIME<0).any() or (TIME>70000).any(): #TODO: catch earlier in process
         raise Exception('Requested time out of range (1900-2091)')
     RLONG=-np.deg2rad(lon)
     RLATI= np.deg2rad(lat)
@@ -641,14 +641,18 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     COSOB=np.cos(OBLIQ)
 
     # parameters of sun and moon for disturbance equations
-    ANM=LABMOO-PERMOO # output value 18: mean lunar anomaly (rad)
-    ANS=LABSUN-PERSUN
-    FNO=LABMOO-NODMOO
-    ELO=LABMOO-LABSUN
-    DAM=NMOON-BETMOO
-    DAS=NSUN-BETSUN
-    DFN=NMOON-GAMMOO
-    DEL=NMOON-NSUN
+    ANM = (LABMOO-PERMOO) # output value 18: mean lunar anomaly (rad)
+    ANM_arr = ANM[:,np.newaxis] # output value 18: mean lunar anomaly (rad)
+    ANS = (LABSUN-PERSUN)
+    ANS_arr = ANS[:,np.newaxis]
+    FNO = (LABMOO-NODMOO)
+    FNO_arr = FNO[:,np.newaxis]
+    ELO = (LABMOO-LABSUN)
+    ELO_arr = ELO[:,np.newaxis]
+    DAM = NMOON-BETMOO
+    DAS = NSUN-BETSUN
+    DFN = NMOON-GAMMOO
+    DEL = NMOON-NSUN
 
     # disturbance equations
     # disturbances in longitude sun
@@ -673,47 +677,38 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
              0.425*np.cos(3.*TERMAR   -ANS+5.5449)+
              0.419*np.cos(   TERSAT       +1.5767)+
              0.320*np.cos(   TERSAT   -ANS+4.5242))
+    
     # geometric disturbance by the moon
     GEOM=6.454*np.sin(ELO)-0.424*np.sin(ELO-ANM)
+    
     # aberration (correction for optical path)
     ABER=-(20.496+.344*np.cos(ANS))
+    
     # longitude sun with all disturbances
     LONSUN=LABSUN+np.deg2rad((CENTR+PLANET+GEOM+CNULON+ABER)/3600) # output value 8: solar longitude (rad)
+    
     # relative distance from sun
     DISSUN=1.000140 - 0.016712*np.cos(ANS) - 0.000140*np.cos(2.*ANS) # output value 11: relative distance earth-sun (astronomical units)
+    
     # longitude moon with all disturbances
-    CLONM=0
-    # TODO: for loopjes vervangen door array multiplicatie
-    for i in range(0,len(distP)):
-        CLONM=CLONM+np.sin(distP['col1'][i]*ANM+distP['col2'][i]*ANS+distP['col3'][i]*FNO+distP['col4'][i]*ELO) * distP['col5'][i]
-    #CLONM2=(np.sin(distP['col1'].values[:,np.newaxis]*ANM + 
-    #              distP['col2'].values[:,np.newaxis]*ANS + 
-    #              distP['col3'].values[:,np.newaxis]*FNO + 
-    #              distP['col4'].values[:,np.newaxis]*ELO) * distP['col5'].values[:,np.newaxis]).sum(axis=0)
+    CLONM = (np.sin(distP[0,:]*ANM_arr + distP[1,:]*ANS_arr + distP[2,:]*FNO_arr + distP[3,:]*ELO_arr) * distP[4,:]).sum(axis=1)
     LONMOO=LABMOO+np.deg2rad((CNULON+CLONM)/3600) # output value 15: lunar longitude (rad)
+    
     # latitude moon with all disturbances
-    CLM=0
-    for i in range(0,len(distC)):
-        CLM=CLM+np.cos(distC['col1'][i]*ANM+distC['col2'][i]*ANS+distC['col3'][i]*FNO+distC['col4'][i]*ELO) * distC['col5'][i]
-    SLM=0
-    for i in range(0,len(distS)):
-        SLM=SLM+np.sin(distS['col1'][i]*ANM+distS['col2'][i]*ANS+distS['col3'][i]*FNO+distS['col4'][i]*ELO) * distS['col5'][i]
-    SF=FNO+np.deg2rad(SLM/3600)
-    NLM=0
-    for i in range(0,len(distN)):
-        NLM=NLM+np.sin(distN['col1'][i]*ANM+distN['col2'][i]*ANS+distN['col3'][i]*FNO+distN['col4'][i]*ELO) * distN['col5'][i]
+    CLM = (np.cos(distC[0,:]*ANM_arr + distC[1,:]*ANS_arr + distC[2,:]*FNO_arr + distC[3,:]*ELO_arr) * distC[4,:]).sum(axis=1)
+    SLM = (np.sin(distS[0,:]*ANM_arr + distS[1,:]*ANS_arr + distS[2,:]*FNO_arr + distS[3,:]*ELO_arr) * distS[4,:]).sum(axis=1)
+    SF=FNO + np.deg2rad(SLM/3600)
+    NLM = (np.sin(distN[0,:]*ANM_arr + distN[1,:]*ANS_arr + distN[2,:]*FNO_arr + distN[3,:]*ELO_arr) * distN[4,:]).sum(axis=1)
     LATMOO=((18519.7+CLM)*np.sin(SF) - 6.241*np.sin(3.*SF) + NLM)*np.deg2rad((1.+CINMOO/INMOON)/3600) # output value 16: lunar latitude (rad)
 
-    # lunar parallax
-    PARLAX=PARMEA # output value 3: lunar horizontal parallax (arcseconds)
-    for i in range(0,len(distR)):
-        PARLAX=PARLAX+np.cos(distR['col1'][i]*ANM+distR['col2'][i]*ANS+distR['col3'][i]*FNO+distR['col4'][i]*ELO) * distR['col5'][i]
-    # derrivative of lunar parallax
-    DPAXDT=0. # output value 4: time derivative of parallax (arcseconds/day)
-    for i in range(0,len(distR)):
-        DPAXDT=(DPAXDT-np.sin(distR['col1'][i]*ANM+distR['col2'][i]*ANS+distR['col3'][i]*FNO+distR['col4'][i]*ELO) *
-                (distR['col1'][i]*DAM+distR['col2'][i]*DAS+distR['col3'][i]*DFN+distR['col4'][i]*DEL) * distR['col5'][i])
-
+    # lunar parallax. output value 3: lunar horizontal parallax (arcseconds)
+    PARLAX = PARMEA + (np.cos(distR[0,:]*ANM_arr + distR[1,:]*ANS_arr + distR[2,:]*FNO_arr + distR[3,:]*ELO_arr) * distR[4,:]).sum(axis=1)
+    
+    #derrivative of lunar parallax. output value 4: time derivative of parallax (arcseconds/day)
+    DPAXDT_sub1 = np.sin(distR[0,:]*ANM_arr + distR[1,:]*ANS_arr + distR[2,:]*FNO_arr + distR[3,:]*ELO_arr)
+    DPAXDT_sub2 = distR[0,:]*DAM + distR[1,:]*DAS + distR[2,:]*DFN + distR[3,:]*DEL
+    DPAXDT = -(DPAXDT_sub1 * DPAXDT_sub2 * distR[4,:]).sum(axis=1)
+    
     # ecliptic elongation moon-sun
     ELONG=LONMOO-LONSUN # output value 6: ecliptic elongation moon-sun (rad)
 
@@ -741,32 +736,32 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     LHMOON =LHARI-RAMOON                                         # local lunar hour angle (rad)
 
     # transformation to local coordinates
-    ARGUM=TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
-    ALTSUN=np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
-    ARGUM=TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
-    ALTMOO=np.arcsin(ARGUM)
-    ALTMOO=np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
+    ARGUM = TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
+    ALTSUN = np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
+    ARGUM = TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
+    ALTMOO = np.arcsin(ARGUM)
+    ALTMOO = np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
 
     # summarize in dataframe and convert output to degrees
     #TODO: kan met minder output en zonder dict?
-    astrabOutput = {'EHMOON':((np.rad2deg(EHMOON)+ 720.-90.) % 360.)+90.,
-                    'DECMOO':  np.rad2deg(DECMOO),
-                    'PARLAX':  PARLAX,
-                    'DPAXDT':  DPAXDT,
-                    'ALTMOO':  np.rad2deg(ALTMOO),
-                    'ELONG' :((np.rad2deg(ELONG )+1080.-45.) % 360.)+45.,
-                    'ALTSUN':  np.rad2deg(ALTSUN),
-                    'LONSUN':((np.rad2deg(LONSUN)+ 720.-45.) % 360.)+45.,
-                    'EQELON': (np.rad2deg(EQELON)+ 720.)     % 360.,
-                    'DECSUN':  np.rad2deg(DECSUN),
-                    'DISSUN':  DISSUN,
-                    'EHARI' :  EHARI,
-                    'RASUN' : (np.rad2deg(RASUN )+ 360.)     % 360.,
-                    'EHSUN' : (np.rad2deg(EHSUN )+ 720.)     % 360.,
-                    'LONMOO': (np.rad2deg(LONMOO)+ 720.)     % 360.,
-                    'LATMOO':  np.rad2deg(LATMOO),
-                    'RAMOON': (np.rad2deg(RAMOON)+ 360.)     % 360.,
-                    'ANM'   : (np.rad2deg(ANM)   + 720.)     % 360.}
+    astrabOutput = {'EHMOON': (np.rad2deg(EHMOON) - 90) % 360 + 90,
+                    'DECMOO': np.rad2deg(DECMOO),
+                    'PARLAX': PARLAX,
+                    'DPAXDT': DPAXDT,
+                    'ALTMOO': np.rad2deg(ALTMOO),
+                    'ELONG' : (np.rad2deg(ELONG)-45) % 360 + 45,
+                    'ALTSUN': np.rad2deg(ALTSUN),
+                    'LONSUN': (np.rad2deg(LONSUN)-45) % 360 + 45,
+                    'EQELON': np.rad2deg(EQELON) % 360,
+                    'DECSUN': np.rad2deg(DECSUN),
+                    'DISSUN': DISSUN,
+                    'EHARI' : EHARI,
+                    'RASUN' : np.rad2deg(RASUN) % 360,
+                    'EHSUN' : np.rad2deg(EHSUN) % 360,
+                    'LONMOO': np.rad2deg(LONMOO) % 360,
+                    'LATMOO': np.rad2deg(LATMOO),
+                    'RAMOON': np.rad2deg(RAMOON) % 360,
+                    'ANM'   : np.rad2deg(ANM) % 360}
 
     return astrabOutput
 
