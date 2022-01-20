@@ -84,7 +84,7 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     # calculate exact time of culminations
     CULTIM = astrac(CULEST, dT(CULEST,mode_dT=mode_dT), CULTYP)
     astrabOutput = astrab(CULTIM, dT(CULTIM,mode_dT=mode_dT))
-    PAR = astrabOutput['PARLAX']/3600.
+    PAR = astrabOutput['PARLAX']/3600 # TODO: conversion from degrees to arcseconds?
     DEC = astrabOutput['DECMOO']
     
     # make dataframe and crop for requested timeframe
@@ -542,10 +542,8 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     EPOCH  = dt.datetime(1899, 12, 31, 12, 0, 0) # 1900.0 # -12h shift because julian date 0 is at noon?
     # The average orbital elements of the celestial bodies are calculated for the epoch 1900.0.
     # The values are corrected for the year 1990. Intitial values are from the vernal equinox.
-
-    SEC = 3600 #BOOGSEC PER RADIAAL #TODO: value is 206264.8 in fortran code, but this worsens results, why?
-    #RAD = 57.295780 #GRADEN PER RADIAAL
     
+    #TODO: some constants correspond with schureman.get_schureman_constants(), merge constants and put in dictionary?
     # constants - sun
     LABOS  = 4.8816237     # longitude sun (rad)
     NSUN   = 0.01720279153 # increment longitude sun (rad/day)
@@ -559,8 +557,8 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     BETMOO = 0.0019443591  # increment longitude perigeum moon (rad/day)
     NODOM  = 4.523572      # longitude lunar orbital node lunar (rad)
     GAMMOO =-9.2421851E-4  # increment longitude lunar orbital node lunar (rad/day)
-    INMOON = 0.089804108   # inclination lunar orbit (rad)
-    PARMEA = 3422.608      # mean horizontal lunar parallax (arcseconds)
+    INMOON = 0.089804108   # inclination lunar orbit (rad) >> DIKL
+    PARMEA = 3422.608      # mean horizontal lunar parallax (arcseconds) >> DAGC=np.deg2rad(PARMEA/3600)
 
     # constants - planets
     VENTZE = 1.10079       # elongation Venus-Earth (rad)
@@ -573,7 +571,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     TSATIN = 0.016618143   # increment elongation Earth-Saturnus (rad/day)
 
     # constants - ecliptic
-    OBZERO = 0.40931977    # inclination of ecliptic (rad)
+    OBZERO = 0.40931977    # inclination of ecliptic (rad) >> DOMEGA
     OBINC  =-6.21937E-9    # increment inclination of ecliptic (rad/day)
 
     # constants - vernal equinox
@@ -621,17 +619,17 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
 
     # mean orbital elements
     # of sun, including additive correction
-    LABSUN = (LABOS - np.deg2rad(6.22/SEC) + NSUN*TIME) % (2*np.pi)
+    LABSUN = (LABOS - np.deg2rad(6.22/3600) + NSUN*TIME) % (2*np.pi)
     PERSUN = PEROS+BETSUN*TIME
     # of moon
     LABMOO = (LABOM+NMOON *TIME) % (2*np.pi)
     PERMOO = (PEROM+BETMOO*TIME) % (2*np.pi)
     NODMOO = NODOM+GAMMOO*TIME
     # additive corrections for moon
-    LABMOO = LABMOO+np.deg2rad(( 0.79 +14.27 *np.sin(6.0486+6.34913E-5*TIME)+7.261*np.sin(NODMOO))/SEC)
-    PERMOO = PERMOO+np.deg2rad((-1.966- 2.076*np.sin(NODMOO))/SEC)
-    NODMOO = NODMOO+np.deg2rad(( 0.59 +95.96 *np.sin(NODMOO)+15.58*np.sin(NODMOO+4.764400))/SEC)
-    CINMOO = np.deg2rad((-8.636*np.cos(NODMOO)-1.396*np.cos(NODMOO+4.764400))/SEC)
+    LABMOO = LABMOO+np.deg2rad(( 0.79 +14.27 *np.sin(6.0486+6.34913E-5*TIME)+7.261*np.sin(NODMOO))/3600)
+    PERMOO = PERMOO+np.deg2rad((-1.966- 2.076*np.sin(NODMOO))/3600)
+    NODMOO = NODMOO+np.deg2rad(( 0.59 +95.96 *np.sin(NODMOO)+15.58*np.sin(NODMOO+4.764400))/3600)
+    CINMOO = np.deg2rad((-8.636*np.cos(NODMOO)-1.396*np.cos(NODMOO+4.764400))/3600)
 
     # mean heliocentric elongation Venus-Earth, Earth-Jupiter, Earth-Mars and Earth-Saturnus
     VENTER = VENTZE+TIME*VENTIN
@@ -645,7 +643,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     CNUTOB =   9.21 *np.cos(NODMOO)+0.55 *np.cos(2.*LABSUN)
 
     # inclination of ecliptic, sine and cosine of inclination
-    OBLIQ = OBZERO+TIME*OBINC+np.deg2rad(CNUTOB/SEC)
+    OBLIQ = OBZERO+TIME*OBINC+np.deg2rad(CNUTOB/3600)
     sin_OBLIQ = np.sin(OBLIQ)
     cos_OBLIQ = np.cos(OBLIQ)
 
@@ -694,21 +692,21 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     ABER = -(20.496+.344*np.cos(ANS))
     
     # longitude sun with all disturbances
-    LONSUN = LABSUN + np.deg2rad((CENTR+PLANET+GEOM+CNULON+ABER)/SEC) # output value 8: solar longitude (rad)
+    LONSUN = LABSUN + np.deg2rad((CENTR+PLANET+GEOM+CNULON+ABER)/3600) # output value 8: solar longitude (rad)
     
     # relative distance from sun
     DISSUN = 1.000140 - 0.016712*np.cos(ANS) - 0.000140*np.cos(2.*ANS) # output value 11: relative distance earth-sun (astronomical units)
     
     # longitude moon with all disturbances
     CLONM = (np.sin(distP[0,:]*ANM_arr + distP[1,:]*ANS_arr + distP[2,:]*FNO_arr + distP[3,:]*ELO_arr) * distP[4,:]).sum(axis=1)
-    LONMOO = LABMOO+np.deg2rad((CNULON+CLONM)/SEC) # output value 15: lunar longitude (rad)
+    LONMOO = LABMOO+np.deg2rad((CNULON+CLONM)/3600) # output value 15: lunar longitude (rad)
     
     # latitude moon with all disturbances
     CLM = (np.cos(distC[0,:]*ANM_arr + distC[1,:]*ANS_arr + distC[2,:]*FNO_arr + distC[3,:]*ELO_arr) * distC[4,:]).sum(axis=1)
     SLM = (np.sin(distS[0,:]*ANM_arr + distS[1,:]*ANS_arr + distS[2,:]*FNO_arr + distS[3,:]*ELO_arr) * distS[4,:]).sum(axis=1)
-    SF=FNO + np.deg2rad(SLM/SEC)
+    SF=FNO + np.deg2rad(SLM/3600)
     NLM = (np.sin(distN[0,:]*ANM_arr + distN[1,:]*ANS_arr + distN[2,:]*FNO_arr + distN[3,:]*ELO_arr) * distN[4,:]).sum(axis=1)
-    LATMOO = ((18519.7+CLM)*np.sin(SF) - 6.241*np.sin(3.*SF) + NLM)*np.deg2rad((1.+CINMOO/INMOON)/SEC) # output value 16: lunar latitude (rad)
+    LATMOO = ((18519.7+CLM)*np.sin(SF) - 6.241*np.sin(3.*SF) + NLM)*np.deg2rad((1.+CINMOO/INMOON)/3600) # output value 16: lunar latitude (rad)
 
     # lunar parallax. output value 3: lunar horizontal parallax (arcseconds)
     PARLAX = PARMEA + (np.cos(distR[0,:]*ANM_arr + distR[1,:]*ANS_arr + distR[2,:]*FNO_arr + distR[3,:]*ELO_arr) * distR[4,:]).sum(axis=1)
@@ -724,7 +722,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # transformation to equatorial coordinates
     sin_LONSUN = np.sin(LONSUN)
     cos_LONSUN = np.cos(LONSUN)
-    RASUN = np.arctan2(sin_LONSUN*cos_OBLIQ, cos_LONSUN)                          # output value 13: solar right ascension (rad)
+    RASUN = np.arctan2(sin_LONSUN*cos_OBLIQ, cos_LONSUN)           # output value 13: solar right ascension (rad)
     TEMP3 = sin_LONSUN*sin_OBLIQ
     DECSUN = np.arcsin(TEMP3)                                      # output value 10: solar declination (rad)
     sin_LONMOO = np.sin(LONMOO)
@@ -737,19 +735,19 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     EQELON = RAMOON-RASUN                                          # output value 9: equatorial elongaton moon-sun (rad)
 
     # uurhoeken
-    EHARI = (ARZERO+NARIES*TIME+cos_OBLIQ*np.deg2rad(CNULON/SEC)) % (2*np.pi)    # output value 12: ephemeris hour angle of vernal equinox (rad)
-    LHARI = EHARI-dT_TT*NARIES-RLONG                             # local hour angle of vernal equinox (rad)
-    EHSUN = EHARI-RASUN                                          # output value 14: solar ephemeris hour angle (rad)
+    EHARI = (ARZERO+NARIES*TIME+cos_OBLIQ*np.deg2rad(CNULON/3600)) % (2*np.pi) # output value 12: ephemeris hour angle of vernal equinox (rad)
+    LHARI = EHARI-dT_TT*NARIES-RLONG                              # local hour angle of vernal equinox (rad)
+    EHSUN = EHARI-RASUN                                           # output value 14: solar ephemeris hour angle (rad)
     EHMOON = EHARI-RAMOON                                         # output value  1: lunar ephemeris hour angle (rad)
-    LHSUN = LHARI-RASUN                                          # local solar hour angle (rad)
+    LHSUN = LHARI-RASUN                                           # local solar hour angle (rad)
     LHMOON = LHARI-RAMOON                                         # local lunar hour angle (rad)
 
     # transformation to local coordinates
     ARGUM = TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
-    ALTSUN = np.arcsin(ARGUM)#np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
+    ALTSUN = np.arcsin(ARGUM)#TODO: np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
     ARGUM = TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
     ALTMOO = np.arcsin(ARGUM)
-    ALTMOO = ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/SEC)# np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
+    ALTMOO = ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600)# TODO: np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
 
     # summarize in dataframe and convert output to degrees
     astrabOutput = {'EHMOON': (np.rad2deg(EHMOON)-90) % 360 + 90,
@@ -831,54 +829,45 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
 
     # constants - iteration targets
-    ANGLE =  np.array([180,   360,   90,   180,  270,  360, -0.5667,-0.5667,-0.8333,-0.8333, 360,  90,   180,  270,  0,     0])
-    CRITER = np.array([1e-3,  1e-3,  1e-4, 1e-4, 1e-4, 1e-4, 2e-4,   2e-4,   2e-4,   2e-4,   1e-5, 1e-5, 1e-5, 1e-5, 2e-3,  2e-3])
-    RAT =    np.array([346.8, 346.8, 12.2, 12.2, 12.2, 12.2, 346.8, -346.8,  360,   -360,    1,    1,    1,    1,   -10.08, 10.08])
-    #itertargets_pd = pd.DataFrame(np.stack([ANGLE,CRITER,RAT]).T, columns=['ANGLE','CRITER','RAT'],index=range(1,len(ANGLE)+1))
-    ANG = ANGLE[mode-1] # required value after iteration
-    CRIT = CRITER[mode-1] # allowed difference between ANG and iteration result
-    RATE = RAT[mode-1] # estimated change per day for iteration
-    if (mode>=7).any() and (mode<=10).any(): # correct RATE in case of rise and set for latitude
+    itertargets_pd = pd.DataFrame({'IPAR':  ['EHMOON']*2 +['ELONG']*4 +          ['ALTMOO']*2 +  ['ALTSUN']*2 +   ['LONSUN']*4 +          ['DPAXDT']*2 ,
+                                   'ANGLE':[180,   360,   90,   180,  270,  360, -0.5667,-0.5667,-0.8333,-0.8333, 360,  90,   180,  270,  0,     0],
+                                   #'ANGLE': [180,   360,   90,   180,  270,  360, -34/60, -34/60, -50/60, -50/60,  360,  90,   180,  270,  0,     0], #TODO: probably usefull to add more accuracy, but astrac testbank has to be redefined
+                                   'CRITER':[1e-3,  1e-3,  1e-4, 1e-4, 1e-4, 1e-4, 2e-4,   2e-4,   2e-4,   2e-4,   1e-5, 1e-5, 1e-5, 1e-5, 2e-3,  2e-3],
+                                   'RAT':   [346.8, 346.8, 12.2, 12.2, 12.2, 12.2, 346.8, -346.8,  360,   -360,    1,    1,    1,    1,   -10.08, 10.08]})
+    itertargets_pd.index = range(1,len(itertargets_pd)+1)
+    
+    ANG = itertargets_pd.loc[mode,'ANGLE'] # required value after iteration
+    CRIT = itertargets_pd.loc[mode,'CRITER'] # allowed difference between ANG and iteration result
+    RATE = itertargets_pd.loc[mode,'RAT'] # estimated change per day for iteration
+    IPAR_all = itertargets_pd.loc[mode,'IPAR'] # define astrab output parameter corresponding to requested mode
+    if len(np.unique(IPAR_all))!=1:
+        raise Exception('incorrectly mixed modes requested, results in more than one IPAR')
+    IPAR = np.unique(IPAR_all)[0]
+    if IPAR in ['ALTMOO','ALTSUN']: # correct RATE in case of rise and set for latitude
         if np.abs(lat)>59:
             raise Exception('Latitude to close to poles (>59deg), cannot take polar days and nights into account')
         RATE=RATE*np.cos(np.deg2rad(lat))
 
-    # define astrab output parameter corresponding to requested mode
-    #TODO: mode omschrijven naar leesbare naam en code verwerken ipv getal?
-    if ((mode== 1) | (mode== 2)).all():
-        IPAR = 'EHMOON'
-    elif ((mode>= 3) & (mode<= 6)).all():
-        IPAR = 'ELONG'
-    elif ((mode>= 7) & (mode<= 8)).all():
-        IPAR = 'ALTMOO'
-    elif ((mode>= 9) & (mode<=10)).all():
-        IPAR = 'ALTSUN'
-    elif ((mode>=11) & (mode<=14)).all():
-        IPAR = 'LONSUN'
-    elif ((mode>=15) & (mode<=16)).all():
-        IPAR = 'DPAXDT'
-    else:
-        raise Exception('Requested mode (%s) not recognized' % mode)
-
     # calculate value at start of iteration
+    ITER=1
     TNEW = timeEst
     astrabOutput = astrab(TNEW,dT_TT,lon=lon,lat=lat)
     PNEW = astrabOutput[IPAR]
-
+    #bool_iterate = np.ones(shape=PNEW.shape,dtype=bool)
     # iterate until criterium is reached or max 20 times
-    ITER=1
     while (abs(ANG-PNEW) > CRIT).any():# and ITER <=20:
-        TOLD = TNEW
-        POLD = PNEW
-        if (mode==7).any() or (mode==8).any(): # correction for semidiameter moon
-            ANG = ANGLE[mode-1]-(0.08+0.2725*astrabOutput['PARLAX'])/3600.
-        TNEW = TOLD+pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE),unit='D') #nan_to_num to make sure no NaT output in next iteration
-        astrabOutput = astrab(TNEW,dT_TT,lon=lon,lat=lat)
+        TOLD = TNEW.copy()
+        POLD = PNEW.copy()
+        if IPAR=='ALTMOO': # correction for semidiameter moon
+            ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600.
+        TNEW = TOLD + pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #TODO: nan_to_num to make sure no NaT output in next iteration
         ITER = ITER+1
+        astrabOutput = astrab(TNEW,dT_TT,lon=lon,lat=lat)
         PNEW = astrabOutput[IPAR]
+        
         RATE = np.array((PNEW-POLD)/((TNEW-TOLD).total_seconds()/86400))
         if ITER>20:
-            raise Exception('Stopped after %s iterations, datetime=%s' %(ITER-1,TNEW))
+            raise Exception('Stopped after %s iterations, datetime=%s' %(ITER,TNEW))
     TIMOUT = TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
 
     return TIMOUT

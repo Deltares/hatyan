@@ -36,7 +36,7 @@ selected_stations = ['WICK','ABDN','LEITH','WHITBY','IMMHM','CROMR','FELSWE','CA
 
 file_ldb = os.path.join(dir_testdata,'other','wvs_coastline3.ldb') #WGS84 ldb is converted to RD, but does not change anything wrt to matlab converted ldb, which is good
 ldb_pd_wgs = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['x','y'],na_values=[999.999])
-x_out, y_out = hatyan.convertcoordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
+x_out, y_out = hatyan.convert_coordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
 ldb_pd = pd.DataFrame({'RDx':x_out/1000, 'RDy':y_out/1000})
 
 if 0:
@@ -152,7 +152,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         pdrow = pd.DataFrame({'time': [ts_firstlocalHW.name], 'HWtdiff_hr': [(ts_firstlocalHW.name-firstHWcadz).total_seconds()/3600], 'M2phase':COMP_merged.loc['M2','phi_deg'], 'M2phasediff':M2phasediff}, index=[current_station])
         if create_spatialplot:
             diablocks_pd_extra = hatyan.get_diablocks(filename=file_data_predvali)
-            RDx, RDy = hatyan.convertcoordinates(coordx_in=diablocks_pd_extra.loc[0,'x'], coordy_in=diablocks_pd_extra.loc[0,'y'], epsg_in=diablocks_pd_extra.loc[0,'epsg'], epsg_out=28992)
+            RDx, RDy = hatyan.convert_coordinates(coordx_in=diablocks_pd_extra.loc[0,'x'], coordy_in=diablocks_pd_extra.loc[0,'y'], epsg_in=diablocks_pd_extra.loc[0,'epsg'], epsg_out=28992)
             pdrow['RDx'] = RDx/1000 #from m to km
             pdrow['RDy'] = RDy/1000 #from m to km
         stats = stats.append(pdrow)

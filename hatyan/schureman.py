@@ -86,11 +86,7 @@ def get_schureman_constants(dood_date):
 
     """
     
-    #import datetime as dt
     import numpy as np
-    
-    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
-    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
     
     #bercon.f: HET BEREKENEN VAN DE 'CONSTANTEN' .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
     #327932: ratio of mass of sun to combined mass of earth and moon
@@ -98,7 +94,6 @@ def get_schureman_constants(dood_date):
     DAGC = 0.01657                            #A/C >> ZIE BLZ. 162 VAN SCHUREMAN, mean lunar parallax in respect to mean radius [rad]
     DAGC1 = 0.00004261                        #A/C1 >> ZIE BLZ. 162 VAN SCHUREMAN, mean solar parallax in respect to mean radius [rad]
     DE = 0.054900489                          #E >> ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of moons orbit
-    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 >> ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
     DMGE = 1./81.53                           #M/E >> ZIE BLZ. 162 VAN SCHUREMAN, mass of moon /mass of earth
     DSGE = 82.53/81.53*327932                 #S/E >> ZIE BLZ. 162 VAN SCHUREMAN, mass of sun / mass of earth
     
@@ -108,11 +103,16 @@ def get_schureman_constants(dood_date):
     DOMEGA = np.deg2rad(23+27./60.+8.26/3600) #OMEGA >> ZIE BLZ. 162 VAN SCHUREMAN, Obliquity of the Ecliptic, epoch 1 Jan 1900, 23.45229 graden [rad]
     DIKL = np.deg2rad(5+8./60.+43.3546/3600)  #i >> ZIE BLZ. 162 VAN SCHUREMAN, Inclination of moons orbit to plane of ecliptic, epoch 1 Jan 1900 (?), 5.1453762 graden [rad]
     
+    DC5023 = 0.5+0.75*DE*DE
+
+    #time dependent
+    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
+    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 >> ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
     DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
 
     DC0365 = DCOFSI*np.sin(DOMEGA)**2
     DC1681 = DCOFSI*np.sin(2*DOMEGA)
-    DC5023 = 0.5+0.75*DE*DE
     
     return DOMEGA, DIKL, DC1681, DC5023, DC0365
 
