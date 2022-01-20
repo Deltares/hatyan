@@ -288,6 +288,8 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     dood_date_start = ts_pd.index[:1] #first date (for v0, also freq?)
     
     ts_pd_nonan = ts_pd[~ts_pd['values'].isna()]
+    if len(ts_pd_nonan)==0:
+        raise Exception('provided timeseries only contains nan values, analysis not possible')
     times_pred_all_pdDTI = pd.DatetimeIndex(ts_pd_nonan.index)
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
     print('percentage_nan in values_meas_sel: %.2f%%'%(percentage_nan))
@@ -513,11 +515,11 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
-
+    
     print('-'*50)
     print('PREDICTION initializing')
     print(hatyan_settings)
-            
+    
     if times_pred_all is None:
         if times_ext is None or timestep_min is None:
             raise Exception('if argument times_pred_all is not provided, the arguments times_ext and timestep_min are obligatory')
@@ -545,6 +547,8 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     dood_date_start = times_pred_all_pdDTI[:1] #first date (for v0, also freq?)
     
     #sort component list and component dataframe
+    if np.isnan(comp.values).any():
+        raise Exception('provided component set contains nan values, prediction not possible')
     const_list = sort_const_list(comp.index.tolist())
     COMP = comp.loc[const_list]
     A = np.array(COMP['A'])

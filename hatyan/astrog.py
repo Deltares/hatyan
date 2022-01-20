@@ -62,7 +62,7 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
     
     # constants
-    EHMINC       = 346.8                                            # increment of ephemeris hour angle of moon (deg/day)
+    EHMINC       = 346.8 # increment of ephemeris hour angle of moon (deg/day)
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # interval between lunar culminations (days)
     
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
@@ -136,7 +136,7 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
         
     # constants
-    ELOINC = 12.2           # increment of ecliptic elongation of moon-sun (deg/day)
+    ELOINC = 12.2           # increment of ELONG ecliptic elongation of moon-sun (deg/day)
     FASINT = 29.530587981/4 # quarter of a lunar synodic month (days)
 
     # first and last datetime in calculation (add enough margin (done later), and an extra day for timezone differences)
@@ -288,7 +288,7 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     # constants
     from hatyan.schureman import get_schureman_freqs
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # CULINT
-    EHMINC = 346.8 # increment of ephemeris hour angle of moon (deg/day)
+    EHMINC = 346.8 # increment of EHMOON ephemeris hour angle of moon (deg/day) TODO: 360/(M2_period_hr*2/24) = 347.8092506037627
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
     date_first = tFirst-dt.timedelta(hours=M2_period_hr+1*24)
@@ -296,20 +296,25 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
 
     # --- moonrise and -set ---
     # estimate times
-    astrabOutput=astrab(date_first,dT(date_first,mode_dT=mode_dT),lon=lon,lat=lat)
-    ALTMOO=astrabOutput['ALTMOO']
-    EHMOON=astrabOutput['EHMOON']
-    # first phenomenon is moonrise
-    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600.):
-        OPEST=pd.date_range(start=date_first+dt.timedelta(days=(270.-EHMOON[0])/EHMINC),end=date_last,freq='%iN'%(M2_period_hr*2*3600*1e9))
-        ONEST=OPEST+dt.timedelta(hours=M2_period_hr)
-    # first phenomenon is moonset
-    else:
-        ONEST=pd.date_range(start=date_first+dt.timedelta(days=(90.-EHMOON[0])/EHMINC),end=date_last,freq='%iN'%(M2_period_hr*2*3600*1e9))
-        OPEST=ONEST+dt.timedelta(hours=M2_period_hr)
+    astrabOutput = astrab(date_first,dT(date_first,mode_dT=mode_dT),lon=lon,lat=lat)
+    ALTMOO = astrabOutput['ALTMOO'] #TODO: this is in degrees, probably conversion to radians is necessary? (gives no equal division between moonrise/set as first instance)
+    EHMOON = astrabOutput['EHMOON']
+
+    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise
+        #EHMOON_corr = (EHMOON+89)%360-89 #if EHMOON>270, subtract 360
+        #print('moonrise first')
+        OPEST = pd.date_range(start=date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
+        ONEST = OPEST + dt.timedelta(hours=M2_period_hr)
+    else: # first phenomenon is moonset
+        #print('moonset first')
+        ONEST = pd.date_range(start=date_first+dt.timedelta(days=(90-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
+        OPEST = ONEST + dt.timedelta(hours=M2_period_hr)
 
     # calculate exact times
     TIMDIF = pd.TimedeltaIndex(-dT(OPEST,mode_dT=mode_dT)+1./2880.,unit='D')
+    #print(ALTMOO, EHMOON, date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC))
+    #print('ONEST',ONEST[0])
+    #print('OPEST',OPEST[0])
     OPTIM  = astrac(OPEST,dT(OPEST,mode_dT=mode_dT),np.array(7),lon=lon,lat=lat)+TIMDIF
     ONTIM  = astrac(ONEST,dT(ONEST,mode_dT=mode_dT),np.array(8),lon=lon,lat=lat)+TIMDIF
 
@@ -363,7 +368,7 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
 
     # constants
-    ANMINC   = 13.06       # increment of anomaly of moon (deg/day)
+    ANMINC   = 13.06       # increment of ANM anomaly of moon (deg/day)
     ANOINT   = 27.554551/2 # half of a lunar anomalistic month (days)
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
@@ -526,8 +531,11 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
         raise Exception('Input variable longitude larger than 180deg')
     if np.abs(lat)>90:
         raise Exception('Input variable latitude larger than 90deg')
-
+    
     if (date<dt.datetime(1900,1,1)).any() or (date>dt.datetime(2091,1,1)).any():
+        import matplotlib.pyplot as plt
+        fig,ax = plt.subplots()
+        ax.plot(date)
         raise Exception('Requested time out of range (1900-2091)')
 
     # constants - general
@@ -741,7 +749,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     ALTMOO = np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
 
     # summarize in dataframe and convert output to degrees
-    astrabOutput = {'EHMOON': (np.rad2deg(EHMOON) - 90) % 360 + 90,
+    astrabOutput = {'EHMOON': (np.rad2deg(EHMOON)-90) % 360 + 90,
                     'DECMOO': np.rad2deg(DECMOO),
                     'PARLAX': PARLAX,
                     'DPAXDT': DPAXDT,
