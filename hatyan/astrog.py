@@ -300,7 +300,7 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     ALTMOO = astrabOutput['ALTMOO'] #TODO: this is in degrees, probably conversion to radians is necessary? (gives no equal division between moonrise/set as first instance)
     EHMOON = astrabOutput['EHMOON']
 
-    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise
+    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise #TODO: the output should be in arcseconds, so this is conversion to arcminutes?
         #EHMOON_corr = (EHMOON+89)%360-89 #if EHMOON>270, subtract 360
         #print('moonrise first')
         OPEST = pd.date_range(start=date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
@@ -543,6 +543,9 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # The average orbital elements of the celestial bodies are calculated for the epoch 1900.0.
     # The values are corrected for the year 1990. Intitial values are from the vernal equinox.
 
+    SEC = 3600 #BOOGSEC PER RADIAAL #TODO: value is 206264.8 in fortran code, but this worsens results, why?
+    #RAD = 57.295780 #GRADEN PER RADIAAL
+    
     # constants - sun
     LABOS  = 4.8816237     # longitude sun (rad)
     NSUN   = 0.01720279153 # increment longitude sun (rad/day)
@@ -577,16 +580,16 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     ARZERO = 4.881523      # ephemeris hour angle of vernal equinox (rad)
     NARIES = 6.30038809878 # increment ephemeris hour angle of vernal equinox (rad/day)
 
+    #TODO: tabellen naar file (of aparte definitie)
     # constants - lunar orbital disturbances
     # selected from Brown's Tables of the Motion of the Moon (1909)
-    # in longitude
-    #TODO: tabellen naar file (of aparte definitie)
+    # storingen in longitude
     distP = np.array([[      0,        0,     1,       1,         1,         1,       1,       0,        0,        0,      0,        0,      2,       2,        2,       2,      1,        1,        1,      1,      1,       1,      1,      0,      0,      0,        0,       0,      1,      1,     1,      0,     3,      3,       3,      3,      2,      2,      2,     2,     2,      2,      1,      1,     1,     1,     1,       1,      1,      1,     1,      0,      0,     2,     2,     1,      1,     4,     4,      2,      2],
                       [      0,        0,     0,       0,         0,         0,       0,       1,        1,        1,      1,        0,      0,       0,        0,       0,      1,        1,        1,      1,     -1,      -1,     -1,      2,      2,      0,        0,       0,      0,      0,     0,      1,     0,      0,       0,      0,      1,      1,      1,    -1,    -1,     -1,      2,      2,    -2,    -2,     0,       0,      0,      0,     0,      1,      1,     0,     0,     1,     -1,     0,     0,      0,      0],
                       [      0,        0,     0,       0,         0,         0,       0,       0,        0,        0,      0,        0,      0,       0,        0,       0,      0,        0,        0,      0,      0,       0,      0,      0,      0,      2,        2,       2,      0,      0,     0,      0,     0,      0,       0,      0,      0,      0,      0,     0,     0,      0,      0,      0,     0,     0,     2,       2,     -2,     -2,    -2,      2,     -2,     0,     0,     0,      0,     0,     0,      2,     -2],
                       [      4,        2,     4,       2,         0,        -2,      -4,       2,        0,       -2,     -4,        1,      2,       0,       -2,      -4,      2,        0,       -2,     -4,      2,       0,     -2,      0,     -2,      2,        0,      -2,      1,     -1,    -3,      1,     2,      0,      -2,     -4,      0,     -2,     -4,     2,     0,     -2,      0,     -2,     0,    -2,     2,       0,      2,      0,    -2,     -2,      2,    -1,    -3,     1,     -1,     0,    -2,      0,      0],
                       [ 13.902, 2369.902, 1.979, 191.953, 22639.500, -4586.426, -38.428, -24.420, -666.608, -164.773, -1.877, -125.154, 14.387, 769.016, -211.656, -30.773, -2.921, -109.420, -205.499, -4.391, 14.577, 147.361, 28.475, -7.486, -8.096, -5.741, -411.608, -55.173, -8.466, 18.609, 3.215, 18.023, 1.060, 36.124, -13.193, -1.187, -7.649, -8.627, -2.740, 1.181, 9.703, -2.494, -1.167, -7.412, 2.580, 2.533, -0.992, -45.099, -6.382, 39.532, 9.366, -2.152, -1.440, 1.750, 1.225, 1.267, -1.089, 1.938, -0.952, -3.996, -1.298]])
-    # in latitude
+    # storingen in latitude
     distC = np.array([[     0,     2,     3,     0,     0,     1,     1,    -1,    -1],
                       [     0,     0,     0,     1,     2,     1,     1,     1,     1],
                       [     0,     0,     0,     0,     0,     0,     0,     0,     0],
@@ -604,7 +607,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
                       [       1,      1,      1,      1,      1,       1,       1,      1,       1,      1],
                       [      -2,     -4,     -2,     -4,      0,      -2,       0,     -2,      -2,     -2],
                       [-526.069, -3.352, 44.297, -6.000, 20.599, -30.598, -24.649, -2.000, -22.571, 10.985]])
-    # in parallax
+    # storingen in parallax
     distR = np.array([[      0,       0,      1,        1,       1,      1,       0,       0,      0,       0,      2,       2,       2,      2,       1,      1,      1,      1,       1,       0,       1,      0,      3,       3,       2,      2,       1],
                       [      0,       0,      0,        0,       0,      0,       1,       1,      1,       0,      0,       0,       0,      0,       1,      1,     -1,     -1,      -1,       0,       0,      1,      0,       0,       1,     -1,       0],
                       [      0,       0,      0,        0,       0,      0,       0,       0,      0,       0,      0,       0,       0,      0,       0,      0,      0,      0,       0,       2,       0,      0,      0,       0,       0,      0,      -2],
@@ -618,17 +621,17 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
 
     # mean orbital elements
     # of sun, including additive correction
-    LABSUN = (LABOS - np.deg2rad(6.22/3600) + NSUN*TIME) % (2*np.pi)
+    LABSUN = (LABOS - np.deg2rad(6.22/SEC) + NSUN*TIME) % (2*np.pi)
     PERSUN = PEROS+BETSUN*TIME
     # of moon
     LABMOO = (LABOM+NMOON *TIME) % (2*np.pi)
     PERMOO = (PEROM+BETMOO*TIME) % (2*np.pi)
     NODMOO = NODOM+GAMMOO*TIME
     # additive corrections for moon
-    LABMOO = LABMOO+np.deg2rad(( 0.79 +14.27 *np.sin(6.0486+6.34913E-5*TIME)+7.261*np.sin(NODMOO))/3600)
-    PERMOO = PERMOO+np.deg2rad((-1.966- 2.076*np.sin(NODMOO))/3600)
-    NODMOO = NODMOO+np.deg2rad(( 0.59 +95.96 *np.sin(NODMOO)+15.58*np.sin(NODMOO+4.764400))/3600)
-    CINMOO = np.deg2rad((-8.636*np.cos(NODMOO)-1.396*np.cos(NODMOO+4.764400))/3600)
+    LABMOO = LABMOO+np.deg2rad(( 0.79 +14.27 *np.sin(6.0486+6.34913E-5*TIME)+7.261*np.sin(NODMOO))/SEC)
+    PERMOO = PERMOO+np.deg2rad((-1.966- 2.076*np.sin(NODMOO))/SEC)
+    NODMOO = NODMOO+np.deg2rad(( 0.59 +95.96 *np.sin(NODMOO)+15.58*np.sin(NODMOO+4.764400))/SEC)
+    CINMOO = np.deg2rad((-8.636*np.cos(NODMOO)-1.396*np.cos(NODMOO+4.764400))/SEC)
 
     # mean heliocentric elongation Venus-Earth, Earth-Jupiter, Earth-Mars and Earth-Saturnus
     VENTER = VENTZE+TIME*VENTIN
@@ -642,9 +645,9 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     CNUTOB =   9.21 *np.cos(NODMOO)+0.55 *np.cos(2.*LABSUN)
 
     # inclination of ecliptic, sine and cosine of inclination
-    OBLIQ = OBZERO+TIME*OBINC+np.deg2rad(CNUTOB/3600)
-    SINOB = np.sin(OBLIQ)
-    COSOB = np.cos(OBLIQ)
+    OBLIQ = OBZERO+TIME*OBINC+np.deg2rad(CNUTOB/SEC)
+    sin_OBLIQ = np.sin(OBLIQ)
+    cos_OBLIQ = np.cos(OBLIQ)
 
     # parameters of sun and moon for disturbance equations
     ANM = (LABMOO-PERMOO) # output value 18: mean lunar anomaly (rad)
@@ -691,21 +694,21 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     ABER = -(20.496+.344*np.cos(ANS))
     
     # longitude sun with all disturbances
-    LONSUN = LABSUN + np.deg2rad((CENTR+PLANET+GEOM+CNULON+ABER)/3600) # output value 8: solar longitude (rad)
+    LONSUN = LABSUN + np.deg2rad((CENTR+PLANET+GEOM+CNULON+ABER)/SEC) # output value 8: solar longitude (rad)
     
     # relative distance from sun
     DISSUN = 1.000140 - 0.016712*np.cos(ANS) - 0.000140*np.cos(2.*ANS) # output value 11: relative distance earth-sun (astronomical units)
     
     # longitude moon with all disturbances
     CLONM = (np.sin(distP[0,:]*ANM_arr + distP[1,:]*ANS_arr + distP[2,:]*FNO_arr + distP[3,:]*ELO_arr) * distP[4,:]).sum(axis=1)
-    LONMOO = LABMOO+np.deg2rad((CNULON+CLONM)/3600) # output value 15: lunar longitude (rad)
+    LONMOO = LABMOO+np.deg2rad((CNULON+CLONM)/SEC) # output value 15: lunar longitude (rad)
     
     # latitude moon with all disturbances
     CLM = (np.cos(distC[0,:]*ANM_arr + distC[1,:]*ANS_arr + distC[2,:]*FNO_arr + distC[3,:]*ELO_arr) * distC[4,:]).sum(axis=1)
     SLM = (np.sin(distS[0,:]*ANM_arr + distS[1,:]*ANS_arr + distS[2,:]*FNO_arr + distS[3,:]*ELO_arr) * distS[4,:]).sum(axis=1)
-    SF=FNO + np.deg2rad(SLM/3600)
+    SF=FNO + np.deg2rad(SLM/SEC)
     NLM = (np.sin(distN[0,:]*ANM_arr + distN[1,:]*ANS_arr + distN[2,:]*FNO_arr + distN[3,:]*ELO_arr) * distN[4,:]).sum(axis=1)
-    LATMOO = ((18519.7+CLM)*np.sin(SF) - 6.241*np.sin(3.*SF) + NLM)*np.deg2rad((1.+CINMOO/INMOON)/3600) # output value 16: lunar latitude (rad)
+    LATMOO = ((18519.7+CLM)*np.sin(SF) - 6.241*np.sin(3.*SF) + NLM)*np.deg2rad((1.+CINMOO/INMOON)/SEC) # output value 16: lunar latitude (rad)
 
     # lunar parallax. output value 3: lunar horizontal parallax (arcseconds)
     PARLAX = PARMEA + (np.cos(distR[0,:]*ANM_arr + distR[1,:]*ANS_arr + distR[2,:]*FNO_arr + distR[3,:]*ELO_arr) * distR[4,:]).sum(axis=1)
@@ -719,22 +722,22 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     ELONG = LONMOO-LONSUN # output value 6: ecliptic elongation moon-sun (rad)
 
     # transformation to equatorial coordinates
-    TEMP1 = np.sin(LONSUN)
-    TEMP2 = np.cos(LONSUN)
-    RASUN = np.arctan2(TEMP1*COSOB,TEMP2)                          # output value 13: solar right ascension (rad)
-    TEMP3 = TEMP1*SINOB
+    sin_LONSUN = np.sin(LONSUN)
+    cos_LONSUN = np.cos(LONSUN)
+    RASUN = np.arctan2(sin_LONSUN*cos_OBLIQ, cos_LONSUN)                          # output value 13: solar right ascension (rad)
+    TEMP3 = sin_LONSUN*sin_OBLIQ
     DECSUN = np.arcsin(TEMP3)                                      # output value 10: solar declination (rad)
-    TEMP4 = np.sin(LONMOO)
-    TEMP5 = np.cos(LONMOO)
-    TEMP6 = np.sin(LATMOO)
-    TEMP7 = np.cos(LATMOO)
-    RAMOON = np.arctan2(TEMP7*TEMP4*COSOB-TEMP6*SINOB,TEMP7*TEMP5) # output value 17: lunar right ascension (rad)
-    TEMP8 = TEMP7*TEMP4*SINOB+TEMP6*COSOB
+    sin_LONMOO = np.sin(LONMOO)
+    cos_LONMOO = np.cos(LONMOO)
+    sin_LATMOO = np.sin(LATMOO)
+    cos_LATMOO = np.cos(LATMOO)
+    RAMOON = np.arctan2(cos_LATMOO*sin_LONMOO*cos_OBLIQ - sin_LATMOO*sin_OBLIQ, cos_LATMOO*cos_LONMOO) # output value 17: lunar right ascension (rad)
+    TEMP8 = cos_LATMOO*sin_LONMOO*sin_OBLIQ + sin_LATMOO*cos_OBLIQ
     DECMOO = np.arcsin(TEMP8)                                      # output value 2: lunar declination (rad)
     EQELON = RAMOON-RASUN                                          # output value 9: equatorial elongaton moon-sun (rad)
 
     # uurhoeken
-    EHARI = (ARZERO+NARIES*TIME+COSOB*np.deg2rad(CNULON/3600)) % (2*np.pi)    # output value 12: ephemeris hour angle of vernal equinox (rad)
+    EHARI = (ARZERO+NARIES*TIME+cos_OBLIQ*np.deg2rad(CNULON/SEC)) % (2*np.pi)    # output value 12: ephemeris hour angle of vernal equinox (rad)
     LHARI = EHARI-dT_TT*NARIES-RLONG                             # local hour angle of vernal equinox (rad)
     EHSUN = EHARI-RASUN                                          # output value 14: solar ephemeris hour angle (rad)
     EHMOON = EHARI-RAMOON                                         # output value  1: lunar ephemeris hour angle (rad)
@@ -743,10 +746,10 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
 
     # transformation to local coordinates
     ARGUM = TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
-    ALTSUN = np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
+    ALTSUN = np.arcsin(ARGUM)#np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
     ARGUM = TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
     ALTMOO = np.arcsin(ARGUM)
-    ALTMOO = np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
+    ALTMOO = ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/SEC)# np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
 
     # summarize in dataframe and convert output to degrees
     astrabOutput = {'EHMOON': (np.rad2deg(EHMOON)-90) % 360 + 90,
