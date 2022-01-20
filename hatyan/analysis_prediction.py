@@ -273,13 +273,12 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     
     const_list = sort_const_list(const_list)
     
-    #TODO: nieuwe string formatting gebruiken
-    print('%-20s = %s'%('components analyzed',len(const_list)))
-    print('%-20s = %s'%('#timesteps',len(ts)))
-    print('%-20s = %s'%('tstart',ts.index[0].strftime('%Y-%m-%d %H:%M:%S')))
-    print('%-20s = %s'%('tstop',ts.index[-1].strftime('%Y-%m-%d %H:%M:%S')))
+    print(f'components analyzed  = {len(const_list)}')
+    print(f'#timesteps           = {len(ts)}')
+    print(f'tstart               = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}')
+    print(f'tstop                = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
     if hasattr(ts.index,'freq'):
-        print('%-20s = %s'%('timestep',ts.index.freq))
+        print(f'timestep             = {ts.index.freq}')
     
     #check for duplicate components (results in singular matrix)
     if len(const_list) != len(np.unique(const_list)):
