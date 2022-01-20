@@ -541,7 +541,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # constants - general
     EPOCH  = dt.datetime(1899, 12, 31, 12, 0, 0) # 1900.0 # -12h shift because julian date 0 is at noon?
     # The average orbital elements of the celestial bodies are calculated for the epoch 1900.0.
-    # The values are corrected for the year 1990. Intitial values are from the vernal equinox.
+    # The values are corrected for the year 1990. Intitial values are from the vernal equinox. #TODO: should correction be recalculated?
     
     #TODO: some constants correspond with schureman.get_schureman_constants(), merge constants and put in dictionary?
     # constants - sun
@@ -592,7 +592,7 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
                       [     0,     0,     0,     1,     2,     1,     1,     1,     1],
                       [     0,     0,     0,     0,     0,     0,     0,     0,     0],
                       [     1,    -2,     0,     0,    -2,     2,    -2,     0,    -2],
-                      [-0.725, 5.679,-1.300,-1.302, -0.740, 0.787, 2.056, 0.679,-1.540]])
+                      [-0.725, 5.679,-1.300,-1.302,-0.740, 0.787, 2.056, 0.679,-1.540]])
     
     distS = np.array([[       0,       0,       0,       1,       1,       1,       1,    1,      1,     2,       2,       2,       2,     3,      3,      0,     0,       0,       0,       0,       0,       1,       1,       1,       1,      -1,      -1,     -1,      2,    2,     2,     1,      0,     1,     -1],
                       [       0,       0,       0,       0,       0,       0,       0,    0,      0,     0,       0,       0,       0,     0,      0,      1,     1,       1,       1,       1,       2,       1,       1,       1,       1,       1,       1,      1,      1,    1,    -1,     2,      0,     0,      0],
