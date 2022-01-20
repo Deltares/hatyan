@@ -423,13 +423,9 @@ def split_components(comp, dood_date_mid, hatyan_settings=None):#, **kwargs):
         
     for comp_main in np.unique(hatyan_settings.CS_comps['CS_comps_from']):
         bool_CS_maincomp = hatyan_settings.CS_comps['CS_comps_from'] == comp_main #boolean of which rows of CS_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
-        #main_ids = np.where(hatyan_settings.CS_comps['CS_comps_from'] == comp_main)[0]
-        #comp_slave = hatyan_settings.CS_comps.loc[main_ids,'CS_comps_derive'].tolist()
         comp_slave = hatyan_settings.CS_comps.loc[bool_CS_maincomp,'CS_comps_derive'].tolist()
         print('splitting component %s into %s'%(comp_main, comp_slave))
         
-        #iC_main = const_list_inclCS.index(comp_main)
-        #iC_slave = const_list_inclCS.index(comp_slave[0])
         idslave_CScomp = hatyan_settings.CS_comps['CS_comps_derive'].tolist().index(comp_slave[0])
         degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
         ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
