@@ -37,19 +37,27 @@ pdtocsv_kwargs = dict(index=False, sep=';', date_format='%Y%m%d %H%M%S', float_f
 # https://cdn.knmi.nl/ckeditor_assets/attachments/170/Tijden_van_zonopkomst_en_-ondergang_2022.pdf
 
 print('sun')
-for lon in np.arange(0,180+1,30): #30 degrees is 30/360*24=2 hours
+for lon in []:#np.arange(0,180+1,30): #30 degrees is 30/360*24=2 hours
     print()
     print(lon)
     tz_LOCAL = dt.timezone(dt.timedelta(hours=lon/360*24))
     sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_GMT, lon=lon, lat=52.0)
     print(sunriseset_python.iloc[-2:])
-    
+
+sunriseset_python = hatyan.astrog_moonriseset(tFirst=dt.datetime(2022,1,15), tLast=dt.datetime(2022,1,20), mode_dT=mode_dT, tzone='Australia/Sydney', lon=151.2093, lat=-33.8688)
+print(sunriseset_python)
+
+
 print('moon')
-for lon in np.arange(0,180+1,30): #30 degrees is 30/360*24=2 hours
+for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntime
     print()
     print(lon)
     tz_LOCAL = dt.timezone(dt.timedelta(hours=lon/360*24))
-    sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_GMT, lon=lon, lat=52.0)
-    print(sunriseset_python.iloc[-2:])
+    try:
+        sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, mode_dT=mode_dT, tzone=tz_GMT, lon=lon, lat=52.0)
+        #print('SUCCES')
+        print(sunriseset_python.iloc[:3])
+    except:
+        print('FAILED')
 #%%
 #hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python

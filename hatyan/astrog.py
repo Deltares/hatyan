@@ -62,7 +62,7 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
     
     # constants
-    EHMINC       = 346.8                                            # increment of ephemeris hour angle of moon (deg/day)
+    EHMINC       = 346.8 # increment of ephemeris hour angle of moon (deg/day)
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # interval between lunar culminations (days)
     
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
@@ -76,14 +76,14 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     # ICUL=1: next culmination is lower culmination
     # ICUL=2: next culmination is upper culmination
     ICUL = (EHMOON[0]/180.).astype(int)+1
-    CULEST=pd.date_range(start=date_first+dt.timedelta(days=(180.*ICUL-EHMOON[0])/EHMINC),end=date_last,freq='%iN'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
+    CULEST = pd.date_range(start=date_first+dt.timedelta(days=(180.*ICUL-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
     CULTYP = np.empty((len(CULEST),)).astype(int)
-    CULTYP[::2]  = ICUL
+    CULTYP[::2] = ICUL
     CULTYP[1::2] = (ICUL%2)+1
     
     # calculate exact time of culminations
-    CULTIM = astrac(CULEST,dT(CULEST,mode_dT=mode_dT),CULTYP)
-    astrabOutput = astrab(CULTIM,dT(CULTIM,mode_dT=mode_dT))
+    CULTIM = astrac(CULEST, dT(CULEST,mode_dT=mode_dT), CULTYP)
+    astrabOutput = astrab(CULTIM, dT(CULTIM,mode_dT=mode_dT))
     PAR = astrabOutput['PARLAX']/3600.
     DEC = astrabOutput['DECMOO']
     
@@ -136,7 +136,7 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
         
     # constants
-    ELOINC = 12.2           # increment of ecliptic elongation of moon-sun (deg/day)
+    ELOINC = 12.2           # increment of ELONG ecliptic elongation of moon-sun (deg/day)
     FASINT = 29.530587981/4 # quarter of a lunar synodic month (days)
 
     # first and last datetime in calculation (add enough margin (done later), and an extra day for timezone differences)
@@ -288,7 +288,7 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     # constants
     from hatyan.schureman import get_schureman_freqs
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # CULINT
-    EHMINC = 346.8 # increment of ephemeris hour angle of moon (deg/day)
+    EHMINC = 346.8 # increment of EHMOON ephemeris hour angle of moon (deg/day) TODO: 360/(M2_period_hr*2/24) = 347.8092506037627
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
     date_first = tFirst-dt.timedelta(hours=M2_period_hr+1*24)
@@ -296,20 +296,25 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
 
     # --- moonrise and -set ---
     # estimate times
-    astrabOutput=astrab(date_first,dT(date_first,mode_dT=mode_dT),lon=lon,lat=lat)
-    ALTMOO=astrabOutput['ALTMOO']
-    EHMOON=astrabOutput['EHMOON']
-    # first phenomenon is moonrise
-    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600.):
-        OPEST=pd.date_range(start=date_first+dt.timedelta(days=(270.-EHMOON[0])/EHMINC),end=date_last,freq='%iN'%(M2_period_hr*2*3600*1e9))
-        ONEST=OPEST+dt.timedelta(hours=M2_period_hr)
-    # first phenomenon is moonset
-    else:
-        ONEST=pd.date_range(start=date_first+dt.timedelta(days=(90.-EHMOON[0])/EHMINC),end=date_last,freq='%iN'%(M2_period_hr*2*3600*1e9))
-        OPEST=ONEST+dt.timedelta(hours=M2_period_hr)
+    astrabOutput = astrab(date_first,dT(date_first,mode_dT=mode_dT),lon=lon,lat=lat)
+    ALTMOO = astrabOutput['ALTMOO'] #TODO: this is in degrees, probably conversion to radians is necessary? (gives no equal division between moonrise/set as first instance)
+    EHMOON = astrabOutput['EHMOON']
+
+    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise
+        #EHMOON_corr = (EHMOON+89)%360-89 #if EHMOON>270, subtract 360
+        #print('moonrise first')
+        OPEST = pd.date_range(start=date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
+        ONEST = OPEST + dt.timedelta(hours=M2_period_hr)
+    else: # first phenomenon is moonset
+        #print('moonset first')
+        ONEST = pd.date_range(start=date_first+dt.timedelta(days=(90-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
+        OPEST = ONEST + dt.timedelta(hours=M2_period_hr)
 
     # calculate exact times
     TIMDIF = pd.TimedeltaIndex(-dT(OPEST,mode_dT=mode_dT)+1./2880.,unit='D')
+    #print(ALTMOO, EHMOON, date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC))
+    #print('ONEST',ONEST[0])
+    #print('OPEST',OPEST[0])
     OPTIM  = astrac(OPEST,dT(OPEST,mode_dT=mode_dT),np.array(7),lon=lon,lat=lat)+TIMDIF
     ONTIM  = astrac(ONEST,dT(ONEST,mode_dT=mode_dT),np.array(8),lon=lon,lat=lat)+TIMDIF
 
@@ -363,7 +368,7 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
 
     # constants
-    ANMINC   = 13.06       # increment of anomaly of moon (deg/day)
+    ANMINC   = 13.06       # increment of ANM anomaly of moon (deg/day)
     ANOINT   = 27.554551/2 # half of a lunar anomalistic month (days)
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
@@ -526,6 +531,12 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
         raise Exception('Input variable longitude larger than 180deg')
     if np.abs(lat)>90:
         raise Exception('Input variable latitude larger than 90deg')
+    
+    if (date<dt.datetime(1900,1,1)).any() or (date>dt.datetime(2091,1,1)).any():
+        import matplotlib.pyplot as plt
+        fig,ax = plt.subplots()
+        ax.plot(date)
+        raise Exception('Requested time out of range (1900-2091)')
 
     # constants - general
     EPOCH  = dt.datetime(1899, 12, 31, 12, 0, 0) # 1900.0 # -12h shift because julian date 0 is at noon?
@@ -569,204 +580,193 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     # constants - lunar orbital disturbances
     # selected from Brown's Tables of the Motion of the Moon (1909)
     # in longitude
-    #TODO: tabellen naar file
-    distP = {'col1':[        0,            0,            1,            1,        1,        1,            1,            0,            0,            0,            0,            0,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            0,            3,            3,            3,            3,            2,            2,            2,            2,            2,            2,            1,            1,            1,            1,            1,            1,            1,            1,            1,            0,            0,            2,            2,            1,            1,            4,            4,            2,            2],
-             'col2':[        0,            0,            0,            0,        0,        0,            0,            1,            1,            1,            1,            0,            0,            0,            0,            0,            1,            1,            1,            1,           -1,           -1,           -1,            2,            2,            0,            0,            0,            0,            0,            0,            1,            0,            0,            0,            0,            1,            1,            1,           -1,           -1,           -1,            2,            2,           -2,           -2,            0,            0,            0,            0,            0,            1,            1,            0,            0,            1,           -1,            0,            0,            0,            0],
-             'col3':[        0,            0,            0,            0,        0,        0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,            2,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            2,            2,           -2,           -2,           -2,            2,           -2,            0,            0,            0,            0,            0,            0,            2,           -2],
-             'col4':[        4,            2,            4,            2,        0,       -2,           -4,            2,            0,           -2,           -4,            1,            2,            0,           -2,           -4,            2,            0,           -2,           -4,            2,            0,           -2,            0,           -2,            2,            0,           -2,            1,           -1,           -3,            1,            2,            0,           -2,           -4,            0,           -2,           -4,            2,            0,           -2,            0,           -2,            0,           -2,            2,            0,            2,            0,           -2,           -2,            2,           -1,           -3,            1,           -1,            0,           -2,            0,            0],
-             'col5':[   13.902,     2369.902,        1.979,      191.953,22639.500,-4586.426,      -38.428,      -24.420,     -666.608,     -164.773,       -1.877,     -125.154,       14.387,      769.016,     -211.656,      -30.773,       -2.921,     -109.420,     -205.499,       -4.391,       14.577,      147.361,       28.475,       -7.486,       -8.096,       -5.741,     -411.608,      -55.173,       -8.466,       18.609,        3.215,       18.023,        1.060,       36.124,      -13.193,       -1.187,       -7.649,       -8.627,       -2.740,        1.181,        9.703,       -2.494,       -1.167,       -7.412,        2.580,        2.533,        -.992,      -45.099,       -6.382,       39.532,        9.366,       -2.152,       -1.440,        1.750,        1.225,        1.267,       -1.089,        1.938,        -.952,       -3.996,       -1.298],}
-    distP = pd.DataFrame(distP)
+    #TODO: tabellen naar file (of aparte definitie)
+    distP = np.array([[      0,        0,     1,       1,         1,         1,       1,       0,        0,        0,      0,        0,      2,       2,        2,       2,      1,        1,        1,      1,      1,       1,      1,      0,      0,      0,        0,       0,      1,      1,     1,      0,     3,      3,       3,      3,      2,      2,      2,     2,     2,      2,      1,      1,     1,     1,     1,       1,      1,      1,     1,      0,      0,     2,     2,     1,      1,     4,     4,      2,      2],
+                      [      0,        0,     0,       0,         0,         0,       0,       1,        1,        1,      1,        0,      0,       0,        0,       0,      1,        1,        1,      1,     -1,      -1,     -1,      2,      2,      0,        0,       0,      0,      0,     0,      1,     0,      0,       0,      0,      1,      1,      1,    -1,    -1,     -1,      2,      2,    -2,    -2,     0,       0,      0,      0,     0,      1,      1,     0,     0,     1,     -1,     0,     0,      0,      0],
+                      [      0,        0,     0,       0,         0,         0,       0,       0,        0,        0,      0,        0,      0,       0,        0,       0,      0,        0,        0,      0,      0,       0,      0,      0,      0,      2,        2,       2,      0,      0,     0,      0,     0,      0,       0,      0,      0,      0,      0,     0,     0,      0,      0,      0,     0,     0,     2,       2,     -2,     -2,    -2,      2,     -2,     0,     0,     0,      0,     0,     0,      2,     -2],
+                      [      4,        2,     4,       2,         0,        -2,      -4,       2,        0,       -2,     -4,        1,      2,       0,       -2,      -4,      2,        0,       -2,     -4,      2,       0,     -2,      0,     -2,      2,        0,      -2,      1,     -1,    -3,      1,     2,      0,      -2,     -4,      0,     -2,     -4,     2,     0,     -2,      0,     -2,     0,    -2,     2,       0,      2,      0,    -2,     -2,      2,    -1,    -3,     1,     -1,     0,    -2,      0,      0],
+                      [ 13.902, 2369.902, 1.979, 191.953, 22639.500, -4586.426, -38.428, -24.420, -666.608, -164.773, -1.877, -125.154, 14.387, 769.016, -211.656, -30.773, -2.921, -109.420, -205.499, -4.391, 14.577, 147.361, 28.475, -7.486, -8.096, -5.741, -411.608, -55.173, -8.466, 18.609, 3.215, 18.023, 1.060, 36.124, -13.193, -1.187, -7.649, -8.627, -2.740, 1.181, 9.703, -2.494, -1.167, -7.412, 2.580, 2.533, -0.992, -45.099, -6.382, 39.532, 9.366, -2.152, -1.440, 1.750, 1.225, 1.267, -1.089, 1.938, -0.952, -3.996, -1.298]])
     # in latitude
-    distC = {'col1':[     0,     2,     3,     0,     0,     1,     1,    -1,    -1],
-             'col2':[     0,     0,     0,     1,     2,     1,     1,     1,     1],
-             'col3':[     0,     0,     0,     0,     0,     0,     0,     0,     0],
-             'col4':[     1,    -2,     0,     0,    -2,     2,    -2,     0,    -2],
-             'col5':[ -.725, 5.679,-1.300,-1.302, -.740,  .787, 2.056,  .679,-1.540]}
-    distC = pd.DataFrame(distC)
-    distS = {'col1':[       0,       0,       0,       1,       1,       1,       1,       1,       1,       2,       2,       2,       2,       3,       3,       0,       0,       0,       0,       0,       0,       1,       1,       1,       1,      -1,      -1,      -1,       2,       2,       2,       1,       0,       1,      -1],
-             'col2':[       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       1,       1,       1,       1,       1,       2,       1,       1,       1,       1,       1,       1,       1,       1,       1,      -1,       2,       0,       0,       0],
-             'col3':[       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       2,       2,       2],
-             'col4':[       1,       2,       4,       4,       2,       0,      -2,      -3,      -4,       2,       0,      -2,      -4,       0,      -2,       2,       1,       0,      -2,      -4,      -2,       2,       0,      -2,      -4,       2,       0,      -2,       0,      -2,       0,      -2,      -2,      -2,       0],
-             'col5':[ -112.79, 2373.36,   14.06,    6.98,  192.72,22609.07,-4578.13,    5.44,  -38.64,   14.78,  767.96, -152.53,  -34.07,   50.64,  -16.40,  -25.10,   17.93, -126.98, -165.06,   -6.46,  -16.35,  -11.75, -115.18, -182.36,   -9.66,  -23.59, -138.76,  -31.70,  -10.56,   -7.59,   11.67,   -6.12,  -52.14,   -9.52,  -85.13]}
-    distS = pd.DataFrame(distS)
-    distN = {'col1':[       0,       0,       1,       1,      -1,      -1,      -2,      -2,       0,       0],
-             'col2':[       0,       0,       0,       0,       0,       0,       0,       0,       1,      -1],
-             'col3':[       1,       1,       1,       1,       1,       1,       1,       1,       1,       1],
-             'col4':[      -2,      -4,      -2,      -4,       0,      -2,       0,      -2,      -2,      -2],
-             'col5':[-526.069,  -3.352,  44.297,  -6.000,  20.599, -30.598, -24.649,  -2.000, -22.571,  10.985]}
-    distN = pd.DataFrame(distN)
+    distC = np.array([[     0,     2,     3,     0,     0,     1,     1,    -1,    -1],
+                      [     0,     0,     0,     1,     2,     1,     1,     1,     1],
+                      [     0,     0,     0,     0,     0,     0,     0,     0,     0],
+                      [     1,    -2,     0,     0,    -2,     2,    -2,     0,    -2],
+                      [-0.725, 5.679,-1.300,-1.302, -0.740, 0.787, 2.056, 0.679,-1.540]])
+    
+    distS = np.array([[       0,       0,       0,       1,       1,       1,       1,    1,      1,     2,       2,       2,       2,     3,      3,      0,     0,       0,       0,       0,       0,       1,       1,       1,       1,      -1,      -1,     -1,      2,    2,     2,     1,      0,     1,     -1],
+                      [       0,       0,       0,       0,       0,       0,       0,    0,      0,     0,       0,       0,       0,     0,      0,      1,     1,       1,       1,       1,       2,       1,       1,       1,       1,       1,       1,      1,      1,    1,    -1,     2,      0,     0,      0],
+                      [       0,       0,       0,       0,       0,       0,       0,    0,      0,     0,       0,       0,       0,     0,      0,      0,     0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,      0,      0,    0,     0,     0,      2,     2,      2],
+                      [       1,       2,       4,       4,       2,       0,      -2,   -3,     -4,     2,       0,      -2,      -4,     0,     -2,      2,     1,       0,      -2,      -4,      -2,       2,       0,      -2,      -4,       2,       0,     -2,      0,   -2,     0,    -2,     -2,    -2,      0],
+                      [ -112.79, 2373.36,   14.06,    6.98,  192.72,22609.07,-4578.13, 5.44, -38.64, 14.78,  767.96, -152.53,  -34.07, 50.64, -16.40, -25.10, 17.93, -126.98, -165.06,   -6.46,  -16.35,  -11.75, -115.18, -182.36,   -9.66,  -23.59, -138.76, -31.70, -10.56,-7.59, 11.67, -6.12, -52.14, -9.52, -85.13]])
+    
+    distN = np.array([[       0,      0,      1,      1,     -1,      -1,      -2,     -2,       0,      0],
+                      [       0,      0,      0,      0,      0,       0,       0,      0,       1,     -1],
+                      [       1,      1,      1,      1,      1,       1,       1,      1,       1,      1],
+                      [      -2,     -4,     -2,     -4,      0,      -2,       0,     -2,      -2,     -2],
+                      [-526.069, -3.352, 44.297, -6.000, 20.599, -30.598, -24.649, -2.000, -22.571, 10.985]])
     # in parallax
-    distR = {'col1':[        0,        0,        1,        1,        1,        1,        0,        0,        0,        0,        2,        2,        2,        2,        1,        1,        1,        1,        1,        0,        1,        0,        3,        3,        2,        2,        1],
-             'col2':[        0,        0,        0,        0,        0,        0,        1,        1,        1,        0,        0,        0,        0,        0,        1,        1,       -1,       -1,       -1,        0,        0,        1,        0,        0,        1,       -1,        0],
-             'col3':[        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        0,        2,        0,        0,        0,        0,        0,        0,       -2],
-             'col4':[        4,        2,        2,        0,       -2,       -4,        2,        0,       -2,        1,        2,        0,       -2,       -4,        0,       -2,        2,        0,       -2,       -2,        1,        1,        0,       -2,        0,        0,        0],
-             'col5':[    .2607,  28.2333,   3.0861, 186.5398,  34.3117,    .6008,   -.2993,   -.3988,   1.9135,   -.9781,    .2833,  10.1657,   -.3039,    .3722,   -.9469,   1.4404,    .2297,   1.1502,   -.2252,   -.1052,   -.1093,    .1494,    .6215,   -.1187,   -.1038,    .1268,   -.7136]}
-    distR = pd.DataFrame(distR)
+    distR = np.array([[      0,       0,      1,        1,       1,      1,       0,       0,      0,       0,      2,       2,       2,      2,       1,      1,      1,      1,       1,       0,       1,      0,      3,       3,       2,      2,       1],
+                      [      0,       0,      0,        0,       0,      0,       1,       1,      1,       0,      0,       0,       0,      0,       1,      1,     -1,     -1,      -1,       0,       0,      1,      0,       0,       1,     -1,       0],
+                      [      0,       0,      0,        0,       0,      0,       0,       0,      0,       0,      0,       0,       0,      0,       0,      0,      0,      0,       0,       2,       0,      0,      0,       0,       0,      0,      -2],
+                      [      4,       2,      2,        0,      -2,     -4,       2,       0,     -2,       1,      2,       0,      -2,     -4,       0,     -2,      2,      0,      -2,      -2,       1,      1,      0,      -2,       0,      0,       0],
+                      [ 0.2607, 28.2333, 3.0861, 186.5398, 34.3117, 0.6008, -0.2993, -0.3988, 1.9135, -0.9781, 0.2833, 10.1657, -0.3039, 0.3722, -0.9469, 1.4404, 0.2297, 1.1502, -0.2252, -0.1052, -0.1093, 0.1494, 0.6215, -0.1187, -0.1038, 0.1268, -0.7136]])
 
     # process input data
     TIME  = np.array((date-EPOCH).total_seconds()/86400) # days since 1900
-    if (TIME<0).any() or (TIME>70000).any():
-        raise Exception('Requested time out of range (1900-2091)')
-    RLONG=-np.deg2rad(lon)
-    RLATI= np.deg2rad(lat)
+    RLONG = -np.deg2rad(lon)
+    RLATI = np.deg2rad(lat)
 
     # mean orbital elements
     # of sun, including additive correction
-    LABSUN=(LABOS -np.deg2rad(6.22/3600) +NSUN*TIME) % (2*np.pi)
-    PERSUN=PEROS+BETSUN*TIME
+    LABSUN = (LABOS - np.deg2rad(6.22/3600) + NSUN*TIME) % (2*np.pi)
+    PERSUN = PEROS+BETSUN*TIME
     # of moon
-    LABMOO=(LABOM+NMOON *TIME) % (2*np.pi)
-    PERMOO=(PEROM+BETMOO*TIME) % (2*np.pi)
-    NODMOO=NODOM+GAMMOO*TIME
+    LABMOO = (LABOM+NMOON *TIME) % (2*np.pi)
+    PERMOO = (PEROM+BETMOO*TIME) % (2*np.pi)
+    NODMOO = NODOM+GAMMOO*TIME
     # additive corrections for moon
-    LABMOO=LABMOO+np.deg2rad(( 0.79 +14.27 *np.sin(6.0486+6.34913E-5*TIME)+7.261*np.sin(NODMOO))/3600)
-    PERMOO=PERMOO+np.deg2rad((-1.966- 2.076*np.sin(NODMOO))/3600)
-    NODMOO=NODMOO+np.deg2rad(( 0.59 +95.96 *np.sin(NODMOO)+15.58*np.sin(NODMOO+4.764400))/3600)
-    CINMOO=np.deg2rad((-8.636*np.cos(NODMOO)-1.396*np.cos(NODMOO+4.764400))/3600)
+    LABMOO = LABMOO+np.deg2rad(( 0.79 +14.27 *np.sin(6.0486+6.34913E-5*TIME)+7.261*np.sin(NODMOO))/3600)
+    PERMOO = PERMOO+np.deg2rad((-1.966- 2.076*np.sin(NODMOO))/3600)
+    NODMOO = NODMOO+np.deg2rad(( 0.59 +95.96 *np.sin(NODMOO)+15.58*np.sin(NODMOO+4.764400))/3600)
+    CINMOO = np.deg2rad((-8.636*np.cos(NODMOO)-1.396*np.cos(NODMOO+4.764400))/3600)
 
     # mean heliocentric elongation Venus-Earth, Earth-Jupiter, Earth-Mars and Earth-Saturnus
-    VENTER=VENTZE+TIME*VENTIN
-    TERJUP=TJUPZE+TIME*TJUPIN
-    TERMAR=TMARZE+TIME*TMARIN
-    TERSAT=TSATZE+TIME*TSATIN
+    VENTER = VENTZE+TIME*VENTIN
+    TERJUP = TJUPZE+TIME*TJUPIN
+    TERMAR = TMARZE+TIME*TMARIN
+    TERSAT = TSATZE+TIME*TSATIN
 
     # Nutation in longitude
-    CNULON=-17.248*np.sin(NODMOO)-1.273*np.sin(2.*LABSUN)
+    CNULON = -17.248*np.sin(NODMOO)-1.273*np.sin(2.*LABSUN)
     # Nutation in inclination of ecliptic
-    CNUTOB=  9.21 *np.cos(NODMOO)+0.55 *np.cos(2.*LABSUN)
+    CNUTOB =   9.21 *np.cos(NODMOO)+0.55 *np.cos(2.*LABSUN)
 
     # inclination of ecliptic, sine and cosine of inclination
-    OBLIQ=OBZERO+TIME*OBINC+np.deg2rad(CNUTOB/3600)
-    SINOB=np.sin(OBLIQ)
-    COSOB=np.cos(OBLIQ)
+    OBLIQ = OBZERO+TIME*OBINC+np.deg2rad(CNUTOB/3600)
+    SINOB = np.sin(OBLIQ)
+    COSOB = np.cos(OBLIQ)
 
     # parameters of sun and moon for disturbance equations
-    ANM=LABMOO-PERMOO # output value 18: mean lunar anomaly (rad)
-    ANS=LABSUN-PERSUN
-    FNO=LABMOO-NODMOO
-    ELO=LABMOO-LABSUN
-    DAM=NMOON-BETMOO
-    DAS=NSUN-BETSUN
-    DFN=NMOON-GAMMOO
-    DEL=NMOON-NSUN
+    ANM = (LABMOO-PERMOO) # output value 18: mean lunar anomaly (rad)
+    ANM_arr = ANM[:,np.newaxis] # output value 18: mean lunar anomaly (rad)
+    ANS = (LABSUN-PERSUN)
+    ANS_arr = ANS[:,np.newaxis]
+    FNO = (LABMOO-NODMOO)
+    FNO_arr = FNO[:,np.newaxis]
+    ELO = (LABMOO-LABSUN)
+    ELO_arr = ELO[:,np.newaxis]
+    DAM = NMOON-BETMOO
+    DAS = NSUN-BETSUN
+    DFN = NMOON-GAMMOO
+    DEL = NMOON-NSUN
 
     # disturbance equations
     # disturbances in longitude sun
     # equation of center
     CENTR=(6910.10 -17.33*TIME/36525)*np.sin(ANS)+72.01*np.sin(2.*ANS) + 1.05*np.sin(3.*ANS)
     # planetary disturbances
-    PLANET= (4.838*np.cos(   VENTER       +1.5708)+
-             5.526*np.cos(2.*VENTER       +1.5723)+
-             0.666*np.cos(3.*VENTER       +4.7195)+
-             2.497*np.cos(2.*VENTER   -ANS+4.4986)+
-             1.559*np.cos(3.*VENTER   -ANS+1.3607)+
-             1.024*np.cos(3.*VENTER-2.*ANS+0.8875)+
-             7.208*np.cos(   TERJUP       +1.5898)+
-             2.731*np.cos(2.*TERJUP       +4.7168)+
-             2.600*np.cos(   TERJUP   -ANS+3.0503)+
-             1.610*np.cos(2.*TERJUP   -ANS+5.1068)+
-             0.556*np.cos(3.*TERJUP   -ANS+3.0946)+
-             2.043*np.cos(2.*TERMAR       +1.5660)+
-             1.770*np.cos(2.*TERMAR   -ANS+5.3454)+
-             0.585*np.cos(4.*TERMAR-2.*ANS+3.2432)+
-             0.500*np.cos(4.*TERMAR   -ANS+5.5317)+
-             0.425*np.cos(3.*TERMAR   -ANS+5.5449)+
-             0.419*np.cos(   TERSAT       +1.5767)+
-             0.320*np.cos(   TERSAT   -ANS+4.5242))
+    PLANET = (4.838 * np.cos(  VENTER        + 1.5708) +
+              5.526 * np.cos(2*VENTER        + 1.5723) +
+              0.666 * np.cos(3*VENTER        + 4.7195) +
+              2.497 * np.cos(2*VENTER  - ANS + 4.4986) +
+              1.559 * np.cos(3*VENTER  - ANS + 1.3607) +
+              1.024 * np.cos(3*VENTER -2*ANS + 0.8875) +
+              7.208 * np.cos(  TERJUP        + 1.5898) +
+              2.731 * np.cos(2*TERJUP        + 4.7168) +
+              2.600 * np.cos(  TERJUP  - ANS + 3.0503) +
+              1.610 * np.cos(2*TERJUP  - ANS + 5.1068) +
+              0.556 * np.cos(3*TERJUP  - ANS + 3.0946) +
+              2.043 * np.cos(2*TERMAR        + 1.5660) +
+              1.770 * np.cos(2*TERMAR  - ANS + 5.3454) +
+              0.585 * np.cos(4*TERMAR -2*ANS + 3.2432) +
+              0.500 * np.cos(4*TERMAR  - ANS + 5.5317) +
+              0.425 * np.cos(3*TERMAR  - ANS + 5.5449) +
+              0.419 * np.cos(  TERSAT        + 1.5767) +
+              0.320 * np.cos(  TERSAT  - ANS + 4.5242) )
+
     # geometric disturbance by the moon
-    GEOM=6.454*np.sin(ELO)-0.424*np.sin(ELO-ANM)
+    GEOM = 6.454*np.sin(ELO)-0.424*np.sin(ELO-ANM)
+    
     # aberration (correction for optical path)
-    ABER=-(20.496+.344*np.cos(ANS))
+    ABER = -(20.496+.344*np.cos(ANS))
+    
     # longitude sun with all disturbances
-    LONSUN=LABSUN+np.deg2rad((CENTR+PLANET+GEOM+CNULON+ABER)/3600) # output value 8: solar longitude (rad)
+    LONSUN = LABSUN + np.deg2rad((CENTR+PLANET+GEOM+CNULON+ABER)/3600) # output value 8: solar longitude (rad)
+    
     # relative distance from sun
-    DISSUN=1.000140 - 0.016712*np.cos(ANS) - 0.000140*np.cos(2.*ANS) # output value 11: relative distance earth-sun (astronomical units)
+    DISSUN = 1.000140 - 0.016712*np.cos(ANS) - 0.000140*np.cos(2.*ANS) # output value 11: relative distance earth-sun (astronomical units)
+    
     # longitude moon with all disturbances
-    CLONM=0
-    # TODO: for loopjes vervangen door array multiplicatie
-    for i in range(0,len(distP)):
-        CLONM=CLONM+np.sin(distP['col1'][i]*ANM+distP['col2'][i]*ANS+distP['col3'][i]*FNO+distP['col4'][i]*ELO) * distP['col5'][i]
-    #CLONM2=(np.sin(distP['col1'].values[:,np.newaxis]*ANM + 
-    #              distP['col2'].values[:,np.newaxis]*ANS + 
-    #              distP['col3'].values[:,np.newaxis]*FNO + 
-    #              distP['col4'].values[:,np.newaxis]*ELO) * distP['col5'].values[:,np.newaxis]).sum(axis=0)
-    LONMOO=LABMOO+np.deg2rad((CNULON+CLONM)/3600) # output value 15: lunar longitude (rad)
+    CLONM = (np.sin(distP[0,:]*ANM_arr + distP[1,:]*ANS_arr + distP[2,:]*FNO_arr + distP[3,:]*ELO_arr) * distP[4,:]).sum(axis=1)
+    LONMOO = LABMOO+np.deg2rad((CNULON+CLONM)/3600) # output value 15: lunar longitude (rad)
+    
     # latitude moon with all disturbances
-    CLM=0
-    for i in range(0,len(distC)):
-        CLM=CLM+np.cos(distC['col1'][i]*ANM+distC['col2'][i]*ANS+distC['col3'][i]*FNO+distC['col4'][i]*ELO) * distC['col5'][i]
-    SLM=0
-    for i in range(0,len(distS)):
-        SLM=SLM+np.sin(distS['col1'][i]*ANM+distS['col2'][i]*ANS+distS['col3'][i]*FNO+distS['col4'][i]*ELO) * distS['col5'][i]
-    SF=FNO+np.deg2rad(SLM/3600)
-    NLM=0
-    for i in range(0,len(distN)):
-        NLM=NLM+np.sin(distN['col1'][i]*ANM+distN['col2'][i]*ANS+distN['col3'][i]*FNO+distN['col4'][i]*ELO) * distN['col5'][i]
-    LATMOO=((18519.7+CLM)*np.sin(SF) - 6.241*np.sin(3.*SF) + NLM)*np.deg2rad((1.+CINMOO/INMOON)/3600) # output value 16: lunar latitude (rad)
+    CLM = (np.cos(distC[0,:]*ANM_arr + distC[1,:]*ANS_arr + distC[2,:]*FNO_arr + distC[3,:]*ELO_arr) * distC[4,:]).sum(axis=1)
+    SLM = (np.sin(distS[0,:]*ANM_arr + distS[1,:]*ANS_arr + distS[2,:]*FNO_arr + distS[3,:]*ELO_arr) * distS[4,:]).sum(axis=1)
+    SF=FNO + np.deg2rad(SLM/3600)
+    NLM = (np.sin(distN[0,:]*ANM_arr + distN[1,:]*ANS_arr + distN[2,:]*FNO_arr + distN[3,:]*ELO_arr) * distN[4,:]).sum(axis=1)
+    LATMOO = ((18519.7+CLM)*np.sin(SF) - 6.241*np.sin(3.*SF) + NLM)*np.deg2rad((1.+CINMOO/INMOON)/3600) # output value 16: lunar latitude (rad)
 
-    # lunar parallax
-    PARLAX=PARMEA # output value 3: lunar horizontal parallax (arcseconds)
-    for i in range(0,len(distR)):
-        PARLAX=PARLAX+np.cos(distR['col1'][i]*ANM+distR['col2'][i]*ANS+distR['col3'][i]*FNO+distR['col4'][i]*ELO) * distR['col5'][i]
-    # derrivative of lunar parallax
-    DPAXDT=0. # output value 4: time derivative of parallax (arcseconds/day)
-    for i in range(0,len(distR)):
-        DPAXDT=(DPAXDT-np.sin(distR['col1'][i]*ANM+distR['col2'][i]*ANS+distR['col3'][i]*FNO+distR['col4'][i]*ELO) *
-                (distR['col1'][i]*DAM+distR['col2'][i]*DAS+distR['col3'][i]*DFN+distR['col4'][i]*DEL) * distR['col5'][i])
-
+    # lunar parallax. output value 3: lunar horizontal parallax (arcseconds)
+    PARLAX = PARMEA + (np.cos(distR[0,:]*ANM_arr + distR[1,:]*ANS_arr + distR[2,:]*FNO_arr + distR[3,:]*ELO_arr) * distR[4,:]).sum(axis=1)
+    
+    #derrivative of lunar parallax. output value 4: time derivative of parallax (arcseconds/day)
+    DPAXDT_sub1 = np.sin(distR[0,:]*ANM_arr + distR[1,:]*ANS_arr + distR[2,:]*FNO_arr + distR[3,:]*ELO_arr)
+    DPAXDT_sub2 = distR[0,:]*DAM + distR[1,:]*DAS + distR[2,:]*DFN + distR[3,:]*DEL
+    DPAXDT = -(DPAXDT_sub1 * DPAXDT_sub2 * distR[4,:]).sum(axis=1)
+    
     # ecliptic elongation moon-sun
-    ELONG=LONMOO-LONSUN # output value 6: ecliptic elongation moon-sun (rad)
+    ELONG = LONMOO-LONSUN # output value 6: ecliptic elongation moon-sun (rad)
 
     # transformation to equatorial coordinates
-    TEMP1=np.sin(LONSUN)
-    TEMP2=np.cos(LONSUN)
-    RASUN=np.arctan2(TEMP1*COSOB,TEMP2)                          # output value 13: solar right ascension (rad)
-    TEMP3=TEMP1*SINOB
-    DECSUN=np.arcsin(TEMP3)                                      # output value 10: solar declination (rad)
-    TEMP4=np.sin(LONMOO)
-    TEMP5=np.cos(LONMOO)
-    TEMP6=np.sin(LATMOO)
-    TEMP7=np.cos(LATMOO)
-    RAMOON=np.arctan2(TEMP7*TEMP4*COSOB-TEMP6*SINOB,TEMP7*TEMP5) # output value 17: lunar right ascension (rad)
-    TEMP8=TEMP7*TEMP4*SINOB+TEMP6*COSOB
-    DECMOO=np.arcsin(TEMP8)                                      # output value 2: lunar declination (rad)
-    EQELON=RAMOON-RASUN                                          # output value 9: equatorial elongaton moon-sun (rad)
+    TEMP1 = np.sin(LONSUN)
+    TEMP2 = np.cos(LONSUN)
+    RASUN = np.arctan2(TEMP1*COSOB,TEMP2)                          # output value 13: solar right ascension (rad)
+    TEMP3 = TEMP1*SINOB
+    DECSUN = np.arcsin(TEMP3)                                      # output value 10: solar declination (rad)
+    TEMP4 = np.sin(LONMOO)
+    TEMP5 = np.cos(LONMOO)
+    TEMP6 = np.sin(LATMOO)
+    TEMP7 = np.cos(LATMOO)
+    RAMOON = np.arctan2(TEMP7*TEMP4*COSOB-TEMP6*SINOB,TEMP7*TEMP5) # output value 17: lunar right ascension (rad)
+    TEMP8 = TEMP7*TEMP4*SINOB+TEMP6*COSOB
+    DECMOO = np.arcsin(TEMP8)                                      # output value 2: lunar declination (rad)
+    EQELON = RAMOON-RASUN                                          # output value 9: equatorial elongaton moon-sun (rad)
 
     # uurhoeken
-    EHARI  =(ARZERO+NARIES*TIME+COSOB*np.deg2rad(CNULON/3600)) % (2*np.pi)    # output value 12: ephemeris hour angle of vernal equinox (rad)
-    LHARI  =EHARI-dT_TT*NARIES-RLONG                             # local hour angle of vernal equinox (rad)
-    EHSUN  =EHARI-RASUN                                          # output value 14: solar ephemeris hour angle (rad)
-    EHMOON =EHARI-RAMOON                                         # output value  1: lunar ephemeris hour angle (rad)
-    LHSUN  =LHARI-RASUN                                          # local solar hour angle (rad)
-    LHMOON =LHARI-RAMOON                                         # local lunar hour angle (rad)
+    EHARI = (ARZERO+NARIES*TIME+COSOB*np.deg2rad(CNULON/3600)) % (2*np.pi)    # output value 12: ephemeris hour angle of vernal equinox (rad)
+    LHARI = EHARI-dT_TT*NARIES-RLONG                             # local hour angle of vernal equinox (rad)
+    EHSUN = EHARI-RASUN                                          # output value 14: solar ephemeris hour angle (rad)
+    EHMOON = EHARI-RAMOON                                         # output value  1: lunar ephemeris hour angle (rad)
+    LHSUN = LHARI-RASUN                                          # local solar hour angle (rad)
+    LHMOON = LHARI-RAMOON                                         # local lunar hour angle (rad)
 
     # transformation to local coordinates
-    ARGUM=TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
-    ALTSUN=np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
-    ARGUM=TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
-    ALTMOO=np.arcsin(ARGUM)
-    ALTMOO=np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
+    ARGUM = TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
+    ALTSUN = np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
+    ARGUM = TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
+    ALTMOO = np.arcsin(ARGUM)
+    ALTMOO = np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). Makes use of np.nan_to_num, filling in condition from if-statement
 
     # summarize in dataframe and convert output to degrees
-    #TODO: kan met minder output en zonder dict?
-    astrabOutput = {'EHMOON':((np.rad2deg(EHMOON)+ 720.-90.) % 360.)+90.,
-                    'DECMOO':  np.rad2deg(DECMOO),
-                    'PARLAX':  PARLAX,
-                    'DPAXDT':  DPAXDT,
-                    'ALTMOO':  np.rad2deg(ALTMOO),
-                    'ELONG' :((np.rad2deg(ELONG )+1080.-45.) % 360.)+45.,
-                    'ALTSUN':  np.rad2deg(ALTSUN),
-                    'LONSUN':((np.rad2deg(LONSUN)+ 720.-45.) % 360.)+45.,
-                    'EQELON': (np.rad2deg(EQELON)+ 720.)     % 360.,
-                    'DECSUN':  np.rad2deg(DECSUN),
-                    'DISSUN':  DISSUN,
-                    'EHARI' :  EHARI,
-                    'RASUN' : (np.rad2deg(RASUN )+ 360.)     % 360.,
-                    'EHSUN' : (np.rad2deg(EHSUN )+ 720.)     % 360.,
-                    'LONMOO': (np.rad2deg(LONMOO)+ 720.)     % 360.,
-                    'LATMOO':  np.rad2deg(LATMOO),
-                    'RAMOON': (np.rad2deg(RAMOON)+ 360.)     % 360.,
-                    'ANM'   : (np.rad2deg(ANM)   + 720.)     % 360.}
+    astrabOutput = {'EHMOON': (np.rad2deg(EHMOON)-90) % 360 + 90,
+                    'DECMOO': np.rad2deg(DECMOO),
+                    'PARLAX': PARLAX,
+                    'DPAXDT': DPAXDT,
+                    'ALTMOO': np.rad2deg(ALTMOO),
+                    'ELONG' : (np.rad2deg(ELONG)-45) % 360 + 45,
+                    'ALTSUN': np.rad2deg(ALTSUN),
+                    'LONSUN': (np.rad2deg(LONSUN)-45) % 360 + 45,
+                    'EQELON': np.rad2deg(EQELON) % 360,
+                    'DECSUN': np.rad2deg(DECSUN),
+                    'DISSUN': DISSUN,
+                    'EHARI' : EHARI,
+                    'RASUN' : np.rad2deg(RASUN) % 360,
+                    'EHSUN' : np.rad2deg(EHSUN) % 360,
+                    'LONMOO': np.rad2deg(LONMOO) % 360,
+                    'LATMOO': np.rad2deg(LATMOO),
+                    'RAMOON': np.rad2deg(RAMOON) % 360,
+                    'ANM'   : np.rad2deg(ANM) % 360}
 
     return astrabOutput
 
@@ -828,9 +828,10 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
 
     # constants - iteration targets
-    ANGLE  = np.array([180.   , 360.   , 90.    , 180.    ,   270.  , 360.    ,   -.5667,    -.5667,     -.8333,     -.8333, 360.     , 90.     , 180.     , 270.     ,   0.   ,  0.   ])
-    CRITER = np.array([  0.001,   0.001,  0.0001,   0.0001,   0.0001,   0.0001,   0.0002,    0.0002,     0.0002,     0.0002,   0.00001,  0.00001,   0.00001,   0.00001,   0.002,  0.002])
-    RAT    = np.array([346.8  , 346.8  , 12.2   ,  12.2   ,    12.2 ,  12.2   , 346.8   , -346.8   ,   360.    ,  -360.    ,   1.     ,  1.     ,   1.     ,   1.     , -10.08 , 10.08 ])
+    ANGLE =  np.array([180,   360,   90,   180,  270,  360, -0.5667,-0.5667,-0.8333,-0.8333, 360,  90,   180,  270,  0,     0])
+    CRITER = np.array([1e-3,  1e-3,  1e-4, 1e-4, 1e-4, 1e-4, 2e-4,   2e-4,   2e-4,   2e-4,   1e-5, 1e-5, 1e-5, 1e-5, 2e-3,  2e-3])
+    RAT =    np.array([346.8, 346.8, 12.2, 12.2, 12.2, 12.2, 346.8, -346.8,  360,   -360,    1,    1,    1,    1,   -10.08, 10.08])
+    #itertargets_pd = pd.DataFrame(np.stack([ANGLE,CRITER,RAT]).T, columns=['ANGLE','CRITER','RAT'],index=range(1,len(ANGLE)+1))
     ANG = ANGLE[mode-1] # required value after iteration
     CRIT = CRITER[mode-1] # allowed difference between ANG and iteration result
     RATE = RAT[mode-1] # estimated change per day for iteration
@@ -857,25 +858,25 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
         raise Exception('Requested mode (%s) not recognized' % mode)
 
     # calculate value at start of iteration
-    TNEW=timeEst
+    TNEW = timeEst
     astrabOutput = astrab(TNEW,dT_TT,lon=lon,lat=lat)
-    PNEW=astrabOutput[IPAR]
+    PNEW = astrabOutput[IPAR]
 
     # iterate until criterium is reached or max 20 times
     ITER=1
     while (abs(ANG-PNEW) > CRIT).any():# and ITER <=20:
-        TOLD=TNEW
-        POLD=PNEW
+        TOLD = TNEW
+        POLD = PNEW
         if (mode==7).any() or (mode==8).any(): # correction for semidiameter moon
-            ANG=ANGLE[mode-1]-(0.08+0.2725*astrabOutput['PARLAX'])/3600.
-        TNEW=TOLD+pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE),unit='D') #nan_to_num to make sure no NaT output in next iteration
+            ANG = ANGLE[mode-1]-(0.08+0.2725*astrabOutput['PARLAX'])/3600.
+        TNEW = TOLD+pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE),unit='D') #nan_to_num to make sure no NaT output in next iteration
         astrabOutput = astrab(TNEW,dT_TT,lon=lon,lat=lat)
-        ITER=ITER+1
-        PNEW=astrabOutput[IPAR]
-        RATE=np.array((PNEW-POLD)/((TNEW-TOLD).total_seconds()/86400))
+        ITER = ITER+1
+        PNEW = astrabOutput[IPAR]
+        RATE = np.array((PNEW-POLD)/((TNEW-TOLD).total_seconds()/86400))
         if ITER>20:
             raise Exception('Stopped after %s iterations, datetime=%s' %(ITER-1,TNEW))
-    TIMOUT=TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
+    TIMOUT = TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
 
     return TIMOUT
 
