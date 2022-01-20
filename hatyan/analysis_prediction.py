@@ -180,9 +180,11 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
     ts_pd = ts
-        
+    
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
     print('-'*50)
     print('running: get_components_from_ts')
@@ -251,7 +253,9 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     #TODO: imports naar bovenin scripts (hatyan breed)
     
     if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs) #TODO: kwargs are not read if hatyan_settings is not None, so add exception if both are not empty
+        hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
     #drop duplicate times
     print('-'*50)
@@ -382,6 +386,8 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
         
     #create sorted and complete component list
     const_list_inclCS_raw = comp.index.tolist() + hatyan_settings.CS_comps['CS_comps_derive'].tolist()
@@ -515,6 +521,8 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
     print('-'*50)
     print('PREDICTION initializing')
@@ -605,6 +613,8 @@ def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwar
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
     list_years = comp_allyears.columns.levels[1]
     ts_prediction_peryear = pd.DataFrame()
