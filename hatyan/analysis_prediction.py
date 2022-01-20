@@ -393,24 +393,8 @@ def split_components(comp, dood_date_mid, hatyan_settings=None):#, **kwargs):
 
     #retrieve freq and speed
     t_const_freq_pd, CS_v_0i_rad = get_freqv0_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    #CS_v_0i_rad = CS_v_0i_rad.values
     CS_u_i_rad, CS_f_i = get_uf_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_fu=dood_date_mid)
-    #CS_u_i_rad = CS_u_i_rad.values
-    #CS_f_i = CS_f_i.values
     
-    """
-    const_list = comp.index.tolist() #TODO: this is not sorted, needs fixing or not?
-    A_i = comp['A'].tolist()
-    phi_i_rad_str = np.deg2rad(comp['phi_deg'].tolist())
-    
-    #if CS_comps is not None: #component splitting
-    A_i_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
-    phi_i_rad_str_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
-    for iC,comp_sel in enumerate(const_list_inclCS):
-        if comp_sel in const_list:
-            A_i_inclCS[iC] = A_i[const_list.index(comp_sel)]
-            phi_i_rad_str_inclCS[iC] = phi_i_rad_str[const_list.index(comp_sel)]
-    """
     comp_inclCS = pd.DataFrame(comp,index=const_list_inclCS,columns=comp.columns)
     comp_inclCS['phi_rad'] = np.deg2rad(comp_inclCS['phi_deg'])
     comp_inclCS['phi_deg_preCS'] = comp_inclCS['phi_deg']
