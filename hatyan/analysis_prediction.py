@@ -396,71 +396,52 @@ def split_components(comp, dood_date_mid, hatyan_settings=None):#, **kwargs):
     CS_u_i_rad, CS_f_i = get_uf_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_fu=dood_date_mid)
     
     comp_inclCS = pd.DataFrame(comp,index=const_list_inclCS,columns=comp.columns)
-    comp_inclCS['phi_rad'] = np.deg2rad(comp_inclCS['phi_deg'])
+    comp_inclCS['A_preCS'] = comp_inclCS['A']
     comp_inclCS['phi_deg_preCS'] = comp_inclCS['phi_deg']
+    comp_inclCS['phi_rad_preCS'] = np.deg2rad(comp_inclCS['phi_deg'])
+    comp_inclCS['phi_rad'] = np.deg2rad(comp_inclCS['phi_deg'])
     comp_inclCS['phi_deg'] = np.nan
-    
-    def get_CS_vars(comp_slave, DBETA_in):
-        """
-        Used to calculate values related to component splitting
-        
-        """
-        #code from resuda.f, line 440 to 455
-        DMU = CS_f_i.loc[0,comp_slave]/CS_f_i.loc[0,comp_main]
-        DTHETA = ampfac
-        DGAMMA = np.deg2rad(degincr)-DBETA_in-(CS_v_0i_rad.loc[0,comp_slave]+CS_u_i_rad.loc[0,comp_slave])+(CS_v_0i_rad.loc[0,comp_main]+CS_u_i_rad.loc[0,comp_main]) #in FORTRAN code, CS_f_i slave/main is also added, this seems wrong
-        DREEEL = 1+DMU*DTHETA*np.cos(DGAMMA)
-        DIMAGI = DMU*DTHETA*np.sin(DGAMMA)  
-        DALPHA = np.sqrt(DREEEL*DREEEL+DIMAGI*DIMAGI)
-        if DALPHA < 1e-50:
-            raise Exception('ERROR: DALPHA too small, component splitting failed?')
-        DBETA = np.arctan2(DIMAGI,DREEEL)
-        if np.sign(DIMAGI) == np.sign(DREEEL):
-            DBETA = DBETA
-        else:
-            DBETA = DBETA
-        return DTHETA, DALPHA, DBETA
         
     for comp_main in np.unique(hatyan_settings.CS_comps['CS_comps_from']):
         bool_CS_maincomp = hatyan_settings.CS_comps['CS_comps_from'] == comp_main #boolean of which rows of CS_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
-        comp_slave = hatyan_settings.CS_comps.loc[bool_CS_maincomp,'CS_comps_derive'].tolist()
-        print('splitting component %s into %s'%(comp_main, comp_slave))
+        CS_comps_formain = hatyan_settings.CS_comps.loc[bool_CS_maincomp]
+        comp_slave_list = hatyan_settings.CS_comps.loc[bool_CS_maincomp,'CS_comps_derive'].tolist()
+        print('splitting component %s into %s'%(comp_main, comp_slave_list))
         
-        idslave_CScomp = hatyan_settings.CS_comps['CS_comps_derive'].tolist().index(comp_slave[0])
-        degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
-        ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
-        
-        DTHETA, DALPHA, DBETA = get_CS_vars(comp_slave[0],DBETA_in=0)
-        comp_inclCS.loc[comp_main,'A'] = comp_inclCS.loc[comp_main,'A']/DALPHA
-        comp_inclCS.loc[comp_main,'phi_rad'] = (comp_inclCS.loc[comp_main,'phi_rad']-DBETA)%(2*np.pi)
-        
-        if len(comp_slave) == 1:
-            comp_inclCS.loc[comp_slave[0],'A'] = comp_inclCS.loc[comp_main,'A']*DTHETA
-            comp_inclCS.loc[comp_slave[0],'phi_rad'] = (comp_inclCS.loc[comp_main,'phi_rad']+np.deg2rad(degincr))%(2*np.pi)
-        elif len(comp_slave) == 2:
-            #T2
-            idslave_CScomp2 = hatyan_settings.CS_comps['CS_comps_derive'].tolist().index(comp_slave[1])
-            degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp2]
-            ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp2]
+        DBETA = 0 #value gets updated if main component is splitted in more than one component
+        for iR, CS_comps_row in CS_comps_formain.iterrows():
+            #print(CS_comps_row)
+            comp_slave = CS_comps_row['CS_comps_derive']
+            degincr = CS_comps_row['CS_degincrs']
+            ampfac = CS_comps_row['CS_ampfacs']
             
-            DTHETA, DALPHA, DBETA = get_CS_vars(comp_slave[1], DBETA)
+            #code from resuda.f, line 440 to 455
+            DMU = CS_f_i.loc[0,comp_slave]/CS_f_i.loc[0,comp_main]
+            DTHETA = ampfac
+            DGAMMA = np.deg2rad(degincr)-DBETA-(CS_v_0i_rad.loc[0,comp_slave]+CS_u_i_rad.loc[0,comp_slave])+(CS_v_0i_rad.loc[0,comp_main]+CS_u_i_rad.loc[0,comp_main]) #in FORTRAN code, CS_f_i slave/main is also added, this seems wrong
+            DREEEL = 1+DMU*DTHETA*np.cos(DGAMMA)
+            DIMAGI = DMU*DTHETA*np.sin(DGAMMA)  
+            DALPHA = np.sqrt(DREEEL*DREEEL+DIMAGI*DIMAGI)
+            if DALPHA < 1e-50:
+                raise Exception('ERROR: DALPHA too small, component splitting failed?')
+            DBETA = np.arctan2(DIMAGI,DREEEL)
+            
+            # _preCS necessary since DALPHA and DBETA change with component loop
             comp_inclCS.loc[comp_main,'A'] = comp_inclCS.loc[comp_main,'A']/DALPHA
-            comp_inclCS.loc[comp_main,'phi_rad'] = (comp_inclCS.loc[comp_main,'phi_rad']-DBETA)%(2*np.pi)
+            comp_inclCS.loc[comp_main,'phi_rad'] = (comp_inclCS.loc[comp_main,'phi_rad']-DBETA)%(2*np.pi) 
+
+        for iR, CS_comps_row in CS_comps_formain.iterrows():
+            comp_slave = CS_comps_row['CS_comps_derive']
+            degincr = CS_comps_row['CS_degincrs']
+            ampfac = CS_comps_row['CS_ampfacs']
+            comp_inclCS.loc[comp_slave,'A'] = comp_inclCS.loc[comp_main,'A']*ampfac
+            comp_inclCS.loc[comp_slave,'phi_rad'] = (comp_inclCS.loc[comp_main,'phi_rad']+np.deg2rad(degincr))%(2*np.pi)
             
-            comp_inclCS.loc[comp_slave[1],'A'] = comp_inclCS.loc[comp_main,'A']*DTHETA
-            comp_inclCS.loc[comp_slave[1],'phi_rad'] = (comp_inclCS.loc[comp_main,'phi_rad']+np.deg2rad(degincr))%(2*np.pi)
-            
-            #revert back to K2
-            degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
-            ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
-            comp_inclCS.loc[comp_slave[0],'A'] = comp_inclCS.loc[comp_main,'A']*ampfac
-            comp_inclCS.loc[comp_slave[0],'phi_rad'] = (comp_inclCS.loc[comp_main,'phi_rad']+np.deg2rad(degincr))%(2*np.pi)
-        else:
-            raise Exception('ERROR: length of comp_slave is invalid (%i)'%(len(comp_slave)))
-     
     comp_inclCS['phi_deg'] = np.rad2deg(comp_inclCS['phi_rad'])
     
-    return comp_inclCS
+    comp_CS = comp_inclCS[['A','phi_deg']]
+    
+    return comp_CS
 
 
 def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hatyan_settings=None, **kwargs):
