@@ -249,18 +249,17 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     for details about arguments and return variables, see get_components_from_ts() definition
     
     """
-    #TODO: imports naar bovenin scripts (hatyan breed)
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
-    #drop duplicate times
     print('-'*50)
     print('ANALYSIS initializing')
     print(hatyan_settings)
         
+    #drop duplicate times
     ts_pd = ts[~ts.index.duplicated(keep='first')]
     if len(ts_pd) != len(ts):
         print('WARNING: %i duplicate times of the input timeseries were dropped prior to the analysis'%(len(ts)-len(ts_pd)))
@@ -286,9 +285,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
         const_list_dupl = pd.DataFrame({'constituent':const_list_uniq[bool_nonuniq],'occurences':const_list_uniq_counts[bool_nonuniq]})
         raise Exception('remove duplicate constituents from const_list:\n%s'%(const_list_dupl))
     
-    dood_date_mid = pd.Index([ts_pd.index[len(ts_pd.index)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan #TODO: this is incorrect in case of e.g. more missings in first half of year than second half
-    dood_date_start = ts_pd.index[:1] #first date (for v0, also freq?)
-    
+    #remove nans
     ts_pd_nonan = ts_pd[~ts_pd['values'].isna()]
     if len(ts_pd_nonan)==0:
         raise Exception('provided timeseries only contains nan values, analysis not possible')
@@ -296,46 +293,43 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
     print('percentage_nan in values_meas_sel: %.2f%%'%(percentage_nan))
     
-    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
-    t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
-
+    #get times and time array
+    dood_date_mid = pd.Index([ts_pd.index[len(ts_pd.index)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan #TODO: this is incorrect in case of e.g. more missings in first half of year than second half
+    dood_date_start = ts_pd.index[:1] #first date (for v0, also freq?)
     if hatyan_settings.fu_alltimes:
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
+    #times_from0_s = (pd.DatetimeIndex(ts_pd_nonan.index)-dood_date_start[0]).total_seconds().values
+    times_from0_s, fancy_pddt = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
+    times_from0_s = times_from0_s[:,np.newaxis]
+    
+    #get frequency and v0
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
+    omega_i_rads = t_const_freq_pd[['freq']].values.T*(2*np.pi)/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
-
-    v_u = np.add(v_0i_rad.values,u_i_rad.values)
+    v_u = v_0i_rad.values + u_i_rad.values
     
     check_rayleigh(ts_pd,t_const_freq_pd)
     
     #### TIMESERIES ANALYSIS
     N = len(const_list)
-    print('ANALYSIS start (for %i constituents)'%(N))
-    
-    #times_from0_s = (pd.DatetimeIndex(ts_pd_nonan.index)-dood_date_start[0]).total_seconds().values
-    times_from0_s, fancy_pddt = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
-    times_from0_s = np.transpose(times_from0_s[np.newaxis])
-    
     m = len(ts_pd_nonan['values'])
     
     # get xmat and make dot product
     xmat = np.zeros((m,2*N))
-    omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    
-    xmat[:,:N] = np.multiply(f_i.values,np.cos(np.multiply(omega_i_rads,times_from0_s)+v_u))
-    xmat[:,N:] = np.multiply(f_i.values,np.sin(np.multiply(omega_i_rads,times_from0_s)+v_u))
-    xmat_len = xmat.shape[1]
+    xmat[:,:N] = f_i.values * np.cos(omega_i_rads*times_from0_s+v_u)
+    xmat[:,N:] = f_i.values * np.sin(omega_i_rads*times_from0_s+v_u)
     
     xTmat = xmat.T
     print('calculating xTx matrix')
     tic = dt.datetime.now()
     xTxmat = np.dot(xTmat,xmat)
     print('xTx matrix calculated')
-    if 'A0' in const_list: #correct center value for better matrix condition
+    if 'A0' in const_list: #correct center value [N,N] for better matrix condition
         xTxmat_condition = np.linalg.cond(xTxmat)
         print('condition of xTx matrix before center adjustment for A0: %.2f'%(xTxmat_condition))
-        xTxmat[xmat_len//2,xmat_len//2] = m
+        xTxmat[N,N] = m
     xTxmat_condition = np.linalg.cond(xTxmat)
     print('condition of xTx matrix: %.2f'%(xTxmat_condition))
     if xTxmat_condition > 10:#100: #random treshold
@@ -344,17 +338,12 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     
     #solve matrix to get beta_roof_mat (and thus a, b)
     beta_roof_mat = np.linalg.solve(xTxmat,xTymat)
-    toc = dt.datetime.now()-tic
-    print('matrix system solved, elapsed time: %s'%(toc))
+    print('matrix system solved, elapsed time: %s'%(dt.datetime.now()-tic))
 
-    arctan_ab = np.arctan2(beta_roof_mat[N:],beta_roof_mat[:N]) #(a,b)
-    phi_i_rad = arctan_ab
-    
-    sqsqrt_ab = np.sqrt(np.add(beta_roof_mat[N:]**2,beta_roof_mat[:N]**2)) #(a,b)
-    A_i = sqsqrt_ab.flatten()
-    phi_i_deg_str = np.rad2deg(phi_i_rad.flatten()%(2*np.pi))
-    
-    COMP_pd = pd.DataFrame({'A': A_i, 'phi_deg': phi_i_deg_str}, index=const_list)
+    phi_i_rad = np.arctan2(beta_roof_mat[N:],beta_roof_mat[:N]) #(a,b) arctan_ab
+    A_i = np.sqrt(beta_roof_mat[N:]**2 + beta_roof_mat[:N]**2) #(a,b) sqsqrt_ab
+
+    COMP_pd = pd.DataFrame({'A': A_i, 'phi_deg': np.rad2deg(phi_i_rad%(2*np.pi))}, index=const_list)
     if 'A0' in COMP_pd.index: #correct 180 degrees A0 phase by making amplitude value negative
         if COMP_pd.loc['A0','phi_deg']==180:
             COMP_pd.loc['A0','A'] = -COMP_pd.loc['A0','A']
