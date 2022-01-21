@@ -102,8 +102,7 @@ class HatyanSettings:
         str_append = ''
         for key,val in self_dict.items():
             if key=='CS_comps' and self.CS_comps is not None:
-                for CS_key in ['CS_comps_derive','CS_comps_from']:
-                    str_append += f"{CS_key:20s} = {val[CS_key].tolist()}\n"#%('CS_comps from',CS_comps['CS_comps_from'].tolist()))
+                str_append += f'{key:20s} = \n{val}\n'
             else:
                 str_append += f'{key:20s} = {val}\n'
         return str_append
@@ -180,9 +179,11 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
     ts_pd = ts
-        
+    
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
     print('-'*50)
     print('running: get_components_from_ts')
@@ -251,7 +252,9 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     #TODO: imports naar bovenin scripts (hatyan breed)
     
     if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs) #TODO: kwargs are not read if hatyan_settings is not None, so add exception if both are not empty
+        hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
     #drop duplicate times
     print('-'*50)
@@ -269,13 +272,12 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     
     const_list = sort_const_list(const_list)
     
-    #TODO: nieuwe string formatting gebruiken
-    print('%-20s = %s'%('components analyzed',len(const_list)))
-    print('%-20s = %s'%('#timesteps',len(ts)))
-    print('%-20s = %s'%('tstart',ts.index[0].strftime('%Y-%m-%d %H:%M:%S')))
-    print('%-20s = %s'%('tstop',ts.index[-1].strftime('%Y-%m-%d %H:%M:%S')))
+    print(f'components analyzed  = {len(const_list)}')
+    print(f'#timesteps           = {len(ts)}')
+    print(f'tstart               = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}')
+    print(f'tstop                = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
     if hasattr(ts.index,'freq'):
-        print('%-20s = %s'%('timestep',ts.index.freq))
+        print(f'timestep             = {ts.index.freq}')
     
     #check for duplicate components (results in singular matrix)
     if len(const_list) != len(np.unique(const_list)):
@@ -382,105 +384,51 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
         
     #create sorted and complete component list
     const_list_inclCS_raw = comp.index.tolist() + hatyan_settings.CS_comps['CS_comps_derive'].tolist()
     const_list_inclCS = sort_const_list(const_list=const_list_inclCS_raw)
 
     #retrieve freq and speed
-    """from hatyan.schureman import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f #TODO: this is not generic schureman/foreman yet
-    t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list_inclCS, dood_date=dood_date_mid, return_allraw=True)
-    CS_v_0i_rad = get_schureman_v0(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
-    CS_f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
-    CS_u_i_rad = get_schureman_u(const_list=const_list_inclCS, dood_date=dood_date_mid).T.values
-    """
     t_const_freq_pd, CS_v_0i_rad = get_freqv0_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    CS_v_0i_rad = CS_v_0i_rad.values
     CS_u_i_rad, CS_f_i = get_uf_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_fu=dood_date_mid)
-    CS_u_i_rad = CS_u_i_rad.values
-    CS_f_i = CS_f_i.values
     
-    const_list = comp.index.tolist() #TODO: this is not sorted, needs fixing or not?
-    A_i = comp['A'].tolist()
-    phi_i_rad_str = np.deg2rad(comp['phi_deg'].tolist())
-    
-    #if CS_comps is not None: #component splitting
-    A_i_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
-    phi_i_rad_str_inclCS = np.full(shape=(len(const_list_inclCS)),fill_value=np.nan)
-    for iC,comp_sel in enumerate(const_list_inclCS):
-        if comp_sel in const_list:
-            A_i_inclCS[iC] = A_i[const_list.index(comp_sel)]
-            phi_i_rad_str_inclCS[iC] = phi_i_rad_str[const_list.index(comp_sel)]
-    
-    def get_CS_vars(iC_slave, DBETA_in):
-        """
-        Used to calculate values related to component splitting
-        
-        """
-        #code from resuda.f, line 440 to 455
-        DMU = CS_f_i[0,iC_slave]/CS_f_i[0,iC_main]
-        DTHETA = ampfac
-        DGAMMA = np.deg2rad(degincr)-DBETA_in-(CS_v_0i_rad[0,iC_slave]+CS_u_i_rad[0,iC_slave])+(CS_v_0i_rad[0,iC_main]+CS_u_i_rad[0,iC_main]) #in FORTRAN code, CS_f_i slave/main is also added, this seems wrong
-        DREEEL = 1+DMU*DTHETA*np.cos(DGAMMA)
-        DIMAGI = DMU*DTHETA*np.sin(DGAMMA)  
-        DALPHA = np.sqrt(DREEEL*DREEEL+DIMAGI*DIMAGI)
-        if DALPHA < 1e-50:
-            raise Exception('ERROR: DALPHA too small, component splitting failed?')
-        DBETA = np.arctan2(DIMAGI,DREEEL)
-        if np.sign(DIMAGI) == np.sign(DREEEL):
-            DBETA = DBETA
-        else:
-            DBETA = DBETA
-        return DTHETA, DALPHA, DBETA
-    
-    if len(np.unique(hatyan_settings.CS_comps['CS_comps_derive'])) != len(hatyan_settings.CS_comps['CS_comps_derive']):
-        raise Exception('ERROR: CS_comps_derive contains duplicate components')
+    comp_inclCS = pd.DataFrame(comp,index=const_list_inclCS,columns=comp.columns)
+    #comp_inclCS_preCS = comp_inclCS.copy()
         
     for comp_main in np.unique(hatyan_settings.CS_comps['CS_comps_from']):
-        main_ids = np.where(hatyan_settings.CS_comps['CS_comps_from'] == comp_main)[0]
-        comp_slave = hatyan_settings.CS_comps.loc[main_ids,'CS_comps_derive'].tolist()
-        print('splitting component %s into %s'%(comp_main, comp_slave))
+        bool_CS_maincomp = hatyan_settings.CS_comps['CS_comps_from'] == comp_main #boolean of which rows of CS_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
+        CS_comps_formain = hatyan_settings.CS_comps.loc[bool_CS_maincomp]
+        comp_slave_list = CS_comps_formain['CS_comps_derive'].tolist()
+        print(f'splitting component {comp_main} into {comp_slave_list}')
         
-        iC_main = const_list_inclCS.index(comp_main)
-        iC_slave = const_list_inclCS.index(comp_slave[0])
-        idslave_CScomp = hatyan_settings.CS_comps['CS_comps_derive'].tolist().index(comp_slave[0])
-        degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
-        ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
+        #first update main components based on degincrs/ampfacs of all components that are to be derived
+        DBETA = 0
+        for iR, CS_comps_row in CS_comps_formain.iterrows():
+            comp_slave = CS_comps_row['CS_comps_derive']
+            #code from resuda.f, line 440 to 455
+            DMU = CS_f_i.loc[0,comp_slave]/CS_f_i.loc[0,comp_main]
+            DTHETA = CS_comps_row['CS_ampfacs']
+            DGAMMA = np.deg2rad(CS_comps_row['CS_degincrs'])-DBETA-(CS_v_0i_rad.loc[0,comp_slave]+CS_u_i_rad.loc[0,comp_slave])+(CS_v_0i_rad.loc[0,comp_main]+CS_u_i_rad.loc[0,comp_main]) #in FORTRAN code, CS_f_i slave/main is also added, this seems wrong
+            DREEEL = 1+DMU*DTHETA*np.cos(DGAMMA)
+            DIMAGI = DMU*DTHETA*np.sin(DGAMMA)  
+            DALPHA = np.sqrt(DREEEL*DREEEL+DIMAGI*DIMAGI)
+            if DALPHA < 1e-50:
+                raise Exception('ERROR: DALPHA too small, component splitting failed?')
+            DBETA = np.arctan2(DIMAGI,DREEEL)
+            
+            comp_inclCS.loc[comp_main,'A'] = comp_inclCS.loc[comp_main,'A']/DALPHA
+            comp_inclCS.loc[comp_main,'phi_deg'] = (comp_inclCS.loc[comp_main,'phi_deg']-np.rad2deg(DBETA))%360 
         
-        DTHETA, DALPHA, DBETA = get_CS_vars(iC_slave,0)
-        A_i_inclCS[iC_main] = A_i_inclCS[iC_main]/DALPHA
-        phi_i_rad_str_inclCS[iC_main] = (phi_i_rad_str_inclCS[iC_main]-DBETA)%(2*np.pi)
-        
-        if len(comp_slave) == 1:
-            A_i_inclCS[iC_slave] = A_i_inclCS[iC_main]*DTHETA
-            phi_i_rad_str_inclCS[iC_slave] = (phi_i_rad_str_inclCS[iC_main]+np.deg2rad(degincr))%(2*np.pi)
-        elif len(comp_slave) == 2:
-            #T2
-            iC_slave2 = const_list_inclCS.index(comp_slave[1])
-            idslave_CScomp2 = hatyan_settings.CS_comps['CS_comps_derive'].tolist().index(comp_slave[1])
-            degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp2]
-            ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp2]
+        #updating slave components after updating main components, this makes a difference when splitting a component into more than two
+        for iR, CS_comps_row in CS_comps_formain.iterrows():
+            comp_slave = CS_comps_row['CS_comps_derive']
+            comp_inclCS.loc[comp_slave,'A'] = comp_inclCS.loc[comp_main,'A'] * CS_comps_row['CS_ampfacs']
+            comp_inclCS.loc[comp_slave,'phi_deg'] = (comp_inclCS.loc[comp_main,'phi_deg'] + CS_comps_row['CS_degincrs'])%360
             
-            DTHETA, DALPHA, DBETA = get_CS_vars(iC_slave2, DBETA)
-            A_i_inclCS[iC_main] = A_i_inclCS[iC_main]/DALPHA
-            phi_i_rad_str_inclCS[iC_main] = (phi_i_rad_str_inclCS[iC_main]-DBETA)%(2*np.pi)
-            
-            A_i_inclCS[iC_slave2] = A_i_inclCS[iC_main]*DTHETA
-            phi_i_rad_str_inclCS[iC_slave2] = (phi_i_rad_str_inclCS[iC_main]+np.deg2rad(degincr))%(2*np.pi)
-            
-            #revert back to K2
-            degincr = hatyan_settings.CS_comps['CS_degincrs'].tolist()[idslave_CScomp]
-            ampfac = hatyan_settings.CS_comps['CS_ampfacs'].tolist()[idslave_CScomp]
-            A_i_inclCS[iC_slave] = A_i_inclCS[iC_main]*ampfac
-            phi_i_rad_str_inclCS[iC_slave] = (phi_i_rad_str_inclCS[iC_main]+np.deg2rad(degincr))%(2*np.pi)
-        else:
-            raise Exception('ERROR: length of comp_slave is invalid (%i)'%(len(comp_slave)))
-     
-    phi_i_deg_str_inclCS = np.rad2deg(phi_i_rad_str_inclCS)
-    
-    comp_CS = pd.DataFrame({ 'A': A_i_inclCS, 'phi_deg': phi_i_deg_str_inclCS},index=const_list_inclCS)
-    
-    return comp_CS
+    return comp_inclCS
 
 
 def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hatyan_settings=None, **kwargs):
@@ -515,6 +463,8 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
     print('-'*50)
     print('PREDICTION initializing')
@@ -605,6 +555,8 @@ def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwar
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
+    elif len(kwargs)>0:
+        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
     list_years = comp_allyears.columns.levels[1]
     ts_prediction_peryear = pd.DataFrame()

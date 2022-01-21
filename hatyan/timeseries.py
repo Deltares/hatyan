@@ -1456,29 +1456,3 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     check_ts(data_pd)
     return data_pd
 
-
-def convertcoordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
-    from pyproj import Transformer
-
-    epsg_dict = {'RD':28992,'W84':4326,'E50':4230}
-    
-    if isinstance(epsg_in,str):
-        if epsg_in not in epsg_dict.keys():
-            raise Exception('when providing epsg_in as a string, the options are: %s'%(list(epsg_dict.keys())))
-        else:
-            epsgcode_in = epsg_dict[epsg_in]
-    else:
-        epsgcode_in = epsg_in
-    
-    if isinstance(epsg_out,str):
-        if epsg_out not in epsg_dict.keys():
-            raise Exception('when providing epsg_out as a string, the options are: %s'%(list(epsg_dict.keys())))
-        else:
-            epsgcode_out = epsg_dict[epsg_out]
-    else:
-        epsgcode_out = epsg_out
-        
-    transformer = Transformer.from_crs('epsg:%i'%(epsgcode_in), 'epsg:%i'%(epsgcode_out), always_xy=True)
-    coordx_out, coordy_out = transformer.transform(coordx_in, coordy_in)
-    
-    return coordx_out, coordy_out

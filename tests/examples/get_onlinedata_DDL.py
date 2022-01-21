@@ -129,14 +129,14 @@ if 0:
     if plot_stations: #plot all stations
         file_ldb = os.path.join(dir_testdata,'other','wvs_coastline3.ldb') #WGS84 ldb is converted to RD, but does not change anything wrt to matlab converted ldb, which is good
         ldb_pd_wgs = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['x','y'],na_values=[999.999])
-        x_out, y_out = hatyan.convertcoordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
+        x_out, y_out = hatyan.convert_coordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
         ldb_pd = pd.DataFrame({'RDx':x_out/1000, 'RDy':y_out/1000})
         
-        x_out, y_out = hatyan.convertcoordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=25831, epsg_out=28992)
+        x_out, y_out = hatyan.convert_coordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=25831, epsg_out=28992)
         fig,ax_map = plt.subplots()
         ax_map.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
         ax_map.plot(x_out/1000,y_out/1000,'xr')
-        #x_NZBN, y_NZBN = hatyan.convertcoordinates(coordx_in=4.07075, coordy_in=52.16182, epsg_in=4326, epsg_out=28992)
+        #x_NZBN, y_NZBN = hatyan.convert_coordinates(coordx_in=4.07075, coordy_in=52.16182, epsg_in=4326, epsg_out=28992)
         #ax_map.plot(x_NZBN/1000,y_NZBN/1000,'xb')
         for statx,staty,statname in zip(x_out,y_out,cat_locatielijst_sel['Naam']):
             ax_map.text(statx/1000,staty/1000,statname)
@@ -158,7 +158,7 @@ if 0:
             
             # PLOTTING
             if plot_stations: #plot all stations
-                x_out, y_out = hatyan.convertcoordinates(coordx_in=stationdata['X'], coordy_in=stationdata['Y'], epsg_in=25831, epsg_out=28992)
+                x_out, y_out = hatyan.convert_coordinates(coordx_in=stationdata['X'], coordy_in=stationdata['Y'], epsg_in=25831, epsg_out=28992)
                 ax_map.plot(x_out/1000,y_out/1000,'xg')
             
             if 0: #compare to local available measurements (Vlis 2009)

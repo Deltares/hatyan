@@ -128,7 +128,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     import pandas as pd
     import numpy as np
     import datetime as dt
-    import pytz
+    from hatyan.convert import convert_tzone2tzinfo
 
     #parse meta_dict to query_metadata dict
     query_metadata = {}
@@ -136,16 +136,9 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
         metakeymain = metakeypoint.split('.')[0]
         metakeysub = metakeypoint.split('.')[1]
         query_metadata[metakeymain] = {metakeysub:meta_dict[metakeypoint]}
-
-    if tzone.startswith('UTC+') or tzone.startswith('UTC-'): #parse to fixed offset like 'Etc/GMT-1'. +/- are counter intuitive but it works: https://pvlib-python.readthedocs.io/en/stable/timetimezones.html#fixedoffsets)
-        if len(tzone)!=9 or not tzone.endswith(':00'):
-            raise Exception('if tzone starts with UTC+ or UTC-, the string should be 9 characters long and have 0 minutes, like "UTC+01:00"')
-        tzone_hr = int(tzone[4:6])
-        if tzone[3]=='+':
-            tzone = 'Etc/GMT-%d'%(tzone_hr)
-        else:
-            tzone = 'Etc/GMT+%d'%(tzone_hr)
-    tzinfo = pytz.timezone(tzone)
+    
+    tzinfo = convert_tzone2tzinfo(tzone)
+    
     tstart_dt = tstart_dt.replace(tzinfo=tzinfo)
     tstop_dt = tstop_dt.replace(tzinfo=tzinfo)
     year_list = range(tstart_dt.year, tstop_dt.year+1)
