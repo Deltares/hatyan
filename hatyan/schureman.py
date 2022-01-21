@@ -206,9 +206,7 @@ def get_schureman_freqs(const_list, dood_date=None, sort_onfreq=True, return_all
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:
         const_list = const_list.tolist()
-
-    const_list_hatyan195, const_listoptions = get_const_list_hatyan('all_schureman', return_listoptions=True)
-    
+        
     if dood_date is None:
         dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     

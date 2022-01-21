@@ -33,6 +33,7 @@ file_path = os.path.realpath(__file__)
 #################################################
 
 
+@functools.lru_cache() #only caching this already makes foreman slightly faster
 def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     """
     Omzetten van het tweede deel van de foremantabel in een pandas DataFrame met harmonische (+satellite) componenten.
@@ -186,6 +187,7 @@ def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
     const_list = t_const_doodson_sol.index
 
     dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date=dood_date, mode=mode)
+
     if mode=='freq':
         dood_rad_array = np.stack([dood_T_rad,dood_S_rad,dood_H_rad,dood_P_rad,np.zeros((dood_N_rad.shape)),dood_P1_rad,np.zeros((dood_T_rad.shape))])
         t_const_freq_dood = np.dot(t_const_doodson_sol,dood_rad_array)/(2*np.pi)
@@ -294,6 +296,7 @@ def get_foreman_nodalfactors(const_list, dood_date):
 
     foreman_shallowrelations = get_foreman_shallowrelations()
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    #foreman_nodal_all = foreman_nodal_harmonic.copy()
     
     foreman_harmonic_doodson_all_list = foreman_doodson_harmonic.index.tolist()
     foreman_harmonic_nodal_all_list = foreman_nodal_harmonic.index.unique().tolist()
@@ -301,6 +304,8 @@ def get_foreman_nodalfactors(const_list, dood_date):
     
     f_i_FOR = np.ones((len(const_list),len(dood_date)))
     u_i_rad_FOR = np.zeros((len(const_list),len(dood_date)))
+    #f_i_FOR2 = np.ones((len(const_list),len(dood_date)))
+    #u_i_rad_FOR2 = np.zeros((len(const_list),len(dood_date)))
     
     #f and u for harmonic constituents
     for iC,const in enumerate(const_list):
@@ -308,9 +313,11 @@ def get_foreman_nodalfactors(const_list, dood_date):
             if const in foreman_harmonic_nodal_all_list:
                 foreman_harmonic_nodal_const = foreman_nodal_harmonic.loc[[const]]
                 f_i_FOR[iC,:], u_i_rad_FOR[iC,:] = get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date)
+                #f_i_FOR2[iC,:], u_i_rad_FOR2[iC,:] = get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date)
         elif const in foreman_shallowrelations_list: # component has satellites based on shallow water relations
             f_i_FOR_temp = 1.0
             u_i_rad_FOR_temp = 0.0
+            #temp_nodal_df = pd.DataFrame()
             foreman_shallow_const = foreman_shallowrelations.loc[const].tolist()
             num_dependencies = int(foreman_shallow_const[0])
             for iD in range(num_dependencies):
@@ -321,17 +328,24 @@ def get_foreman_nodalfactors(const_list, dood_date):
                 if harm_const not in foreman_harmonic_nodal_all_list:
                     raise Exception('ERROR: harmonic component %s for shallow water component %s is not available in the harmonic nodal factors (foreman_nodal_harmonic)'%(harm_const,const))
                 foreman_harmonic_nodal_const = foreman_nodal_harmonic.loc[[harm_const]]
+                #temp_nodal_df_onestep = pd.concat([harm_factor*foreman_nodal_all.loc[harm_const,:3],foreman_nodal_all.loc[harm_const,[4]]],axis=1)
+                #temp_nodal_df = temp_nodal_df.append(temp_nodal_df_onestep)
                 f_i_dependency, u_i_rad_dependency = get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date)#foreman_harmonic_nodal_all[foreman_harmonic_nodal_all_list.index()][iS]
                 f_i_FOR_temp = f_i_FOR_temp * f_i_dependency**abs(harm_factor)
                 u_i_rad_FOR_temp = u_i_rad_FOR_temp + harm_factor*u_i_rad_dependency
             f_i_FOR[iC,:] = f_i_FOR_temp
             u_i_rad_FOR[iC,:] = u_i_rad_FOR_temp
+            #temp_nodal_df.index = ['M4']*len(temp_nodal_df.index)
+            #f_i_FOR2[iC,:], u_i_rad_FOR2[iC,:] = get_foreman_nodalfactors_fromharmonic_oneconst(temp_nodal_df, dood_date)
         else:
             raise Exception('ERROR: constituent %s is not in foreman_harmonic_doodson_all_list and foreman_shallow_all_list, this is invalid.'%(const))
     
     f_i_FOR_pd = pd.DataFrame(f_i_FOR, index=const_list)
     u_i_rad_FOR_pd = pd.DataFrame(u_i_rad_FOR, index=const_list)
-    
+    #f_i_FOR2_pd = pd.DataFrame(f_i_FOR2, index=const_list)
+    #u_i_rad_FOR2_pd = pd.DataFrame(u_i_rad_FOR2, index=const_list)
+    #print(f_i_FOR_pd-f_i_FOR2_pd)
+    #print(u_i_rad_FOR_pd-u_i_rad_FOR2_pd)
     return f_i_FOR_pd, u_i_rad_FOR_pd
 
 
