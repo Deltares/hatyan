@@ -21,6 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+import os
+file_path = os.path.realpath(__file__)
+
 
 def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     """
@@ -873,6 +876,66 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     return TIMOUT
 
 
+def get_leapsecondslist_fromurlorfile():
+    """
+    
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    dict_leap_seconds : TYPE
+        DESCRIPTION.
+    expirydate : TYPE
+        DESCRIPTION.
+
+    """
+    import requests
+    import pandas as pd
+    import datetime as dt
+    
+    refdate = dt.datetime(1900,1,1)
+
+    url_leap_seconds_list = 'https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list' #previously, https://www.ietf.org/timezones/data/leap-seconds.list was used but this was outdated on 24-01-2022. #TODO: get most up to date source from somewhere.
+    file_leap_seconds_list = os.path.join(os.path.dirname(file_path),'leap-seconds.list') #in hatyan sourcefolder
+    #retrieve leap-seconds.list via url and write to file in hatyan sourcecode folder. If it fails, an old version of the file is used.
+    try:
+        resp = requests.get(url_leap_seconds_list)
+        if resp.status_code==404:
+            resp.raise_for_status()
+        with open(file_leap_seconds_list, 'wb') as f:
+            f.write(resp.content)
+    except requests.HTTPError as e: #catch raised 404 error
+        print(f'WARNING: leap-seconds.list not retrieved, using local copy. Error message: "{e}"')
+    except (FileNotFoundError, PermissionError) as e: #catch problems with writing to file
+        print(f'WARNING: leap-seconds.list not written, using local copy. Error message: "{e}"')
+        
+    #get expiry date from file
+    with open(file_leap_seconds_list) as f:
+        resp_pd_all = pd.Series(f.readlines())
+    #lastupdate_linestart = '#$'
+    #lastupydate_line = resp_pd_all.loc[resp_pd_all.str.startswith(lastupdate_linestart)]
+    #lastupdate = refdate + dt.timedelta(seconds=int(lastupydate_line.iloc[0].split()[1]))
+    expirydate_linestart = '#@'
+    expirydate_line = resp_pd_all.loc[resp_pd_all.str.startswith(expirydate_linestart)]
+    if len(expirydate_line) != 1:
+        raise Exception('less or more than 1 expirydate line found with "{expirydate_linestart}": {expirydate_line}')
+    expirydate = refdate + dt.timedelta(seconds=int(expirydate_line.iloc[0].split()[1]))
+    
+    #get leapsecond list from file
+    resp_pd = pd.read_csv(file_leap_seconds_list,comment='#',names=['seconds_since_19000101','leap_seconds'],delim_whitespace=True)
+    resp_pd['datetime'] = refdate + pd.to_timedelta(resp_pd['seconds_since_19000101'],unit='S')
+    resp_pd['datetime_str'] = resp_pd['datetime'].dt.strftime('%Y-%m-%d')
+    leap_seconds_pd = resp_pd.set_index('datetime_str')
+    #dict_leap_seconds = resp_pd['leap_seconds'].to_dict()
+    
+    return leap_seconds_pd, expirydate
+
+
+
 def dT(dateIn,mode_dT='exact'):
     """
     Calculates difference between terrestrial time and universal time.
@@ -915,7 +978,7 @@ def dT(dateIn,mode_dT='exact'):
         dT_TTval      = [50.97, 59.35, 64.90, 67.184] # difference between TT and UT1 (32.184s + leap seconds)
         dT_TTinc      = [0.998,  0.70,  0.42,  0.676] # yearly increment of dT curve: (dT_last-dT_5yBefore)/5
         if (dateIn.year>dT_TTyear[-1]+11).any(): # check if the last hard-coded value can still be used
-            print('WARNING: update hard-coded arrays in definition dT to continue using astrog for modes "last" and "historical"')
+            print('WARNING: update hard-coded arrays in definition dT to continue using astrog for modes "last" and "historical", ur use mode "exact"')
         #SCL: changed way to set ind to work with pandas DatetimeIndex
         ind = np.full(len(dateIn),-1) # use the last hard-coded value (same result as last available FORTRAN version)
         if mode_dT=='historical': # use the historical hard-coded values to reproduce results from older FORTRAN versions
@@ -930,54 +993,27 @@ def dT(dateIn,mode_dT='exact'):
         dT_TT = (dT_TTval+dT_TTinc*(np.array(dateIn.year)-dT_TTyear))/86400 # approximation of dT_TT in [year]
 
     elif mode_dT=='exact':
-        # hard-coded list with leap seconds
-        NTP = {'1972-01-01':10,
-               '1972-07-01':11,
-               '1973-01-01':12,
-               '1974-01-01':13,
-               '1975-01-01':14,
-               '1976-01-01':15,
-               '1977-01-01':16,
-               '1978-01-01':17,
-               '1979-01-01':18,
-               '1980-01-01':19,
-               '1981-07-01':20,
-               '1982-07-01':21,
-               '1983-07-01':22,
-               '1985-07-01':23,
-               '1988-01-01':24,
-               '1990-01-01':25,
-               '1991-01-01':26,
-               '1992-07-01':27,
-               '1993-07-01':28,
-               '1994-07-01':29,
-               '1996-01-01':30,
-               '1997-07-01':31,
-               '1999-01-01':32,
-               '2006-01-01':33,
-               '2009-01-01':34,
-               '2012-07-01':35,
-               '2015-07-01':36,
-               '2017-01-01':37,
-               }
-        NTP_valid = dt.datetime(2021, 12, 28) #display warning after this date
+        # get list with leap seconds
+        leap_seconds_pd, expirydate = get_leapsecondslist_fromurlorfile()
 
-        NTP_date = [dt.datetime.strptime(x,'%Y-%m-%d') for x in [*NTP]]
-        leap_sec = list(NTP.values())
+        NTP_date = leap_seconds_pd['datetime'].tolist()
+        leap_sec = leap_seconds_pd['leap_seconds'].tolist()
         ind = np.full(len(dateIn),-1)
         for iD in range(len(NTP_date)-2,-1,-1):
             ind[dateIn<NTP_date[iD]]=iD
         dT_TT  = (np.array(32.184) + list(map(leap_sec.__getitem__,  ind)) )/86400
 
-        if (dateIn>NTP_valid).any():
-            print('WARNING: hard-coded leap-second dataset is officially valid for dates up to %s for mode "exact". After this date, Astrog extrapolates based on last available leap-second values. To update the dataset, check: https://www.ietf.org/timezones/data/leap-seconds.list'%(NTP_valid.date()))
-            leap_sec_5yBefore = leap_sec[np.where(np.array(NTP_date)<NTP_valid-dt.timedelta(days=370*5))[0][-1]]
-            dT_TTyear = NTP_valid.year
+        if (dateIn>expirydate).any():
+            print(f'WARNING: leap-second dataset is officially valid for dates up to {expirydate.date()} for mode "exact". Dates after this date are corrected with the last available value. To update the dataset, check hatyan.astrog.get_leapsecondslist_fromurlorfile()')
+            """
+            leap_sec_5yBefore = leap_sec[np.where(np.array(NTP_date)<expirydate-dt.timedelta(days=370*5))[0][-1]]
+            dT_TTyear = expirydate.year
             dT_TTval  = leap_sec[-1]
             dT_TTinc  = (dT_TTval-leap_sec_5yBefore)/5
             # approximation of dT in requested year (dT = TT-UT1)
             dT_TT_extrapolated = (np.array(32.184) + dT_TTval+dT_TTinc*(np.array(dateIn.year)-dT_TTyear))/86400
             dT_TT[np.array(dateIn.year)-dT_TTyear>0] = dT_TT_extrapolated[np.array(dateIn.year)-dT_TTyear>0]
+            """
 
     else:
         raise Exception('mode=%s not recognized'%(mode_dT))

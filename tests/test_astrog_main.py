@@ -139,3 +139,9 @@ def test_astrog_astrac():
     for iMode in range(0,16):
         assert type(timeOutput[iMode]) == pd.DatetimeIndex
         assert abs(timeExpect[iMode]-timeOutput[iMode]).total_seconds() < 10E-5
+
+
+@pytest.mark.systemtest
+def test_astrog_leapsecondslist():
+    leap_seconds_pd, expirydate = hatyan.get_leapsecondslist_fromurlorfile()
+    
