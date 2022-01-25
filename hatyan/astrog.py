@@ -754,13 +754,15 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
     LHSUN = LHARI-RASUN                                           # local solar hour angle (rad)
     LHMOON = LHARI-RAMOON                                         # local lunar hour angle (rad)
 
-    # transformation to local coordinates
+    # transformation to local coordinates (astrab.f regel 558)
+    # LOCALE HOOGTE VAN DE ZON (ZONDER PARALLAX-CORRECTIE)
     ARGUM = TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
     ALTSUN = np.arcsin(ARGUM)#TODO: np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
+    # LOCALE HOOGTE VAN DE MAAN (MET PARALLAX-CORRECTIE)
     ARGUM = TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
     ALTMOO = np.arcsin(ARGUM)
     ALTMOO = ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600)# TODO: np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
-
+    
     # summarize in dataframe and convert output to degrees
     astrabOutput = {'EHMOON': (np.rad2deg(EHMOON)-90) % 360 + 90,
                     'DECMOO': np.rad2deg(DECMOO),
@@ -780,7 +782,8 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
                     'LATMOO': np.rad2deg(LATMOO),
                     'RAMOON': np.rad2deg(RAMOON) % 360,
                     'ANM'   : np.rad2deg(ANM) % 360}
-
+    #print(astrabOutput['ALTMOO'])
+    #print(astrabOutput['ALTSUN'])
     return astrabOutput
 
 
@@ -871,15 +874,16 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
         TOLD = TNEW.copy()
         POLD = PNEW.copy()
         if IPAR=='ALTMOO': # correction for semidiameter moon
-            ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600.
+            ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. #TODO: ANGLE in degrees and PARLAX in arcseconds
         TNEW = TOLD + pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #TODO: nan_to_num to make sure no NaT output in next iteration
+        #print('timediff in hours:\n%s'%(np.array((TNEW-TOLD).total_seconds()/3600)))
         ITER = ITER+1
         astrabOutput = astrab(TNEW,dT_fortran=dT_fortran,lon=lon,lat=lat)
         PNEW = astrabOutput[IPAR]
         
         RATE = np.array((PNEW-POLD)/((TNEW-TOLD).total_seconds()/86400))
         if ITER>20:
-            raise Exception('Stopped after %s iterations, datetime=%s' %(ITER,TNEW))
+            raise Exception('Stopped after %s iterations, datetime=\n%s' %(ITER,TNEW))
     TIMOUT = TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
 
     return TIMOUT
