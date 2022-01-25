@@ -29,9 +29,9 @@ for current_station in selected_stations:
     #START OF STATION SETTINGS
     settings = hatyan.HatyanSettings(nodalfactors=True, fu_alltimes=False, xfac=True,
                                      analysis_peryear=True, return_allyears=True,
-                                     source='foreman') #schureman takes 2-2.5 seconds, foreman takes 6 seconds
+                                     source='schureman') #schureman takes 2-2.5 seconds, foreman takes <5 seconds with 2x caching
     #constituent list
-    const_list = hatyan.get_const_list_hatyan('year') #94 const
+    const_list = ['M2','M4']#hatyan.get_const_list_hatyan('year') #94 const
     #vertical reference
     vertref='NAP'
     #END OF STATION SETTINGS

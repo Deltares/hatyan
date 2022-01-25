@@ -21,11 +21,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+import os
+import functools
 
-def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
+file_path = os.path.realpath(__file__)
+
+
+def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add lon dependency, currenty calculating culmination at lon=0
     """
     Makes use of the definitions dT, astrab and astrac.
-    Calculates lunar culminations, parallax and declination. By default the lunar culmination is calculated at coordinates 52,0 (Netherlands,Greenwich).
+    Calculates lunar culminations, parallax and declination. By default the lunar culmination is calculated at coordinates lon=0 (Greenwich), since EHMOON is used to calculate it. Possible to add lon-correction at end of definition.
 
     Parameters
     ----------
@@ -33,8 +38,8 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
         Start of timeframe for output.
     tLast : pd.Timestamp, datetime.datetime or string ("yyyymmdd")
         End of timeframe for output.
-    mode_dT : string, optional
-        Method to calculate difference between universal time and terrestrial time (dT). Can be 'last' (for fortran reproduction), 'historical' or 'exact' (most accurate). The default is 'exact'.
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     tzone : string/dt.timezone, optional
         Timezone to convert the output dataset to. The default is 'UTC'.
 
@@ -70,7 +75,7 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     date_last = tLast+dt.timedelta(hours=M2_period_hr+1*24)
 
     # estimate culminations (time and type)
-    astrabOutput = astrab(date_first,dT(date_first,mode_dT=mode_dT))
+    astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
     EHMOON = astrabOutput['EHMOON']
     EHMOON[EHMOON>=360] -= 360. #subtract 360 if larger than 360
     # ICUL=1: next culmination is lower culmination
@@ -82,8 +87,8 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     CULTYP[1::2] = (ICUL%2)+1
     
     # calculate exact time of culminations
-    CULTIM = astrac(CULEST, dT(CULEST,mode_dT=mode_dT), CULTYP)
-    astrabOutput = astrab(CULTIM, dT(CULTIM,mode_dT=mode_dT))
+    CULTIM = astrac(CULEST, dT_fortran=dT_fortran, mode=CULTYP) 
+    astrabOutput = astrab(CULTIM, dT_fortran=dT_fortran)
     PAR = astrabOutput['PARLAX']/3600 # TODO: conversion from degrees to arcseconds?
     DEC = astrabOutput['DECMOO']
     
@@ -100,7 +105,7 @@ def astrog_culminations(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataCulminations
 
 
-def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
+def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates lunar phases. The lunar phases are independent of coordinates.
@@ -111,8 +116,8 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
         Start of timeframe for output.
     tLast : datetime.datetime or string ("yyyymmdd")
         End of timeframe for output.
-    mode_dT : string, optional
-        Method to calculate difference between universal time and terrestrial time (dT). Can be 'last' (for fortran reproduction), 'historical' or 'exact' (most accurate). The default is 'exact'.
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     tzone : string/dt.timezone, optional
         Timezone to convert the output dataset to. The default is 'UTC'.
 
@@ -144,7 +149,7 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     date_last = tLast+dt.timedelta(days=FASINT+1)
 
     # estimate first lunar phase (time and type), correct first date (FAEST_first to 45 deg from there)
-    astrabOutput = astrab(date_first,dT(date_first,mode_dT=mode_dT))
+    astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
     ELONG = astrabOutput['ELONG']
     ELONG[ELONG>=360] -= 360.
     FAEST_first = date_first - pd.TimedeltaIndex((ELONG-45)%360/ELOINC, unit='D')
@@ -153,15 +158,16 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     date = pd.date_range(start=FAEST_first[0],end=date_last,freq='%iN'%(FASINT*24*3600*1e9))
 
     # estimate all lunar phases (time and type)
-    astrabOutput = astrab(date,dT(date,mode_dT=mode_dT))
+    astrabOutput = astrab(date,dT_fortran=dT_fortran)
     ELONG = astrabOutput['ELONG']
     ELONG[ELONG>=360] -= 360.
     FATYP=(np.array(ELONG/90.).astype(int)+3)%4+1 #make sure the next phase is searched for (modulus to use 'FATYP-1')
     FAEST=date-pd.TimedeltaIndex((90.*FATYP-ELONG)/ELOINC, unit='D')
 
     # calculate exact time of phase, loop until date_last
-    TIMDIF = pd.TimedeltaIndex(-dT(FAEST,mode_dT=mode_dT)+1./2880.,unit='D')
-    FATIM = astrac(FAEST,dT(FAEST,mode_dT=mode_dT),FATYP+2)+TIMDIF
+    dT_TT_days = dT(FAEST,dT_fortran=dT_fortran)/3600/24
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days,unit='D')
+    FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe and crop for requested timeframe
     dataPhases = pd.DataFrame({'datetime':FATIM.round('S'),'type':FATYP})
@@ -178,7 +184,7 @@ def astrog_phases(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataPhases
 
 
-def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52.1562):
+def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=52.1562):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates sunrise and -set at requested location.
@@ -189,8 +195,8 @@ def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52
         Start of timeframe for output.
     tLast : datetime.datetime or string ("yyyymmdd")
         End of timeframe for output.
-    mode_dT : string, optional
-        Method to calculate difference between universal time and terrestrial time (dT). Can be 'last' (for fortran reproduction), 'historical' or 'exact' (most accurate). The default is 'exact'.
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     tzone : string/dt.timezone, optional
         Timezone to convert the output dataset to. The default is 'UTC'.
     lon : float, optional
@@ -228,9 +234,10 @@ def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52
     ONEST  = DAYEST + dt.timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(OPEST,mode_dT=mode_dT)+1./2880.,unit='D')
-    OPTIM  = astrac(OPEST,dT(OPEST,mode_dT=mode_dT),np.array( 9),lon=lon,lat=lat)+TIMDIF
-    ONTIM  = astrac(ONEST,dT(ONEST,mode_dT=mode_dT),np.array(10),lon=lon,lat=lat)+TIMDIF
+    dT_TT_days = dT(OPEST,dT_fortran=dT_fortran)/3600/24
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days,unit='D')
+    OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array( 9),lon=lon,lat=lat) + TIMDIF
+    ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(10),lon=lon,lat=lat) + TIMDIF
 
     # make dataframe and crop for requested timeframe
     dataSun = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('S'))),'type':np.concatenate((np.full(len(OPTIM),1),np.full(len(OPTIM),2)))})
@@ -246,7 +253,7 @@ def astrog_sunriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52
     return dataSun
 
 
-def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=52.1562):
+def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=52.1562):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates moonrise and -set at requested location.
@@ -257,8 +264,8 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
         Start of timeframe for output.
     tLast : datetime.datetime or string ("yyyymmdd")
         End of timeframe for output.
-    mode_dT : string, optional
-        Method to calculate difference between universal time and terrestrial time (dT). Can be 'last' (for fortran reproduction), 'historical' or 'exact' (most accurate). The default is 'exact'.
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     tzone : string/dt.timezone, optional
         Timezone to convert the output dataset to. The default is 'UTC'.
     lon : float, optional
@@ -296,12 +303,12 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
 
     # --- moonrise and -set ---
     # estimate times
-    astrabOutput = astrab(date_first,dT(date_first,mode_dT=mode_dT),lon=lon,lat=lat)
+    astrabOutput = astrab(date_first,dT_fortran=dT_fortran,lon=lon,lat=lat)
     ALTMOO = astrabOutput['ALTMOO'] #TODO: this is in degrees, probably conversion to radians is necessary? (gives no equal division between moonrise/set as first instance)
     EHMOON = astrabOutput['EHMOON']
 
-    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise #TODO: the output should be in arcseconds, so this is conversion to arcminutes?
-        #EHMOON_corr = (EHMOON+89)%360-89 #if EHMOON>270, subtract 360
+    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise #TODO: the PARLAX output is in arcseconds, so /3600 might be conversion to degrees?
+    #if abs((270-EHMOON[0])/EHMINC) < abs((90-EHMOON[0])/EHMINC): #TODO: possible alternative
         #print('moonrise first')
         OPEST = pd.date_range(start=date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
         ONEST = OPEST + dt.timedelta(hours=M2_period_hr)
@@ -311,12 +318,13 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
         OPEST = ONEST + dt.timedelta(hours=M2_period_hr)
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(OPEST,mode_dT=mode_dT)+1./2880.,unit='D')
+    dT_TT_days = dT(OPEST,dT_fortran=dT_fortran)/3600/24
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days,unit='D')
     #print(ALTMOO, EHMOON, date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC))
     #print('ONEST',ONEST[0])
     #print('OPEST',OPEST[0])
-    OPTIM  = astrac(OPEST,dT(OPEST,mode_dT=mode_dT),np.array(7),lon=lon,lat=lat)+TIMDIF
-    ONTIM  = astrac(ONEST,dT(ONEST,mode_dT=mode_dT),np.array(8),lon=lon,lat=lat)+TIMDIF
+    OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array(7),lon=lon,lat=lat) + TIMDIF
+    ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(8),lon=lon,lat=lat) + TIMDIF
 
     # make dataframe and crop for requested timeframe
     dataMoon = {'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('S'))),'type':np.concatenate((np.full(len(OPTIM),1),np.full(len(OPTIM),2)))}
@@ -332,7 +340,7 @@ def astrog_moonriseset(tFirst,tLast,mode_dT='exact',tzone='UTC',lon=5.3876,lat=5
     return dataMoon
 
 
-def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
+def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates lunar anomalies. The lunar anomalies are independent of coordinates.
@@ -343,8 +351,8 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
         Start of timeframe for output.
     tLast : datetime.datetime or string ("yyyymmdd")
         End of timeframe for output.
-    mode_dT : string, optional
-        Method to calculate difference between universal time and terrestrial time (dT). Can be 'last' (for fortran reproduction), 'historical' or 'exact' (most accurate). The default is 'exact'.
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     tzone : string/dt.timezone, optional
         Timezone to convert the output dataset to. The default is 'UTC'.
 
@@ -376,7 +384,7 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     date_last = tLast+dt.timedelta(days=ANOINT+1)
 
     # estimate first lunar anomaly (time and type)
-    astrabOutput=astrab(date_first,dT(date_first,mode_dT=mode_dT))
+    astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
     DPAXDT=astrabOutput['DPAXDT']
     ANM   =astrabOutput['ANM']
     if DPAXDT>0.:
@@ -398,8 +406,9 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
         ANOTYP[1::2] = 1
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(ANOEST,mode_dT=mode_dT)+1./48., unit='D')
-    ANOTIM = astrac(ANOEST,dT(ANOEST,mode_dT=mode_dT),ANOTYP+14)+TIMDIF
+    dT_TT_days = dT(ANOEST,dT_fortran=dT_fortran)/3600/24
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days, unit='D')
+    ANOTIM = astrac(ANOEST,dT_fortran=dT_fortran,mode=ANOTYP+14) + TIMDIF
 
     # make dataframe and crop for requested timeframe
     dataAnomaly = pd.DataFrame({'datetime':ANOTIM.round('S'),'type':ANOTYP})
@@ -414,7 +423,7 @@ def astrog_anomalies(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataAnomaly
 
 
-def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
+def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates astronomical seasons. The seasons are independent of coordinates.
@@ -425,8 +434,8 @@ def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
         Start of timeframe for output.
     tLast : datetime.datetime or string ("yyyymmdd")
         End of timeframe for output.
-    mode_dT : string, optional
-        Method to calculate difference between universal time and terrestrial time (dT). Can be 'last' (for fortran reproduction), 'historical' or 'exact' (most accurate). The default is 'exact'.
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     tzone : string/dt.timezone, optional
         Timezone to convert the output dataset to. The default is 'UTC'.
 
@@ -454,8 +463,9 @@ def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     SEITYP = (SEIEST.month/3).astype(int)
 
     # calculate exact times, loop until tLast
-    TIMDIF = pd.TimedeltaIndex(-dT(SEIEST,mode_dT=mode_dT)+1./2880., unit='D') # conversion to UTC
-    SEITIM = astrac(SEIEST,dT(SEIEST,mode_dT=mode_dT),SEITYP+10)+TIMDIF
+    dT_TT_days = dT(SEIEST,dT_fortran=dT_fortran)/3600/24
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days, unit='D')
+    SEITIM = astrac(SEIEST,dT_fortran=dT_fortran,mode=SEITYP+10) + TIMDIF
 
     # make dataframe and crop for requested timeframe
     dataSeasons = pd.DataFrame({'datetime':SEITIM.round('S'),'type':SEITYP})
@@ -470,7 +480,7 @@ def astrog_seasons(tFirst,tLast,mode_dT='exact',tzone='UTC'):
     return dataSeasons
 
 
-def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
+def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
     """
     Python version of astrab.f in FORTRAN 77
     Calculates 18 astronomical parameters at requested time.
@@ -479,8 +489,8 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     ----------
     date : datetime.datetime or pandas.DatetimeIndex
         Requested time for calculation.
-    dT_TT : float
-        Difference between terrestrial and universal time in days.
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     lon : float, optional
         Longitude for altitudes, defined positive eastward. The default is 5.3876 (Amersfoort).
     lat : float, optional
@@ -518,6 +528,8 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
     import pandas as pd
     import numpy as np
     import datetime as dt
+    
+    dT_TT_days = dT(date,dT_fortran=dT_fortran)/3600/24 #Difference between terrestrial and universal time in days.
     
     # check input
     if isinstance(date, pd.DatetimeIndex):
@@ -736,19 +748,21 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
 
     # uurhoeken
     EHARI = (ARZERO+NARIES*TIME+cos_OBLIQ*np.deg2rad(CNULON/3600)) % (2*np.pi) # output value 12: ephemeris hour angle of vernal equinox (rad)
-    LHARI = EHARI-dT_TT*NARIES-RLONG                              # local hour angle of vernal equinox (rad)
+    LHARI = EHARI-dT_TT_days*NARIES-RLONG                         # local hour angle of vernal equinox (rad)
     EHSUN = EHARI-RASUN                                           # output value 14: solar ephemeris hour angle (rad)
     EHMOON = EHARI-RAMOON                                         # output value  1: lunar ephemeris hour angle (rad)
     LHSUN = LHARI-RASUN                                           # local solar hour angle (rad)
     LHMOON = LHARI-RAMOON                                         # local lunar hour angle (rad)
 
-    # transformation to local coordinates
+    # transformation to local coordinates (astrab.f regel 558)
+    # LOCALE HOOGTE VAN DE ZON (ZONDER PARALLAX-CORRECTIE)
     ARGUM = TEMP3*np.sin(RLATI)+np.cos(DECSUN)*np.cos(RLATI)*np.cos(LHSUN)
     ALTSUN = np.arcsin(ARGUM)#TODO: np.nan_to_num(np.arcsin(ARGUM),nan=np.copysign(np.pi/2,ARGUM))  # output value 7: solar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
+    # LOCALE HOOGTE VAN DE MAAN (MET PARALLAX-CORRECTIE)
     ARGUM = TEMP8*np.sin(RLATI)+np.cos(DECMOO)*np.cos(RLATI)*np.cos(LHMOON)
     ALTMOO = np.arcsin(ARGUM)
     ALTMOO = ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600)# TODO: np.nan_to_num(ALTMOO-np.cos(ALTMOO)*np.deg2rad(PARLAX/3600),nan=np.copysign(np.pi/2,ARGUM)) # output value 5: lunar altitude (rad). TODO: np.nan_to_num seems not necesary, filling in condition from if-statement
-
+    
     # summarize in dataframe and convert output to degrees
     astrabOutput = {'EHMOON': (np.rad2deg(EHMOON)-90) % 360 + 90,
                     'DECMOO': np.rad2deg(DECMOO),
@@ -768,11 +782,12 @@ def astrab(date,dT_TT,lon=5.3876,lat=52.1562):
                     'LATMOO': np.rad2deg(LATMOO),
                     'RAMOON': np.rad2deg(RAMOON) % 360,
                     'ANM'   : np.rad2deg(ANM) % 360}
-
+    #print(astrabOutput['ALTMOO'])
+    #print(astrabOutput['ALTSUN'])
     return astrabOutput
 
 
-def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
+def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
     """
     Python version of astrac.f in FORTRAN 77.
     Calculates exact time of requested astronomical phenomenon.
@@ -781,8 +796,6 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     ----------
     timeEst : datetime.datetime or pandas.DatetimeIndex
         Estimated time for iteration.
-    dT_TT : float
-        Difference between terrestrial and universal time in days.
     mode : numpy.array of integer(s)
         Requested phenomenon:
             1:  lunar lower culmination (EHMOON=180 deg.)
@@ -801,6 +814,8 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
             14: winter solstice (LONSUN=270 deg.)
             15: perigeum (DPAXDT=0, descending)
             16: apogeum (DPAXDT=0, ascending)
+    dT_fortran : boolean, optional
+        Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
     lon : float, optional
         Longitude for rise and set, defined positive eastward. The default is 5.3876 (Amersfoort).
     lat : float, optional
@@ -851,7 +866,7 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
     # calculate value at start of iteration
     ITER=1
     TNEW = timeEst
-    astrabOutput = astrab(TNEW,dT_TT,lon=lon,lat=lat)
+    astrabOutput = astrab(TNEW,dT_fortran=dT_fortran,lon=lon,lat=lat)
     PNEW = astrabOutput[IPAR]
     #bool_iterate = np.ones(shape=PNEW.shape,dtype=bool)
     # iterate until criterium is reached or max 20 times
@@ -859,34 +874,92 @@ def astrac(timeEst,dT_TT,mode,lon=5.3876,lat=52.1562):
         TOLD = TNEW.copy()
         POLD = PNEW.copy()
         if IPAR=='ALTMOO': # correction for semidiameter moon
-            ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600.
-        TNEW = TOLD + pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #TODO: nan_to_num to make sure no NaT output in next iteration
+            ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. #TODO: ANGLE in degrees and PARLAX in arcseconds
+        addtime = pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #TODO: nan_to_num to make sure no NaT output in next iteration
+        #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))
+        TNEW = TOLD + addtime
         ITER = ITER+1
-        astrabOutput = astrab(TNEW,dT_TT,lon=lon,lat=lat)
+        astrabOutput = astrab(TNEW,dT_fortran=dT_fortran,lon=lon,lat=lat)
         PNEW = astrabOutput[IPAR]
         
         RATE = np.array((PNEW-POLD)/((TNEW-TOLD).total_seconds()/86400))
         if ITER>20:
-            raise Exception('Stopped after %s iterations, datetime=%s' %(ITER,TNEW))
+            raise Exception('Stopped after %s iterations, datetime=\n%s' %(ITER,TNEW))
     TIMOUT = TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
 
     return TIMOUT
 
 
-def dT(dateIn,mode_dT='exact'):
+@functools.lru_cache() #caching this prevents retrieval from internet every second
+def get_leapsecondslist_fromurlorfile():
     """
-    Calculates difference between terrestrial time and universal time.
-    Current hard-coded values valid until 2023, update arrays afterwards.
+    
 
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    dict_leap_seconds : TYPE
+        DESCRIPTION.
+    expirydate : TYPE
+        DESCRIPTION.
+
+    """
+    import requests
+    import pandas as pd
+    import datetime as dt
+    
+    refdate = dt.datetime(1900,1,1)
+
+    url_leap_seconds_list = 'https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list' #previously, https://www.ietf.org/timezones/data/leap-seconds.list was used but this was outdated on 24-01-2022. #TODO: get most up to date source from somewhere.
+    file_leap_seconds_list = os.path.join(os.path.dirname(file_path),'leap-seconds.list')
+    
+    #retrieve leap-seconds.list via url and write to file in hatyan sourcecode folder. If it fails, an old version of the file is used.
+    try:
+        resp = requests.get(url_leap_seconds_list)
+        if resp.status_code==404:
+            resp.raise_for_status()
+        with open(file_leap_seconds_list, 'wb') as f:
+            f.write(resp.content)
+    except requests.HTTPError as e: #catch raised 404 error
+        print(f'WARNING: leap-seconds.list not retrieved, using local copy. Error message: "{e}"')
+    except (FileNotFoundError, PermissionError) as e: #catch problems with writing to file
+        print(f'WARNING: leap-seconds.list not written, using local copy. Error message: "{e}"')
+        
+    #get expiry date from file
+    with open(file_leap_seconds_list) as f:
+        resp_pd_all = pd.Series(f.readlines())
+    expirydate_linestart = '#@'
+    expirydate_line = resp_pd_all.loc[resp_pd_all.str.startswith(expirydate_linestart)]
+    if len(expirydate_line) != 1:
+        raise Exception('less or more than 1 expirydate line found with "{expirydate_linestart}": {expirydate_line}')
+    expirydate = refdate + dt.timedelta(seconds=int(expirydate_line.iloc[0].split()[1]))
+    
+    #get leapsecond list from file
+    resp_pd = pd.read_csv(file_leap_seconds_list,comment='#',names=['seconds_since_19000101','leap_seconds'],delim_whitespace=True)
+    resp_pd['datetime'] = refdate + pd.to_timedelta(resp_pd['seconds_since_19000101'],unit='S')
+    resp_pd['datetime_str'] = resp_pd['datetime'].dt.strftime('%Y-%m-%d')
+    leap_seconds_pd = resp_pd.set_index('datetime_str')
+    
+    return leap_seconds_pd, expirydate
+
+
+def dT(dateIn,dT_fortran=False):
+    """
+    Calculates difference between terrestrial time and universal time. Uses a leap-second file that automatically updates via hatyan.astrog.get_leapsecondslist_fromurlorfile(). Dates after the expiry date of the file are also corrected with the last available value. Dates befor 1972 are corrected with the first available value.
+    Background is available on https://astro.ukho.gov.uk/nao/miscellanea/DeltaT/
+    TT = TAI + 32.184 seconds. TAI - UTC = 37 s (latest value from leap-seconds.list). So UTC = TAI-37s = TT-32.184s-37s
+    Uses the international definition unless dT_fortran=True. 
+    
     Parameters
     ----------
     dateIn : datetime.datetime or pandas.DatetimeIndex
         Date for correction. Definition makes use of provided year.
-    mode : string, optional
-        'last': using the last hard-coded value (as last FORTRAN version)
-        'historical': using all (previous) hard-coded values (historical FORTRAN versions)
-        'exact' (default): determine dT based on number of leap seconds (follows international definition)
-
+    dT_fortran : boolean, optional
+        When True, use latest fortran dT and increment value instead of default international definition. The default is False.
     Raises
     ------
     Warning
@@ -895,92 +968,46 @@ def dT(dateIn,mode_dT='exact'):
     Returns
     -------
     dT_TT : float
-        Difference dT between terrestrial time (TT) and universal time (UT1) in seconds
+        Difference dT between terrestrial time (TT) and universal time (UT1) in seconds.
 
     """
     import pandas as pd
     import numpy as np
     import datetime as dt
-
+    import warnings
+    
     if isinstance(dateIn, pd.DatetimeIndex):
         pass
     elif isinstance(dateIn, dt.datetime):
         dateIn = pd.DatetimeIndex([dateIn])
     else:
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
-
-    if mode_dT=='last' or mode_dT=='historical': # use approximation of dT based on hard-coded values
-        # historical hard-coded values (taken from FORTRAN comments) from Astronomical Almanac - Reduction of time scales
+    
+    if dT_fortran: # reproduce fortran dT_TT values with latest dT and increment values from fortran code
+        warnings.warn('WARNING: If dT_fortran=True, the last values for dT and its increment are used from the fortran code, this is not accurate for years that are far away from 2012. Use dT_fortran=False since the default approach uses an automatically updated list of leap-seconds instead')
+        # historical hard-coded values (taken from FORTRAN comments) from Astronomical Almanac - Reduction of time scales (only last ones are used to reproduce fortran code)
         dT_TTyear     = [ 1980,  1993,  2002,  2012 ] # year of used dT_TTval value
         dT_TTval      = [50.97, 59.35, 64.90, 67.184] # difference between TT and UT1 (32.184s + leap seconds)
         dT_TTinc      = [0.998,  0.70,  0.42,  0.676] # yearly increment of dT curve: (dT_last-dT_5yBefore)/5
-        if (dateIn.year>dT_TTyear[-1]+11).any(): # check if the last hard-coded value can still be used
-            print('WARNING: update hard-coded arrays in definition dT to continue using astrog for modes "last" and "historical"')
-        #SCL: changed way to set ind to work with pandas DatetimeIndex
-        ind = np.full(len(dateIn),-1) # use the last hard-coded value (same result as last available FORTRAN version)
-        if mode_dT=='historical': # use the historical hard-coded values to reproduce results from older FORTRAN versions
-            ind[dateIn<dt.datetime(2013,10, 1)]=2
-            ind[dateIn<dt.datetime(2001,11,22)]=1
-            ind[dateIn<dt.datetime(1994, 8,23)]=0
-        dT_TTyear = list(map(dT_TTyear.__getitem__, ind))
-        dT_TTval  = list(map(dT_TTval.__getitem__,  ind))
-        dT_TTinc  = list(map(dT_TTinc.__getitem__,  ind))
-
+        
         # approximation of dT in requested year (dT = TT-UT1)
-        dT_TT = (dT_TTval+dT_TTinc*(np.array(dateIn.year)-dT_TTyear))/86400 # approximation of dT_TT in [year]
+        dT_TT = (dT_TTval[-1]+dT_TTinc[-1]*(np.array(dateIn.year)-dT_TTyear[-1]))#/86400 
 
-    elif mode_dT=='exact':
-        # hard-coded list with leap seconds
-        NTP = {'1972-01-01':10,
-               '1972-07-01':11,
-               '1973-01-01':12,
-               '1974-01-01':13,
-               '1975-01-01':14,
-               '1976-01-01':15,
-               '1977-01-01':16,
-               '1978-01-01':17,
-               '1979-01-01':18,
-               '1980-01-01':19,
-               '1981-07-01':20,
-               '1982-07-01':21,
-               '1983-07-01':22,
-               '1985-07-01':23,
-               '1988-01-01':24,
-               '1990-01-01':25,
-               '1991-01-01':26,
-               '1992-07-01':27,
-               '1993-07-01':28,
-               '1994-07-01':29,
-               '1996-01-01':30,
-               '1997-07-01':31,
-               '1999-01-01':32,
-               '2006-01-01':33,
-               '2009-01-01':34,
-               '2012-07-01':35,
-               '2015-07-01':36,
-               '2017-01-01':37,
-               }
-        NTP_valid = dt.datetime(2021, 12, 28) #display warning after this date
+    else: #use most exact approximation
+        # get list with leap seconds
+        if (dateIn<dt.datetime(1972,1,1)).any():
+            warnings.warn('WARNING: The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this might not be accurate.')
+        leap_seconds_pd, expirydate = get_leapsecondslist_fromurlorfile()
 
-        NTP_date = [dt.datetime.strptime(x,'%Y-%m-%d') for x in [*NTP]]
-        leap_sec = list(NTP.values())
-        ind = np.full(len(dateIn),-1)
-        for iD in range(len(NTP_date)-2,-1,-1):
-            ind[dateIn<NTP_date[iD]]=iD
-        dT_TT  = (np.array(32.184) + list(map(leap_sec.__getitem__,  ind)) )/86400
-
-        if (dateIn>NTP_valid).any():
-            print('WARNING: hard-coded leap-second dataset is officially valid for dates up to %s for mode "exact". After this date, Astrog extrapolates based on last available leap-second values. To update the dataset, check: https://www.ietf.org/timezones/data/leap-seconds.list'%(NTP_valid.date()))
-            leap_sec_5yBefore = leap_sec[np.where(np.array(NTP_date)<NTP_valid-dt.timedelta(days=370*5))[0][-1]]
-            dT_TTyear = NTP_valid.year
-            dT_TTval  = leap_sec[-1]
-            dT_TTinc  = (dT_TTval-leap_sec_5yBefore)/5
-            # approximation of dT in requested year (dT = TT-UT1)
-            dT_TT_extrapolated = (np.array(32.184) + dT_TTval+dT_TTinc*(np.array(dateIn.year)-dT_TTyear))/86400
-            dT_TT[np.array(dateIn.year)-dT_TTyear>0] = dT_TT_extrapolated[np.array(dateIn.year)-dT_TTyear>0]
-
-    else:
-        raise Exception('mode=%s not recognized'%(mode_dT))
+        NTP_date = leap_seconds_pd['datetime'].values#tolist()
+        leap_sec = leap_seconds_pd['leap_seconds'].values#.tolist()
+        #import matplotlib.pyplot as plt
+        #fig,ax=plt.subplots()
+        #ax.plot(leap_seconds_pd['datetime'], leap_seconds_pd['leap_seconds'])
+        ind = np.zeros(shape=dateIn.shape,dtype=int)
+        for iD, NTP_date_one in enumerate(NTP_date):
+            ind[dateIn>NTP_date_one] = iD
+        dT_TT = leap_sec[(ind)] + 32.184 #voor conversie van Terrestrial Time naar UTC (TAI = TT-32.184 = UTC+dT  >> UTC = TT-32.184-dT)
 
     return dT_TT
 
