@@ -27,10 +27,10 @@ import functools
 file_path = os.path.realpath(__file__)
 
 
-def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'):
+def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add lon dependency, currenty calculating culmination at lon=0
     """
     Makes use of the definitions dT, astrab and astrac.
-    Calculates lunar culminations, parallax and declination. By default the lunar culmination is calculated at coordinates 52,0 (Netherlands,Greenwich).
+    Calculates lunar culminations, parallax and declination. By default the lunar culmination is calculated at coordinates lon=0 (Greenwich), since EHMOON is used to calculate it. Possible to add lon-correction at end of definition.
 
     Parameters
     ----------
@@ -87,7 +87,7 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     CULTYP[1::2] = (ICUL%2)+1
     
     # calculate exact time of culminations
-    CULTIM = astrac(CULEST, dT_fortran=dT_fortran, mode=CULTYP)
+    CULTIM = astrac(CULEST, dT_fortran=dT_fortran, mode=CULTYP) 
     astrabOutput = astrab(CULTIM, dT_fortran=dT_fortran)
     PAR = astrabOutput['PARLAX']/3600 # TODO: conversion from degrees to arcseconds?
     DEC = astrabOutput['DECMOO']

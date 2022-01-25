@@ -19,7 +19,7 @@ import hatyan
 #dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 
 # script settings
-timeStart = dt.datetime(2022,1,19,12)
+timeStart = dt.datetime(2022,1,20)
 timeEnd   = dt.datetime(2022,1,27)
 dT_fortran = False #True is best comparison to fortran, False is more precise 
 tz_GMT = 'UTC' # UTC/GMT timezone
@@ -44,9 +44,9 @@ for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours
     sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_GMT, lon=lon, lat=52.0)
     print(sunriseset_python.iloc[-2:])
     
-lat,lon =  54.7165, 135.3084 #Vladivostok #this one crashes for longer time periods (rates of increase go off track). Sort of solved by switching signs of ALTMOO RATE in astrac, but moonrise/set are then switched
+#lat,lon =  54.7165, 135.3084 #Vladivostok #this one crashes for longer time periods (rates of increase go off track). Sort of solved by switching signs of ALTMOO RATE in astrac, but moonrise/set are then switched
 #lat,lon = -33.8688, 151.2093 #sydney
-#lat,lon =  52.1561,   5.3878 #amersfoort
+lat,lon =  52.1561,   5.3878 #amersfoort
 #lat,lon =  51.47869,  -0.01080 #greenwich
 sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='UTC+10:00', lon=lon,lat=lat)
 #sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='UTC', lon=lon,lat=lat)
