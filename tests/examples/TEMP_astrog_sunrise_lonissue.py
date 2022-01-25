@@ -10,7 +10,7 @@ Jan Rolf Hendriks
 import os, sys, pytz
 import numpy as np
 import datetime as dt
-import pandas as pdvla
+import pandas as pd
 import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
@@ -19,8 +19,8 @@ import hatyan
 #dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 
 # script settings
-timeStart = dt.datetime(2022,1,15)
-timeEnd   = dt.datetime(2022,1,17)
+timeStart = dt.datetime(2022,1,19,12)
+timeEnd   = dt.datetime(2022,1,27)
 dT_fortran = False #True is best comparison to fortran, False is more precise 
 tz_GMT = 'UTC' # UTC/GMT timezone
 try: #only works with pandas 1.2.0 or higher, but 1.1.5 is highest available pandas version in Python 3.6.12 (which is the highest available Python in RHEL)
@@ -43,21 +43,36 @@ for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours
     tz_LOCAL = dt.timezone(dt.timedelta(hours=lon/360*24))
     sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_GMT, lon=lon, lat=52.0)
     print(sunriseset_python.iloc[-2:])
-
-#sunriseset_python = hatyan.astrog_moonriseset(tFirst=dt.datetime(2022,1,15), tLast=dt.datetime(2022,1,20), dT_fortran=dT_fortran, tzone='Australia/Sydney', lon=151.2093, lat=-33.8688)
-sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='Vladivostok', lon=135.3084, lat=54.7165)
+    
+lat,lon =  54.7165, 135.3084 #Vladivostok #this one crashes for longer time periods (rates of increase go off track). Sort of solved by switching signs of ALTMOO RATE in astrac, but moonrise/set are then switched
+#lat,lon = -33.8688, 151.2093 #sydney
+#lat,lon =  52.1561,   5.3878 #amersfoort
+#lat,lon =  51.47869,  -0.01080 #greenwich
+sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='UTC+10:00', lon=lon,lat=lat)
+#sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='UTC', lon=lon,lat=lat)
+datesmoonrise = pd.DatetimeIndex(sunriseset_python.loc[:,'datetime'].dt.tz_localize(None))
 print(sunriseset_python)
+astrabOutput = hatyan.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
+print(astrabOutput['ALTSUN'])
+print(astrabOutput['ALTMOO'])
+#print(astrabOutput['ALTMOO'])
 
+breakit
 
 print('moon')
-for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntime
+for lon in [135]:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntime
     print()
     print(lon)
     tz_LOCAL = dt.timezone(dt.timedelta(hours=lon/360*24))
     try:
-        sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_GMT, lon=lon, lat=52.0)
+        lat=50
+        tzone_local = dt.timezone(dt.timedelta(hours=lon/360*24))
+        sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_GMT, lon=lon, lat=lat) 
         #print('SUCCES')
-        print(sunriseset_python.iloc[:3])
+        print(sunriseset_python)#.iloc[:3])
+        datesmoonrise = pd.DatetimeIndex(sunriseset_python.loc[:,'datetime'].dt.tz_localize(None))
+        astrabOutput = hatyan.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
+        print(astrabOutput['ALTMOO'])
     except Exception as e:
         print(f'FAILED: {e}')
 #%%

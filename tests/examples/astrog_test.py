@@ -117,22 +117,22 @@ if compare2fortran:
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python[['datetime','declination']], culminations_fortran[['datetime','declination']], typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.0005,.0005])
     fig.savefig(os.path.join(dir_output,'culmination_differences_declination.png'))
 
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_python, pd_fortran=phases_fortran, typeLab=['FQ','FM','LQ','NM'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_python, pd_fortran=phases_fortran, typeLab=['FQ','FM','LQ','NM'], timeBand=[-30,30])
     fig.savefig(os.path.join(dir_output,'phase_differences.png'))
 
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_long_python, pd_fortran=phases_long_fortran[['datetime','type']], typeLab=['FQ','FM','LQ','NM'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_long_python, pd_fortran=phases_long_fortran[['datetime','type']], typeLab=['FQ','FM','LQ','NM'], timeBand=[-30,30])
     fig.savefig(os.path.join(dir_output,'phase_differences_longperiod.png'))
 
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=moonriseset_python, pd_fortran=moonriseset_fortran, typeLab=['rise','set'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=moonriseset_python, pd_fortran=moonriseset_fortran, typeLab=['rise','set'], timeBand=[-30,30])
     fig.savefig(os.path.join(dir_output,'moonRiseSet_differences.png'))
     
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(sunriseset_python_somedays, sunriseset_fortran, typeLab=['rise','set'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(sunriseset_python_somedays, sunriseset_fortran, typeLab=['rise','set'], timeBand=[-30,30])
     fig.savefig(os.path.join(dir_output,'sunRiseSet_differences.png'))
     
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=anomalies_python, pd_fortran=anomalies_fortran, typeLab=['perigeum','apogeum'], timeBand=[0,3600])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=anomalies_python, pd_fortran=anomalies_fortran, typeLab=['perigeum','apogeum'], timeBand=[-1800,1800])
     fig.savefig(os.path.join(dir_output,'anomaly_differences.png'))
     
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=seasons_python, pd_fortran=seasons_fortran, typeLab=['spring','summer','autumn','winter'], timeBand=[0,60])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=seasons_python, pd_fortran=seasons_fortran, typeLab=['spring','summer','autumn','winter'], timeBand=[-30,30])
     fig.savefig(os.path.join(dir_output,'season_differences.png'))
 
 #%%

@@ -166,7 +166,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
 
     # calculate exact time of phase, loop until date_last
     dT_TT_days = dT(FAEST,dT_fortran=dT_fortran)/3600/24
-    TIMDIF = pd.TimedeltaIndex(-dT_TT_days+1./2880.,unit='D') #1/2880*24*3600=30 seconds
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days,unit='D')
     FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe and crop for requested timeframe
@@ -235,7 +235,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
 
     # calculate exact times
     dT_TT_days = dT(OPEST,dT_fortran=dT_fortran)/3600/24
-    TIMDIF = pd.TimedeltaIndex(-dT_TT_days+1./2880.,unit='D') #1/2880*24*3600=30 seconds
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days,unit='D')
     OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array( 9),lon=lon,lat=lat) + TIMDIF
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(10),lon=lon,lat=lat) + TIMDIF
 
@@ -307,8 +307,8 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     ALTMOO = astrabOutput['ALTMOO'] #TODO: this is in degrees, probably conversion to radians is necessary? (gives no equal division between moonrise/set as first instance)
     EHMOON = astrabOutput['EHMOON']
 
-    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise #TODO: the output should be in arcseconds, so this is conversion to arcminutes?
-        #EHMOON_corr = (EHMOON+89)%360-89 #if EHMOON>270, subtract 360
+    if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise #TODO: the PARLAX output is in arcseconds, so /3600 might be conversion to degrees?
+    #if abs((270-EHMOON[0])/EHMINC) < abs((90-EHMOON[0])/EHMINC): #TODO: possible alternative
         #print('moonrise first')
         OPEST = pd.date_range(start=date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
         ONEST = OPEST + dt.timedelta(hours=M2_period_hr)
@@ -319,7 +319,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
 
     # calculate exact times
     dT_TT_days = dT(OPEST,dT_fortran=dT_fortran)/3600/24
-    TIMDIF = pd.TimedeltaIndex(-dT_TT_days+1./2880.,unit='D') #1/2880*24*3600=30 seconds
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days,unit='D')
     #print(ALTMOO, EHMOON, date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC))
     #print('ONEST',ONEST[0])
     #print('OPEST',OPEST[0])
@@ -407,7 +407,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
 
     # calculate exact times
     dT_TT_days = dT(ANOEST,dT_fortran=dT_fortran)/3600/24
-    TIMDIF = pd.TimedeltaIndex(-dT_TT_days+1./48., unit='D') #1/2880*24*60=30 minutes
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days, unit='D')
     ANOTIM = astrac(ANOEST,dT_fortran=dT_fortran,mode=ANOTYP+14) + TIMDIF
 
     # make dataframe and crop for requested timeframe
@@ -464,7 +464,7 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
 
     # calculate exact times, loop until tLast
     dT_TT_days = dT(SEIEST,dT_fortran=dT_fortran)/3600/24
-    TIMDIF = pd.TimedeltaIndex(-dT_TT_days+1./2880., unit='D') #1/2880*24*3600=30 seconds
+    TIMDIF = pd.TimedeltaIndex(-dT_TT_days, unit='D')
     SEITIM = astrac(SEIEST,dT_fortran=dT_fortran,mode=SEITYP+10) + TIMDIF
 
     # make dataframe and crop for requested timeframe
@@ -875,8 +875,9 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
         POLD = PNEW.copy()
         if IPAR=='ALTMOO': # correction for semidiameter moon
             ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. #TODO: ANGLE in degrees and PARLAX in arcseconds
-        TNEW = TOLD + pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #TODO: nan_to_num to make sure no NaT output in next iteration
-        #print('timediff in hours:\n%s'%(np.array((TNEW-TOLD).total_seconds()/3600)))
+        addtime = pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #TODO: nan_to_num to make sure no NaT output in next iteration
+        #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))
+        TNEW = TOLD + addtime
         ITER = ITER+1
         astrabOutput = astrab(TNEW,dT_fortran=dT_fortran,lon=lon,lat=lat)
         PNEW = astrabOutput[IPAR]
@@ -995,7 +996,7 @@ def dT(dateIn,dT_fortran=False):
     else: #use most exact approximation
         # get list with leap seconds
         if (dateIn<dt.datetime(1972,1,1)).any():
-            warnings.warn('WARNING: The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this is not accurate.')
+            warnings.warn('WARNING: The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this might not be accurate.')
         leap_seconds_pd, expirydate = get_leapsecondslist_fromurlorfile()
 
         NTP_date = leap_seconds_pd['datetime'].values#tolist()
@@ -1006,7 +1007,7 @@ def dT(dateIn,dT_fortran=False):
         ind = np.zeros(shape=dateIn.shape,dtype=int)
         for iD, NTP_date_one in enumerate(NTP_date):
             ind[dateIn>NTP_date_one] = iD
-        dT_TT  = 32.184 + leap_sec[(ind)]
+        dT_TT = leap_sec[(ind)] + 32.184 #voor conversie van Terrestrial Time naar UTC (TAI = TT-32.184 = UTC+dT  >> UTC = TT-32.184-dT)
 
     return dT_TT
 
