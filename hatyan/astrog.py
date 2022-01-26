@@ -89,7 +89,7 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add l
     # calculate exact time of culminations
     CULTIM = astrac(CULEST, dT_fortran=dT_fortran, mode=CULTYP) 
     astrabOutput = astrab(CULTIM, dT_fortran=dT_fortran)
-    PAR = astrabOutput['PARLAX']/3600 # TODO: conversion from degrees to arcseconds?
+    PAR = astrabOutput['PARLAX']/3600 # conversion from arcseconds to degrees
     DEC = astrabOutput['DECMOO']
     
     # make dataframe and crop for requested timeframe
@@ -782,8 +782,7 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
                     'LATMOO': np.rad2deg(LATMOO),
                     'RAMOON': np.rad2deg(RAMOON) % 360,
                     'ANM'   : np.rad2deg(ANM) % 360}
-    #print(astrabOutput['ALTMOO'])
-    #print(astrabOutput['ALTSUN'])
+
     return astrabOutput
 
 
@@ -853,7 +852,7 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
     
     ANG = itertargets_pd.loc[mode,'ANGLE'] # required value after iteration
     CRIT = itertargets_pd.loc[mode,'CRITER'] # allowed difference between ANG and iteration result
-    RATE = itertargets_pd.loc[mode,'RAT'] # estimated change per day for iteration
+    RATE = itertargets_pd.loc[mode,'RAT'] # estimated change per day for iteration. [deg/day]?
     IPAR_all = itertargets_pd.loc[mode,'IPAR'] # define astrab output parameter corresponding to requested mode
     if len(np.unique(IPAR_all))!=1:
         raise Exception('incorrectly mixed modes requested, results in more than one IPAR')
@@ -868,8 +867,7 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
     TNEW = timeEst
     astrabOutput = astrab(TNEW,dT_fortran=dT_fortran,lon=lon,lat=lat)
     PNEW = astrabOutput[IPAR]
-    #bool_iterate = np.ones(shape=PNEW.shape,dtype=bool)
-    # iterate until criterium is reached or max 20 times
+    # iterate until criterium is reached or max 20 times (including catch for sunrise and moonrise)
     while (abs(ANG-PNEW) > CRIT).any():# and ITER <=20:
         TOLD = TNEW.copy()
         POLD = PNEW.copy()
@@ -877,13 +875,14 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
             ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. #TODO: ANGLE in degrees and PARLAX in arcseconds
         addtime = pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #TODO: nan_to_num to make sure no NaT output in next iteration
         #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))
+        if IPAR in ['ALTMOO','ALTSUN'] and (np.abs(np.array(addtime.total_seconds()/3600)) > 24).any(): #catch for ALTMOO and ALTSUN to let the iteration process stop before it escalates
+            raise Exception(f'Iteration step resulted in time changes larger than 24 hours (max {np.abs(addtime.total_seconds()).max()/3600:.2f} hours), try using a lower latitude')
         TNEW = TOLD + addtime
         ITER = ITER+1
         astrabOutput = astrab(TNEW,dT_fortran=dT_fortran,lon=lon,lat=lat)
         PNEW = astrabOutput[IPAR]
-        
         RATE = np.array((PNEW-POLD)/((TNEW-TOLD).total_seconds()/86400))
-        if ITER>20:
+        if ITER>20: #iteration catch from fortran, mibht not be necessary anymore
             raise Exception('Stopped after %s iterations, datetime=\n%s' %(ITER,TNEW))
     TIMOUT = TNEW#.round('S') # rounding everything to seconds reduces the accuracy of the reporduction of FORTRAN culmination times
 

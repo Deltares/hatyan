@@ -44,17 +44,18 @@ for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours
     sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_GMT, lon=lon, lat=52.0)
     print(sunriseset_python.iloc[-2:])
     
-#lat,lon =  54.7165, 135.3084 #Vladivostok #this one crashes for longer time periods (rates of increase go off track). Sort of solved by switching signs of ALTMOO RATE in astrac, but moonrise/set are then switched
-#lat,lon = -33.8688, 151.2093 #sydney
-lat,lon =  52.1561,   5.3878 #amersfoort
+lat,lon =  54.7165, 135.3084 #Vladivostok #this one crashes for longer time periods (rates of increase go off track). Sort of solved by switching signs of ALTMOO RATE in astrac, but moonrise/set are then switched and it crashes for lat,lon=50,45
+lat,lon =  50, 45.3084 #fake
+lat,lon = -33.8688, 151.2093 #sydney
+#lat,lon =  52.1561,   5.3878 #amersfoort
 #lat,lon =  51.47869,  -0.01080 #greenwich
 sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='UTC+10:00', lon=lon,lat=lat)
 #sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='UTC', lon=lon,lat=lat)
 datesmoonrise = pd.DatetimeIndex(sunriseset_python.loc[:,'datetime'].dt.tz_localize(None))
 print(sunriseset_python)
 astrabOutput = hatyan.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
-print(astrabOutput['ALTSUN'])
-print(astrabOutput['ALTMOO'])
+#print(astrabOutput['ALTSUN'])
+#print(astrabOutput['ALTMOO'])
 #print(astrabOutput['ALTMOO'])
 
 print('moon')
@@ -67,7 +68,7 @@ for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntim
         tzone_local = dt.timezone(dt.timedelta(hours=lon/360*24))
         sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_GMT, lon=lon, lat=lat) 
         #print('SUCCES')
-        print(sunriseset_python)#.iloc[:3])
+        print(sunriseset_python.iloc[:3])
         datesmoonrise = pd.DatetimeIndex(sunriseset_python.loc[:,'datetime'].dt.tz_localize(None))
         astrabOutput = hatyan.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
         print(astrabOutput['ALTMOO'])
