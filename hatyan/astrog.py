@@ -828,7 +828,7 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
     while (abs(ANG-PNEW) > CRIT).any():# and ITER <=20:
         TOLD = TNEW.copy()
         POLD = PNEW.copy()
-        if IPAR=='ALTMOO': # correction for semidiameter moon
+        if IPAR=='ALTMOO': # correction for semidiameter moon #TODO, might not be necessary to put in loop since PARLAX is not that variable over iterations
             ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. # ANGLE in degrees and PARLAX in arcseconds (/3600 gives degrees)
         addtime = pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,0),unit='D') #nan_to_num to make sure no NaT output in next iteration
         #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))

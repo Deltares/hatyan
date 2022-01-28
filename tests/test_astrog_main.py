@@ -113,9 +113,10 @@ def test_astrog_astrac():
         timeOutput.append(hatyan.astrac(timeInput,dT_fortran=False,mode=np.array(iMode)))
     
     # 4. Vefication
-    for iMode in range(0,16):
-        assert type(timeOutput[iMode]) == pd.DatetimeIndex
-        assert abs(timeExpect[iMode]-timeOutput[iMode]).total_seconds() < 10E-5
+    for iMode in range(1,17):
+        print(iMode)
+        assert type(timeOutput[iMode-1]) == pd.DatetimeIndex
+        assert abs(timeExpect[iMode-1]-timeOutput[iMode-1]).total_seconds() < 10E-5
 
 
 @pytest.mark.systemtest
