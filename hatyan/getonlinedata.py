@@ -78,11 +78,11 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
         url_ddl = 'https://waterwebservices.rijkswaterstaat.nl/ONLINEWAARNEMINGENSERVICES_DBO/CheckWaarnemingenAanwezig'
         request_ddl = {"AquoMetadataLijst" :[query_metadata],
                          "LocatieLijst":[query_station],
-                         "Periode":{"Begindatumtijd":query_tstart_str, # TODO IMPROVEMENT: if user accidentally switches start/stop dates in query, OphalenWaarnemingen returns 'Begindatum is groter dan einddatum. (check_available=False)', CheckWaarnemingenAanwezig crashes instead of returning a proper error
+                         "Periode":{"Begindatumtijd":query_tstart_str, # DDL IMPROVEMENT: if user accidentally switches start/stop dates in query, OphalenWaarnemingen returns 'Begindatum is groter dan einddatum. (check_available=False)', CheckWaarnemingenAanwezig crashes instead of returning a proper error
                                     "Einddatumtijd":query_tstop_str}
                         }
-        # TODO IMPROVEMENT: would be valuable to quickly get available start/stop time and number of available measurements (timesteps). Below is a (slow) example, seems to take as much time as retrieving measurements
-        # TODO IMPROVEMENT: welke groeperingsperiodes zijn beschikbaar en kan 'geen' ook? (JsonProcessingException: Can not construct instance of nl.ordina.request.OphalenAantalWaarnemingenRequest$Groepering from String value 'geen': value not one of declared Enum instance names.)
+        # DDL IMPROVEMENT: would be valuable to quickly get available start/stop time and number of available measurements (timesteps). Below is a (slow) example, seems to take as much time as retrieving measurements
+        # DDL IMPROVEMENT: welke groeperingsperiodes zijn beschikbaar en kan 'geen' ook? (JsonProcessingException: Can not construct instance of nl.ordina.request.OphalenAantalWaarnemingenRequest$Groepering from String value 'geen': value not one of declared Enum instance names.)
         """
         url_ddl = 'https://waterwebservices.rijkswaterstaat.nl/ONLINEWAARNEMINGENSERVICES_DBO/OphalenAantalWaarnemingen'
         request_ddl = {"AquoMetadataLijst" :[query_metadata],
@@ -93,7 +93,7 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
                         }
         print(result['AantalWaarnemingenPerPeriodeLijst'][0]['AantalMetingenPerPeriodeLijst'])
         """
-        # TODO IMPROVEMENT: OphalenLaatsteWaarnemingen seems to be valuable to get the end time for a station, however resulted waarnemingenlijst for one station has multiple entries (probably multiple WaardeBepalingsmethode?) but also MetingenLijst sometimes also has multiple entries, how to interpret this?
+        # DDL IMPROVEMENT: OphalenLaatsteWaarnemingen seems to be valuable to get the end time for a station, however resulted waarnemingenlijst for one station has multiple entries (probably multiple WaardeBepalingsmethode?) but also MetingenLijst sometimes also has multiple entries, how to interpret this?
         """
         url_ddl = 'https://waterwebservices.rijkswaterstaat.nl/ONLINEWAARNEMINGENSERVICES_DBO/OphalenLaatsteWaarnemingen'
         request_ddl = {"AquoPlusWaarnemingMetadataLijst":[{"AquoMetadata":query_metadata}],"LocatieLijst":[query_station]}
@@ -103,9 +103,9 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
         #retrieve data
         url_ddl = 'https://waterwebservices.rijkswaterstaat.nl/ONLINEWAARNEMINGENSERVICES_DBO/OphalenWaarnemingen'
         request_ddl = {"AquoPlusWaarnemingMetadata":{"AquoMetadata":query_metadata},
-                      "Locatie":query_station,#{"X":518882.333320247,"Y":5760829.11729589,"Code":"EURPFM"}, # TODO IMPROVEMENT: it seems not not possible to retreive by station Naam/Code/Locatie_MessageID only. X+Y+Code is minimum, so supplying entire dict. Why is this so strict? It seems odd that one needs to supply a six decimal RD coordinate (so micrometer accuracy) while 'Code' and 'Locatie_MessageID' are both already unique.
-                      "Periode":{"Begindatumtijd":query_tstart_str, # TODO IMPROVEMENT: longer timeseries (eg 4 years) take a long time or return error (Foutmelding: Het max aantal waarnemingen (157824) is overschreven, beperk uw request.). Can this not be extended? >> now retrieving per year, is that always possible with this limit?
-                                 "Einddatumtijd":query_tstop_str} # TODO IMPROVEMENT: recent data for eg HOEKVLD is not available but it is as station HOEK, can these stations not be one, but with a different kaliteitscode/statuswaarde/GrootheidCode/GroeperingCode etc? I was a bit surprised that 'ongecontroleerd' (and HOEK in general) also has kwaliteitscode=0
+                      "Locatie":query_station,#{"X":518882.333320247,"Y":5760829.11729589,"Code":"EURPFM"}, # DDL IMPROVEMENT: it seems not not possible to retreive by station Naam/Code/Locatie_MessageID only. X+Y+Code is minimum, so supplying entire dict. Why is this so strict? It seems odd that one needs to supply a six decimal RD coordinate (so micrometer accuracy) while 'Code' and 'Locatie_MessageID' are both already unique.
+                      "Periode":{"Begindatumtijd":query_tstart_str, # DDL IMPROVEMENT: longer timeseries (eg 4 years) take a long time or return error (Foutmelding: Het max aantal waarnemingen (157824) is overschreven, beperk uw request.). Can this not be extended? >> now retrieving per year, is that always possible with this limit?
+                                 "Einddatumtijd":query_tstop_str} # DDL IMPROVEMENT: recent data for eg HOEKVLD is not available but it is as station HOEK, can these stations not be one, but with a different kaliteitscode/statuswaarde/GrootheidCode/GroeperingCode etc? I was a bit surprised that 'ongecontroleerd' (and HOEK in general) also has kwaliteitscode=0
                       }
         
     #print(request_ddl)
@@ -146,7 +146,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     station_str = '/'.join([str(station_dict[x]) for x in station_dict.keys() if x not in ['X','Y','Coordinatenstelsel']])
     print('processing station %s: %s to %s (%d years)'%(station_str,tstart_dt,tstop_dt,len(year_list)))
     result_available = get_DDL_queryserver(station_dict,query_metadata,tstart_dt,tstop_dt,check_available=True)
-    if result_available['WaarnemingenAanwezig']!='true': # TODO IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
+    if result_available['WaarnemingenAanwezig']!='true': # DDL IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
         print('WARNING: no values present for this query, returning None')
         return #preliminary abort of definition
 
@@ -158,7 +158,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
         tstop_dt_oneyear = np.minimum(tstop_dt,dt.datetime(year+1,1,1,tzinfo=tzinfo))
 
         result_available = get_DDL_queryserver(station_dict,query_metadata,tstart_dt_oneyear,tstop_dt_oneyear,check_available=True)
-        if result_available['WaarnemingenAanwezig']!='true': # TODO IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
+        if result_available['WaarnemingenAanwezig']!='true': # DDL IMPROVEMENT: WaarnemingenAanwezig is now a 'true' string instead of a True boolean (result_available['Succesvol'] is also a boolean)
             print('year %d: no values'%(year))
             continue
         print('year %d: retrieving data'%(year))
@@ -175,7 +175,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             result_wl0_metingenlijst = pd.json_normalize(result_wl0['MetingenLijst']) # the actual waterlevel data for this station
             if not result_wl0_metingenlijst['Tijdstip'].is_monotonic_increasing:
                 #print('WARNING: retrieved timeseries is not monotonic increasing, so it was sorted')
-                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values('Tijdstip').reset_index(drop=True) # TODO IMPROVEMENT: data in response is not always sorted on time
+                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values('Tijdstip').reset_index(drop=True) # DDL IMPROVEMENT: data in response is not always sorted on time
             last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst['Tijdstip'].iloc[-1]).tz_convert(tstart_dt.tzinfo)
             if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
                 result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
@@ -208,13 +208,13 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             
             
     result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.reset_index(drop=True)
-    # TODO IMPROVEMENT: WaarnemingMetadata: all values are nested lists of length 1, can be flattened (they are actually not list/lijst, but statuswaarde instead of statuswaardelijst and kwaliteitswaardecode instead of kwaliteitswaardecodelijst).
-    # TODO IMPROVEMENT: WaarnemingMetadata: Bemonsteringshoogte/Referentievlak/OpdrachtgevendeInstantie is probably constant for each query result, so could be added to aquometadata frame instead of a value per timestep (probably makes query faster and can be longer)
-    # TODO IMPROVEMENT: WaarnemingMetadata: there seems to be no explanation in the catalog or metadata of the KwaliteitswaardecodeLijst values
-    # TODO IMPROVEMENT: when retrieving waterlevel extremes, it is not possible to distinguish between HW and LW, since the codes are not available in the output
+    # DDL IMPROVEMENT: WaarnemingMetadata: all values are nested lists of length 1, can be flattened (they are actually not list/lijst, but statuswaarde instead of statuswaardelijst and kwaliteitswaardecode instead of kwaliteitswaardecodelijst).
+    # DDL IMPROVEMENT: WaarnemingMetadata: Bemonsteringshoogte/Referentievlak/OpdrachtgevendeInstantie is probably constant for each query result, so could be added to aquometadata frame instead of a value per timestep (probably makes query faster and can be longer)
+    # DDL IMPROVEMENT: WaarnemingMetadata: there seems to be no explanation in the catalog or metadata of the KwaliteitswaardecodeLijst values
+    # DDL IMPROVEMENT: when retrieving waterlevel extremes, it is not possible to distinguish between HW and LW, since the codes are not available in the output
     # create improved pandas DataFrame
     key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
-    if not key_numericvalues in result_wl0_metingenlijst_alldates.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #TODO IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
+    if not key_numericvalues in result_wl0_metingenlijst_alldates.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
     ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates[key_numericvalues].values,
                                'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int).values, 
@@ -241,7 +241,7 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',me
     cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Locatie_MessageID')
     cat_AquoMetadataLocatieLijst_locidx = catalog_dict['AquoMetadataLocatieLijst'].set_index('Locatie_MessageID')
     cat_AquoMetadataLocatieLijst_metaidx = catalog_dict['AquoMetadataLocatieLijst'].set_index('AquoMetaData_MessageID')
-    # TODO IMPROVEMENT: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs: [38, 43, 75, 98, 99, 176] (and probably somewhat more), so these will not be present in cat_locatielijst_sel
+    # DDL IMPROVEMENT: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs: [38, 43, 75, 98, 99, 176] (and probably somewhat more), so these will not be present in cat_locatielijst_sel
     
     if meta_dict is None and station is None: #this makes the rest of the function a bit simpler to write
         raise Exception('using this function has no added value when not supplying meta and station')

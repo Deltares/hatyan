@@ -545,8 +545,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
                  'institution': 'Rijkswaterstaat',
                  'source': 'hatyan-%s tidal analysis program of Rijkswaterstaat'%(version_no),
                  'timestep_min': times_stepmin}
-    for ncattrname in list(attr_dict.keys()):
-        data_nc.setncattr(ncattrname, attr_dict[ncattrname])
+    data_nc.setncatts(attr_dict)
     
     ncvarlist = list(data_nc.variables.keys())
     ncdimlist = list(data_nc.dimensions.keys())
@@ -571,13 +570,11 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     #dict_HWrowsizeattr = {'long_name':'number of observations for this station', 'sample_dimension':'obs_raggedHW'}
     if 'stations' not in ncvarlist: #create empty variables if not yet present
         nc_newvar = data_nc.createVariable('stations','S1',('stations','statname_len',))
-        for attrname in list(dict_statattr.keys()): #TODO: gebruik setncatts en haal alle for loops weg
-            nc_newvar.setncattr(attrname, dict_statattr[attrname])
+        nc_newvar.setncatts(dict_statattr)
     
     if 'analysis_time' not in ncvarlist:
         nc_newvar = data_nc.createVariable('analysis_time','f8',('analysis_time',))
-        for attrname in list(dict_anatimattr.keys()):
-            nc_newvar.setncattr(attrname, dict_anatimattr[attrname])
+        nc_newvar.setncatts(dict_anatimattr)
         data_nc.variables['analysis_time'][0] = date2num([dt_analysistime], units=data_nc.variables['analysis_time'].units)   
     
     #current length is used as index
@@ -588,14 +585,12 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     #general prediction
     if 'time' not in ncvarlist:
         nc_newvar = data_nc.createVariable('time','f8',('time',))
-        for attrname in list(dict_timattr.keys()):
-            nc_newvar.setncattr(attrname, dict_timattr[attrname])
+        nc_newvar.setncatts(dict_timattr)
         #set time contents upon creation of variable, is constant over loop
         data_nc.variables['time'][:] = date2num(times_all.tolist(),units=data_nc.variables['time'].units)
     if 'waterlevel_astro' not in ncvarlist:
         nc_newvar = data_nc.createVariable('waterlevel_astro','f8',('stations','time',))
-        for attrname in list(dict_wlattr.keys()):
-            nc_newvar.setncattr(attrname, dict_wlattr[attrname])
+        nc_newvar.setncatts(dict_wlattr)
     data_nc.variables['waterlevel_astro'][nstat,:] = timeseries
     
     if ts_ext is None:
@@ -615,13 +610,11 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         data_nc.createDimension('time_HW',len(data_HW))
     if 'time_HW' not in ncvarlist:
         nc_newvar = data_nc.createVariable('time_HW','f8',('time_HW',))
-        for attrname in list(dict_timattr.keys()):
-            nc_newvar.setncattr(attrname, dict_timattr[attrname])
+        nc_newvar.setncatts(dict_timattr)
     data_nc.variables['time_HW'][:] = date2num(data_HW.index.tolist(),units=data_nc.variables['time_HW'].units)
     if 'waterlevel_astro_HW' not in ncvarlist:
         nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','time_HW',))
-        for attrname in list(dict_HWattr.keys()):
-            nc_newvar.setncattr(attrname, dict_HWattr[attrname])
+        nc_newvar.setncatts(dict_HWattr)
     data_nc.variables['waterlevel_astro_HW'][nstat,:] = data_HW['values']
     
     #LW
@@ -629,26 +622,22 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         data_nc.createDimension('time_LW',len(data_LW))
     if 'time_LW' not in ncvarlist:
         nc_newvar = data_nc.createVariable('time_LW','f8',('time_LW',))
-        for attrname in list(dict_timattr.keys()):
-            nc_newvar.setncattr(attrname, dict_timattr[attrname])
+        nc_newvar.setncatts(dict_timattr)
     data_nc.variables['time_LW'][:] = date2num(data_LW.index.tolist(),units=data_nc.variables['time_LW'].units)
     if 'waterlevel_astro_LW' not in ncvarlist:
         nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','time_LW',))
-        for attrname in list(dict_LWattr.keys()):
-            nc_newvar.setncattr(attrname, dict_LWattr[attrname])
+        nc_newvar.setncatts(dict_LWattr)
     data_nc.variables['waterlevel_astro_LW'][nstat,:] = data_LW['values']
     
     #HWLW numbering
     if 'HWLWno' in ts_ext.columns:
         if 'waterlevel_astro_HW_numbers' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_HW_numbers','i4',('stations','time_HW',))
-            #for attrname in list(dict_HWattr.keys()):
-            #    nc_newvar.setncattr(attrname, dict_HWattr[attrname])
+            #nc_newvar.setncatts(dict_HWattr)
         data_nc.variables['waterlevel_astro_HW_numbers'][nstat,:] = data_HW['HWLWno']
         if 'waterlevel_astro_LW_numbers' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_LW_numbers','i4',('stations','time_LW',))
-            #for attrname in list(dict_LWattr.keys()):
-            #    nc_newvar.setncattr(attrname, dict_LWattr[attrname])
+            #nc_newvar.setncatts(dict_LWattr)
         data_nc.variables['waterlevel_astro_LW_numbers'][nstat,:] = data_LW['HWLWno']
 
     data_nc.close()
@@ -1084,8 +1073,6 @@ def get_diablocks_startstopstation(filename):
     ----------
     filename : TYPE
         DESCRIPTION.
-    station : TYPE
-        DESCRIPTION.
 
     Raises
     ------
@@ -1094,16 +1081,8 @@ def get_diablocks_startstopstation(filename):
 
     Returns
     -------
-    block_starts : TYPE
-        DESCRIPTION.
-    data_starts : TYPE
-        DESCRIPTION.
-    data_ends : TYPE
-        DESCRIPTION.
-    block_stations : TYPE
-        DESCRIPTION.
-    block_id : TYPE
-        DESCRIPTION.
+    diablocks_pd_startstopstation: pd.DataFrame
+        Pandas DataFrame with 'block_starts','data_starts','data_ends','station'
 
     """
     import pandas as pd
@@ -1130,118 +1109,80 @@ def get_diablocks_startstopstation(filename):
     
     #convert columns with line numbers to integers
     diablocks_pd_startstopstation[linenum_colnames] = diablocks_pd_startstopstation[linenum_colnames].astype(int)
-        
+    
     return diablocks_pd_startstopstation
 
 
 def get_diablocks(filename):
     import datetime as dt
-    #import numpy as np
     import pandas as pd
     
-    mincontent_equidistant =          ['PAR',  'GHD',  'LOC','HDH',  'EHD',  'TYD'] # PAR is for dia, GHD is for wia
-    mincontent_nonequidistant = ['MUX','MXP;2','MXG;2','LOC','MXH;2','MXE;2','TYD'] # MXP is for dia, MXG is for wia
-    #getpossible = mincontent_equidistant+mincontent_nonequidistant
-    valid_grootheidnames = ['WATHTE','WATHTBRKD']
-    
-    diablocks_pd_startstopstation = get_diablocks_startstopstation(filename)
-    diablocks_pd = diablocks_pd_startstopstation.copy()
+    diablocks_pd = get_diablocks_startstopstation(filename)
     for block_id in diablocks_pd.index.tolist():
+        #read diafile metadata as pandas series, prevent splitting of combined paramater names like MXH;2 by replacing ; with !
         data_meta_nrows = diablocks_pd.loc[block_id,'data_starts'] - diablocks_pd.loc[block_id,'block_starts']
-        data_meta_pd = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,sep=';',names=range(7),header=None,dtype=str)
-        data_meta_series = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,header=None,names=[0])[0] #series of metadata
-        bool_startswithmux = data_meta_series.str.startswith('MUX')
-        if bool_startswithmux.any():
-            is_equidistant = False #extreme waterlevel timeseries (non-equidistant)
-            getpossible = mincontent_nonequidistant
-            groeperingcode = data_meta_pd.loc[bool_startswithmux,1].iloc[0]
-            print('equidistant file, GroeperingCode: %s'%(groeperingcode))
-        else:
-            is_equidistant = True #normal waterlevel timeseries (equidistant)
-            getpossible = mincontent_equidistant
-            groeperingcode = 'NVT' #for normal waterlevels
-        diablocks_pd.loc[block_id,'groepering'] = groeperingcode
+        data_meta_series = pd.read_table(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,header=None)[0] #series of metadata
+        if not data_meta_series.str.contains('GHD|MXG;2').any(): #wia files contain these parameters, dia files don't. Replace dia names with wia names (wia files also contain PAR and MXP;2, but they should not be replaced)
+            data_meta_series = data_meta_series.str.replace('PAR','GHD').str.replace('MXP;2','MXG;2')
+        bool_combinedparname = (data_meta_series.str[3:6]==';1;') | (data_meta_series.str[3:6]==';2;')
+        data_meta_series.loc[bool_combinedparname] = data_meta_series.loc[bool_combinedparname].str.slice_replace(3,4,'!')
         
-        for get_content_sel in getpossible:
-            bool_mincontent = data_meta_series.str.startswith(get_content_sel)
-            if bool_mincontent.any(): #if get_content_sel available in diafile
-                data_meta_pd_mincontent = data_meta_pd.loc[bool_mincontent]
-                if len(data_meta_pd_mincontent)==1:
-                    data_meta_pd_mincontent = data_meta_pd_mincontent.iloc[0]
-                elif len(data_meta_pd_mincontent)==2: # for 'MXP;2' and 'MXE;2'
-                    data_meta_pd_mincontent = data_meta_pd_mincontent.iloc[1]
+        #get groepering and whether dia/wia is equidistant or non-equidistant
+        bool_startswithmux = data_meta_series.str.startswith('MUX')
+        if bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
+            mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD']
+            diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
+        else: #normal waterlevel timeseries (equidistant)
+            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD']
+            diablocks_pd.loc[block_id,'groepering'] = 'NVT'
+        
+        #read all required metadata
+        for get_content_sel in mincontent:
+            bool_mincontent = data_meta_series.str.replace('!',';').str.startswith(get_content_sel)
+            if bool_mincontent.sum()!=1:
+                raise Exception(f'unexpected amount of matched metadatalines ({bool_mincontent.sum()}) for {get_content_sel}')
+            data_meta_mincontent = data_meta_series.loc[bool_mincontent].iloc[0].split(';') #list type
+            if get_content_sel in ['GHD','MXG;2']: # Grootheid (dia/wia, dia/wia equidistant). Originally dia contains PAR and MXP;2, but they are replaced
+                file_grootheidname = data_meta_mincontent[1]
+                valid_grootheidnames = ['WATHTE','WATHTBRKD','NVT'] #NVT in wia files
+                if file_grootheidname not in valid_grootheidnames:
+                    raise Exception('ERROR: grootheid name (%s) should be in %s but is %s'%(get_content_sel, valid_grootheidnames, file_grootheidname))
+                diablocks_pd.loc[block_id,'grootheid'] = file_grootheidname
+            elif get_content_sel in ['LOC']: # Locatie. same in all files
+                coords_pd = pd.DataFrame({'epsg_in':[28992,4326,4230], 'factor':[100,1000000,1000000]}, index=['RD','W84','E50'])
+                if len(data_meta_mincontent)<7:
+                    print('no coordinate data available in LOC line of dia file')
+                    continue
+                coordsys_str, coord_x, coord_y = data_meta_mincontent[4:]
+                if coordsys_str not in coords_pd.index:
+                    raise Exception('unknown coordinate system string in diafile ({coordsys_str})')
+                diablocks_pd.loc[block_id,'x'] = int(coord_x)/coords_pd.loc[coordsys_str,'factor']
+                diablocks_pd.loc[block_id,'y'] = int(coord_y)/coords_pd.loc[coordsys_str,'factor']
+                diablocks_pd.loc[block_id,'coordsys'] = coordsys_str
+                diablocks_pd.loc[block_id,'epsg'] = coords_pd.loc[coordsys_str,'epsg_in']
+            elif get_content_sel in ['EHD','MXE;2']: # Eenheid. equidistant dia/wia, non-equidistant dia/wia
+                file_eenheid = data_meta_mincontent[2]
+                if file_eenheid != 'cm':
+                    raise Exception('unknown eenheid in diafile: %s'%(file_eenheid))
+                diablocks_pd.loc[block_id,'eenheid'] = file_eenheid
+            elif get_content_sel in ['HDH','MXH;2']: # Hoedanigheid (NAP/MSL). equidistant dia/wia, non-equidistant dia/wia
+                diablocks_pd.loc[block_id,'vertref'] = data_meta_mincontent[1]
+            elif get_content_sel in ['TYD']: #Tijdstip. same in all files
+                datestart = dt.datetime.strptime(data_meta_mincontent[1]+data_meta_mincontent[2], "%Y%m%d%H%M")
+                datestop = dt.datetime.strptime(data_meta_mincontent[3]+data_meta_mincontent[4], "%Y%m%d%H%M")
+                if len(data_meta_mincontent)==5: #nonequidistant timeseries
+                    timestep_value = None
+                elif len(data_meta_mincontent)==7: #equidistant timeseries contains also timeunit and timestep
+                    timestep_unit = data_meta_mincontent[6]
+                    if timestep_unit != 'min':
+                        raise Exception('ERROR: time unit from TYD is in unknown format (not "min")')
+                    timestep_value = int(data_meta_mincontent[5]) #int(timestep_value_raw)
                 else:
-                    raise Exception('unexpected amount of matched metadatalines for %s'%(get_content_sel))
-                if get_content_sel in ['PAR','GHD','MXP;2','MXG;2']:#'MUX']: # Grootheid (dia, wia, dia equidistant, wia equidistant)
-                    if get_content_sel in ['PAR','GHD']: #equidistant
-                        file_grootheidname = data_meta_pd_mincontent[1]
-                    else: # for 'MXP;2' and 'MXE;2' #non-equidistant
-                        file_grootheidname = data_meta_pd_mincontent[2]
-                    if file_grootheidname in ['NVT']:
-                        print('WARNING: "PAR;NVT" or "MXP;NVT" found in header. You are probably reading a wia file, if that is not the case, this is where it went wrong')
-                        continue #skip this metadata
-                    if file_grootheidname not in valid_grootheidnames:
-                        raise Exception('ERROR: grootheid name (%s) should be in %s but is %s'%(get_content_sel, valid_grootheidnames, file_grootheidname))
-                    diablocks_pd.loc[block_id,'grootheid'] = file_grootheidname
-                elif get_content_sel in ['LOC']: # Locatie. same in all files
-                    file_station_coord_pd = data_meta_pd_mincontent[4:]
-                    if file_station_coord_pd.isnull().any():
-                        print('no coordinate data available in LOC line of dia file')
-                    else:
-                        file_station_coord = file_station_coord_pd.tolist()
-                        if file_station_coord[0] == 'RD':
-                            epsg_in = 28992
-                            factor = 100
-                        elif file_station_coord[0] == 'W84':
-                            print('WARNING: diafile contains W84(epsg:4326) coordinates, correctness is unsure')
-                            epsg_in = 4326
-                            factor = 1000000
-                        elif file_station_coord[0] == 'E50':
-                            print('WARNING: diafile contains E50(epsg:4230) coordinates, correctness is unsure')
-                            epsg_in = 4230
-                            factor = 1000000
-                        else:
-                            raise Exception('unknown coordinate system in diafile')
-                        diablocks_pd.loc[block_id,'x'] = int(file_station_coord[1])/factor
-                        diablocks_pd.loc[block_id,'y'] = int(file_station_coord[2])/factor
-                        diablocks_pd.loc[block_id,'coordsys'] = file_station_coord[0]
-                        diablocks_pd.loc[block_id,'epsg'] = epsg_in
-                elif get_content_sel in ['EHD','MXE;2']: # Eenheid. equidistant dia/wia, non-equidistant dia/wia
-                    if get_content_sel in ['EHD']:
-                        file_eenheid = data_meta_pd_mincontent[2]
-                    else:
-                        file_eenheid = data_meta_pd_mincontent[3]
-                    if file_eenheid == 'cm':
-                        pass
-                    else:
-                        raise Exception('unknown eenheid in diafile: %s'%(file_eenheid))
-                    diablocks_pd.loc[block_id,'eenheid'] = file_eenheid
-                elif get_content_sel in ['HDH','MXH;2']: # Hoedanigheid (NAP/MSL). equidistant dia/wia, non-equidistant dia/wia
-                    if get_content_sel in ['HDH']:
-                        file_vertref = data_meta_pd_mincontent[1]
-                    else:
-                        file_vertref = data_meta_pd_mincontent[2]
-                    print('the vertical reference level in the imported file is: %s'%(file_vertref))
-                    if not isinstance(file_vertref,str): #in case of nan value
-                        raise Exception('ERROR: the imported file does not have a vertical reference in the metadata')
-                    diablocks_pd.loc[block_id,'vertref'] = file_vertref
-                elif get_content_sel in ['TYD']: #Tijdstip. same in all files
-                    datestart = dt.datetime.strptime(data_meta_pd_mincontent[1:3].str.cat(), "%Y%m%d%H%M")
-                    datestop = dt.datetime.strptime(data_meta_pd_mincontent[3:5].str.cat(), "%Y%m%d%H%M")
-                    if is_equidistant:#if equidistant timeseries
-                        timestep_unit = data_meta_pd_mincontent[6]
-                        if timestep_unit != 'min':
-                            raise Exception('ERROR: time unit from TYD is in unknown format (not "min")')
-                        timestep_value = int(data_meta_pd_mincontent[5]) #int(timestep_value_raw)
-                    else: #when nan
-                        timestep_value = None
-                    diablocks_pd.loc[block_id,'tstart'] = datestart
-                    diablocks_pd.loc[block_id,'tstop'] = datestop
-                    diablocks_pd.loc[block_id,'timestep_min'] = timestep_value
-    pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
-    pd.set_option('display.width', 200) #default was 80, but need more to display groepering
-    print_cols = ['block_starts', 'station', 'grootheid','groepering', 'tstart', 'tstop']
-    print('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))    
+                    raise Exception(f'ERROR: time metadata is not understood: {data_meta_mincontent}')
+                diablocks_pd.loc[block_id,'tstart'] = datestart
+                diablocks_pd.loc[block_id,'tstop'] = datestop
+                diablocks_pd.loc[block_id,'timestep_min'] = timestep_value
+
     return diablocks_pd
 
 
@@ -1271,15 +1212,13 @@ def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
     return data_pd
 
 
-def readts_dia_equidistant(filename, diablocks_pd_extra, block_id):
+def readts_dia_equidistant(filename, diablocks_pd, block_id):
     import numpy as np
     import pandas as pd
     
-    diablocks_pd = diablocks_pd_extra
-    
-    datestart = diablocks_pd_extra.loc[block_id,'tstart']
-    datestop = diablocks_pd_extra.loc[block_id,'tstop']
-    timestep_min = diablocks_pd_extra.loc[block_id,'timestep_min']
+    datestart = diablocks_pd.loc[block_id,'tstart']
+    datestop = diablocks_pd.loc[block_id,'tstop']
+    timestep_min = diablocks_pd.loc[block_id,'timestep_min']
     times_fromfile = pd.date_range(start=datestart,end=datestop,freq='%dmin'%(timestep_min))
     
     #get data for station
@@ -1335,21 +1274,18 @@ def readts_dia(filename, station=None, block_ids=None):
     import pandas as pd
     import numpy as np
     
-    if type(filename) is list:
-        filename_list = filename
-        data_pd_all = pd.DataFrame()
-        for iF, filename_one in enumerate(filename_list):
-            data_pd_one = readts_dia(filename=filename_one, station=station) #call itself with one file from list
-            #append to allyears dataset
-            data_pd_all = data_pd_all.append(data_pd_one, ignore_index=False)
-        #check overlapping timesteps
-        if len(data_pd_all) != len(data_pd_all.index.unique()):
-            raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
-        data_pd = data_pd_all
-    
-    else:
-        diablocks_pd = get_diablocks(filename)
+    if not isinstance(filename,list):
+        filename = [filename]
+        
+    data_pd_all = pd.DataFrame()
+    for iF, filename_one in enumerate(filename):    
+        diablocks_pd = get_diablocks(filename_one)
+        pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
+        pd.set_option('display.width', 200) #default was 80, but need more to display groepering
+        print_cols = ['block_starts', 'station', 'grootheid', 'groepering', 'tstart', 'tstop']
+        print('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))
         str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=Timeseries.get_diablocks(filename)"'
+        
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids=='allstation':
             if station is None:
@@ -1360,23 +1296,16 @@ def readts_dia(filename, station=None, block_ids=None):
                 raise Exception('ERROR: no data block with requested station (%s) present in dia file. %s'%(station, str_getdiablockspd))
             elif len(ids_station)>1 and block_ids is None:
                 raise Exception('ERROR: more than one data block with requested station (%s) present in dia file. Provide block_ids argument to readts_dia() (int, list of int or "allstation"). %s'%(station, str_getdiablockspd))
-            else: #exactly one occurrence or block_ids is provided
+            else: #exactly one occurrence or block_ids is provided or block_ids='allstation'
                 block_ids = ids_station
         
-        elif isinstance(block_ids,int):
-            block_ids = [block_ids]
-        elif isinstance(block_ids,list):
-            pass #this is a valid input type
-        else:
-            raise Exception('ERROR: invalid type for block_ids (should be int, list of int or "allstation")')
-        
         #check validity of blockids of type listlist
-        if not all(isinstance(x, int) for x in block_ids):
-            raise Exception('ERROR: invalid type in block_ids list, should all be of type int')
-        if np.max(block_ids)>len(diablocks_pd)-1:
-            raise Exception('ERROR: invalid values in block_ids list, possible are %s'%(diablocks_pd.index.tolist()))
-        if np.min(block_ids)<0:
-            raise Exception('ERROR: values in block_ids list should all be positive')
+        if isinstance(block_ids,int):
+            block_ids = [block_ids]
+        if not isinstance(block_ids,list):
+            raise Exception('ERROR: invalid type for block_ids (should be int, list of int or "allstation")')
+        if not pd.Series(block_ids).isin(diablocks_pd.index).all():
+            raise Exception(f'ERROR: invalid values in block_ids list ({block_ids}), possible are {diablocks_pd.index.tolist()} (all integers)')
             
         if station is not None:
             if not isinstance(station,str):
@@ -1388,26 +1317,22 @@ def readts_dia(filename, station=None, block_ids=None):
         data_pd_allblocks = pd.DataFrame()
         for block_id in block_ids:
             if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): #non-equidistant
-                data_pd_oneblock = readts_dia_nonequidistant(filename, diablocks_pd, block_id)
+                data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
-                data_pd_oneblock = readts_dia_equidistant(filename, diablocks_pd, block_id)
+                data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
             check_ts(data_pd_oneblock)
             data_pd_allblocks = data_pd_allblocks.append(data_pd_oneblock, ignore_index=False)
-        data_pd = data_pd_allblocks
+        
+        #append to allyears dataset
+        data_pd_all = data_pd_all.append(data_pd_allblocks, ignore_index=False)
 
-    #sort values on time
-    data_pd = data_pd.sort_index(axis=0)
+    #check overlapping timesteps, sort values on time and check_ts
+    if len(data_pd_all) != len(data_pd_all.index.unique()):
+        raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
+    data_pd_all = data_pd_all.sort_index(axis=0)
+    check_ts(data_pd_all)
     
-    check_ts(data_pd)
-    return data_pd
-
-
-def readts_dia_HWLW(filename, station):
-    """
-    Reads a non-equidistant dia file (wrapper around readts_dia). This definition is phased out.
-
-    """
-    raise Exception('ERROR: readts_dia_HWLW() was phased out, use readts_dia() instead')
+    return data_pd_all
 
 
 def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):

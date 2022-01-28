@@ -73,6 +73,7 @@ def test_readts_noos_resamplecrop():
     assert ts_measurements_group0_rescrop['values'][-1] == 1.05
 
 
+@pytest.mark.unittest
 def test_writenetcdf():
     
     current_station = 'VLISSGN'
