@@ -30,7 +30,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 # script settings
 compare2fortran = True #requires validation data
 timeStart = dt.datetime(2000,1,1)
-timeEnd   = dt.datetime(2005,1,1)
+timeEnd   = dt.datetime(2012,1,1)
 dT_fortran = True #True is best comparison to fortran, False is more precise 
 tz_GMT = 'UTC' # UTC/GMT timezone
 try: #only works with pandas 1.2.0 or higher, but 1.1.5 is highest available pandas version in Python 3.6.12 (which is the highest available Python in RHEL)

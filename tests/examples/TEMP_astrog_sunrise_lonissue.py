@@ -45,7 +45,7 @@ for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours
     print(sunriseset_python.iloc[-2:])
     
 lat,lon =  54.7165, 135.3084 #Vladivostok #this one crashes for longer time periods (rates of increase go off track). Sort of solved by switching signs of ALTMOO RATE in astrac, but moonrise/set are then switched and it crashes for lat,lon=50,45
-lat,lon =  50, 45.3084 #fake
+lat,lon =  55, 45.3084 #fake
 lat,lon = -33.8688, 151.2093 #sydney
 #lat,lon =  52.1561,   5.3878 #amersfoort
 #lat,lon =  51.47869,  -0.01080 #greenwich
