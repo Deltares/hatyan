@@ -34,10 +34,10 @@ for current_station in selected_stations:
         #write to files
         if 'HWLWcode' in ts_dia.columns:
             hatyan.write_tsdia_HWLW(ts_ext=ts_dia, station=current_station, vertref=vertref, filename=file_dia_out)
-            hatyan.write_tsdia_HWLW(ts_ext=ts_wia, station=current_station, vertref=vertref, filename=file_wia_out)
+            hatyan.write_tsdia_HWLW(ts_ext=ts_wia, station=current_station, vertref=vertref, filename=file_wia_out, headerformat='wia')
         else:
             hatyan.write_tsdia(ts=ts_dia, station=current_station, vertref=vertref, filename=file_dia_out)
-            hatyan.write_tsdia(ts=ts_wia, station=current_station, vertref=vertref, filename=file_wia_out)
+            hatyan.write_tsdia(ts=ts_wia, station=current_station, vertref=vertref, filename=file_wia_out, headerformat='wia')
         
         #read from new files
         ts_dia_new = hatyan.readts_dia(filename=file_dia_out, station=current_station)

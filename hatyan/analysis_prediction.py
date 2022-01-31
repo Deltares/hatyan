@@ -213,7 +213,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
             phi_i_deg_all = np.zeros((n_const+len(hatyan_settings.CS_comps),n_years))
         for iY, year_dt in enumerate(ts_years_dt):
             if hatyan_settings.analysis_peryear:
-                print('analyzing %d of sequence %s'%(year_dt,ts_years))
+                print('analyzing %d of sequence %s'%(year_dt,ts_years.tolist()))
                 ts_oneyear_pd = ts_pd[ts_pd.index.year==year_dt]
                 COMP_one = analysis(ts_oneyear_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iY] = COMP_one.loc[:,'A']

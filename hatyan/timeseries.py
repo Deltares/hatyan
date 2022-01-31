@@ -1088,8 +1088,6 @@ def get_diablocks_startstopstation(filename):
     import pandas as pd
     
     #get list of starts/ends of datasets in diafile
-    print('-'*50)
-    print('reading file: %s'%(filename))
     linenum_colnames = ['block_starts','data_starts','data_ends']
     diablocks_pd_startstopstation = pd.DataFrame({},columns=linenum_colnames)
     
@@ -1117,6 +1115,7 @@ def get_diablocks(filename):
     import datetime as dt
     import pandas as pd
     
+    print('reading file: %s'%(filename))
     diablocks_pd = get_diablocks_startstopstation(filename)
     for block_id in diablocks_pd.index.tolist():
         #read diafile metadata as pandas series, prevent splitting of combined paramater names like MXH;2 by replacing ; with !
@@ -1320,7 +1319,7 @@ def readts_dia(filename, station=None, block_ids=None):
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
-            check_ts(data_pd_oneblock)
+            #check_ts(data_pd_oneblock)
             data_pd_allblocks = data_pd_allblocks.append(data_pd_oneblock, ignore_index=False)
         
         #append to allyears dataset
