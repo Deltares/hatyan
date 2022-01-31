@@ -118,7 +118,7 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     return result
 
 
-def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',allow_multipleresultsfor=None):
+def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',allow_multipleresultsfor=[]):
     """
     ddl tutorial: https://rijkswaterstaat.github.io/wm-ws-dl/?python#tutorial-locations
     normalizing json output: https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8
@@ -130,6 +130,9 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     import datetime as dt
     from hatyan.convert import convert_tzone2tzinfo
 
+    if not isinstance(allow_multipleresultsfor,list):
+        allow_multipleresultsfor = [allow_multipleresultsfor]
+    
     #parse meta_dict to query_metadata dict
     query_metadata = {}
     for metakeypoint in meta_dict:
@@ -180,22 +183,21 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
                 result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
             result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
-            result_wl0_locatie = pd.json_normalize(result_wl0['Locatie']) 
+            result_wl0_locatie = pd.json_normalize(result_wl0['Locatie'])
             result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
             result_wl0_aquometadata = pd.json_normalize(result_wl0['AquoMetadata'])
             result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the 'WaardeBepalingsmethode' changes
         
-        if allow_multipleresultsfor is None:
+        if allow_multipleresultsfor==[]:
             result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
         else: #allow multiple results for eg ['MeetApparaat', 'WaardeBepalingsmethode']
             try:
-                if not isinstance(allow_multipleresultsfor,list):
-                    allow_multipleresultsfor = [allow_multipleresultsfor]
                 list_dropcolumns = ['AquoMetadata_MessageID']+['%s.%s'%(colname,postfix) for colname in allow_multipleresultsfor for postfix in ['Code','Omschrijving']]
                 result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique.drop(list_dropcolumns,axis=1).drop_duplicates()
             except KeyError as e:
                 metakeys_forCode = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.keys() if x.endswith('.Code')]
                 raise Exception('%s, available are: %s'%(e,metakeys_forCode))
+        
         if len(result_wl0_aquometadata_uniqueallowed)>1:
             bool_nonuniquecols = (result_wl0_aquometadata_unique.iloc[0]!=result_wl0_aquometadata_unique).any(axis=0)
             metakeys_forCode_nonunique = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.loc[:,bool_nonuniquecols].columns if x.endswith('.Code')]
@@ -205,7 +207,6 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
                 for metakey in metakey_list:
                     print('%28s: %s,'%("'%s'"%metakey,result_one['AquoMetadata'][metakey]))
             raise Exception('query returned more than one result (differences in %s, details above), use more specific query_metadata argument or more extensive allow_multipleresultsfor argument (the latter might result in duplicate timesteps)'%(metakeys_forCode_nonunique))
-            
             
     result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.reset_index(drop=True)
     # DDL IMPROVEMENT: WaarnemingMetadata: all values are nested lists of length 1, can be flattened (they are actually not list/lijst, but statuswaarde instead of statuswaardelijst and kwaliteitswaardecode instead of kwaliteitswaardecodelijst).
