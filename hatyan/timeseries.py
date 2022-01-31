@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-def calc_HWLW(ts, calc_HWLW345=False, debug=False):
+def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
     """
     
     Calculates extremes (high and low waters) for the provided timeseries. 
@@ -32,6 +32,7 @@ def calc_HWLW(ts, calc_HWLW345=False, debug=False):
     If there are two equal high or low water values, the first one is taken. 
     There are no main high/low waters calculated within 6 hours of the start/end of the timeseries (keyword buffer_hr), since these can be invalid.
     This function can deal with gaps. Since scipy.signal.find_peaks() warns about nan values, those are removed first.
+    This does influence the results since find_peaks does not know about time registration. This is also tricky for input timeseries with varying time interval.
     
     Parameters
     ----------
@@ -65,7 +66,7 @@ def calc_HWLW(ts, calc_HWLW345=False, debug=False):
 
     from hatyan.schureman import get_schureman_freqs
     
-    #calculate the amount of steps in a M2 period, based on the most occurring timestep
+    #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_min = get_schureman_freqs(['M2']).loc['M2','period [hr]']*60
     ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
     if ts_steps_min_most > 1:
@@ -75,10 +76,10 @@ def calc_HWLW(ts, calc_HWLW345=False, debug=False):
     data_pd_HWLW = pd.DataFrame({'times':ts.index,'values':ts['values'],'HWLWcode':np.nan}).reset_index(drop=True)
     #create empty HWLW dataframe
     if data_pd_HWLW['values'].isnull().any():
-        data_pd_HWLW = data_pd_HWLW[~data_pd_HWLW['values'].isnull()]
+        data_pd_HWLW = data_pd_HWLW[~data_pd_HWLW['values'].isnull()].reset_index(drop=True)
         print('WARNING: the provided ts for extreme/HWLW calculation contained NaN values. To avoid unexpected results from scipy.signal.find_peaks(), the %i NaN values were removed from the ts (%.2f%%) before calculating extremes/HWLW.'%(len(ts)-len(data_pd_HWLW), (len(ts)-len(data_pd_HWLW))/len(ts)*100))
 
-    if calc_HWLW345:
+    if calc_HWLW345 or calc_HWLW1122:
         #get all local extremes, including aggers and second high waters (1/2/11/22) #takes first value of two equal peaks, prominence naar 0.01 om matige aggers uit te sluiten
         LWid_all, LWid_all_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=None)
         HWid_all, HWid_all_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=None)
@@ -89,7 +90,7 @@ def calc_HWLW(ts, calc_HWLW345=False, debug=False):
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
-    validtimes_idx = np.where((data_pd_HWLW['times']>=ts.index[0]+dt.timedelta(hours=6)) & (data_pd_HWLW['times']<=ts.index[-1]-dt.timedelta(hours=6)))[0]
+    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW['times']>=ts.index[0]+dt.timedelta(hours=6)) & (data_pd_HWLW['times']<=ts.index[-1]-dt.timedelta(hours=6))].index
     LWid_main = LWid_main_raw[np.in1d(LWid_main_raw,validtimes_idx)]
     HWid_main = HWid_main_raw[np.in1d(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process
@@ -106,7 +107,7 @@ def calc_HWLW(ts, calc_HWLW345=False, debug=False):
         print('LW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==2]))
         data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,prop_list] = pd.DataFrame(HWid_main_properties,index=HWid_main_raw).loc[HWid_main,prop_list]
         print('HW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==1]))
-        if calc_HWLW345:
+        if calc_HWLW345 or calc_HWLW1122:
             LW_local_bool = ~np.in1d(LWid_all, LWid_main)
             data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==22,prop_list] = pd.DataFrame(LWid_all_properties,index=LWid_all).loc[LW_local_bool,prop_list]
             print('LW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22]))
