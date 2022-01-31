@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False):
+def calc_HWLW(ts, calc_HWLW345=False, debug=False):
     """
     
     Calculates extremes (high and low waters) for the provided timeseries. 
@@ -59,6 +59,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
 
     """
     import numpy as np
+    import pandas as pd
     import datetime as dt
     import scipy.signal as ssig
 
@@ -69,120 +70,128 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW345_cleanup1122=True, debug=False
     ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
     if ts_steps_min_most > 1:
         print('WARNING: the timestep of the series for which to calculate extremes/HWLW is %i minutes, but 1 minute is recommended'%(ts_steps_min_most))
-    M2period_numsteps = M2_period_min/ts_steps_min_most #now based on M2 period (was called ts_poscrossing_moststeps before)
+    M2period_numsteps = M2_period_min/ts_steps_min_most
     
-    ts = ts.copy()
-    ts['times'] = ts.index
-    ts = ts.reset_index(drop=True)
+    data_pd_HWLW = pd.DataFrame({'times':ts.index,'values':ts['values'],'HWLWcode':np.nan}).reset_index(drop=True)
     #create empty HWLW dataframe
-    if ts['values'].isnull().any():
-        data_pd_HWLW = ts[~ts['values'].isnull()]
+    if data_pd_HWLW['values'].isnull().any():
+        data_pd_HWLW = data_pd_HWLW[~data_pd_HWLW['values'].isnull()]
         print('WARNING: the provided ts for extreme/HWLW calculation contained NaN values. To avoid unexpected results from scipy.signal.find_peaks(), the %i NaN values were removed from the ts (%.2f%%) before calculating extremes/HWLW.'%(len(ts)-len(data_pd_HWLW), (len(ts)-len(data_pd_HWLW))/len(ts)*100))
-    else:
-        data_pd_HWLW = ts.copy()
-    data_pd_HWLW['HWLWcode'] = np.nan
-    
+
     if calc_HWLW345:
-        #get all local extremes, including aggers and second high waters (1/2/11/22)
-        LWid_all, LWid_all_properties = ssig.find_peaks(-ts['values'].values, distance=None, #takes first value of two equal lower values
-                                                        prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
-        HWid_all, HWid_all_properties = ssig.find_peaks(ts['values'].values, distance=None, #takes first value of two equal peaks
-                                                        prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
+        #get all local extremes, including aggers and second high waters (1/2/11/22) #takes first value of two equal peaks, prominence naar 0.01 om matige aggers uit te sluiten
+        LWid_all, LWid_all_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=None)
+        HWid_all, HWid_all_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=None)
         data_pd_HWLW.loc[LWid_all,'HWLWcode'] = 22 #all LW
         data_pd_HWLW.loc[HWid_all,'HWLWcode'] = 11 #all HW
 
-    #get HWLW (extremes per tidal period)
-    LWid_main_raw,LWid_main_properties = ssig.find_peaks(-ts['values'].values, distance=M2period_numsteps/1.7, #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
-                                                     prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
-    HWid_main_raw,HWid_main_properties = ssig.find_peaks(ts['values'].values, distance=M2period_numsteps/1.9, #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
-                                                     prominence=(0.01,None), width=(None,None)) #prominence naar 0.01 om matige aggers uit te sluiten
-    #remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
-    buffer_hr = 6
-    LWid_main_validbool = (data_pd_HWLW.loc[LWid_main_raw,'times']>=ts['times'].iloc[0]+dt.timedelta(hours=buffer_hr)) & (data_pd_HWLW.loc[LWid_main_raw,'times']<=ts['times'].iloc[-1]-dt.timedelta(hours=buffer_hr))
-    HWid_main_validbool = (data_pd_HWLW.loc[HWid_main_raw,'times']>=ts['times'].iloc[0]+dt.timedelta(hours=buffer_hr)) & (data_pd_HWLW.loc[HWid_main_raw,'times']<=ts['times'].iloc[-1]-dt.timedelta(hours=buffer_hr))
-    LWid_main = LWid_main_raw[LWid_main_validbool]
-    HWid_main = HWid_main_raw[HWid_main_validbool]
-    for key in LWid_main_properties.keys():
-        LWid_main_properties[key] = LWid_main_properties[key][LWid_main_validbool]
-        HWid_main_properties[key] = HWid_main_properties[key][HWid_main_validbool]
+    #get HWLW (extremes per tidal period). 
+    LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
+    HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
+    # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
+    validtimes_idx = np.where((data_pd_HWLW['times']>=ts.index[0]+dt.timedelta(hours=6)) & (data_pd_HWLW['times']<=ts.index[-1]-dt.timedelta(hours=6)))[0]
+    LWid_main = LWid_main_raw[np.in1d(LWid_main_raw,validtimes_idx)]
+    HWid_main = HWid_main_raw[np.in1d(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process
     data_pd_HWLW.loc[LWid_main,'HWLWcode'] = 2
     data_pd_HWLW.loc[HWid_main,'HWLWcode'] = 1
-    data_pd_HWLW = data_pd_HWLW[-data_pd_HWLW['HWLWcode'].isnull()] #minus: not nan
     
-    #convert HWLWcode column to integers
+    #drop all non-(local)extreme timesteps and convert HWLWcode column to integers
+    data_pd_HWLW = data_pd_HWLW.dropna(subset=['HWLWcode'])
     data_pd_HWLW['HWLWcode'] = data_pd_HWLW['HWLWcode'].astype(int)
 
     if debug: #debug statistics
         prop_list = ['prominences','widths']
-        for prop in prop_list:
-            data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==2,prop] = LWid_main_properties[prop]
+        data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==2,prop_list] = pd.DataFrame(LWid_main_properties,index=LWid_main_raw).loc[LWid_main,prop_list]
         print('LW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==2]))
-        
-        for prop in prop_list:
-            data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,prop] = HWid_main_properties[prop]
+        data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,prop_list] = pd.DataFrame(HWid_main_properties,index=HWid_main_raw).loc[HWid_main,prop_list]
         print('HW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==1]))
-        
-        if 22 in data_pd_HWLW['HWLWcode'].values:
+        if calc_HWLW345:
             LW_local_bool = ~np.in1d(LWid_all, LWid_main)
-            for prop in prop_list:
-                data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==22,prop] = LWid_all_properties[prop][LW_local_bool]
+            data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==22,prop_list] = pd.DataFrame(LWid_all_properties,index=LWid_all).loc[LW_local_bool,prop_list]
             print('LW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22]))
-            
-        if 11 in data_pd_HWLW['HWLWcode'].values:
             HW_local_bool = ~np.in1d(HWid_all, HWid_main)
-            for prop in prop_list:
-                data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==11,prop] = HWid_all_properties[prop][HW_local_bool]
+            data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==11,prop_list] = pd.DataFrame(HWid_all_properties,index=HWid_all).loc[HW_local_bool,prop_list]
             print('HW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11]))
     
     if calc_HWLW345: #recalculate local LW/HWs between two main HWs to firstLW/agger/secondLW
-        print('calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...')
-        for iTide, dummy in enumerate(HWid_main[:-1]):
-            data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
-            
-            #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
-            data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,['values']].min()[0]
-            data_pd_HWLW_1tide_min = data_pd_HWLW_1tide['values'].min()
-            data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
-            bool_LWs = data_pd_HWLW_1tide['values']<data_pd_HWLW_1tide_mid
-            data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide[bool_LWs]
-            
-            if len(data_pd_HWLW_1tide_noHWs) > 3: #(attempt to) reduce to three values between two HWs
-                print('WARNING: more than 3 values between HWs, removing part of them')
-                #print(data_pd_HWLW_1tide)
-                agger35_prim = data_pd_HWLW_1tide_noHWs[data_pd_HWLW_1tide_noHWs['HWLWcode']==2]
-                if len(agger35_prim)>1:
-                    raise Exception('should be only one HWLWcode=2 per tide period')
-                agger35_prim_loc = agger35_prim.index[0]
-                agger35_sec_loc = data_pd_HWLW_1tide_noHWs.loc[data_pd_HWLW_1tide_noHWs['HWLWcode']==22,'values'].idxmin()
-                agger35_loc = np.sort([agger35_prim_loc,agger35_sec_loc])
-                data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide_noHWs.loc[agger35_loc.min():agger35_loc.max(),:]
-                agger4_loc = data_pd_HWLW_1tide_noHWs['values'].idxmax()
-                data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide_noHWs.loc[[agger35_loc.min(),agger4_loc,agger35_loc.max()],:]
-            
-            if len(data_pd_HWLW_1tide_noHWs) == 1: #primary low water already has code 2
-                if data_pd_HWLW_1tide_noHWs['HWLWcode'].iloc[0] != 2:
-                    raise Exception('Only 1 LW value but does not have HWLWcode 2')
-            elif len(data_pd_HWLW_1tide_noHWs) == 3:
-                if not data_pd_HWLW_1tide_noHWs['values'].argmax() == 1:
-                    raise Exception('3 values between two HW values, but center one is not the largest:\n%s'%(data_pd_HWLW_1tide))
-                agger345_loc = data_pd_HWLW_1tide_noHWs.index
-                if not (data_pd_HWLW.loc[agger345_loc[0],'HWLWcode'] in [2,22] and data_pd_HWLW.loc[agger345_loc[1],'HWLWcode'] in [11] and data_pd_HWLW.loc[agger345_loc[2],'HWLWcode'] in [2,22]):
-                    raise Exception('3 values between two HW values, but do not correspond to LW/agger/LW:\n%s'%(data_pd_HWLW_1tide))
-                data_pd_HWLW.loc[agger345_loc,'HWLWcode'] = [3,4,5]
-            elif len(data_pd_HWLW_1tide_noHWs) == 2:
-                print('WARNING: 2 values left between two HWs (slightly unexpected):\n%s'%(data_pd_HWLW_1tide))
-            else:
-                raise Exception('unexpected number of values between two HWs (0 or more than 3):\n%s'%(data_pd_HWLW_1tide))
-                
-        #remove remaining 11 and 22 values from array
-        if calc_HWLW345_cleanup1122:
-            data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11].index)
-            data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22].index)
-        print('finished calculating 1stLW/agger/2ndLW for all tidalperiods')
+        data_pd_HWLW = calc_HWLWlocalto345(data_pd_HWLW,HWid_main)
     
     #return to normal time-index
     data_pd_HWLW = data_pd_HWLW.set_index('times')
+    return data_pd_HWLW
+
+
+def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
+    """
+    Recalculate local LW/HWs between two main HWs to firstLW/agger/secondLW
+
+    Parameters
+    ----------
+    data_pd_HWLW : TYPE
+        DESCRIPTION.
+    HWid_main : TYPE
+        DESCRIPTION.
+
+    Raises
+    ------
+    Exception
+        DESCRIPTION.
+
+    Returns
+    -------
+    data_pd_HWLW : TYPE
+        DESCRIPTION.
+
+    """
+    import numpy as np
+    
+    print('calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...')
+    for iTide, dummy in enumerate(HWid_main[:-1]):
+        data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
+        
+        #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
+        data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,['values']].min()[0]
+        data_pd_HWLW_1tide_min = data_pd_HWLW_1tide['values'].min()
+        data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
+        bool_LWs = data_pd_HWLW_1tide['values']<data_pd_HWLW_1tide_mid
+        data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide[bool_LWs]
+        
+        if len(data_pd_HWLW_1tide_noHWs) > 3: #(attempt to) reduce to three values between two HWs
+            print('WARNING: more than 3 values between HWs, removing part of them')
+            #print(data_pd_HWLW_1tide)
+            agger35_prim = data_pd_HWLW_1tide_noHWs[data_pd_HWLW_1tide_noHWs['HWLWcode']==2]
+            if len(agger35_prim)>1:
+                raise Exception('should be only one HWLWcode=2 per tide period')
+            agger35_prim_loc = agger35_prim.index[0]
+            agger35_sec_loc = data_pd_HWLW_1tide_noHWs.loc[data_pd_HWLW_1tide_noHWs['HWLWcode']==22,'values'].idxmin()
+            agger35_loc = np.sort([agger35_prim_loc,agger35_sec_loc])
+            data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide_noHWs.loc[agger35_loc.min():agger35_loc.max(),:]
+            agger4_loc = data_pd_HWLW_1tide_noHWs['values'].idxmax()
+            data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide_noHWs.loc[[agger35_loc.min(),agger4_loc,agger35_loc.max()],:]
+        
+        if len(data_pd_HWLW_1tide_noHWs) == 1: #primary low water already has code 2
+            if data_pd_HWLW_1tide_noHWs['HWLWcode'].iloc[0] != 2:
+                raise Exception('Only 1 LW value but does not have HWLWcode 2')
+        elif len(data_pd_HWLW_1tide_noHWs) == 3:
+            if not data_pd_HWLW_1tide_noHWs['values'].argmax() == 1:
+                raise Exception('3 values between two HW values, but center one is not the largest:\n%s'%(data_pd_HWLW_1tide))
+            agger345_loc = data_pd_HWLW_1tide_noHWs.index
+            if not (data_pd_HWLW.loc[agger345_loc[0],'HWLWcode'] in [2,22] and data_pd_HWLW.loc[agger345_loc[1],'HWLWcode'] in [11] and data_pd_HWLW.loc[agger345_loc[2],'HWLWcode'] in [2,22]):
+                raise Exception('3 values between two HW values, but do not correspond to LW/agger/LW:\n%s'%(data_pd_HWLW_1tide))
+            data_pd_HWLW.loc[agger345_loc,'HWLWcode'] = [3,4,5]
+        elif len(data_pd_HWLW_1tide_noHWs) == 2:
+            print('WARNING: 2 values left between two HWs (slightly unexpected):\n%s'%(data_pd_HWLW_1tide))
+        else:
+            raise Exception('unexpected number of values between two HWs (0 or more than 3):\n%s'%(data_pd_HWLW_1tide))
+    
+    #remove remaining 11 and 22 values from array
+    #if calc_HWLW345_cleanup1122:
+    data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11].index)
+    data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22].index)
+    
+    print('finished calculating 1stLW/agger/2ndLW for all tidalperiods')
+    
     return data_pd_HWLW
 
 
@@ -1032,9 +1041,9 @@ def check_ts(ts):
     if len(timesteps_min)<=100:
         timesteps_min_print = timesteps_min
     else:
-        timesteps_min_print = 'too much unique timesteps (>100) to display all of them, %i timesteps ranging from %i to %i minutes'%(len(timesteps_min),np.min(list(timesteps_min)),np.max(list(timesteps_min)))
+        timesteps_min_print = 'too much unique time intervals (>100) to display all of them, %i intervals ranging from %i to %i minutes'%(len(timesteps_min),np.min(list(timesteps_min)),np.max(list(timesteps_min)))
     if (timesteps_min_all>0).all():
-        timesteps_incr_print = 'all timesteps are in increasing order and are never equal'
+        timesteps_incr_print = 'all time intervals are in increasing order and are never equal'
     else:
         timesteps_incr_print = 'the times-order of ts is not always increasing (duplicate values or wrong order)'
     
