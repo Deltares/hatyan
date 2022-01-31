@@ -477,8 +477,8 @@ def test_frommergedcomp_HWLW_345(current_station):
     
     ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
-    ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
-    ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
+    #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
+    ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
     
     ts_ext_prediction_main_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_main, station=current_station)
     ts_ext_prediction_clean_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_clean, station=current_station)
@@ -500,6 +500,7 @@ def test_frommergedcomp_HWLW_345(current_station):
                                                              1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
                                                              1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
                                                              1])
+        """
         expected_ts_ext_prediction_all_HWLWcode = np.array([11, 22, 11, 22,  1,  3,  4,  5,  1,  3,  4,  5,  1,  3,  4,  5,  1,
                                                              3,  4,  5,  1,  3,  4,  5,  1,  3,  4,  5,  1,  3,  4,  5,  1,  3,
                                                              4,  5,  1,  3,  4,  5,  1,  3,  4,  5,  1,  2,  1,  2,  1,  2,  1,
@@ -507,6 +508,7 @@ def test_frommergedcomp_HWLW_345(current_station):
                                                              1,  2,  1,  3,  4,  5,  1,  2,  1,  3,  4,  5,  1,  2,  1,  3,  4,
                                                              5,  1,  2,  1,  2,  1,  3,  4,  5,  1,  3,  4,  5,  1,  3,  4,  5,
                                                              1, 22, 11])
+        """
         expected_ts_ext_prediction_clean_HWLWno_HWLWcode = np.array([1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3,
                                                                      4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 2, 1, 2,
                                                                      1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 4, 5, 1, 2,
@@ -531,12 +533,14 @@ def test_frommergedcomp_HWLW_345(current_station):
         expected_ts_ext_prediction_main_HWLWcode = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
                                                              1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
                                                              1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
+        """
         expected_ts_ext_prediction_all_HWLWcode = np.array([11, 22,  1,  2, 11, 22,  1,  2, 11, 22,  1,  2, 11, 22,  1,  2, 11,
                                                             22,  1,  2, 11, 22,  1,  2, 11, 22,  1,  2, 11, 22,  1,  2,  1, 22,
                                                             11,  2,  1,  2,  1,  2,  1,  2,  1,  2,  1,  2,  1,  2,  1,  2,  1,
                                                              2,  1,  2,  1,  2,  1,  2,  1,  2,  1, 22, 11,  2,  1,  2, 11, 22,
                                                              1,  2,  1,  2, 11, 22,  1,  2,  1,  2,  1, 22, 11,  2,  1,  2,  1,
                                                              2,  1,  2,  1,  2,  1,  2, 11])
+        """
         expected_ts_ext_prediction_clean_HWLWno_HWLWcode = np.array([1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
                                                                      1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
                                                                      1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
@@ -549,7 +553,7 @@ def test_frommergedcomp_HWLW_345(current_station):
     
     assert (np.abs(ts_ext_prediction_main_HWLWno['HWLWno'].values - expected_ts_ext_prediction_main_HWLWno_HWLWno) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_main['HWLWcode'].values - expected_ts_ext_prediction_main_HWLWcode) < 10E-9).all()
-    assert (np.abs(ts_ext_prediction_all['HWLWcode'].values - expected_ts_ext_prediction_all_HWLWcode) < 10E-9).all()
+    #assert (np.abs(ts_ext_prediction_all['HWLWcode'].values - expected_ts_ext_prediction_all_HWLWcode) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWcode'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWcode) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWno'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWno) < 10E-9).all()
 

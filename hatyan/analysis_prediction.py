@@ -192,7 +192,10 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:
         const_list = const_list.tolist()
-    n_const = len(const_list)
+    if hatyan_settings.CS_comps is None:
+        n_const = len(const_list)
+    else:
+        n_const = len(const_list) + len(hatyan_settings.CS_comps)
 
     if hatyan_settings.analysis_peryear or hatyan_settings.analysis_permonth:
         if hatyan_settings.analysis_peryear:
@@ -201,32 +204,30 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
             ts_years = ts_pd.index.year.unique()
         else:
             print('analysis_permonth=True, separate month/year combinations are automatically determined from unique calendar months/years in timeseries')
-            ts_years_dt = pd.date_range(start=ts_pd.index.iloc[0], end=ts_pd.index.iloc[-1], freq='M')
+            ts_years_dt = pd.date_range(start=ts_pd.index[0], end=ts_pd.index[-1], freq='M')
             ts_years = ['%d-%02d'%(x.year,x.month) for x in ts_years_dt]
 
         n_years = len(ts_years)
-        if hatyan_settings.CS_comps is None:
-            A_i_all = np.zeros((n_const,n_years))
-            phi_i_deg_all = np.zeros((n_const,n_years))
-        else:
-            A_i_all = np.zeros((n_const+len(hatyan_settings.CS_comps),n_years))
-            phi_i_deg_all = np.zeros((n_const+len(hatyan_settings.CS_comps),n_years))
+        A_i_all = np.zeros((n_const,n_years))*np.nan
+        phi_i_deg_all = np.zeros((n_const,n_years))*np.nan
         for iY, year_dt in enumerate(ts_years_dt):
             if hatyan_settings.analysis_peryear:
-                print('analyzing %d of sequence %s'%(year_dt,ts_years))
+                print('analyzing %d of sequence %s'%(year_dt,ts_years.tolist()))
                 ts_oneyear_pd = ts_pd[ts_pd.index.year==year_dt]
                 COMP_one = analysis(ts_oneyear_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iY] = COMP_one.loc[:,'A']
                 phi_i_deg_all[:,iY] = COMP_one.loc[:,'phi_deg']
             else:
                 print('analyzing %d-%02d of sequence [%s]'%(year_dt.year, year_dt.month, ', '.join(ts_years)))
-                ts_oneyear_pd = ts_pd[(ts_pd.index.dt.year==year_dt.year) & (ts_pd.index.dt.month==year_dt.month)]
+                ts_oneyear_pd = ts_pd[(ts_pd.index.year==year_dt.year) & (ts_pd.index.month==year_dt.month)]
                 try:
                     COMP_one = analysis(ts_oneyear_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                     A_i_all[:,iY] = COMP_one.loc[:,'A']
                     phi_i_deg_all[:,iY] = COMP_one.loc[:,'phi_deg']
                 except Exception as e:
                     print('WARNING: analysis of %d-%02d failed, error message: "%s'%(year_dt.year,year_dt.month,e))
+        if np.isnan(A_i_all).all():
+            raise Exception('analysis peryear or permonth failed for all years/months, check warnings above')
         
         COMP_all_pd = pd.DataFrame(data=np.hstack([A_i_all,phi_i_deg_all]), columns=pd.MultiIndex.from_product([['A','phi_deg'],ts_years]), index=COMP_one.index)
         print('vector averaging analysis results')

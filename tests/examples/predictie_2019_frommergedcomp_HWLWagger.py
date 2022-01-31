@@ -31,10 +31,10 @@ for current_station in stat_list:
     
     ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
-    ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
-    ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
-    
-    ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_clean, station=current_station)
+    ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
+    ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)#, debug=True)
+    ts_ext_prediction_all.loc[ts_ext_prediction_all.index.isin(ts_ext_prediction_345.index),'HWLWcode'] = ts_ext_prediction_345['HWLWcode']
+    ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_345, station=current_station)
     
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_all)
     for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
@@ -47,10 +47,10 @@ for current_station in stat_list:
         ts_ext_vali = hatyan.readts_dia(filename=file_ext_vali, station=current_station, block_ids='allstation')
         #ts_ext_vali = hatyan.crop_timeseries(ts_ext_vali, [dt.datetime(1990,1,5),dt.datetime(1990,1,10)])
         ts_ext_vali = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_vali, station=current_station)
-        fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_clean, ts_ext_validation=ts_ext_vali)
+        fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_345, ts_ext_validation=ts_ext_vali)
 
     hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_main, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_main.dia'%(times_step_pred, current_station))
-    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_clean, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_agger345.dia'%(times_step_pred, current_station))
+    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_345, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_agger345.dia'%(times_step_pred, current_station))
     
     #ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
 
