@@ -264,27 +264,25 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     ts_pd = ts[~ts.index.duplicated(keep='first')]
     if len(ts_pd) != len(ts):
         print('WARNING: %i duplicate times of the input timeseries were dropped prior to the analysis'%(len(ts)-len(ts_pd)))
-    
-    if type(const_list) is str:
-        const_list = get_const_list_hatyan(const_list)
-    elif type(const_list) is not list:
-        const_list = const_list.tolist()
-    
-    const_list = sort_const_list(const_list)
-    
-    print(f'components analyzed  = {len(const_list)}')
     print(f'#timesteps           = {len(ts)}')
     print(f'tstart               = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}')
     print(f'tstop                = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
     if hasattr(ts.index,'freq'):
         print(f'timestep             = {ts.index.freq}')
     
+    #retrieving and sorting const_list
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
+    elif type(const_list) is not list:
+        const_list = const_list.tolist()
+    const_list = sort_const_list(const_list)
+    print(f'components analyzed  = {len(const_list)}')
+    
     #check for duplicate components (results in singular matrix)
     if len(const_list) != len(np.unique(const_list)):
         const_list_uniq, const_list_uniq_counts = np.unique(const_list,return_counts=True)
-        bool_nonuniq = const_list_uniq_counts>1
-        const_list_dupl = pd.DataFrame({'constituent':const_list_uniq[bool_nonuniq],'occurences':const_list_uniq_counts[bool_nonuniq]})
-        raise Exception('remove duplicate constituents from const_list:\n%s'%(const_list_dupl))
+        const_list_counts = pd.DataFrame({'constituent':const_list_uniq,'occurences':const_list_uniq_counts})
+        raise Exception('remove duplicate constituents from const_list:\n%s'%(const_list_counts.loc[const_list_counts['occurences']>1]))
     
     #remove nans
     ts_pd_nonan = ts_pd[~ts_pd['values'].isna()]
@@ -292,11 +290,11 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
         raise Exception('provided timeseries only contains nan values, analysis not possible')
     times_pred_all_pdDTI = pd.DatetimeIndex(ts_pd_nonan.index)
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
-    print('percentage_nan in values_meas_sel: %.2f%%'%(percentage_nan))
+    print(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
     
     #get times and time array
     dood_date_mid = pd.Index([ts_pd.index[len(ts_pd.index)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan #TODO: this is incorrect in case of e.g. more missings in first half of year than second half
-    dood_date_start = ts_pd.index[:1] #first date (for v0, also freq?)
+    dood_date_start = ts_pd.index[[0]] #first date (for v0, also freq?)
     if hatyan_settings.fu_alltimes:
         dood_date_fu = times_pred_all_pdDTI
     else:
