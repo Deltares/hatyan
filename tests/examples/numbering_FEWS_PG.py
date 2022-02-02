@@ -73,8 +73,9 @@ data_ncout = Dataset(file_ncout)
 data_ncout.variables['waterlevel_astro_LW_numbers']
 data_ncout.variables['waterlevel_astro_HW_numbers']
 
-hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=1, nosidx=True)
-data_ncout = Dataset(file_ncout)
+hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, tzone_hr=1, nosidx=True)
+hatyan.write_tsnetcdf(ts=ts_prediction, station='HOEKVHLD_copy', vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, tzone_hr=1, nosidx=True, mode='a')
+data_ncout = Dataset(file_ncout_nosidx)
 data_ncout.variables['HWLWno']
 
 
