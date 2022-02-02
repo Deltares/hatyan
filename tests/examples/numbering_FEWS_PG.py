@@ -36,6 +36,7 @@ file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
 station_name = 'HOEKVHLD'
 
 file_ncout = os.path.join(dir_output,'%s_getijnummers_new.nc'%(station_name))
+file_ncout_nosidx = os.path.join(dir_output,'%s_getijnummers_nosidx.nc'%(station_name))
 
 if analyse_ts_bool:
     COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year')
@@ -63,8 +64,7 @@ ax2.plot(ts_ext_prediction_nos.index,ts_ext_prediction_nos['HWLWno'].diff(),'o')
 ax2.set_ylim(-1,2)
 fig.savefig(file_ncout.replace('.nc','_nrs.png'))
 
-hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=1)
-
+hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=1, nosidx=False)
 
 #from dfm_tools.get_nc_helpers import get_ncvardimlist
 #vars_pd, dims_pd = get_ncvardimlist(file_nc=file_ncout)
@@ -72,6 +72,10 @@ hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', fil
 data_ncout = Dataset(file_ncout)
 data_ncout.variables['waterlevel_astro_LW_numbers']
 data_ncout.variables['waterlevel_astro_HW_numbers']
+
+hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=1, nosidx=True)
+data_ncout = Dataset(file_ncout)
+data_ncout.variables['HWLWno']
 
 
 hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python

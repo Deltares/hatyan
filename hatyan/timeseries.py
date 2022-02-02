@@ -515,7 +515,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         return fig, axs
 
 
-def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
+def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosidx=False):
     """
     Writes the timeseries to a netCDF file
 
@@ -542,6 +542,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
     
     #import os
     import datetime as dt
+    import pandas as pd
     from netCDF4 import Dataset, date2num, stringtoarr#, num2date
     import hatyan
     version_no = hatyan.__version__
@@ -609,47 +610,80 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1):
         return #this skips the HWLW part of the definition
     
     #HWLW prediction
-    data_HWLW = ts_ext.copy()
-    data_HWLW = data_HWLW.sort_index(axis=0)
-    data_HW = data_HWLW[data_HWLW['HWLWcode']==1]
-    data_LW = data_HWLW[data_HWLW['HWLWcode']==2]
-    #create empty variables if not yet present
+    if nosidx:
+        #convert index from time to HWLWno
+        data_HWLW_nosidx = ts_ext.copy()
+        data_HWLW_nosidx['times'] = data_HWLW_nosidx.index
+        data_HWLW_nosidx = data_HWLW_nosidx.set_index('HWLWno')
+        HWLWno_all = data_HWLW_nosidx.index.unique()
+        data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1],index=HWLWno_all)
+        data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2],index=HWLWno_all)
+        
+        #HWLW
+        if 'HWLWno' not in ncdimlist:
+            data_nc.createDimension('HWLWno',len(HWLWno_all))
+        if 'HWLWno' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('HWLWno','i',('HWLWno',)) #TODO: create attributes
+        data_nc.variables['HWLWno'][:] = HWLWno_all
+        if 'waterlevel_astro_HW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','HWLWno',))
+            nc_newvar.setncatts(dict_HWattr)
+            nc_newvar = data_nc.createVariable('times_astro_HW','f8',('stations','HWLWno',)) #TODO: create attributes
+            nc_newvar = data_nc.createVariable('type_astro_HW','f8',('stations','HWLWno',)) #TODO: create attributes
+        data_nc.variables['waterlevel_astro_HW'][nstat,:] = data_HW['values']
+        data_nc.variables['times_astro_HW'][nstat,:] = data_HW['times']
+        data_nc.variables['type_astro_HW'][nstat,:] = data_HW['HWLWcode']
+        if 'waterlevel_astro_LW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','HWLWno',))
+            nc_newvar.setncatts(dict_LWattr)
+            nc_newvar = data_nc.createVariable('times_astro_LW','f8',('stations','HWLWno',)) #TODO: create attributes
+            nc_newvar = data_nc.createVariable('type_astro_LW','f8',('stations','HWLWno',)) #TODO: create attributes
+        data_nc.variables['waterlevel_astro_LW'][nstat,:] = data_LW['values']
+        data_nc.variables['times_astro_LW'][nstat,:] = data_LW['times']
+        data_nc.variables['type_astro_LW'][nstat,:] = data_LW['HWLWcode']
     
-    #HW
-    if 'time_HW' not in ncdimlist:
-        data_nc.createDimension('time_HW',len(data_HW))
-    if 'time_HW' not in ncvarlist:
-        nc_newvar = data_nc.createVariable('time_HW','f8',('time_HW',))
-        nc_newvar.setncatts(dict_timattr)
-    data_nc.variables['time_HW'][:] = date2num(data_HW.index.tolist(),units=data_nc.variables['time_HW'].units)
-    if 'waterlevel_astro_HW' not in ncvarlist:
-        nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','time_HW',))
-        nc_newvar.setncatts(dict_HWattr)
-    data_nc.variables['waterlevel_astro_HW'][nstat,:] = data_HW['values']
+    else:
+        data_HWLW = ts_ext.copy()
+        data_HWLW = data_HWLW.sort_index(axis=0)
+        data_HW = data_HWLW[data_HWLW['HWLWcode']==1]
+        data_LW = data_HWLW[data_HWLW['HWLWcode']==2]
+        #create empty variables if not yet present
+        
+        #HW
+        if 'time_HW' not in ncdimlist:
+            data_nc.createDimension('time_HW',len(data_HW))
+        if 'time_HW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('time_HW','f8',('time_HW',))
+            nc_newvar.setncatts(dict_timattr)
+        data_nc.variables['time_HW'][:] = date2num(data_HW.index.tolist(),units=data_nc.variables['time_HW'].units)
+        if 'waterlevel_astro_HW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','time_HW',))
+            nc_newvar.setncatts(dict_HWattr)
+        data_nc.variables['waterlevel_astro_HW'][nstat,:] = data_HW['values']
+        
+        #LW
+        if 'time_LW' not in ncdimlist:
+            data_nc.createDimension('time_LW',len(data_LW))
+        if 'time_LW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('time_LW','f8',('time_LW',))
+            nc_newvar.setncatts(dict_timattr)
+        data_nc.variables['time_LW'][:] = date2num(data_LW.index.tolist(),units=data_nc.variables['time_LW'].units)
+        if 'waterlevel_astro_LW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','time_LW',))
+            nc_newvar.setncatts(dict_LWattr)
+        data_nc.variables['waterlevel_astro_LW'][nstat,:] = data_LW['values']
+        
+        #HWLW numbering
+        if 'HWLWno' in ts_ext.columns:
+            if 'waterlevel_astro_HW_numbers' not in ncvarlist:
+                nc_newvar = data_nc.createVariable('waterlevel_astro_HW_numbers','i4',('stations','time_HW',))
+                #nc_newvar.setncatts(dict_HWattr)
+            data_nc.variables['waterlevel_astro_HW_numbers'][nstat,:] = data_HW['HWLWno']
+            if 'waterlevel_astro_LW_numbers' not in ncvarlist:
+                nc_newvar = data_nc.createVariable('waterlevel_astro_LW_numbers','i4',('stations','time_LW',))
+                #nc_newvar.setncatts(dict_LWattr)
+            data_nc.variables['waterlevel_astro_LW_numbers'][nstat,:] = data_LW['HWLWno']
     
-    #LW
-    if 'time_LW' not in ncdimlist:
-        data_nc.createDimension('time_LW',len(data_LW))
-    if 'time_LW' not in ncvarlist:
-        nc_newvar = data_nc.createVariable('time_LW','f8',('time_LW',))
-        nc_newvar.setncatts(dict_timattr)
-    data_nc.variables['time_LW'][:] = date2num(data_LW.index.tolist(),units=data_nc.variables['time_LW'].units)
-    if 'waterlevel_astro_LW' not in ncvarlist:
-        nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','time_LW',))
-        nc_newvar.setncatts(dict_LWattr)
-    data_nc.variables['waterlevel_astro_LW'][nstat,:] = data_LW['values']
-    
-    #HWLW numbering
-    if 'HWLWno' in ts_ext.columns:
-        if 'waterlevel_astro_HW_numbers' not in ncvarlist:
-            nc_newvar = data_nc.createVariable('waterlevel_astro_HW_numbers','i4',('stations','time_HW',))
-            #nc_newvar.setncatts(dict_HWattr)
-        data_nc.variables['waterlevel_astro_HW_numbers'][nstat,:] = data_HW['HWLWno']
-        if 'waterlevel_astro_LW_numbers' not in ncvarlist:
-            nc_newvar = data_nc.createVariable('waterlevel_astro_LW_numbers','i4',('stations','time_LW',))
-            #nc_newvar.setncatts(dict_LWattr)
-        data_nc.variables['waterlevel_astro_LW_numbers'][nstat,:] = data_LW['HWLWno']
-
     data_nc.close()
     return
 
