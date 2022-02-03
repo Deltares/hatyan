@@ -578,7 +578,8 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
     dict_wlattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of water level above reference level'}
     dict_HWattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of high water extremes above reference level'}
     dict_LWattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of low water extremes above reference level'}
-    #dict_HWrowsizeattr = {'long_name':'number of observations for this station', 'sample_dimension':'obs_raggedHW'}
+    dict_HWLWnoattr = {'units':'n-th tidal wave since reference wave at Cadzand on 1-1-2000'} #, 'standard_name': '', 'long_name': ''}
+
     if 'stations' not in ncvarlist: #create empty variables if not yet present
         nc_newvar = data_nc.createVariable('stations','S1',('stations','statname_len',))
         nc_newvar.setncatts(dict_statattr)
@@ -619,32 +620,35 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
         data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1],index=HWLWno_all)
         data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2],index=HWLWno_all)
         
-        #HWLW
+        #HWLWno
         if 'HWLWno' not in ncdimlist:
             data_nc.createDimension('HWLWno',len(HWLWno_all))
         if 'HWLWno' not in ncvarlist:
-            nc_newvar = data_nc.createVariable('HWLWno','i',('HWLWno',)) #TODO: create attributes
+            nc_newvar = data_nc.createVariable('HWLWno','i',('HWLWno',))
+            nc_newvar.setncatts(dict_HWLWnoattr)
         data_nc.variables['HWLWno'][:] = HWLWno_all
+        #HW
+        if 'times_astro_HW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('times_astro_HW','f8',('stations','HWLWno',))
+            nc_newvar.setncatts(dict_timattr)
+        data_nc.variables['times_astro_HW'][nstat,:] = date2num(data_HW['times'].tolist(),units=data_nc.variables['times_astro_HW'].units)
         if 'waterlevel_astro_HW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_HWattr)
-            nc_newvar = data_nc.createVariable('times_astro_HW','f8',('stations','HWLWno',))
-            nc_newvar.setncatts(dict_timattr)
-            #nc_newvar = data_nc.createVariable('type_astro_HW','f8',('stations','HWLWno',)) #TODO: create attributes
         data_nc.variables['waterlevel_astro_HW'][nstat,:] = data_HW['values']
-        data_nc.variables['times_astro_HW'][nstat,:] = data_HW['times']
-        #data_nc.variables['type_astro_HW'][nstat,:] = data_HW['HWLWcode']
+        #LW
+        if 'times_astro_LW' not in ncvarlist:
+            nc_newvar = data_nc.createVariable('times_astro_LW','f8',('stations','HWLWno',)) 
+            nc_newvar.setncatts(dict_timattr)
+        data_nc.variables['times_astro_LW'][nstat,:] = date2num(data_LW['times'].tolist(),units=data_nc.variables['times_astro_LW'].units)
         if 'waterlevel_astro_LW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_LWattr)
-            nc_newvar = data_nc.createVariable('times_astro_LW','f8',('stations','HWLWno',))
-            nc_newvar.setncatts(dict_timattr)
-            #nc_newvar = data_nc.createVariable('type_astro_LW','f8',('stations','HWLWno',)) #TODO: create attributes
         data_nc.variables['waterlevel_astro_LW'][nstat,:] = data_LW['values']
-        data_nc.variables['times_astro_LW'][nstat,:] = data_LW['times']
-        #data_nc.variables['type_astro_LW'][nstat,:] = data_LW['HWLWcode']
     
-    else:
+    else: #use time as index and create array with gaps (not possible to combine multiple stations)
+        if nstat>0:
+            raise Exception(f'with nosidx={nosidx} it is not possible to write multiple stations per file')
         data_HWLW = ts_ext.copy()
         data_HWLW = data_HWLW.sort_index(axis=0)
         data_HW = data_HWLW[data_HWLW['HWLWcode']==1]
