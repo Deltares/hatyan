@@ -36,6 +36,7 @@ file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
 station_name = 'HOEKVHLD'
 
 file_ncout = os.path.join(dir_output,'%s_getijnummers_new.nc'%(station_name))
+file_ncout_nosidx = os.path.join(dir_output,'%s_getijnummers_nosidx.nc'%(station_name))
 
 if analyse_ts_bool:
     COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year')
@@ -45,7 +46,7 @@ else:
     ts_prediction_fromcomp_2019 = hatyan.prediction(comp=COMP_merged, times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
     ts_prediction_fromcomp_2020 = hatyan.prediction(comp=COMP_merged, times_ext=[dt.datetime(2020,1,1),dt.datetime(2020,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
     ts_prediction_fromcomp = ts_prediction_fromcomp_2019.append(ts_prediction_fromcomp_2020)
-    ts_prediction_fromcomp.index = ts_prediction_fromcomp.index-dt.timedelta(hours=1)
+    ts_prediction_fromcomp.index = ts_prediction_fromcomp.index-dt.timedelta(hours=1) #convert MET prediction to GMT
 
 hatyan.check_ts(ts_prediction)
 ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)#, calc_HWLWlocal=True)
@@ -63,15 +64,20 @@ ax2.plot(ts_ext_prediction_nos.index,ts_ext_prediction_nos['HWLWno'].diff(),'o')
 ax2.set_ylim(-1,2)
 fig.savefig(file_ncout.replace('.nc','_nrs.png'))
 
-hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=1)
-
-
+"""
+hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=0, nosidx=False)
 #from dfm_tools.get_nc_helpers import get_ncvardimlist
 #vars_pd, dims_pd = get_ncvardimlist(file_nc=file_ncout)
 #data_nc_checkLWval = get_ncmodeldata(file_nc=file_ncout,varname='time_LW',timestep='all',station=0)
 data_ncout = Dataset(file_ncout)
 data_ncout.variables['waterlevel_astro_LW_numbers']
 data_ncout.variables['waterlevel_astro_HW_numbers']
-
+"""
+hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, tzone_hr=0, nosidx=True)
+hatyan.write_tsnetcdf(ts=ts_prediction, station='HOEKVHLD_copy', vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, tzone_hr=0, nosidx=True, mode='a')
+data_ncout = Dataset(file_ncout_nosidx)
+data_ncout.variables['waterlevel_astro_HW']
+data_ncout.variables['HWLWno']
+times_all_out = num2date(data_ncout.variables['time'],units=data_ncout.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
 
 hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
