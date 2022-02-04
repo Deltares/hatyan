@@ -268,10 +268,10 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',me
         cat_locatielijst_containingstation = cat_locatielijst.loc[bool_locatielijst_containingstation]
         bool_locid_intranslatetable = cat_locatielijst.index.isin(cat_AquoMetadataLocatieLijst_locidx.index)
         if not bool_locid_intranslatetable.all():
-            raise Exception('first time that this occurs, check code')
-            cat_AquoMetadataLocatieLijst_missingLocIDs = cat_locatielijst.loc[~bool_locid_intranslatetable].index
-            print('WARNING: AquoMetadataLocatieLijst is missing Locatie_MessageIDs:\n%s\nThese IDs will not be present in cat_aquometadatalijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_locatielijst.loc[cat_AquoMetadataLocatieLijst_missingLocIDs]))
-            cat_locatielijst_containingstation = cat_locatielijst.loc[bool_locatielijst_containingstation & bool_locid_intranslatetable]
+            raise Exception('AquoMetadataLocatieLijst is missing Locatie_MessageID. First time that this occurs, so code is not prepared for this exception')
+            #cat_AquoMetadataLocatieLijst_missingLocIDs = cat_locatielijst.loc[~bool_locid_intranslatetable].index
+            #print('WARNING: AquoMetadataLocatieLijst is missing Locatie_MessageIDs:\n%s\nThese IDs will not be present in cat_aquometadatalijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_locatielijst.loc[cat_AquoMetadataLocatieLijst_missingLocIDs]))
+            #cat_locatielijst_containingstation = cat_locatielijst.loc[bool_locatielijst_containingstation & bool_locid_intranslatetable]
         bool_aquometadatalijst_containingstation = cat_aquometadatalijst['Grootheid.Omschrijving'].str.contains('THISSTRINGISNOTINCOLUMN') #first generate all false bool
         bool_aquometadatalijst_containingstation_idxtrue = cat_AquoMetadataLocatieLijst_locidx.loc[cat_locatielijst_containingstation.index,'AquoMetaData_MessageID']
         bool_aquometadatalijst_containingstation.loc[bool_aquometadatalijst_containingstation_idxtrue] = True
