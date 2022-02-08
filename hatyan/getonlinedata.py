@@ -37,22 +37,21 @@ def get_DDL_catalog(catalog_extrainfo=[]):
     request_cat = {"CatalogusFilter": {x:True for x in catalog_filter}}
     
     # pull catalog from the API and store in json format
-    resp = requests.post(url_catalog, json=request_cat)
+    resp = requests.post(url_catalog, json=request_cat) # DDL IMPROVEMENT: it takes a long time to retrieve the catalog, it would be valuable if this could be instantaneous (eg by caching on server side).
     if not resp.ok:
         raise Exception('%s for %s: %s'%(resp.reason, resp.url, str(resp.text)))
     result_cat = resp.json()
-    #print('json catalog keys: %s'%(result_cat.keys())) #['AquoMetadataLijst', 'LocatieLijst', 'AquoMetadataLocatieLijst', 'BemonsteringshoogteLijst', 'OpdrachtgevendeInstantieLijst', 'KwaliteitswaardecodeLijst', 'ReferentievlakLijst', 'StatuswaardeLijst', 'Succesvol'] or ['Succesvol', 'Foutmelding']
     if not result_cat['Succesvol']:
         raise Exception('catalog query not succesful, Foutmelding: %s'%(result_cat['Foutmelding']))
     
     result_cat_dict = {}
     for catalog_key in result_cat.keys():
         if catalog_key!='Succesvol':
-            #result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
-            if isinstance(result_cat[catalog_key][0],dict):
-                result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
-            else:
-                result_cat_dict[catalog_key] = result_cat[catalog_key]
+            continue
+        if isinstance(result_cat[catalog_key][0],dict):
+            result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
+        else:
+            result_cat_dict[catalog_key] = result_cat[catalog_key]
     return result_cat_dict
 
 
