@@ -525,7 +525,7 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
     PEROM  = 5.8352992     # longitude perigeum moon (rad)
     BETMOO = 0.0019443591  # increment longitude perigeum moon (rad/day)
     NODOM  = 4.523572      # longitude lunar orbital node lunar (rad)
-    GAMMOO =-9.2421851E-4  # increment longitude lunar orbital node lunar (rad/day)
+    GAMMOO = -9.2421851E-4  # increment longitude lunar orbital node lunar (rad/day)
     INMOON = 0.089804108   # inclination lunar orbit (rad) >> DIKL
     PARMEA = 3422.608      # mean horizontal lunar parallax (arcseconds) >> DAGC=np.deg2rad(PARMEA/3600)
 
@@ -541,7 +541,7 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
 
     # constants - ecliptic
     OBZERO = 0.40931977    # inclination of ecliptic (rad) >> DOMEGA
-    OBINC  =-6.21937E-9    # increment inclination of ecliptic (rad/day)
+    OBINC = -6.21937E-9    # increment inclination of ecliptic (rad/day)
 
     # constants - vernal equinox
     ARZERO = 4.881523      # ephemeris hour angle of vernal equinox (rad)

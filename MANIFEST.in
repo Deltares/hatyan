@@ -1,2 +1,3 @@
 include hatyan/*.csv
 include hatyan/*.txt
+include hatyan/*.list

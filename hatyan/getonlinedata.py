@@ -37,22 +37,21 @@ def get_DDL_catalog(catalog_extrainfo=[]):
     request_cat = {"CatalogusFilter": {x:True for x in catalog_filter}}
     
     # pull catalog from the API and store in json format
-    resp = requests.post(url_catalog, json=request_cat)
+    resp = requests.post(url_catalog, json=request_cat) # DDL IMPROVEMENT: it takes a long time to retrieve the catalog, it would be valuable if this could be instantaneous (eg by caching on server side).
     if not resp.ok:
         raise Exception('%s for %s: %s'%(resp.reason, resp.url, str(resp.text)))
     result_cat = resp.json()
-    #print('json catalog keys: %s'%(result_cat.keys())) #['AquoMetadataLijst', 'LocatieLijst', 'AquoMetadataLocatieLijst', 'BemonsteringshoogteLijst', 'OpdrachtgevendeInstantieLijst', 'KwaliteitswaardecodeLijst', 'ReferentievlakLijst', 'StatuswaardeLijst', 'Succesvol'] or ['Succesvol', 'Foutmelding']
     if not result_cat['Succesvol']:
         raise Exception('catalog query not succesful, Foutmelding: %s'%(result_cat['Foutmelding']))
     
     result_cat_dict = {}
     for catalog_key in result_cat.keys():
-        if catalog_key!='Succesvol':
-            #result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
-            if isinstance(result_cat[catalog_key][0],dict):
-                result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
-            else:
-                result_cat_dict[catalog_key] = result_cat[catalog_key]
+        if catalog_key=='Succesvol':
+            continue
+        if isinstance(result_cat[catalog_key][0],dict):
+            result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
+        else:
+            result_cat_dict[catalog_key] = result_cat[catalog_key]
     return result_cat_dict
 
 
@@ -218,7 +217,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     if not key_numericvalues in result_wl0_metingenlijst_alldates.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
     ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates[key_numericvalues].values,
-                               'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int).values, 
+                               'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int,errors='ignore').values, # DDL IMPROVEMENT: errors='ignore' is necessary for HARVT10 since QC contains None values
                                'Status':result_wl0_metingenlijst_alldates['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
                                #'Bemonsteringshoogte':result_wl0_metingenlijst_alldates['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 
                                #'Referentievlak':result_wl0_metingenlijst_alldates['WaarnemingMetadata.ReferentievlakLijst'].str[0].values,
@@ -268,10 +267,10 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',me
         cat_locatielijst_containingstation = cat_locatielijst.loc[bool_locatielijst_containingstation]
         bool_locid_intranslatetable = cat_locatielijst.index.isin(cat_AquoMetadataLocatieLijst_locidx.index)
         if not bool_locid_intranslatetable.all():
-            raise Exception('first time that this occurs, check code')
-            cat_AquoMetadataLocatieLijst_missingLocIDs = cat_locatielijst.loc[~bool_locid_intranslatetable].index
-            print('WARNING: AquoMetadataLocatieLijst is missing Locatie_MessageIDs:\n%s\nThese IDs will not be present in cat_aquometadatalijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_locatielijst.loc[cat_AquoMetadataLocatieLijst_missingLocIDs]))
-            cat_locatielijst_containingstation = cat_locatielijst.loc[bool_locatielijst_containingstation & bool_locid_intranslatetable]
+            raise Exception('AquoMetadataLocatieLijst is missing Locatie_MessageID. First time that this occurs, so code is not prepared for this exception')
+            #cat_AquoMetadataLocatieLijst_missingLocIDs = cat_locatielijst.loc[~bool_locid_intranslatetable].index
+            #print('WARNING: AquoMetadataLocatieLijst is missing Locatie_MessageIDs:\n%s\nThese IDs will not be present in cat_aquometadatalijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_locatielijst.loc[cat_AquoMetadataLocatieLijst_missingLocIDs]))
+            #cat_locatielijst_containingstation = cat_locatielijst.loc[bool_locatielijst_containingstation & bool_locid_intranslatetable]
         bool_aquometadatalijst_containingstation = cat_aquometadatalijst['Grootheid.Omschrijving'].str.contains('THISSTRINGISNOTINCOLUMN') #first generate all false bool
         bool_aquometadatalijst_containingstation_idxtrue = cat_AquoMetadataLocatieLijst_locidx.loc[cat_locatielijst_containingstation.index,'AquoMetaData_MessageID']
         bool_aquometadatalijst_containingstation.loc[bool_aquometadatalijst_containingstation_idxtrue] = True
