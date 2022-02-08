@@ -46,7 +46,7 @@ def get_DDL_catalog(catalog_extrainfo=[]):
     
     result_cat_dict = {}
     for catalog_key in result_cat.keys():
-        if catalog_key!='Succesvol':
+        if catalog_key=='Succesvol':
             continue
         if isinstance(result_cat[catalog_key][0],dict):
             result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
