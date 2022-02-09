@@ -217,7 +217,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     if not key_numericvalues in result_wl0_metingenlijst_alldates.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
     ts_meas_pd = pd.DataFrame({'values':result_wl0_metingenlijst_alldates[key_numericvalues].values,
-                               'QC':result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0].astype(int,errors='ignore').values, # DDL IMPROVEMENT: errors='ignore' is necessary for HARVT10 since QC contains None values
+                               'QC':pd.to_numeric(result_wl0_metingenlijst_alldates['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values, # DDL IMPROVEMENT: should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> replace None with int code
                                'Status':result_wl0_metingenlijst_alldates['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
                                #'Bemonsteringshoogte':result_wl0_metingenlijst_alldates['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 
                                #'Referentievlak':result_wl0_metingenlijst_alldates['WaarnemingMetadata.ReferentievlakLijst'].str[0].values,
