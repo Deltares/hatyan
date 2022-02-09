@@ -229,7 +229,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
 
     bool_timeduplicated = ts_meas_pd.index.duplicated()
     if bool_timeduplicated.any():
-        print('WARNING: query returned %d duplicate times, use less extensive allow_multipleresultsfor'%bool_timeduplicated.sum())
+        print('WARNING: query returned %d duplicate times, use less extensive allow_multipleresultsfor'%bool_timeduplicated.sum()) # DDL IMPROVEMENT: even without allow_multipleresultsfor, there are duplicates for e.g. HARVT10  dt.datetime(2013,12,31,23,0) to dt.datetime(2014,1,1), topdesk M220206235
  
     return ts_meas_pd, result_wl0_aquometadata_unique, result_wl0_locatie_unique
 
