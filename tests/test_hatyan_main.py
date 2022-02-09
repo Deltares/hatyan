@@ -756,3 +756,31 @@ def test_allfromdia_2008xfac0():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
+
+
+@pytest.mark.systemtest
+def test_DDL_QCvalues():
+    tstart_dt = dt.datetime(2019,10,1)
+    tstop_dt = dt.datetime(2019,10,10)
+    tzone = 'UTC+00:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
+    
+    catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
+    
+    #HARVT10
+    cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
+    station_dict = cat_locatielijst[cat_locatielijst['Code']=='HARVT10'].iloc[0]
+    ts_meas_pd, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone=tzone,
+                                                            meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT','WaardeBewerkingsmethode.Code':'NVT'})
+    uniqueQC = ts_meas_pd['QC'].unique() #array([ 0., 99., nan, 25.]), but should be integers without nan array([0, 99, 25])
+    assert uniqueQC.dtype=='float64' #this should be int in the future, if None/nan is not in QC list anymore
+    assert np.isnan(uniqueQC[2]) #this one should become false in the future and then the second assertion should be valid without indexing
+    assert (uniqueQC[[0,1,3]] == np.array([ 0, 99, 25])).all()
+
+    #STELLDBTN
+    station_dict = cat_locatielijst[cat_locatielijst['Code']=='STELLDBTN'].iloc[0]
+    ts_meas_pd, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone=tzone,
+                                                            meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT','WaardeBewerkingsmethode.Code':'NVT'})
+    uniqueQC = ts_meas_pd['QC'].unique() #array([ 0, 25], dtype=int8)
+    assert uniqueQC.dtype=='int8'
+    assert (uniqueQC == np.array([ 0, 25])).all()
+
