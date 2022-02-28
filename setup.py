@@ -42,6 +42,6 @@ setup(
     install_requires=requirements,
     packages=find_packages(include=['hatyan']),
     include_package_data=True,
-    package_data="hatyan": ["*.csv", "*.txt","*.list"],
+    package_data={"hatyan": ["*.csv", "*.txt","*.list"]},
     zip_safe=False,
 )
