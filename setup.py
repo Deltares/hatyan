@@ -20,7 +20,8 @@ setup(
     author_email='Jelmer.Veenstra@Deltares.nl',
     url='https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python',
     description="hatyan is a tidal analysis and prediction tool of Rijkswaterstaat",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
+    long_description_content_type='text/markdown',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
