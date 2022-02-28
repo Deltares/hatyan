@@ -15,12 +15,13 @@ with open('requirements.txt') as f:
 
 setup(
     name='hatyan',
-    version='2.5.29',
+    version='2.5.31',
     author="Jelmer Veenstra",
     author_email='Jelmer.Veenstra@Deltares.nl',
     url='https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python',
     description="hatyan is a tidal analysis and prediction tool of Rijkswaterstaat",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
+    long_description_content_type='text/markdown',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -40,7 +41,7 @@ setup(
     license='LGPL',
     python_requires='>=3.6',
     install_requires=requirements,
-    include_package_data=True,
     packages=find_packages(include=['hatyan']),
+    include_package_data=True,
     zip_safe=False,
 )

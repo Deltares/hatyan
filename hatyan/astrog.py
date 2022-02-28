@@ -489,11 +489,9 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
     dT_TT_days = dT(date,dT_fortran=dT_fortran)/3600/24 #Difference between terrestrial and universal time in days.
     
     # check input
-    if isinstance(date, pd.DatetimeIndex):
-        pass
-    elif isinstance(date, dt.datetime):
+    if isinstance(date, dt.datetime):
         date = pd.DatetimeIndex([date])
-    else:
+    elif not isinstance(date, pd.DatetimeIndex):
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
     
     if np.abs(lon)>180:
@@ -932,11 +930,9 @@ def dT(dateIn,dT_fortran=False):
     import datetime as dt
     import warnings
     
-    if isinstance(dateIn, pd.DatetimeIndex):
-        pass
-    elif isinstance(dateIn, dt.datetime):
+    if isinstance(dateIn, dt.datetime):
         dateIn = pd.DatetimeIndex([dateIn])
-    else:
+    elif not isinstance(dateIn, pd.DatetimeIndex):
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
     
     if dT_fortran: # reproduce fortran dT_TT values with latest dT and increment values from fortran code
