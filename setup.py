@@ -40,7 +40,8 @@ setup(
     license='LGPL',
     python_requires='>=3.6',
     install_requires=requirements,
-    include_package_data=True,
     packages=find_packages(include=['hatyan']),
+    include_package_data=True,
+    package_data="hatyan": ["*.csv", "*.txt","*.list"],
     zip_safe=False,
 )
