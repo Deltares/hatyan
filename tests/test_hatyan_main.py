@@ -773,8 +773,8 @@ def test_DDL_QCvalues():
                                                             meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT','WaardeBewerkingsmethode.Code':'NVT'})
     uniqueQC = ts_meas_pd['QC'].unique() #array([ 0., 99., nan, 25.]), but should be integers without nan array([0, 99, 25])
     assert uniqueQC.dtype=='float64' #this should be int in the future, if None/nan is not in QC list anymore
-    assert np.isnan(uniqueQC[2]) #this one should become false in the future and then the second assertion should be valid without indexing
-    assert (uniqueQC[[0,1,3]] == np.array([ 0, 99, 25])).all()
+    assert np.isnan(uniqueQC).sum() == 1 #this one should become 0 in the future and then the second assertion should be valid without indexing
+    assert (uniqueQC[~np.isnan(uniqueQC)] == np.array([ 0, 99, 25])).all()
 
     #STELLDBTN
     station_dict = cat_locatielijst[cat_locatielijst['Code']=='STELLDBTN'].iloc[0]
