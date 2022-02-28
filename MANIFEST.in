@@ -1,0 +1,6 @@
+README.md
+HISTORY.rst
+requirements.txt
+hatyan/*.csv
+hatyan/*.txt
+hatyan/*.list
