@@ -33,9 +33,8 @@ Install hatyan OPTION 1: Install from github in an existing or new environment:
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
 - ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version)
-- alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages, add a tag like ``@v2.3.0`` if you require a specific version)
-- to update hatyan: ``python -m pip install --upgrade git+https://github.com/Deltares/hatyan``
-- optional: ``conda deactivate``
+- alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages, add a tag like ``@v2.3.0`` or ``@development`` if you require a specific release/branch. Optionally add ``--upgrade``)
+- to update hatyan: ``python -m pip install --upgrade hatyan`` (or alternatively use git link)
 
 Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 
@@ -158,7 +157,7 @@ Generate RPM (RHEL/CentOS installer, automatically runs via Github Actions upon 
 - additionally, the library pyqt5==5.7.1 (hardcoded in specfile) is for interative QT5 plots. There is a newer version but it requires glibc >2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
 - to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.
 
-Publish to PyPI:
+Publish to PyPI (automatically runs via Github Actions upon release creation):
 
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
