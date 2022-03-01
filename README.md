@@ -32,7 +32,8 @@ Install hatyan OPTION 1: Install from github in an existing or new environment:
 - open command window (or anaconda prompt)
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
-- ``python -m pip install git+https://github.com/Deltares/hatyan`` (this command installs hatyan and all required packages, add a tag like ``@v2.3.0`` if you require a specific version)
+- ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version)
+- alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages, add a tag like ``@v2.3.0`` if you require a specific version)
 - to update hatyan: ``python -m pip install --upgrade git+https://github.com/Deltares/hatyan``
 - optional: ``conda deactivate``
 
@@ -146,7 +147,7 @@ Generate documentation:
 - ``conda activate hatyan_env``
 - ``python scripts/generate_documentation.py``
 
-Generate RPM (RHEL/CentOS installer):
+Generate RPM (RHEL/CentOS installer, automatically runs via Github Actions upon release creation):
 
 - use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
 - preparation: activate environment, run testbank and check acceptancetest output, update history.rst, git add+commit, bumpversion minor, (run testbank and) backup acceptancetest output, generate documentation, git add+commit+push, merge branch with main, create tag+release on github (e.g. v2.3.0)
@@ -156,3 +157,11 @@ Generate RPM (RHEL/CentOS installer):
 - the required Python libraries are documented in requirements_dev.txt: these are fixed versions, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
 - additionally, the library pyqt5==5.7.1 (hardcoded in specfile) is for interative QT5 plots. There is a newer version but it requires glibc >2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
 - to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.
+
+Publish to PyPI:
+
+- open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
+- ``conda activate hatyan_env``
+- ``python setup.py sdist bdist_wheel``
+- ``twine upload dist/*``
+- a new version should now be available on https://pypi.org/manage/project/hatyan/releases/
