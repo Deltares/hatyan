@@ -32,9 +32,8 @@ Install hatyan OPTION 1: Install from github in an existing or new environment:
 - open command window (or anaconda prompt)
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
-- ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version)
-- alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages, add a tag like ``@v2.3.0`` or ``@development`` if you require a specific release/branch. Optionally add ``--upgrade``)
-- to update hatyan: ``python -m pip install --upgrade hatyan`` (or alternatively use git link)
+- ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version. Optionally add ``--upgrade``)
+- alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages from github, add a tag like ``@v2.3.0`` or ``@development`` if you require a specific release/branch. Optionally add ``--upgrade``)
 
 Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 
