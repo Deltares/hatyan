@@ -10,19 +10,24 @@
 #!/bin/bash
 set -e
 
-versiontag=put_versiontag_here #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.3.0
-
+versiontag=development #the versiontag is also internally stored in the specfile, this should be aligned with this one. Possible are main, branches, tags like v2.3.0
 #define and delete resulting directories first to start clean (for h6)
 RPMTOPDIR=$HOME/rpmbuild
 HATYANEXEC=~/hatyan_fromhome.sh
 rm -rf ${RPMTOPDIR}
 rm -f ${HATYANEXEC}
 
-# download spec from source, setup conda env with specific python version to use in rpmbuild, rpmbuild from spec, deactivate conda env
+# download spec from source
 rm -rf hatyan_github
-git clone -b ${versiontag} https://github.com/Deltares/hatyan.git hatyan_github 
+git clone -b ${versiontag} https://github.com/Deltares/hatyan.git hatyan_github
+#in case of python 3.7/3.8/3.9 instead of 3.6.12
+sed -i "s/python -m pip install pyqt5==5.7.1/python -m pip install pyqt5 #==5.7.1/g" hatyan_github/scripts/hatyan_python-latest_python3.spec #unfix old pyqt5 version
+sed -i "s/requirements_dev.txt/requirements.txt/g" hatyan_github/scripts/hatyan_python-latest_python3.spec #not all old fixed dependencies are available in python 3.8, so make new requirements_dev.txt or leave to chance?
+sed -i "s#python3.6/site-packages/PyQt5/Qt/plugins/platforms#python3.7/site-packages/PyQt5/Qt#g" hatyan_github/scripts/hatyan.sh #correct Qt plugins path
+
+# setup conda env with specific python version to use in rpmbuild, rpmbuild from spec, deactivate conda env
 module load anaconda3
-conda create -n hatyan_setup_venv python=3.6.12 -y 
+conda create -n hatyan_setup_venv python=3.7 -y 
 conda activate hatyan_setup_venv
 rpmbuild -v -bi hatyan_github/scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG ${versiontag}"
 conda deactivate
