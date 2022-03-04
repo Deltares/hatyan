@@ -41,7 +41,7 @@ python3 -m venv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 . $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate #Was (but does not work on github): source $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate
 echo "The rpmbuildversion is: $(rpmbuild --version)"
 echo "The ldd/glibc version is: $(ldd --version)"
-echo "The python version used for venv is: $(python --version)"
+echo "The python version used for venv is:"; python --version
 # upgrade pip and setuptools to make sure all dependencies are handled well
 python -m pip install --upgrade pip setuptools
 # install setuptools-git, this helps getting the datafiles included in the installation for some reason
