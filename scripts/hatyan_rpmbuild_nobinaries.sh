@@ -21,8 +21,8 @@ rm -f ${HATYANEXEC}
 rm -rf hatyan_github
 git clone -b ${versiontag} https://github.com/Deltares/hatyan.git hatyan_github
 #in case of python 3.7/3.8/3.9 instead of 3.6.12
-sed -i "s/python -m pip install pyqt5==5.7.1/python -m pip install pyqt5 #==5.7.1/g" hatyan_github/scripts/hatyan_python-latest_python3.spec #unfix old pyqt5 version
-sed -i "s/requirements_dev.txt/requirements.txt/g" hatyan_github/scripts/hatyan_python-latest_python3.spec #unfix old dependency versions, since they are not all available in python >=3.8
+sed -i "s/python -m pip install pyqt5==5.7.1/python -m pip install pyqt5>=5.7.1/g" hatyan_github/scripts/hatyan_python-latest_python3.spec #unfix old pyqt5 version
+sed -i "s# -r %{_topdir}/BUILD/hatyan_github/requirements_dev.txt##g" hatyan_github/scripts/hatyan_python-latest_python3.spec #unfix old dependency versions, since they are not all available in python >=3.8
 
 # setup conda env with specific python version to use in rpmbuild, rpmbuild from spec, deactivate conda env
 module load anaconda3
