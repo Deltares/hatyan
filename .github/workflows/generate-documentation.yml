@@ -25,3 +25,8 @@ jobs:
     - name: Generate documentation
       run: |
         python scripts/generate_documentation.py
+    - name: Commit updated documentation
+      run: |
+        git config --global user.name 'veenstrajelmer'
+        git commit -am "Updated documentation"
+        git push
