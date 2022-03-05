@@ -140,7 +140,7 @@ Running the testbank:
 - ``pytest -m "not acceptance"`` (excludes all acceptance tests)
 - the following arguments are automatically provided via pytest.ini: ``-v --tb=short``, add ``--cov=hatyan`` for a coverage summary
 
-Generate documentation:
+Generate documentation (automatically runs via Github Actions upon release creation):
 
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
