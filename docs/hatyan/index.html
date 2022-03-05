@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>hatyan API documentation</title>
 <meta name="description" content="…" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -25,7 +25,8 @@
 <p><a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml"><img alt="pytest-devenv" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml"><img alt="pytest-py39" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml"><img alt="sigrid-publish" src="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main"></a>
-<a href="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml"><img alt="rpm-build-core" src="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml/badge.svg?event=release"></a></p>
+<a href="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml"><img alt="rpm-build-core" src="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml/badge.svg?event=release"></a>
+<a href="https://github.com/Deltares/hatyan/actions/workflows/release.yml"><img alt="release" src="https://github.com/Deltares/hatyan/actions/workflows/release.yml/badge.svg?event=release"></a></p>
 <h1 id="hatyan">hatyan</h1>
 <p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
 Copyright (C) 2019-2021 Rijkswaterstaat.
@@ -178,16 +179,18 @@ fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_valida
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.5.0&#39;
+__version__ = &#39;2.5.31&#39;
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
 from hatyan.components import *
-from hatyan.foreman_core import *
 from hatyan.hatyan_core import *
+from hatyan.foreman import *
+from hatyan.schureman import *
 from hatyan.timeseries import *
 from hatyan.wrapper_RWS import *
-from hatyan.getonlinedata import *</code></pre>
+from hatyan.getonlinedata import *
+from hatyan.convert import *</code></pre>
 </details>
 </section>
 <section>
@@ -205,7 +208,11 @@ from hatyan.getonlinedata import *</code></pre>
 <dd>
 <div class="desc"><p>components.py contains all the definitions related to hatyan components …</p></div>
 </dd>
-<dt><code class="name"><a title="hatyan.foreman_core" href="foreman_core.html">hatyan.foreman_core</a></code></dt>
+<dt><code class="name"><a title="hatyan.convert" href="convert.html">hatyan.convert</a></code></dt>
+<dd>
+<div class="desc"><p>Created on Thu Jan 20 22:50:18 2022 …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.foreman" href="foreman.html">hatyan.foreman</a></code></dt>
 <dd>
 <div class="desc"><p>foreman.py contains all foreman definitions now embedded in hatyan. The dataset is derived from "M.G.G. Foreman (2004), Manual for Tidal Heights …</p></div>
 </dd>
@@ -216,7 +223,11 @@ from hatyan.getonlinedata import *</code></pre>
 </dd>
 <dt><code class="name"><a title="hatyan.hatyan_core" href="hatyan_core.html">hatyan.hatyan_core</a></code></dt>
 <dd>
-<div class="desc"><p>hatyan_core.py contains definitions with data for the hatyan constituents …</p></div>
+<div class="desc"><p>hatyan_core.py contains core components that wrap around schureman/foreman definitions …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.schureman" href="schureman.html">hatyan.schureman</a></code></dt>
+<dd>
+<div class="desc"><p>schureman.py contains definitions with data for the schureman constituents …</p></div>
 </dd>
 <dt><code class="name"><a title="hatyan.timeseries" href="timeseries.html">hatyan.timeseries</a></code></dt>
 <dd>
@@ -253,9 +264,11 @@ from hatyan.getonlinedata import *</code></pre>
 <li><code><a title="hatyan.analysis_prediction" href="analysis_prediction.html">hatyan.analysis_prediction</a></code></li>
 <li><code><a title="hatyan.astrog" href="astrog.html">hatyan.astrog</a></code></li>
 <li><code><a title="hatyan.components" href="components.html">hatyan.components</a></code></li>
-<li><code><a title="hatyan.foreman_core" href="foreman_core.html">hatyan.foreman_core</a></code></li>
+<li><code><a title="hatyan.convert" href="convert.html">hatyan.convert</a></code></li>
+<li><code><a title="hatyan.foreman" href="foreman.html">hatyan.foreman</a></code></li>
 <li><code><a title="hatyan.getonlinedata" href="getonlinedata.html">hatyan.getonlinedata</a></code></li>
 <li><code><a title="hatyan.hatyan_core" href="hatyan_core.html">hatyan.hatyan_core</a></code></li>
+<li><code><a title="hatyan.schureman" href="schureman.html">hatyan.schureman</a></code></li>
 <li><code><a title="hatyan.timeseries" href="timeseries.html">hatyan.timeseries</a></code></li>
 <li><code><a title="hatyan.wrapper_RWS" href="wrapper_RWS.html">hatyan.wrapper_RWS</a></code></li>
 </ul>
@@ -264,7 +277,7 @@ from hatyan.getonlinedata import *</code></pre>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>
