@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>hatyan.components API documentation</title>
 <meta name="description" content="components.py contains all the definitions related to hatyan components …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -95,7 +95,7 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     import numpy as np
     import pandas as pd
     
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.hatyan_core import sort_const_list
     
     COMP = comp.copy()
     if comp_allyears is not None:
@@ -108,10 +108,8 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     
     const_list = COMP.index.tolist() #is combined const_list
     if sort_freqs:
-        t_const_freq_pd = get_hatyan_freqs(const_list)
-        COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
-        COMP = COMP.sort_values(by=&#39;freq&#39;)
-        const_list = COMP.index.tolist() #now in correct order
+        const_list = sort_const_list(const_list=const_list)
+        COMP = COMP.loc[const_list] #sorted
     
     size_figure = (15,9)
     size_line_ts = 0.7
@@ -180,15 +178,15 @@ def write_components(comp, filename, metadata=None):
     &#34;&#34;&#34;
     import numpy as np
     
-    from hatyan.hatyan_core import get_const_list_hatyan, get_hatyan_freqs
+    from hatyan.schureman import get_const_list_hatyan, get_schureman_freqs #TODO: this is not generic foreman/schureman
 
     COMP = comp.copy()
     
-    t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
+    t_const_freq_pd = get_schureman_freqs(COMP.index.tolist())
     COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
     COMP = COMP.sort_values(by=&#39;freq&#39;)
 
-    const_list_hatyan195_orig = get_const_list_hatyan(&#39;all_originalorder&#39;)
+    const_list_hatyan195_orig = get_const_list_hatyan(&#39;all_schureman_originalorder&#39;)
     const_no = [const_list_hatyan195_orig.index(x) for x in COMP.index]
     const_speed = t_const_freq_pd[&#39;freq&#39;].values*360
     
@@ -232,7 +230,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=[&#39;SA&#39;,&#39;
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman import get_schureman_freqs #TODO: this is not generic foreman/schureman
     
     COMP_merged = comp_main.copy()
     
@@ -241,7 +239,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=[&#39;SA&#39;,&#39;
         COMP_merged = COMP_merged.drop(comp_sec_list_sel)
     COMP_merged = comp_sec.loc[comp_sec_list].append(COMP_merged)
 
-    t_const_freq = get_hatyan_freqs(COMP_merged.index.tolist())
+    t_const_freq = get_schureman_freqs(COMP_merged.index.tolist())
     COMP_merged[&#39;freq&#39;] = t_const_freq[&#39;freq&#39;]
     COMP_merged = COMP_merged.sort_values(by=&#39;freq&#39;)
     
@@ -312,14 +310,14 @@ def components_timeshift(comp,hours):
     import pandas as pd
     import numpy as np
     
-    from hatyan.hatyan_core import get_hatyan_v0
+    from hatyan.schureman import get_schureman_v0 #TODO: this is not generic for foreman/schureman
     
     comp_out = comp.copy()
     
     refdate = dt.datetime(2000,1,1)
     corrdate = refdate+dt.timedelta(hours=hours)
     
-    v0_twodates = get_hatyan_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
+    v0_twodates = get_schureman_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
     hourcorr_v0_deg = np.rad2deg(v0_twodates[1]-v0_twodates[0])#%360
     
     comp_out[&#39;phi_deg&#39;] = (comp_out[&#39;phi_deg&#39;]+hourcorr_v0_deg)%360
@@ -389,7 +387,7 @@ def components_timeshift(comp,hours):
     import numpy as np
     import pandas as pd
     
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.hatyan_core import sort_const_list
     
     COMP = comp.copy()
     if comp_allyears is not None:
@@ -402,10 +400,8 @@ def components_timeshift(comp,hours):
     
     const_list = COMP.index.tolist() #is combined const_list
     if sort_freqs:
-        t_const_freq_pd = get_hatyan_freqs(const_list)
-        COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
-        COMP = COMP.sort_values(by=&#39;freq&#39;)
-        const_list = COMP.index.tolist() #now in correct order
+        const_list = sort_const_list(const_list=const_list)
+        COMP = COMP.loc[const_list] #sorted
     
     size_figure = (15,9)
     size_line_ts = 0.7
@@ -491,15 +487,15 @@ def components_timeshift(comp,hours):
     &#34;&#34;&#34;
     import numpy as np
     
-    from hatyan.hatyan_core import get_const_list_hatyan, get_hatyan_freqs
+    from hatyan.schureman import get_const_list_hatyan, get_schureman_freqs #TODO: this is not generic foreman/schureman
 
     COMP = comp.copy()
     
-    t_const_freq_pd = get_hatyan_freqs(COMP.index.tolist())
+    t_const_freq_pd = get_schureman_freqs(COMP.index.tolist())
     COMP[&#39;freq&#39;] = t_const_freq_pd[&#39;freq&#39;]
     COMP = COMP.sort_values(by=&#39;freq&#39;)
 
-    const_list_hatyan195_orig = get_const_list_hatyan(&#39;all_originalorder&#39;)
+    const_list_hatyan195_orig = get_const_list_hatyan(&#39;all_schureman_originalorder&#39;)
     const_no = [const_list_hatyan195_orig.index(x) for x in COMP.index]
     const_speed = t_const_freq_pd[&#39;freq&#39;].values*360
     
@@ -571,7 +567,7 @@ def components_timeshift(comp,hours):
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    from hatyan.hatyan_core import get_hatyan_freqs
+    from hatyan.schureman import get_schureman_freqs #TODO: this is not generic foreman/schureman
     
     COMP_merged = comp_main.copy()
     
@@ -580,7 +576,7 @@ def components_timeshift(comp,hours):
         COMP_merged = COMP_merged.drop(comp_sec_list_sel)
     COMP_merged = comp_sec.loc[comp_sec_list].append(COMP_merged)
 
-    t_const_freq = get_hatyan_freqs(COMP_merged.index.tolist())
+    t_const_freq = get_schureman_freqs(COMP_merged.index.tolist())
     COMP_merged[&#39;freq&#39;] = t_const_freq[&#39;freq&#39;]
     COMP_merged = COMP_merged.sort_values(by=&#39;freq&#39;)
     
@@ -686,14 +682,14 @@ def components_timeshift(comp,hours):
     import pandas as pd
     import numpy as np
     
-    from hatyan.hatyan_core import get_hatyan_v0
+    from hatyan.schureman import get_schureman_v0 #TODO: this is not generic for foreman/schureman
     
     comp_out = comp.copy()
     
     refdate = dt.datetime(2000,1,1)
     corrdate = refdate+dt.timedelta(hours=hours)
     
-    v0_twodates = get_hatyan_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
+    v0_twodates = get_schureman_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
     hourcorr_v0_deg = np.rad2deg(v0_twodates[1]-v0_twodates[0])#%360
     
     comp_out[&#39;phi_deg&#39;] = (comp_out[&#39;phi_deg&#39;]+hourcorr_v0_deg)%360
@@ -730,7 +726,7 @@ def components_timeshift(comp,hours):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>
