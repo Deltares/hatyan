@@ -67,7 +67,7 @@ pythonversion=$(python -c "import sys;print(f'{sys.version_info.major}.{sys.vers
 if [ ! -f $1 ]; then echo "ERROR: configfile not found."
 else
 	if [[ $pythonversion == 3.6 ]]; then
-		export QT_QPA_PLATFORM_PLUGIN_PATH=/opt/hatyan_python/hatyan_env/lib/python3.6/site-packages/PyQt5/Qt/plugins/platforms
+		export QT_QPA_PLATFORM_PLUGIN_PATH=/opt/hatyan_python/hatyan_env/lib/python${pythonversion}/site-packages/PyQt5/Qt/plugins/platforms
 	else
 		export QT_QPA_PLATFORM_PLUGIN_PATH=/opt/hatyan_python/hatyan_env/lib/python${pythonversion}/site-packages/PyQt5/Qt
 	fi
