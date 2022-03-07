@@ -3,7 +3,7 @@
 #rpmbuild -v -bb ~/hatyan_github/scripts/hatyan_python-latest_python3.spec --define "VERSIONTAG main"
 
 Name:        hatyan_python
-Version:     2.5.31
+Version:     2.5.33
 Release:     1
 BuildArch:   x86_64
 URL:         https://github.com/Deltares/hatyan
@@ -39,12 +39,13 @@ cp -r %{_topdir}/BUILD/hatyan_github/tests $RPM_BUILD_ROOT/opt/hatyan_python
 # create python3 venv hatyan_env
 python3 -m venv $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env
 . $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate #Was (but does not work on github): source $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/activate
-echo "The rpmbuildversion is:"
-rpmbuild --version
-echo "The python version used should be something like 3.6.8 or 3.6.12 with the current fixed libraries. This is necessary since CentOS6 contained glibc=2.12 and not higher, newer machine has glibc=2.17. Python 3.8 requires glibc>2.24 or so, but might not be available on destination machine. Github has setup-python action for specific python version. The python version used for venv is:"
-python --version
+echo "The rpmbuildversion is: $(rpmbuild --version)"
+echo "The ldd/glibc version is: $(ldd --version)"
+echo "The python version used for venv is:"; python --version
 # upgrade pip and setuptools to make sure all dependencies are handled well
 python -m pip install --upgrade pip setuptools
+# install setuptools-git, this helps getting the datafiles included in the installation for some reason
+python -m pip install setuptools-git
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
 python -m pip install %{_topdir}/BUILD/hatyan_github -r %{_topdir}/BUILD/hatyan_github/requirements_dev.txt
 #install pyqt5==5.7.1 to avoid "Failed to import any qt binding" error. The fixed version is necessary since CentOS/RHEL6 have glibc 2.12 and higher pyqt5 versions require glibc>=2.14

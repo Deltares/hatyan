@@ -15,7 +15,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='hatyan',
-    version='2.5.31',
+    version='2.5.33',
     author="Jelmer Veenstra",
     author_email='Jelmer.Veenstra@Deltares.nl',
     url='https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python',
@@ -32,6 +32,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',
         'Topic :: Scientific/Engineering :: Information Analysis',
