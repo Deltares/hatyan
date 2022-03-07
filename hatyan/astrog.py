@@ -869,7 +869,7 @@ def get_leapsecondslist_fromurlorfile():
     refdate = dt.datetime(1900,1,1)
 
     url_leap_seconds_list = 'https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list' #previously, https://www.ietf.org/timezones/data/leap-seconds.list was used but this was outdated on 24-01-2022. #TODO: get most up to date source from somewhere.
-    file_leap_seconds_list = os.path.join(os.path.dirname(file_path),'leap-seconds.list')
+    file_leap_seconds_list = os.path.join(os.path.dirname(file_path),'data','leap-seconds.list')
     
     #retrieve leap-seconds.list via url and write to file in hatyan sourcecode folder. If it fails, an old version of the file is used.
     try:

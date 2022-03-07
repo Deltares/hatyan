@@ -58,7 +58,7 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
 
     """
     
-    foreman_file = os.path.join(os.path.dirname(file_path),'data_foreman_harmonic.txt')
+    foreman_file = os.path.join(os.path.dirname(file_path),'data','data_foreman_harmonic.txt')
     foreman_harmonic_raw = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=True)[0]
     
     lat_rad = np.deg2rad(lat_deg)
@@ -114,7 +114,7 @@ def get_foreman_shallowrelations(pd_series=False):
 
     """
     
-    foreman_file = os.path.join(os.path.dirname(file_path),'data_foreman_shallowrelations.txt')
+    foreman_file = os.path.join(os.path.dirname(file_path),'data','data_foreman_shallowrelations.txt')
     foreman_shallowrelations_raw = pd.read_csv(foreman_file, comment='#', names=[0], skip_blank_lines=True)[0]
     
     foreman_shallowrelations = foreman_shallowrelations_raw.str.split(' ', expand=True)
