@@ -52,7 +52,10 @@ Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
 Getting started
 --------
 
-[Documentation is available on Github](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html) (replace 'main' in the url with any tagname to view older versions) and there is background information in [the doc folder](https://github.com/Deltares/hatyan/tree/main/doc). Copy the code below to your own script to get started. For more examples, check [the examples folder](https://github.com/Deltares/hatyan/tree/main/tests/examples).
+- [HTML-documentation](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html) is available on Github (replace 'main' in the url with any tagname to view older versions)
+- background information is available in [the docs folder](https://github.com/Deltares/hatyan/tree/main/docs).
+- copy the code below to your own script to get started (or run it on [Colab](https://colab.research.google.com/github/Deltares/hatyan/blob/main/notebooks/getting-started.ipynb)).
+- for more examples, check [the examples folder](https://github.com/Deltares/hatyan/tree/main/tests/examples).
 
 ```python
 import datetime as dt
