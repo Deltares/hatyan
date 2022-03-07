@@ -24,8 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 import pandas as pd
 import functools #to Memoize v0uf table (https://en.wikipedia.org/wiki/Memoization)
-
-from hatyan.hatyan_core import robust_timedelta_sec, get_const_list_hatyan, get_doodson_eqvals
+import numpy as np
+import datetime as dt
 
 file_path = os.path.realpath(__file__)
 
@@ -46,8 +46,6 @@ def get_v0uf_sel(const_list):
 
     """
     
-    import pandas as pd
-
     v0uf_allT = get_schureman_table()
     
     const_list_pd = pd.Series(const_list,index=const_list)
@@ -85,8 +83,8 @@ def get_schureman_constants(dood_date):
         DESCRIPTION.
 
     """
-    
-    import numpy as np
+
+    from hatyan.hatyan_core import robust_timedelta_sec # local import since otherwise cross-dependency
     
     #bercon.f: HET BEREKENEN VAN DE 'CONSTANTEN' .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
     #327932: ratio of mass of sun to combined mass of earth and moon
@@ -198,10 +196,9 @@ def get_schureman_freqs(const_list, dood_date=None, sort_onfreq=True, return_all
         DESCRIPTION.
 
     """
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
     
+    from hatyan.hatyan_core import get_const_list_hatyan, get_doodson_eqvals # local import since otherwise cross-dependency
+
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:
@@ -250,9 +247,9 @@ def get_schureman_v0(const_list, dood_date):
         DESCRIPTION.
 
     """
-    import numpy as np
-    import pandas as pd
     
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
     T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date) #N is not used here
     multiply_variables = np.stack([T_rad,S_rad, H_rad, P_rad, P1_rad])
     
@@ -284,9 +281,9 @@ def get_schureman_u(const_list, dood_date):
         DESCRIPTION.
 
     """
-    import numpy as np
-    import pandas as pd
     
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
     if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
         const_list = const_list.tolist()
     
@@ -351,9 +348,9 @@ def get_schureman_f(const_list, dood_date, xfac):
         DESCRIPTION.
 
     """
-    import numpy as np
-    import pandas as pd
     
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
     if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
         const_list = const_list.tolist()
 

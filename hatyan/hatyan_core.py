@@ -26,12 +26,11 @@ import datetime as dt
 import numpy as np
 import functools
 
+from hatyan.schureman import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f, get_schureman_table
+from hatyan.foreman import get_foreman_v0_freq, get_foreman_shallowrelations, get_foreman_nodalfactors, get_foreman_table
 
 
 def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start):
-    
-    from hatyan.schureman import get_schureman_freqs, get_schureman_v0
-    from hatyan.foreman import get_foreman_v0_freq
 
     #retrieve frequency and v0
     print(f'freq is calculated at mid of period: {dood_date_mid[0]}')
@@ -48,9 +47,6 @@ def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_sta
 
 
 def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
-    
-    from hatyan.schureman import get_schureman_u, get_schureman_f
-    from hatyan.foreman import get_foreman_nodalfactors
 
     #get f and u
     if hatyan_settings.nodalfactors:
@@ -98,8 +94,6 @@ def get_doodson_eqvals(dood_date, mode=None):
         Middelbare lengte van het perieum van de zon. Longitude of solar perigee
 
     """
-    #import datetime as dt
-    import numpy as np
     
     DNUJE = 24*36525
     dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
@@ -146,9 +140,6 @@ def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
         DESCRIPTION.
 
     """
-    import numpy as np
-    import pandas as pd
-    import datetime as dt
     
     if (np.array(times_ext) > pd.Timestamp.min).all() and (np.array(times_ext) < pd.Timestamp.max).all():
         times_pred_all = pd.date_range(start=times_ext[0], end=times_ext[-1], freq='%imin'%(timestep_min))
@@ -182,9 +173,6 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
         DESCRIPTION.
 
     """
-    import pandas as pd
-    import datetime as dt
-    import numpy as np
     
     if refdate_dt is None:
         refdate_dt = dt.datetime(1900,1,1)
@@ -201,9 +189,6 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
 
 @functools.lru_cache() #TODO: get_foreman_v0_freq is way slower than get_schureman_freqs because it is live, therefore caching this entire function
 def full_const_list_withfreqs():
-
-    from hatyan.schureman import get_schureman_freqs, get_schureman_table
-    from hatyan.foreman import get_foreman_v0_freq, get_foreman_shallowrelations, get_foreman_table
 
     dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     
@@ -224,7 +209,7 @@ def full_const_list_withfreqs():
 
 
 def sort_const_list(const_list):
-    from hatyan.hatyan_core import full_const_list_withfreqs #import necessary since it is a cached function
+    from hatyan.hatyan_core import full_const_list_withfreqs # local import necessary since it is a cached function
     
     full_const_list_withfreqs = full_const_list_withfreqs()
     const_list_sorted = full_const_list_withfreqs.loc[const_list].sort_values('freq').index.tolist()
@@ -260,7 +245,6 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         A list of component names.
 
     """
-    from hatyan.schureman import get_schureman_table
     
     v0uf_allT = get_schureman_table()
     const_list_all = v0uf_allT.index.tolist()

@@ -5,6 +5,13 @@ Created on Wed Dec  1 17:03:03 2021
 @author: veenstra
 """
 
+import pandas as pd
+import numpy as np
+import datetime as dt
+import requests
+import json
+
+from hatyan.convert import convert_tzone2tzinfo
 
 def get_DDL_catalog(catalog_extrainfo=[]):
     """
@@ -25,9 +32,6 @@ def get_DDL_catalog(catalog_extrainfo=[]):
     result_cat_dict : TYPE
         DESCRIPTION.
     """
-
-    import requests
-    import pandas as pd
     
     #the webservices 
     url_catalog = 'https://waterwebservices.rijkswaterstaat.nl/METADATASERVICES_DBO/OphalenCatalogus'
@@ -59,9 +63,6 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     """
     check get_DDL_data() for details
     """
-    import json
-    import requests
-    import pandas as pd
     
     tzinfo_numraw = query_tstart.strftime('%z') #'+0100'
     tzinfo_numstr = tzinfo_numraw[:3]+':'+tzinfo_numraw[-2:] #'+01:00'
@@ -124,10 +125,6 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
 
     query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead
     """
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    from hatyan.convert import convert_tzone2tzinfo
 
     if not isinstance(allow_multipleresultsfor,list):
         allow_multipleresultsfor = [allow_multipleresultsfor]
@@ -235,7 +232,6 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
 
 
 def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',meta_dict=None, error_empty=True):
-    import numpy as np
     
     cat_aquometadatalijst = catalog_dict['AquoMetadataLijst'].set_index('AquoMetadata_MessageID')
     cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Locatie_MessageID')

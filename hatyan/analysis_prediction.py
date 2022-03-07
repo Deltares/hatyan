@@ -368,8 +368,6 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
 
     """
     
-    from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
-    
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
     elif len(kwargs)>0:

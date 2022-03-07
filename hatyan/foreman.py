@@ -25,6 +25,7 @@ import os
 import pandas as pd
 import numpy as np
 import functools
+import datetime as dt
 
 file_path = os.path.realpath(__file__)
 
@@ -174,12 +175,8 @@ def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
     (foreman_harmonic_doodson_all) nodig, afkomstig uit get_foreman_harmonic uit foreman.py 
     """
     
-    import numpy as np
-    import pandas as pd
-    import datetime as dt
-    
-    from hatyan.schureman import get_doodson_eqvals
-    
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
     if dood_date is None: #in case of frequency
         dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     
@@ -207,11 +204,9 @@ def get_foreman_v0_freq(const_list, dood_date):
     Zoekt voor iedere component uit de lijst de v op basis van harmonische doodson getallen en de frequentie rechtstreeks uit de foreman tabel.
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
     """
-    import numpy as np
-    import pandas as pd
     
-    from hatyan.schureman import get_const_list_hatyan
-    
+    from hatyan.hatyan_core import get_const_list_hatyan # local import since otherwise cross-dependency
+
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:
@@ -260,9 +255,9 @@ def get_foreman_v0_freq(const_list, dood_date):
 ################# NODALFACTORS ##################
 #################################################
 def get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const, dood_date):
-    import numpy as np
-        
-    from hatyan.hatyan_core import get_doodson_eqvals
+
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
     dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date)
     
     fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],np.stack([dood_P_rad, dood_N_rad, dood_P1_rad]))
@@ -285,10 +280,9 @@ def get_foreman_nodalfactors(const_list, dood_date):
     Zoekt voor iedere component uit de lijst de u en f (nodal factors) op basis van satellite doodson getallen uit de foreman tabel.
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
     """
-    import numpy as np
-    import pandas as pd
-    from hatyan.hatyan_core import get_const_list_hatyan
     
+    from hatyan.hatyan_core import get_const_list_hatyan # local import since otherwise cross-dependency
+
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:

@@ -21,6 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+import os
+import shutil
+import datetime as dt
+import matplotlib
+import matplotlib.pyplot as plt
+
 
 def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False):
     """
@@ -49,10 +55,6 @@ def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False)
         provides a start time with which exit_RWS calculates the total time of the process.
 
     """
-    
-    import os
-    import shutil
-    import datetime as dt
     
     if len(argvlist) == 1:
         dir_output = get_outputfoldername(file_config)
@@ -123,10 +125,7 @@ def exit_RWS(timer_start):
     None.
 
     """
-    import os
-    import datetime as dt
-    import matplotlib
-    import matplotlib.pyplot as plt
+
     if matplotlib.get_backend() == 'Qt5Agg':
         print('MESSAGE: interactive plots opened, close them to continue')
         plt.show()
@@ -161,8 +160,6 @@ def get_outputfoldername(file_config):
         path to the output directory.
 
     """
-    import datetime as dt
-    import os
     
     mode = file_config.split(os.sep)[-1].split('.')[0]
     time_now = dt.datetime.now()
@@ -198,6 +195,6 @@ def close(fig=None):
     None.
 
     """
-    import matplotlib.pyplot as plt
+    
     plt.close(fig)
     
