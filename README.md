@@ -2,7 +2,7 @@
 [![pytest-py39](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
 [![sigrid-publish](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml)
 [![rpm-build-core](https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml/badge.svg?event=release)](https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml)
-[![PyPI-upload](https://github.com/Deltares/hatyan/actions/workflows/release.yml/badge.svg?event=release)](https://github.com/Deltares/hatyan/actions/workflows/PyPI-upload.yml)
+[![pypi-upload](https://github.com/Deltares/hatyan/actions/workflows/release.yml/badge.svg?event=release)](https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml)
 
 # hatyan
 
