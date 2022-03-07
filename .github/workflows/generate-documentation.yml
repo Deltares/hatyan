@@ -28,5 +28,6 @@ jobs:
     - name: Commit updated documentation
       run: |
         git config --global user.name 'veenstrajelmer'
+        git add docs/hatyan/*
         git commit -am "Updated documentation"
         git push
