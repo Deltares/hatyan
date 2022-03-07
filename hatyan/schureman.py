@@ -151,12 +151,12 @@ def get_schureman_table():
     index_f = ['DND73','DND74','DND75','DND76','DND77','DND78','DND79','DFM1','DFK1','DFL2','DFK2','DFM1C']
     #index_fstr =['f_eqs']
 
-    file_schureman_harmonic = os.path.join(os.path.dirname(file_path),'data_schureman_harmonic.csv')
+    file_schureman_harmonic = os.path.join(os.path.dirname(file_path),'data','data_schureman_harmonic.csv')
     v0uf_baseT = pd.read_csv(file_schureman_harmonic,comment='#',skipinitialspace=True,index_col='component')
     v0uf_base = v0uf_baseT.T
     #v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     
-    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),'data_schureman_shallowrelations.csv')
+    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),'data','data_schureman_shallowrelations.csv')
     shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment='#',skipinitialspace=True,index_col=0,names=['shallow_eq'])
     shallow_eqs_pd['shallow_eq'] = shallow_eqs_pd['shallow_eq'].str.strip() #remove spaces after
     shallow_eqs_pd['shallow_const'] = shallow_eqs_pd.index

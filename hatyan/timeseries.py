@@ -21,6 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+import os
+file_path = os.path.realpath(__file__)
+
 
 def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
     """
@@ -252,8 +255,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
             M2phasediff_hr = M2phasediff_deg/360*M2_period_hr
             print('additional tideperiod correction provided via corr_tideperiods of %.1f degrees, new correction w.r.t. Cadzand is %.2f hours (%.2f degrees)'%(corr_tideperiods, M2phasediff_hr, M2phasediff_deg))
     else:
-        dir_scriptfile = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-        file_M2phasediff = os.path.join(os.path.dirname(dir_scriptfile),'data_M2phasediff_perstation.txt')
+        file_M2phasediff = os.path.join(os.path.dirname(file_path),'data','data_M2phasediff_perstation.txt')
         stations_M2phasediff = pd.read_csv(file_M2phasediff, names=['M2phasediff'], comment='#', delim_whitespace=True)
         stat_M2phasediff = stations_M2phasediff.loc[station,'M2phasediff']
         M2phasediff_hr = stat_M2phasediff/360*M2_period_hr
