@@ -16,7 +16,7 @@ dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plo
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
-selected_stations = ['HOEKVHLD']#,'VLISSGN','CUXHVN']
+selected_stations = ['HOEKVHLD','VLISSGN','CUXHVN']
 
 for current_station in selected_stations:
     const_list = hatyan.get_const_list_hatyan('year')
@@ -29,7 +29,7 @@ for current_station in selected_stations:
     #ts_measurements_group0 = hatyan.crop_timeseries(ts_measurements_group0, times_ext=[dt.datetime(2012,1,1),dt.datetime(2013,1,1)])
 
     stats_row = pd.DataFrame(index=[current_station])
-    for fu_alltimes in [True]:#,False]:
+    for fu_alltimes in [True,False]:
         xfac = False
         return_prediction = True
         #prediction and comparison to measurements

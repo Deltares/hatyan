@@ -124,7 +124,7 @@ def get_foreman_shallowrelations(pd_series=False):
     
     if not pd_series:
         return foreman_shallowrelations
-
+    
     foreman_shallowrelations_pd = pd.Series()
     for iC,const in enumerate(foreman_shallowrelations.index):
         foreman_shallow_const = foreman_shallowrelations.loc[const].tolist()
@@ -168,7 +168,7 @@ def get_foreman_table(): #TODO: only harmonic and only v0
     
     return v0_baseT_for
 
-
+    
 def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)])):
     """
     Zoekt voor iedere component uit de lijst de v op basis van harmonische doodson getallen en de frequentie rechtstreeks uit de foreman tabel.
@@ -178,18 +178,17 @@ def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900
     from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
     
     t_const_doodson_sol = get_foreman_table()
-    const_list_harmonic = t_const_doodson_sol.index
-
-    doodson_pd_freq = get_doodson_eqvals(dood_date=dood_date, mode='freq')
-    multiply_variables = doodson_pd_freq.loc[['T','S','H','P','P1'],:]
+    
+    doodson_pd = get_doodson_eqvals(dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)]), mode='freq') #TODO: get freq on multiple dates?
+    multiply_variables = doodson_pd.loc[['T','S','H','P','P1'],:]
     t_const_freq_dood = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','P1']],multiply_variables) / (2*np.pi)
-    foreman_freqs = pd.DataFrame({'freq':t_const_freq_dood[:,0]},index=const_list_harmonic)
+    foreman_freqs = pd.DataFrame({'freq':t_const_freq_dood[:,0]},index=t_const_doodson_sol.index)
     
     doodson_pd = get_doodson_eqvals(dood_date=dood_date, mode=None)
     multiply_variables = doodson_pd.loc[['T','S','H','P','N','P1'],:]
     v_0i_rad = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','N','P1']],multiply_variables) + 2*np.pi*t_const_doodson_sol.loc[:,['EDN']].values
-    v_0i_rad_harmonic_pd = pd.DataFrame(v_0i_rad,index=const_list_harmonic)
-
+    v_0i_rad_harmonic_pd = pd.DataFrame(v_0i_rad,index=t_const_doodson_sol.index)
+    
     foreman_shallowrelations = get_foreman_shallowrelations()
     #foreman_shallowrelations_pd = get_foreman_shallowrelations(pd_series=True)
     
