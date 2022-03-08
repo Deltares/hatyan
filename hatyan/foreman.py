@@ -169,41 +169,27 @@ def get_foreman_table(): #TODO: only harmonic and only v0
     return v0_baseT_for
 
 
-def get_foreman_v0freq_fromfromharmonicdood(dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)]), mode=None):
-    """
-    Zoekt de frequentie of v0 voor alle harmonische componenten, in geval van v0 op de gegeven datum (dood_date). Hiervoor zijn de harmonische doodson getallen
-    (foreman_harmonic_doodson_all) nodig, afkomstig uit get_foreman_harmonic uit foreman.py 
-    """
-    
-    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
-    
-    t_const_doodson_sol = get_foreman_table()
-    const_list = t_const_doodson_sol.index
-
-    doodson_pd = get_doodson_eqvals(dood_date=dood_date, mode=mode)
-    
-    if mode=='freq':
-        multiply_variables = doodson_pd.loc[['T','S','H','P','P1'],:]
-        t_const_freq_dood = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','P1']],multiply_variables) / (2*np.pi)
-        t_const_freq_dood_pd = pd.DataFrame({'freq':t_const_freq_dood[:,0]},index=const_list)
-        return t_const_freq_dood_pd
-    else:
-        multiply_variables = doodson_pd.loc[['T','S','H','P','N','P1'],:]
-        v_0i_rad = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','N','P1']],multiply_variables) + 2*np.pi*t_const_doodson_sol.loc[:,['EDN']].values
-        v_0i_rad_pd = pd.DataFrame(v_0i_rad,index=const_list)
-        return v_0i_rad_pd
-    
-
-
-def get_foreman_v0_freq(const_list, dood_date):
+def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)])):
     """
     Zoekt voor iedere component uit de lijst de v op basis van harmonische doodson getallen en de frequentie rechtstreeks uit de foreman tabel.
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
     """
     
-    foreman_freqs = get_foreman_v0freq_fromfromharmonicdood(mode='freq') #list with only harmonic components with more precision than file
-    v_0i_rad_harmonic_pd = get_foreman_v0freq_fromfromharmonicdood(dood_date=dood_date, mode=None)
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
     
+    t_const_doodson_sol = get_foreman_table()
+    const_list_harmonic = t_const_doodson_sol.index
+
+    doodson_pd_freq = get_doodson_eqvals(dood_date=dood_date, mode='freq')
+    multiply_variables = doodson_pd_freq.loc[['T','S','H','P','P1'],:]
+    t_const_freq_dood = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','P1']],multiply_variables) / (2*np.pi)
+    foreman_freqs = pd.DataFrame({'freq':t_const_freq_dood[:,0]},index=const_list_harmonic)
+    
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date, mode=None)
+    multiply_variables = doodson_pd.loc[['T','S','H','P','N','P1'],:]
+    v_0i_rad = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','N','P1']],multiply_variables) + 2*np.pi*t_const_doodson_sol.loc[:,['EDN']].values
+    v_0i_rad_harmonic_pd = pd.DataFrame(v_0i_rad,index=const_list_harmonic)
+
     foreman_shallowrelations = get_foreman_shallowrelations()
     #foreman_shallowrelations_pd = get_foreman_shallowrelations(pd_series=True)
     

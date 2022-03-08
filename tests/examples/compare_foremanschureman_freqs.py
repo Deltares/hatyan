@@ -15,9 +15,9 @@ const_list_allschureman = hatyan.get_const_list_hatyan('all_schureman')
 freqs_pd_schu = hatyan.get_schureman_freqs(const_list=const_list_allschureman,dood_date=dood_date)
 v0_pd_schu = hatyan.get_schureman_v0(const_list=freqs_pd_schu.index,dood_date=dood_date)
 
-v_0i_rad_harmonic_pd = hatyan.get_foreman_v0freq_fromfromharmonicdood(dood_date=dood_date, mode=None) #list with only harmonic components with more precision than file
+t_const_doodson_sol = hatyan.get_foreman_table()
 foreman_shallowrelations = hatyan.get_foreman_shallowrelations()
-const_list_foreman = v_0i_rad_harmonic_pd.index.tolist() + foreman_shallowrelations.index.tolist()
+const_list_foreman = t_const_doodson_sol.index.tolist() + foreman_shallowrelations.index.tolist()
 
 #TODO: add translate table for different naming conventions >> or add duplicates to foreman/schureman table?
 v0_pd_for,freqs_pd_for = hatyan.get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date,)
