@@ -320,13 +320,10 @@ def get_schureman_u(const_list, dood_date):
     v0uf_sel_u = v0uf_sel[['DKSI','DNU', 'DQ', 'DQU', 'DR', 'DUK1', 'DUK2']]
 
     DU = np.dot(v0uf_sel_u.values,multiply_variables)
-    DU += np.pi
-    DU = np.remainder(DU,2*np.pi)
-    DU -= np.pi
+    DU = np.remainder(DU+np.pi, 2*np.pi) - np.pi
 
     #create dataframe
-    DU_pd = pd.DataFrame(DU)
-    DU_pd.index = const_list
+    DU_pd = pd.DataFrame(DU, index=const_list)
     
     return DU_pd
 
@@ -426,10 +423,8 @@ def get_schureman_f(const_list, dood_date, xfac):
         f_i_M2[idnozero,:] *= variable**power[idnozero][np.newaxis].T
     
     #create dataframe
-    f_i_pd = pd.DataFrame(f_i)
-    f_i_pd.index = const_list
-    f_i_M2_pd = pd.DataFrame(f_i_M2)
-    f_i_M2_pd.index = ['M2']
+    f_i_pd = pd.DataFrame(f_i, index=const_list)
+    f_i_M2_pd = pd.DataFrame(f_i_M2, index = ['M2'])
     
     if xfac: #if variable is not: None, False, 0, more?
         f_i_pd = correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac=xfac)
@@ -455,7 +450,6 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
 
     """
     
-    const_list = f_i_pd.index.tolist()
     if isinstance(xfac,dict):
         print('xfac dictionary provided: %s'%(xfac))
         xfac_values = xfac
@@ -474,12 +468,12 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
                        '3MS8':0.60}
     
     for xfac_const in xfac_values.keys():
-        #print(xfac_const)
-        if xfac_const in const_list:
-            if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
-                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[['M2'],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
-            else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
-                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
+        if not xfac_const in f_i_pd.index:
+            continue
+        if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
+            f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[['M2'],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
+        else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
+            f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
 
     return f_i_pd
 
