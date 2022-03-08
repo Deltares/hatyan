@@ -71,18 +71,20 @@ import datetime as dt
 import numpy as np
 import functools
 
+from hatyan.schureman import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f, get_schureman_table
+from hatyan.foreman import get_foreman_v0_freq, get_foreman_shallowrelations, get_foreman_nodalfactors, get_foreman_table
 
 
 def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start):
-    
-    from hatyan.schureman import get_schureman_freqs, get_schureman_v0
-    from hatyan.foreman import get_foreman_v0_freq
+
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
 
     #retrieve frequency and v0
     print(f&#39;freq is calculated at mid of period: {dood_date_mid[0]}&#39;)
     print(f&#39;v0 is calculated for start of period: {dood_date_start[0]}&#39;)
     if hatyan_settings.source==&#39;schureman&#39;:
-        t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+        t_const_freq_pd = get_schureman_freqs(const_list, dood_date=dood_date_mid)
         v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
     elif hatyan_settings.source==&#39;foreman&#39;: #TODO: this is probably quite slow since foreman is not cached
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid)
@@ -93,9 +95,6 @@ def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_sta
 
 
 def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
-    
-    from hatyan.schureman import get_schureman_u, get_schureman_f
-    from hatyan.foreman import get_foreman_nodalfactors
 
     #get f and u
     if hatyan_settings.nodalfactors:
@@ -143,8 +142,6 @@ def get_doodson_eqvals(dood_date, mode=None):
         Middelbare lengte van het perieum van de zon. Longitude of solar perigee
 
     &#34;&#34;&#34;
-    #import datetime as dt
-    import numpy as np
     
     DNUJE = 24*36525
     dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
@@ -170,7 +167,9 @@ def get_doodson_eqvals(dood_date, mode=None):
         dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
         dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
     
-    return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad
+    doodson_pd = pd.DataFrame(np.stack([dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad]),
+                              index=[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;])
+    return doodson_pd
 
 
 def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
@@ -191,9 +190,6 @@ def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
-    import datetime as dt
     
     if (np.array(times_ext) &gt; pd.Timestamp.min).all() and (np.array(times_ext) &lt; pd.Timestamp.max).all():
         times_pred_all = pd.date_range(start=times_ext[0], end=times_ext[-1], freq=&#39;%imin&#39;%(timestep_min))
@@ -227,9 +223,6 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import datetime as dt
-    import numpy as np
     
     if refdate_dt is None:
         refdate_dt = dt.datetime(1900,1,1)
@@ -246,9 +239,6 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
 
 @functools.lru_cache() #TODO: get_foreman_v0_freq is way slower than get_schureman_freqs because it is live, therefore caching this entire function
 def full_const_list_withfreqs():
-
-    from hatyan.schureman import get_schureman_freqs, get_schureman_table
-    from hatyan.foreman import get_foreman_v0_freq, get_foreman_shallowrelations, get_foreman_table
 
     dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     
@@ -269,7 +259,7 @@ def full_const_list_withfreqs():
 
 
 def sort_const_list(const_list):
-    from hatyan.hatyan_core import full_const_list_withfreqs #import necessary since it is a cached function
+    from hatyan.hatyan_core import full_const_list_withfreqs # local import necessary since it is a cached function
     
     full_const_list_withfreqs = full_const_list_withfreqs()
     const_list_sorted = full_const_list_withfreqs.loc[const_list].sort_values(&#39;freq&#39;).index.tolist()
@@ -305,7 +295,6 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         A list of component names.
 
     &#34;&#34;&#34;
-    from hatyan.schureman import get_schureman_table
     
     v0uf_allT = get_schureman_table()
     const_list_all = v0uf_allT.index.tolist()
@@ -477,15 +466,15 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start):
-    
-    from hatyan.schureman import get_schureman_freqs, get_schureman_v0
-    from hatyan.foreman import get_foreman_v0_freq
+
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
 
     #retrieve frequency and v0
     print(f&#39;freq is calculated at mid of period: {dood_date_mid[0]}&#39;)
     print(f&#39;v0 is calculated for start of period: {dood_date_start[0]}&#39;)
     if hatyan_settings.source==&#39;schureman&#39;:
-        t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+        t_const_freq_pd = get_schureman_freqs(const_list, dood_date=dood_date_mid)
         v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
     elif hatyan_settings.source==&#39;foreman&#39;: #TODO: this is probably quite slow since foreman is not cached
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid)
@@ -505,9 +494,6 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
-    
-    from hatyan.schureman import get_schureman_u, get_schureman_f
-    from hatyan.foreman import get_foreman_nodalfactors
 
     #get f and u
     if hatyan_settings.nodalfactors:
@@ -586,8 +572,6 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         Middelbare lengte van het perieum van de zon. Longitude of solar perigee
 
     &#34;&#34;&#34;
-    #import datetime as dt
-    import numpy as np
     
     DNUJE = 24*36525
     dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
@@ -613,7 +597,9 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
         dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
     
-    return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad</code></pre>
+    doodson_pd = pd.DataFrame(np.stack([dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad]),
+                              index=[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;])
+    return doodson_pd</code></pre>
 </details>
 </dd>
 <dt id="hatyan.hatyan_core.robust_daterange_fromtimesextfreq"><code class="name flex">
@@ -656,9 +642,6 @@ For dates outside this period, a list is generated and converted to a pd.Index i
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
-    import datetime as dt
     
     if (np.array(times_ext) &gt; pd.Timestamp.min).all() and (np.array(times_ext) &lt; pd.Timestamp.max).all():
         times_pred_all = pd.date_range(start=times_ext[0], end=times_ext[-1], freq=&#39;%imin&#39;%(timestep_min))
@@ -716,9 +699,6 @@ For dates outside this period, a list subtraction is generated.</p>
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import datetime as dt
-    import numpy as np
     
     if refdate_dt is None:
         refdate_dt = dt.datetime(1900,1,1)
@@ -744,9 +724,6 @@ For dates outside this period, a list subtraction is generated.</p>
 </summary>
 <pre><code class="python">@functools.lru_cache() #TODO: get_foreman_v0_freq is way slower than get_schureman_freqs because it is live, therefore caching this entire function
 def full_const_list_withfreqs():
-
-    from hatyan.schureman import get_schureman_freqs, get_schureman_table
-    from hatyan.foreman import get_foreman_v0_freq, get_foreman_shallowrelations, get_foreman_table
 
     dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     
@@ -776,7 +753,7 @@ def full_const_list_withfreqs():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sort_const_list(const_list):
-    from hatyan.hatyan_core import full_const_list_withfreqs #import necessary since it is a cached function
+    from hatyan.hatyan_core import full_const_list_withfreqs # local import necessary since it is a cached function
     
     full_const_list_withfreqs = full_const_list_withfreqs()
     const_list_sorted = full_const_list_withfreqs.loc[const_list].sort_values(&#39;freq&#39;).index.tolist()
@@ -846,7 +823,6 @@ def full_const_list_withfreqs():
         A list of component names.
 
     &#34;&#34;&#34;
-    from hatyan.schureman import get_schureman_table
     
     v0uf_allT = get_schureman_table()
     const_list_all = v0uf_allT.index.tolist()

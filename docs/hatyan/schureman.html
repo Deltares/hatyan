@@ -69,8 +69,8 @@ along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
 import os
 import pandas as pd
 import functools #to Memoize v0uf table (https://en.wikipedia.org/wiki/Memoization)
-
-from hatyan.hatyan_core import robust_timedelta_sec, get_const_list_hatyan, get_doodson_eqvals
+import numpy as np
+import datetime as dt
 
 file_path = os.path.realpath(__file__)
 
@@ -91,8 +91,6 @@ def get_v0uf_sel(const_list):
 
     &#34;&#34;&#34;
     
-    import pandas as pd
-
     v0uf_allT = get_schureman_table()
     
     const_list_pd = pd.Series(const_list,index=const_list)
@@ -105,61 +103,6 @@ def get_v0uf_sel(const_list):
         v0uf_sel = v0uf_allT.loc[const_list]
     
     return v0uf_sel
-
-
-def get_schureman_constants(dood_date):
-    &#34;&#34;&#34;
-    get_schureman_constants
-
-    Parameters
-    ----------
-    dood_date : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    DOMEGA : TYPE
-        DESCRIPTION.
-    DIKL : TYPE
-        DESCRIPTION.
-    DC1681 : TYPE
-        DESCRIPTION.
-    DC5023 : TYPE
-        DESCRIPTION.
-    DC0365 : TYPE
-        DESCRIPTION.
-
-    &#34;&#34;&#34;
-    
-    import numpy as np
-    
-    #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
-    #327932: ratio of mass of sun to combined mass of earth and moon
-    #81.53: ratio of mass of earth to mass of moon
-    DAGC = 0.01657                            #A/C &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean lunar parallax in respect to mean radius [rad]
-    DAGC1 = 0.00004261                        #A/C1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean solar parallax in respect to mean radius [rad]
-    DE = 0.054900489                          #E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of moons orbit
-    DMGE = 1./81.53                           #M/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of moon /mass of earth
-    DSGE = 82.53/81.53*327932                 #S/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of sun / mass of earth
-    
-    DU = DMGE*DAGC**3                         #U &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, basic factor
-    DU1 = DSGE*DAGC1**3                       #U1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar coefficient
-    DSACCE = DU1/DU                           #S&#39; &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar factor
-    DOMEGA = np.deg2rad(23+27./60.+8.26/3600) #OMEGA &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Obliquity of the Ecliptic, epoch 1 Jan 1900, 23.45229 graden [rad]
-    DIKL = np.deg2rad(5+8./60.+43.3546/3600)  #i &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Inclination of moons orbit to plane of ecliptic, epoch 1 Jan 1900 (?), 5.1453762 graden [rad]
-    
-    DC5023 = 0.5+0.75*DE*DE
-
-    #time dependent
-    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
-    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
-    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
-    DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
-
-    DC0365 = DCOFSI*np.sin(DOMEGA)**2
-    DC1681 = DCOFSI*np.sin(2*DOMEGA)
-    
-    return DOMEGA, DIKL, DC1681, DC5023, DC0365
 
 
 def get_lunarSLSIHO_fromsolar(v0uf_base):
@@ -223,7 +166,7 @@ def get_schureman_table():
     return v0uf_allT
 
 
-def get_schureman_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw=False):
+def get_schureman_freqs(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)]), return_allraw=False):
     &#34;&#34;&#34;
     Returns the frequencies of the requested list of constituents. Source: beromg.f
 
@@ -243,39 +186,27 @@ def get_schureman_freqs(const_list, dood_date=None, sort_onfreq=True, return_all
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
     
-    if type(const_list) is str:
-        const_list = get_const_list_hatyan(const_list)
-    elif type(const_list) is not list:
-        const_list = const_list.tolist()
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
         
-    if dood_date is None:
-        dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
-    
-    T_rad_freq, S_rad_freq, H_rad_freq, P_rad_freq, N_rad_freq, P1_rad_freq = get_doodson_eqvals(dood_date=dood_date, mode=&#39;freq&#39;) #N is not used here
-    multiply_variables = np.stack([T_rad_freq,S_rad_freq, H_rad_freq, P_rad_freq, P1_rad_freq])
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date, mode=&#39;freq&#39;) #N is not used here
+    multiply_variables = doodson_pd.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;],:]
     
     v0uf_sel = get_v0uf_sel(const_list=const_list)
     v0uf_sel_freq = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
     
-    DOMEGA_speed = np.dot(v0uf_sel_freq.values,multiply_variables)
+    DOMEGA_speed = np.dot(v0uf_sel_freq,multiply_variables)
+    if return_allraw: #return array of speeds for each component/timestep
+        return DOMEGA_speed
     
+    #return dataframe of freq/angvelo/period/angfreq for all components and first timestep
     t_const_speed = DOMEGA_speed[:,0]
     t_const_freq = t_const_speed/(2*np.pi) #aantal rotaties per uur, freq
     np.seterr(divide=&#39;ignore&#39;) #suppress divide by 0 warning
     t_const_perds = 1/t_const_freq #period [hr]
     t_const_angfreqs = 360/t_const_perds #angfreq [deg/hr]
     freq_pd = pd.DataFrame({&#39;freq&#39;:t_const_freq, &#39;angvelo [rad/hr]&#39;:t_const_speed, &#39;period [hr]&#39;:t_const_perds, &#39;angfreq [deg/hr]&#39;:t_const_angfreqs}, index=const_list)
-    if sort_onfreq:
-        freq_pd = freq_pd.sort_values(by=&#39;freq&#39;)
-    
-    if return_allraw:
-        return freq_pd, DOMEGA_speed
-    else:
-        return freq_pd
+    return freq_pd
 
 
 def get_schureman_v0(const_list, dood_date):
@@ -295,21 +226,72 @@ def get_schureman_v0(const_list, dood_date):
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
     
-    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date) #N is not used here
-    multiply_variables = np.stack([T_rad,S_rad, H_rad, P_rad, P1_rad])
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date) #N is not used here
+    multiply_variables = doodson_pd.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;],:]
     
     v0uf_sel = get_v0uf_sel(const_list=const_list)
-    v0uf_sel_v = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
-    
-    DV0 = np.dot(v0uf_sel_v.values,multiply_variables) + np.deg2rad(v0uf_sel[&#39;EDN&#39;]).values[np.newaxis].T
-    
-    DV0_pd = pd.DataFrame(DV0)
-    DV0_pd.index = const_list
+    DV0 = np.dot(v0uf_sel.loc[:,[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]],multiply_variables) + np.deg2rad(v0uf_sel.loc[:,[&#39;EDN&#39;]]).values
+    DV0_pd = pd.DataFrame(DV0,index=const_list)
     
     return DV0_pd
+
+
+def get_schureman_constants(dood_date):
+    &#34;&#34;&#34;
+    get_schureman_constants
+
+    Parameters
+    ----------
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    DOMEGA : TYPE
+        DESCRIPTION.
+    DIKL : TYPE
+        DESCRIPTION.
+    DC1681 : TYPE
+        DESCRIPTION.
+    DC5023 : TYPE
+        DESCRIPTION.
+    DC0365 : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+
+    from hatyan.hatyan_core import robust_timedelta_sec # local import since otherwise cross-dependency
+    
+    #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
+    #327932: ratio of mass of sun to combined mass of earth and moon
+    #81.53: ratio of mass of earth to mass of moon
+    DAGC = 0.01657                            #A/C &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean lunar parallax in respect to mean radius [rad]
+    DAGC1 = 0.00004261                        #A/C1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean solar parallax in respect to mean radius [rad]
+    DE = 0.054900489                          #E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of moons orbit
+    DMGE = 1./81.53                           #M/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of moon /mass of earth
+    DSGE = 82.53/81.53*327932                 #S/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of sun / mass of earth
+    
+    DU = DMGE*DAGC**3                         #U &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, basic factor
+    DU1 = DSGE*DAGC1**3                       #U1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar coefficient
+    DSACCE = DU1/DU                           #S&#39; &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar factor
+    DOMEGA = np.deg2rad(23+27./60.+8.26/3600) #OMEGA &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Obliquity of the Ecliptic, epoch 1 Jan 1900, 23.45229 graden [rad]
+    DIKL = np.deg2rad(5+8./60.+43.3546/3600)  #i &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Inclination of moons orbit to plane of ecliptic, epoch 1 Jan 1900 (?), 5.1453762 graden [rad]
+    
+    DC5023 = 0.5+0.75*DE*DE
+
+    #time dependent
+    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
+    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
+    DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
+
+    DC0365 = DCOFSI*np.sin(DOMEGA)**2
+    DC1681 = DCOFSI*np.sin(2*DOMEGA)
+    
+    return DOMEGA, DIKL, DC1681, DC5023, DC0365
 
 
 def get_schureman_u(const_list, dood_date):
@@ -329,13 +311,13 @@ def get_schureman_u(const_list, dood_date):
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
     
-    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
-        const_list = const_list.tolist()
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date)
+    N_rad = doodson_pd.loc[&#39;N&#39;,:].values
+    P_rad = doodson_pd.loc[&#39;P&#39;,:].values
     
-    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
     #list of dependencies for U (only P and N are used here)
     DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_schureman_constants(dood_date)
     DHOMI = (DOMEGA-DIKL)*0.5
@@ -368,13 +350,10 @@ def get_schureman_u(const_list, dood_date):
     v0uf_sel_u = v0uf_sel[[&#39;DKSI&#39;,&#39;DNU&#39;, &#39;DQ&#39;, &#39;DQU&#39;, &#39;DR&#39;, &#39;DUK1&#39;, &#39;DUK2&#39;]]
 
     DU = np.dot(v0uf_sel_u.values,multiply_variables)
-    DU += np.pi
-    DU = np.remainder(DU,2*np.pi)
-    DU -= np.pi
+    DU = np.remainder(DU+np.pi, 2*np.pi) - np.pi
 
     #create dataframe
-    DU_pd = pd.DataFrame(DU)
-    DU_pd.index = const_list
+    DU_pd = pd.DataFrame(DU, index=const_list)
     
     return DU_pd
 
@@ -396,14 +375,13 @@ def get_schureman_f(const_list, dood_date, xfac):
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
     
-    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
-        const_list = const_list.tolist()
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
 
-    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
-
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date)
+    N_rad = doodson_pd.loc[&#39;N&#39;,:].values
+    P_rad = doodson_pd.loc[&#39;P&#39;,:].values
+    
     #list of dependencies F (only P and N are used here)
     DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_schureman_constants(dood_date)
     DHOMI = (DOMEGA-DIKL)*0.5
@@ -474,10 +452,8 @@ def get_schureman_f(const_list, dood_date, xfac):
         f_i_M2[idnozero,:] *= variable**power[idnozero][np.newaxis].T
     
     #create dataframe
-    f_i_pd = pd.DataFrame(f_i)
-    f_i_pd.index = const_list
-    f_i_M2_pd = pd.DataFrame(f_i_M2)
-    f_i_M2_pd.index = [&#39;M2&#39;]
+    f_i_pd = pd.DataFrame(f_i, index=const_list)
+    f_i_M2_pd = pd.DataFrame(f_i_M2, index = [&#39;M2&#39;])
     
     if xfac: #if variable is not: None, False, 0, more?
         f_i_pd = correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac=xfac)
@@ -503,7 +479,6 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
 
     &#34;&#34;&#34;
     
-    const_list = f_i_pd.index.tolist()
     if isinstance(xfac,dict):
         print(&#39;xfac dictionary provided: %s&#39;%(xfac))
         xfac_values = xfac
@@ -522,12 +497,12 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
                        &#39;3MS8&#39;:0.60}
     
     for xfac_const in xfac_values.keys():
-        #print(xfac_const)
-        if xfac_const in const_list:
-            if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
-                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[[&#39;M2&#39;],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
-            else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
-                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
+        if not xfac_const in f_i_pd.index:
+            continue
+        if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
+            f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[[&#39;M2&#39;],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
+        else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
+            f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
 
     return f_i_pd</code></pre>
 </details>
@@ -574,8 +549,6 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
 
     &#34;&#34;&#34;
     
-    import pandas as pd
-
     v0uf_allT = get_schureman_table()
     
     const_list_pd = pd.Series(const_list,index=const_list)
@@ -588,88 +561,6 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
         v0uf_sel = v0uf_allT.loc[const_list]
     
     return v0uf_sel</code></pre>
-</details>
-</dd>
-<dt id="hatyan.schureman.get_schureman_constants"><code class="name flex">
-<span>def <span class="ident">get_schureman_constants</span></span>(<span>dood_date)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>get_schureman_constants</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>dood_date</code></strong> :&ensp;<code>TYPE</code></dt>
-<dd>DESCRIPTION.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>DOMEGA</code></strong> :&ensp;<code>TYPE</code></dt>
-<dd>DESCRIPTION.</dd>
-<dt><strong><code>DIKL</code></strong> :&ensp;<code>TYPE</code></dt>
-<dd>DESCRIPTION.</dd>
-<dt><strong><code>DC1681</code></strong> :&ensp;<code>TYPE</code></dt>
-<dd>DESCRIPTION.</dd>
-<dt><strong><code>DC5023</code></strong> :&ensp;<code>TYPE</code></dt>
-<dd>DESCRIPTION.</dd>
-<dt><strong><code>DC0365</code></strong> :&ensp;<code>TYPE</code></dt>
-<dd>DESCRIPTION.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_schureman_constants(dood_date):
-    &#34;&#34;&#34;
-    get_schureman_constants
-
-    Parameters
-    ----------
-    dood_date : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    DOMEGA : TYPE
-        DESCRIPTION.
-    DIKL : TYPE
-        DESCRIPTION.
-    DC1681 : TYPE
-        DESCRIPTION.
-    DC5023 : TYPE
-        DESCRIPTION.
-    DC0365 : TYPE
-        DESCRIPTION.
-
-    &#34;&#34;&#34;
-    
-    import numpy as np
-    
-    #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
-    #327932: ratio of mass of sun to combined mass of earth and moon
-    #81.53: ratio of mass of earth to mass of moon
-    DAGC = 0.01657                            #A/C &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean lunar parallax in respect to mean radius [rad]
-    DAGC1 = 0.00004261                        #A/C1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean solar parallax in respect to mean radius [rad]
-    DE = 0.054900489                          #E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of moons orbit
-    DMGE = 1./81.53                           #M/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of moon /mass of earth
-    DSGE = 82.53/81.53*327932                 #S/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of sun / mass of earth
-    
-    DU = DMGE*DAGC**3                         #U &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, basic factor
-    DU1 = DSGE*DAGC1**3                       #U1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar coefficient
-    DSACCE = DU1/DU                           #S&#39; &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar factor
-    DOMEGA = np.deg2rad(23+27./60.+8.26/3600) #OMEGA &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Obliquity of the Ecliptic, epoch 1 Jan 1900, 23.45229 graden [rad]
-    DIKL = np.deg2rad(5+8./60.+43.3546/3600)  #i &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Inclination of moons orbit to plane of ecliptic, epoch 1 Jan 1900 (?), 5.1453762 graden [rad]
-    
-    DC5023 = 0.5+0.75*DE*DE
-
-    #time dependent
-    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
-    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
-    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
-    DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
-
-    DC0365 = DCOFSI*np.sin(DOMEGA)**2
-    DC1681 = DCOFSI*np.sin(2*DOMEGA)
-    
-    return DOMEGA, DIKL, DC1681, DC5023, DC0365</code></pre>
 </details>
 </dd>
 <dt id="hatyan.schureman.get_lunarSLSIHO_fromsolar"><code class="name flex">
@@ -757,7 +648,7 @@ def get_schureman_table():
 </details>
 </dd>
 <dt id="hatyan.schureman.get_schureman_freqs"><code class="name flex">
-<span>def <span class="ident">get_schureman_freqs</span></span>(<span>const_list, dood_date=None, sort_onfreq=True, return_allraw=False)</span>
+<span>def <span class="ident">get_schureman_freqs</span></span>(<span>const_list, dood_date=DatetimeIndex(['1900-01-01'], dtype='datetime64[ns]', freq=None), return_allraw=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Returns the frequencies of the requested list of constituents. Source: beromg.f</p>
@@ -780,7 +671,7 @@ def get_schureman_table():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_schureman_freqs(const_list, dood_date=None, sort_onfreq=True, return_allraw=False):
+<pre><code class="python">def get_schureman_freqs(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)]), return_allraw=False):
     &#34;&#34;&#34;
     Returns the frequencies of the requested list of constituents. Source: beromg.f
 
@@ -800,39 +691,27 @@ def get_schureman_table():
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
     
-    if type(const_list) is str:
-        const_list = get_const_list_hatyan(const_list)
-    elif type(const_list) is not list:
-        const_list = const_list.tolist()
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
         
-    if dood_date is None:
-        dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
-    
-    T_rad_freq, S_rad_freq, H_rad_freq, P_rad_freq, N_rad_freq, P1_rad_freq = get_doodson_eqvals(dood_date=dood_date, mode=&#39;freq&#39;) #N is not used here
-    multiply_variables = np.stack([T_rad_freq,S_rad_freq, H_rad_freq, P_rad_freq, P1_rad_freq])
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date, mode=&#39;freq&#39;) #N is not used here
+    multiply_variables = doodson_pd.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;],:]
     
     v0uf_sel = get_v0uf_sel(const_list=const_list)
     v0uf_sel_freq = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
     
-    DOMEGA_speed = np.dot(v0uf_sel_freq.values,multiply_variables)
+    DOMEGA_speed = np.dot(v0uf_sel_freq,multiply_variables)
+    if return_allraw: #return array of speeds for each component/timestep
+        return DOMEGA_speed
     
+    #return dataframe of freq/angvelo/period/angfreq for all components and first timestep
     t_const_speed = DOMEGA_speed[:,0]
     t_const_freq = t_const_speed/(2*np.pi) #aantal rotaties per uur, freq
     np.seterr(divide=&#39;ignore&#39;) #suppress divide by 0 warning
     t_const_perds = 1/t_const_freq #period [hr]
     t_const_angfreqs = 360/t_const_perds #angfreq [deg/hr]
     freq_pd = pd.DataFrame({&#39;freq&#39;:t_const_freq, &#39;angvelo [rad/hr]&#39;:t_const_speed, &#39;period [hr]&#39;:t_const_perds, &#39;angfreq [deg/hr]&#39;:t_const_angfreqs}, index=const_list)
-    if sort_onfreq:
-        freq_pd = freq_pd.sort_values(by=&#39;freq&#39;)
-    
-    if return_allraw:
-        return freq_pd, DOMEGA_speed
-    else:
-        return freq_pd</code></pre>
+    return freq_pd</code></pre>
 </details>
 </dd>
 <dt id="hatyan.schureman.get_schureman_v0"><code class="name flex">
@@ -873,21 +752,99 @@ def get_schureman_table():
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
     
-    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date) #N is not used here
-    multiply_variables = np.stack([T_rad,S_rad, H_rad, P_rad, P1_rad])
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date) #N is not used here
+    multiply_variables = doodson_pd.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;],:]
     
     v0uf_sel = get_v0uf_sel(const_list=const_list)
-    v0uf_sel_v = v0uf_sel[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]]
-    
-    DV0 = np.dot(v0uf_sel_v.values,multiply_variables) + np.deg2rad(v0uf_sel[&#39;EDN&#39;]).values[np.newaxis].T
-    
-    DV0_pd = pd.DataFrame(DV0)
-    DV0_pd.index = const_list
+    DV0 = np.dot(v0uf_sel.loc[:,[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;P1&#39;]],multiply_variables) + np.deg2rad(v0uf_sel.loc[:,[&#39;EDN&#39;]]).values
+    DV0_pd = pd.DataFrame(DV0,index=const_list)
     
     return DV0_pd</code></pre>
+</details>
+</dd>
+<dt id="hatyan.schureman.get_schureman_constants"><code class="name flex">
+<span>def <span class="ident">get_schureman_constants</span></span>(<span>dood_date)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_schureman_constants</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dood_date</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>DOMEGA</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DIKL</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DC1681</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DC5023</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+<dt><strong><code>DC0365</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_schureman_constants(dood_date):
+    &#34;&#34;&#34;
+    get_schureman_constants
+
+    Parameters
+    ----------
+    dood_date : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    DOMEGA : TYPE
+        DESCRIPTION.
+    DIKL : TYPE
+        DESCRIPTION.
+    DC1681 : TYPE
+        DESCRIPTION.
+    DC5023 : TYPE
+        DESCRIPTION.
+    DC0365 : TYPE
+        DESCRIPTION.
+
+    &#34;&#34;&#34;
+
+    from hatyan.hatyan_core import robust_timedelta_sec # local import since otherwise cross-dependency
+    
+    #bercon.f: HET BEREKENEN VAN DE &#39;CONSTANTEN&#39; .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
+    #327932: ratio of mass of sun to combined mass of earth and moon
+    #81.53: ratio of mass of earth to mass of moon
+    DAGC = 0.01657                            #A/C &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean lunar parallax in respect to mean radius [rad]
+    DAGC1 = 0.00004261                        #A/C1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mean solar parallax in respect to mean radius [rad]
+    DE = 0.054900489                          #E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of moons orbit
+    DMGE = 1./81.53                           #M/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of moon /mass of earth
+    DSGE = 82.53/81.53*327932                 #S/E &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, mass of sun / mass of earth
+    
+    DU = DMGE*DAGC**3                         #U &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, basic factor
+    DU1 = DSGE*DAGC1**3                       #U1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar coefficient
+    DSACCE = DU1/DU                           #S&#39; &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, solar factor
+    DOMEGA = np.deg2rad(23+27./60.+8.26/3600) #OMEGA &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Obliquity of the Ecliptic, epoch 1 Jan 1900, 23.45229 graden [rad]
+    DIKL = np.deg2rad(5+8./60.+43.3546/3600)  #i &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, Inclination of moons orbit to plane of ecliptic, epoch 1 Jan 1900 (?), 5.1453762 graden [rad]
+    
+    DC5023 = 0.5+0.75*DE*DE
+
+    #time dependent
+    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
+    DE1 = 0.01675104-0.0000418*dood_Tj        #E1 &gt;&gt; ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
+    DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
+
+    DC0365 = DCOFSI*np.sin(DOMEGA)**2
+    DC1681 = DCOFSI*np.sin(2*DOMEGA)
+    
+    return DOMEGA, DIKL, DC1681, DC5023, DC0365</code></pre>
 </details>
 </dd>
 <dt id="hatyan.schureman.get_schureman_u"><code class="name flex">
@@ -928,13 +885,13 @@ def get_schureman_table():
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
     
-    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
-        const_list = const_list.tolist()
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date)
+    N_rad = doodson_pd.loc[&#39;N&#39;,:].values
+    P_rad = doodson_pd.loc[&#39;P&#39;,:].values
     
-    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
     #list of dependencies for U (only P and N are used here)
     DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_schureman_constants(dood_date)
     DHOMI = (DOMEGA-DIKL)*0.5
@@ -967,13 +924,10 @@ def get_schureman_table():
     v0uf_sel_u = v0uf_sel[[&#39;DKSI&#39;,&#39;DNU&#39;, &#39;DQ&#39;, &#39;DQU&#39;, &#39;DR&#39;, &#39;DUK1&#39;, &#39;DUK2&#39;]]
 
     DU = np.dot(v0uf_sel_u.values,multiply_variables)
-    DU += np.pi
-    DU = np.remainder(DU,2*np.pi)
-    DU -= np.pi
+    DU = np.remainder(DU+np.pi, 2*np.pi) - np.pi
 
     #create dataframe
-    DU_pd = pd.DataFrame(DU)
-    DU_pd.index = const_list
+    DU_pd = pd.DataFrame(DU, index=const_list)
     
     return DU_pd</code></pre>
 </details>
@@ -1016,14 +970,13 @@ def get_schureman_table():
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
     
-    if isinstance(const_list, pd.Series) or isinstance(const_list, pd.core.indexes.base.Index):
-        const_list = const_list.tolist()
+    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
 
-    T_rad, S_rad, H_rad, P_rad, N_rad, P1_rad = get_doodson_eqvals(dood_date=dood_date)
-
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date)
+    N_rad = doodson_pd.loc[&#39;N&#39;,:].values
+    P_rad = doodson_pd.loc[&#39;P&#39;,:].values
+    
     #list of dependencies F (only P and N are used here)
     DOMEGA, DIKL, DC1681, DC5023, DC0365 = get_schureman_constants(dood_date)
     DHOMI = (DOMEGA-DIKL)*0.5
@@ -1094,10 +1047,8 @@ def get_schureman_table():
         f_i_M2[idnozero,:] *= variable**power[idnozero][np.newaxis].T
     
     #create dataframe
-    f_i_pd = pd.DataFrame(f_i)
-    f_i_pd.index = const_list
-    f_i_M2_pd = pd.DataFrame(f_i_M2)
-    f_i_M2_pd.index = [&#39;M2&#39;]
+    f_i_pd = pd.DataFrame(f_i, index=const_list)
+    f_i_M2_pd = pd.DataFrame(f_i_M2, index = [&#39;M2&#39;])
     
     if xfac: #if variable is not: None, False, 0, more?
         f_i_pd = correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac=xfac)
@@ -1144,7 +1095,6 @@ def get_schureman_table():
 
     &#34;&#34;&#34;
     
-    const_list = f_i_pd.index.tolist()
     if isinstance(xfac,dict):
         print(&#39;xfac dictionary provided: %s&#39;%(xfac))
         xfac_values = xfac
@@ -1163,12 +1113,12 @@ def get_schureman_table():
                        &#39;3MS8&#39;:0.60}
     
     for xfac_const in xfac_values.keys():
-        #print(xfac_const)
-        if xfac_const in const_list:
-            if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
-                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[[&#39;M2&#39;],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
-            else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
-                f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
+        if not xfac_const in f_i_pd.index:
+            continue
+        if all(f_i_pd.loc[xfac_const] == 1): # HET IS EEN NIET-KNOOPAFHANKELIJKE COMPONENT (F=1) (like S2)
+            f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_M2_pd.loc[[&#39;M2&#39;],:].values-1)+1 # # hvufea.f line 176. uit v0uf_M2 ipv v0uf_sel, want daar is M2 waarde nog niet gecorrigeerd met xfac (kan ook uit f_i_HAT komen maar daar zit M2 niet per definitie in)
+        else: # HET IS EEN KNOOPAFHANKELIJKE COMPONENT (F#1)
+            f_i_pd.loc[[xfac_const]] = xfac_values[xfac_const]*(f_i_pd.loc[[xfac_const],:]-1)+1 # uit document tom bogaard, en hvufea.f line 181. staat ook in hatyan gebruikershandleiding bij knoopfactoren (pag2-5)
 
     return f_i_pd</code></pre>
 </details>
@@ -1192,11 +1142,11 @@ def get_schureman_table():
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="hatyan.schureman.get_v0uf_sel" href="#hatyan.schureman.get_v0uf_sel">get_v0uf_sel</a></code></li>
-<li><code><a title="hatyan.schureman.get_schureman_constants" href="#hatyan.schureman.get_schureman_constants">get_schureman_constants</a></code></li>
 <li><code><a title="hatyan.schureman.get_lunarSLSIHO_fromsolar" href="#hatyan.schureman.get_lunarSLSIHO_fromsolar">get_lunarSLSIHO_fromsolar</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_table" href="#hatyan.schureman.get_schureman_table">get_schureman_table</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_freqs" href="#hatyan.schureman.get_schureman_freqs">get_schureman_freqs</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_v0" href="#hatyan.schureman.get_schureman_v0">get_schureman_v0</a></code></li>
+<li><code><a title="hatyan.schureman.get_schureman_constants" href="#hatyan.schureman.get_schureman_constants">get_schureman_constants</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_u" href="#hatyan.schureman.get_schureman_u">get_schureman_u</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_f" href="#hatyan.schureman.get_schureman_f">get_schureman_f</a></code></li>
 <li><code><a title="hatyan.schureman.correct_fwith_xfac" href="#hatyan.schureman.correct_fwith_xfac">correct_fwith_xfac</a></code></li>

@@ -37,6 +37,13 @@ Created on Wed Dec  1 17:03:03 2021
 @author: veenstra
 &#34;&#34;&#34;
 
+import pandas as pd
+import numpy as np
+import datetime as dt
+import requests
+import json
+
+from hatyan.convert import convert_tzone2tzinfo
 
 def get_DDL_catalog(catalog_extrainfo=[]):
     &#34;&#34;&#34;
@@ -57,9 +64,6 @@ def get_DDL_catalog(catalog_extrainfo=[]):
     result_cat_dict : TYPE
         DESCRIPTION.
     &#34;&#34;&#34;
-
-    import requests
-    import pandas as pd
     
     #the webservices 
     url_catalog = &#39;https://waterwebservices.rijkswaterstaat.nl/METADATASERVICES_DBO/OphalenCatalogus&#39;
@@ -91,9 +95,6 @@ def get_DDL_queryserver(query_station,query_metadata,query_tstart,query_tstop,ch
     &#34;&#34;&#34;
     check get_DDL_data() for details
     &#34;&#34;&#34;
-    import json
-    import requests
-    import pandas as pd
     
     tzinfo_numraw = query_tstart.strftime(&#39;%z&#39;) #&#39;+0100&#39;
     tzinfo_numstr = tzinfo_numraw[:3]+&#39;:&#39;+tzinfo_numraw[-2:] #&#39;+01:00&#39;
@@ -156,10 +157,6 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone=&#39;UTC+01:00&
 
     query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    from hatyan.convert import convert_tzone2tzinfo
 
     if not isinstance(allow_multipleresultsfor,list):
         allow_multipleresultsfor = [allow_multipleresultsfor]
@@ -267,7 +264,6 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone=&#39;UTC+01:00&
 
 
 def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn=&#39;Naam&#39;,meta_dict=None, error_empty=True):
-    import numpy as np
     
     cat_aquometadatalijst = catalog_dict[&#39;AquoMetadataLijst&#39;].set_index(&#39;AquoMetadata_MessageID&#39;)
     cat_locatielijst = catalog_dict[&#39;LocatieLijst&#39;].set_index(&#39;Locatie_MessageID&#39;)
@@ -373,9 +369,6 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn=&#39;Naam
     result_cat_dict : TYPE
         DESCRIPTION.
     &#34;&#34;&#34;
-
-    import requests
-    import pandas as pd
     
     #the webservices 
     url_catalog = &#39;https://waterwebservices.rijkswaterstaat.nl/METADATASERVICES_DBO/OphalenCatalogus&#39;
@@ -416,9 +409,6 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn=&#39;Naam
     &#34;&#34;&#34;
     check get_DDL_data() for details
     &#34;&#34;&#34;
-    import json
-    import requests
-    import pandas as pd
     
     tzinfo_numraw = query_tstart.strftime(&#39;%z&#39;) #&#39;+0100&#39;
     tzinfo_numstr = tzinfo_numraw[:3]+&#39;:&#39;+tzinfo_numraw[-2:] #&#39;+01:00&#39;
@@ -492,10 +482,6 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
 
     query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    from hatyan.convert import convert_tzone2tzinfo
 
     if not isinstance(allow_multipleresultsfor,list):
         allow_multipleresultsfor = [allow_multipleresultsfor]
@@ -612,7 +598,6 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn=&#39;Naam&#39;,meta_dict=None, error_empty=True):
-    import numpy as np
     
     cat_aquometadatalijst = catalog_dict[&#39;AquoMetadataLijst&#39;].set_index(&#39;AquoMetadata_MessageID&#39;)
     cat_locatielijst = catalog_dict[&#39;LocatieLijst&#39;].set_index(&#39;Locatie_MessageID&#39;)

@@ -66,6 +66,12 @@ along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
 
 &#34;&#34;&#34;
 
+import os
+import shutil
+import datetime as dt
+import matplotlib
+import matplotlib.pyplot as plt
+
 
 def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False):
     &#34;&#34;&#34;
@@ -94,10 +100,6 @@ def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False)
         provides a start time with which exit_RWS calculates the total time of the process.
 
     &#34;&#34;&#34;
-    
-    import os
-    import shutil
-    import datetime as dt
     
     if len(argvlist) == 1:
         dir_output = get_outputfoldername(file_config)
@@ -168,10 +170,7 @@ def exit_RWS(timer_start):
     None.
 
     &#34;&#34;&#34;
-    import os
-    import datetime as dt
-    import matplotlib
-    import matplotlib.pyplot as plt
+
     if matplotlib.get_backend() == &#39;Qt5Agg&#39;:
         print(&#39;MESSAGE: interactive plots opened, close them to continue&#39;)
         plt.show()
@@ -206,8 +205,6 @@ def get_outputfoldername(file_config):
         path to the output directory.
 
     &#34;&#34;&#34;
-    import datetime as dt
-    import os
     
     mode = file_config.split(os.sep)[-1].split(&#39;.&#39;)[0]
     time_now = dt.datetime.now()
@@ -243,7 +240,7 @@ def close(fig=None):
     None.
 
     &#34;&#34;&#34;
-    import matplotlib.pyplot as plt
+    
     plt.close(fig)
     </code></pre>
 </details>
@@ -313,10 +310,6 @@ it prints a header for the print output (shows up in the hatyan diagnostics file
         provides a start time with which exit_RWS calculates the total time of the process.
 
     &#34;&#34;&#34;
-    
-    import os
-    import shutil
-    import datetime as dt
     
     if len(argvlist) == 1:
         dir_output = get_outputfoldername(file_config)
@@ -403,10 +396,7 @@ it prints a header for the print output (shows up in the hatyan diagnostics file
     None.
 
     &#34;&#34;&#34;
-    import os
-    import datetime as dt
-    import matplotlib
-    import matplotlib.pyplot as plt
+
     if matplotlib.get_backend() == &#39;Qt5Agg&#39;:
         print(&#39;MESSAGE: interactive plots opened, close them to continue&#39;)
         plt.show()
@@ -465,8 +455,6 @@ it prints a header for the print output (shows up in the hatyan diagnostics file
         path to the output directory.
 
     &#34;&#34;&#34;
-    import datetime as dt
-    import os
     
     mode = file_config.split(os.sep)[-1].split(&#39;.&#39;)[0]
     time_now = dt.datetime.now()
@@ -523,7 +511,7 @@ str: a figure name
     None.
 
     &#34;&#34;&#34;
-    import matplotlib.pyplot as plt
+    
     plt.close(fig)</code></pre>
 </details>
 </dd>

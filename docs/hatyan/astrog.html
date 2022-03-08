@@ -68,6 +68,15 @@ along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
 
 import os
 import functools
+import pandas as pd
+import numpy as np
+import datetime as dt
+import requests
+import warnings
+import matplotlib.pyplot as plt
+
+from hatyan.schureman import get_schureman_freqs
+    
 
 file_path = os.path.realpath(__file__)
 
@@ -102,12 +111,7 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone=&#39;UTC&#39;): #TOD
         declination: lunar declination (degrees)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    
-    from hatyan.schureman import get_schureman_freqs
-    
+
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
     
@@ -172,9 +176,6 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone=&#39;UTC&#39;):
         type:      type of phase (1=FQ, 2=FM, 3=LQ, 4=NM)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -247,9 +248,6 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone=&#39;UTC&#39;,lon=5.38
         type:     type  (1=sunrise, 2=sunset)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -312,9 +310,6 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone=&#39;UTC&#39;,lon=5.3
         type:     type  (1=moonrise, 2=moonset)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -385,9 +380,6 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone=&#39;UTC&#39;):
         type:       type of anomaly (1=perigeum, 2=apogeum)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -457,9 +449,6 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone=&#39;UTC&#39;):
         type:       type of astronomical season (1=spring, 2=summer, 3=autumn, 4=winter)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -527,9 +516,6 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
             ANM,    mean lunar anomaly (degrees, between 0 and 360)
     
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
     
     dT_TT_days = dT(date,dT_fortran=dT_fortran)/3600/24 #Difference between terrestrial and universal time in days.
     
@@ -831,9 +817,6 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
         Exact time after iteration.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     if isinstance(timeEst, pd.DatetimeIndex):
         pass
@@ -907,9 +890,6 @@ def get_leapsecondslist_fromurlorfile():
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import requests
-    import pandas as pd
-    import datetime as dt
     
     refdate = dt.datetime(1900,1,1)
 
@@ -970,10 +950,6 @@ def dT(dateIn,dT_fortran=False):
         Difference dT between terrestrial time (TT) and universal time (UT1) in seconds.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    import warnings
     
     if isinstance(dateIn, dt.datetime):
         dateIn = pd.DatetimeIndex([dateIn])
@@ -1010,8 +986,6 @@ def dT(dateIn,dT_fortran=False):
 
 
 def check_crop_dataframe(astrog_df, tFirst, tLast, tzone):
-    import pandas as pd
-    import numpy as np
     
     #set timezone, check datetime order and filter datetimerange
     astrog_df[&#39;datetime&#39;] = pd.to_datetime(astrog_df[&#39;datetime&#39;]).dt.tz_localize(&#39;UTC&#39;,ambiguous=False,nonexistent=&#39;shift_forward&#39;) # set timezone (UTC)
@@ -1043,8 +1017,6 @@ def convert_str2datetime(datetime_in_list):
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import datetime as dt
-    import pandas as pd
 
     datetime_out_list = datetime_in_list
     for iDT, datetime_in in enumerate(datetime_in_list):
@@ -1123,9 +1095,6 @@ def plot_astrog_diff(pd_python, pd_fortran, typeUnit=&#39;-&#39;, typeLab=None, 
         Axes in figure.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
     
     if hasattr(pd_python[&#39;datetime&#39;].dtype,&#39;tz&#39;):
         pd_python = pd_python.copy() #do not overwrite original dataframe, so make a copy
@@ -1239,12 +1208,7 @@ declination: lunar declination (degrees)</dd>
         declination: lunar declination (degrees)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    
-    from hatyan.schureman import get_schureman_freqs
-    
+
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
     
@@ -1343,9 +1307,6 @@ type of phase (1=FQ, 2=FM, 3=LQ, 4=NM)</dd>
         type:      type of phase (1=FQ, 2=FM, 3=LQ, 4=NM)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -1456,9 +1417,6 @@ type
         type:     type  (1=sunrise, 2=sunset)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -1559,9 +1517,6 @@ type
         type:     type  (1=moonrise, 2=moonset)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -1666,9 +1621,6 @@ type of anomaly (1=perigeum, 2=apogeum)</dd>
         type:       type of anomaly (1=perigeum, 2=apogeum)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -1772,9 +1724,6 @@ type of astronomical season (1=spring, 2=summer, 3=autumn, 4=winter)</dd>
         type:       type of astronomical season (1=spring, 2=summer, 3=autumn, 4=winter)
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     # check input times (datetime or string)
     [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
@@ -1896,9 +1845,6 @@ mean lunar anomaly (degrees, between 0 and 360)</dd>
             ANM,    mean lunar anomaly (degrees, between 0 and 360)
     
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
     
     dT_TT_days = dT(date,dT_fortran=dT_fortran)/3600/24 #Difference between terrestrial and universal time in days.
     
@@ -2258,9 +2204,6 @@ sunrise (ALTSUN=-50 arcseconds, ascending)
         Exact time after iteration.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
 
     if isinstance(timeEst, pd.DatetimeIndex):
         pass
@@ -2354,9 +2297,6 @@ def get_leapsecondslist_fromurlorfile():
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import requests
-    import pandas as pd
-    import datetime as dt
     
     refdate = dt.datetime(1900,1,1)
 
@@ -2446,10 +2386,6 @@ Uses the international definition unless dT_fortran=True. </p>
         Difference dT between terrestrial time (TT) and universal time (UT1) in seconds.
 
     &#34;&#34;&#34;
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    import warnings
     
     if isinstance(dateIn, dt.datetime):
         dateIn = pd.DatetimeIndex([dateIn])
@@ -2495,8 +2431,6 @@ Uses the international definition unless dT_fortran=True. </p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def check_crop_dataframe(astrog_df, tFirst, tLast, tzone):
-    import pandas as pd
-    import numpy as np
     
     #set timezone, check datetime order and filter datetimerange
     astrog_df[&#39;datetime&#39;] = pd.to_datetime(astrog_df[&#39;datetime&#39;]).dt.tz_localize(&#39;UTC&#39;,ambiguous=False,nonexistent=&#39;shift_forward&#39;) # set timezone (UTC)
@@ -2552,8 +2486,6 @@ Uses the international definition unless dT_fortran=True. </p>
         DESCRIPTION.
 
     &#34;&#34;&#34;
-    import datetime as dt
-    import pandas as pd
 
     datetime_out_list = datetime_in_list
     for iDT, datetime_in in enumerate(datetime_in_list):
@@ -2687,9 +2619,6 @@ Top plot shows values or type, middle plot shows time difference, bottom plot sh
         Axes in figure.
 
     &#34;&#34;&#34;
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
     
     if hasattr(pd_python[&#39;datetime&#39;].dtype,&#39;tz&#39;):
         pd_python = pd_python.copy() #do not overwrite original dataframe, so make a copy

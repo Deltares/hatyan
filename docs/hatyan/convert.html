@@ -34,9 +34,10 @@ Created on Thu Jan 20 22:50:18 2022
 
 @author: veenstra
 &#34;&#34;&#34;
+from pyproj import Transformer
+import pytz
 
 def convert_coordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
-    from pyproj import Transformer
 
     epsg_dict = {&#39;RD&#39;:28992,&#39;W84&#39;:4326,&#39;E50&#39;:4230}
     
@@ -63,7 +64,6 @@ def convert_coordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
 
 
 def convert_tzone2tzinfo(tzone):
-    import pytz
 
     if tzone.startswith(&#39;UTC+&#39;) or tzone.startswith(&#39;UTC-&#39;): #parse to fixed offset like &#39;Etc/GMT-1&#39;. +/- are counter intuitive but it works: https://pvlib-python.readthedocs.io/en/stable/timetimezones.html#fixedoffsets)
         if len(tzone)!=9 or not tzone.endswith(&#39;:00&#39;):
@@ -94,7 +94,6 @@ def convert_tzone2tzinfo(tzone):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def convert_coordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
-    from pyproj import Transformer
 
     epsg_dict = {&#39;RD&#39;:28992,&#39;W84&#39;:4326,&#39;E50&#39;:4230}
     
@@ -130,7 +129,6 @@ def convert_tzone2tzinfo(tzone):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def convert_tzone2tzinfo(tzone):
-    import pytz
 
     if tzone.startswith(&#39;UTC+&#39;) or tzone.startswith(&#39;UTC-&#39;): #parse to fixed offset like &#39;Etc/GMT-1&#39;. +/- are counter intuitive but it works: https://pvlib-python.readthedocs.io/en/stable/timetimezones.html#fixedoffsets)
         if len(tzone)!=9 or not tzone.endswith(&#39;:00&#39;):
