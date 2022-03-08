@@ -311,7 +311,7 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    const_list_all = get_const_list_hatyan(listtype='all_schureman')
+    const_list_all = get_const_list_hatyan(listtype='all_schureman') #TODO: not generic
     hatyan_freqs = get_schureman_freqs(const_list=const_list_all)[['freq']]
     const_match = []
     const_closest = []
