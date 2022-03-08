@@ -169,34 +169,30 @@ def get_foreman_table(): #TODO: only harmonic and only v0
     return v0_baseT_for
 
 
-def get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode=None):
+def get_foreman_v0freq_fromfromharmonicdood(dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)]), mode=None):
     """
     Zoekt de frequentie of v0 voor alle harmonische componenten, in geval van v0 op de gegeven datum (dood_date). Hiervoor zijn de harmonische doodson getallen
     (foreman_harmonic_doodson_all) nodig, afkomstig uit get_foreman_harmonic uit foreman.py 
     """
     
     from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
-
-    if dood_date is None: #in case of frequency
-        dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     
     t_const_doodson_sol = get_foreman_table()
     const_list = t_const_doodson_sol.index
 
-    dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date=dood_date, mode=mode)
-
-    if mode=='freq':
-        dood_rad_array = np.stack([dood_T_rad,dood_S_rad,dood_H_rad,dood_P_rad,np.zeros((dood_N_rad.shape)),dood_P1_rad,np.zeros((dood_T_rad.shape))])
-        t_const_freq_dood = np.dot(t_const_doodson_sol,dood_rad_array)/(2*np.pi)
-        t_const_freqv0_dood_pd = pd.DataFrame({'freq':t_const_freq_dood[:,0]},index=const_list)
-        freqv0_dood_pd = t_const_freqv0_dood_pd
-    else:
-        dood_rad_array = np.stack([dood_T_rad,dood_S_rad,dood_H_rad,dood_P_rad,dood_N_rad,dood_P1_rad,np.zeros((dood_T_rad.shape))+2*np.pi])
-        v_0i_rad = np.dot(t_const_doodson_sol,dood_rad_array)
-        v_0i_rad_pd = pd.DataFrame(v_0i_rad,index=const_list)
-        freqv0_dood_pd = v_0i_rad_pd
+    doodson_pd = get_doodson_eqvals(dood_date=dood_date, mode=mode)
     
-    return freqv0_dood_pd
+    if mode=='freq':
+        multiply_variables = doodson_pd.loc[['T','S','H','P','P1'],:]
+        t_const_freq_dood = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','P1']],multiply_variables) / (2*np.pi)
+        t_const_freq_dood_pd = pd.DataFrame({'freq':t_const_freq_dood[:,0]},index=const_list)
+        return t_const_freq_dood_pd
+    else:
+        multiply_variables = doodson_pd.loc[['T','S','H','P','N','P1'],:]
+        v_0i_rad = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','N','P1']],multiply_variables) + 2*np.pi*t_const_doodson_sol.loc[:,['EDN']].values
+        v_0i_rad_pd = pd.DataFrame(v_0i_rad,index=const_list)
+        return v_0i_rad_pd
+    
 
 
 def get_foreman_v0_freq(const_list, dood_date):
@@ -205,14 +201,7 @@ def get_foreman_v0_freq(const_list, dood_date):
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
     """
     
-    from hatyan.hatyan_core import get_const_list_hatyan # local import since otherwise cross-dependency
-
-    if type(const_list) is str:
-        const_list = get_const_list_hatyan(const_list)
-    elif type(const_list) is not list:
-        const_list = const_list.tolist()
-
-    foreman_freqs = get_foreman_v0freq_fromfromharmonicdood(dood_date=None, mode='freq') #list with only harmonic components with more precision than file
+    foreman_freqs = get_foreman_v0freq_fromfromharmonicdood(mode='freq') #list with only harmonic components with more precision than file
     v_0i_rad_harmonic_pd = get_foreman_v0freq_fromfromharmonicdood(dood_date=dood_date, mode=None)
     
     foreman_shallowrelations = get_foreman_shallowrelations()
@@ -255,9 +244,9 @@ def get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const,
 
     from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
 
-    dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad = get_doodson_eqvals(dood_date)
+    doodson_pd = get_doodson_eqvals(dood_date)
     
-    fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],np.stack([dood_P_rad, dood_N_rad, dood_P1_rad]))
+    fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],doodson_pd.loc[['P','N','P1'],:])
     fore_alpha_jk_all = foreman_harmonic_nodal_const.loc[:,3:3].values * 2*np.pi #phase correction satellite. 0.5=90 voor M2 en N2, 0=0 voor S2
     fore_r_jk_all = foreman_harmonic_nodal_const.loc[:,4:4].values #amplitude ratio for satellite. 0.0373 voor M2 en N2, 0.0022 voor S2
     fore_fj_left_all = 1 * fore_r_jk_all * np.cos(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
@@ -277,13 +266,6 @@ def get_foreman_nodalfactors(const_list, dood_date):
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
     """
     
-    from hatyan.hatyan_core import get_const_list_hatyan # local import since otherwise cross-dependency
-
-    if type(const_list) is str:
-        const_list = get_const_list_hatyan(const_list)
-    elif type(const_list) is not list:
-        const_list = const_list.tolist()
-
     foreman_shallowrelations = get_foreman_shallowrelations()
     #foreman_shallowrelations_pd = get_foreman_shallowrelations(pd_series=True)
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()

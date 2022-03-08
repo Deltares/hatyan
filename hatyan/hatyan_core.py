@@ -32,11 +32,14 @@ from hatyan.foreman import get_foreman_v0_freq, get_foreman_shallowrelations, ge
 
 def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start):
 
+    if type(const_list) is str:
+        const_list = get_const_list_hatyan(const_list)
+
     #retrieve frequency and v0
     print(f'freq is calculated at mid of period: {dood_date_mid[0]}')
     print(f'v0 is calculated for start of period: {dood_date_start[0]}')
     if hatyan_settings.source=='schureman':
-        t_const_freq_pd, t_const_speed_all = get_schureman_freqs(const_list, dood_date=dood_date_mid, return_allraw=True)
+        t_const_freq_pd = get_schureman_freqs(const_list, dood_date=dood_date_mid)
         v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
     elif hatyan_settings.source=='foreman': #TODO: this is probably quite slow since foreman is not cached
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid)
@@ -119,7 +122,9 @@ def get_doodson_eqvals(dood_date, mode=None):
         dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
         dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
     
-    return dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad
+    doodson_pd = pd.DataFrame(np.stack([dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad]),
+                              index=['T','S','H','P','N','P1'])
+    return doodson_pd
 
 
 def robust_daterange_fromtimesextfreq(times_ext,timestep_min):

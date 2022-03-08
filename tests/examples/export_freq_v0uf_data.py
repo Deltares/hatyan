@@ -248,10 +248,10 @@ print('calculating and plotting frequency difference over time')
 times_freqdiff_forplot = times_freqdiff[:1].append(times_freqdiff)
 const_list_forplot = ['']+const_list_freqv0uf #to make pcolormesh possible
 
-t_const_freq, t_const_speed_all = hatyan.get_schureman_freqs(const_list_freqv0uf, dood_date=times_freqdiff, sort_onfreq=False, return_allraw=True)
-t_const_freq_all = t_const_speed_all/(2*np.pi) #aantal rotaties per uur, freq
-np.seterr(divide='ignore') #suppress divide by 0 warning
-t_const_perds_all = 1/t_const_freq_all #period [hr]
+t_const_speed_all = hatyan.get_schureman_freqs(const_list_freqv0uf, dood_date=times_freqdiff, return_allraw=True)
+#t_const_freq_all = t_const_speed_all/(2*np.pi) #aantal rotaties per uur, freq
+#np.seterr(divide='ignore') #suppress divide by 0 warning
+#t_const_perds_all = 1/t_const_freq_all #period [hr]
 
 fig,(ax1) = plt.subplots(1,1,figsize=(11,9),sharex=True)
 data_speeddiff = t_const_speed_all-t_const_speed_all[:,:1]

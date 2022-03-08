@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr#, num2date
 from hatyan.schureman import get_schureman_freqs
+from hatyan.hatyan_core import get_const_list_hatyan
 
 
 def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
@@ -310,7 +311,8 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    hatyan_freqs = get_schureman_freqs(const_list='all')[['freq']]
+    const_list_all = get_const_list_hatyan(const_list='all')
+    hatyan_freqs = get_schureman_freqs(const_list=const_list_all)[['freq']]
     const_match = []
     const_closest = []
     for peak_freq_one in peak_freq:

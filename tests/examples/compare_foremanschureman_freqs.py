@@ -11,7 +11,8 @@ import hatyan
 
 dood_date = pd.DatetimeIndex([dt.datetime(2014,1,1)])
 
-freqs_pd_schu = hatyan.get_schureman_freqs(const_list='all_schureman',dood_date=dood_date)
+const_list_allschureman = hatyan.get_const_list_hatyan('all_schureman')
+freqs_pd_schu = hatyan.get_schureman_freqs(const_list=const_list_allschureman,dood_date=dood_date)
 v0_pd_schu = hatyan.get_schureman_v0(const_list=freqs_pd_schu.index,dood_date=dood_date)
 
 v_0i_rad_harmonic_pd = hatyan.get_foreman_v0freq_fromfromharmonicdood(dood_date=dood_date, mode=None) #list with only harmonic components with more precision than file
