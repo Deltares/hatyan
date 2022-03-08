@@ -31,7 +31,7 @@ file_path = os.path.realpath(__file__)
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr#, num2date
-from hatyan.schureman import get_schureman_freqs
+from hatyan.schureman import get_schureman_freqs #TODO: not generic
 from hatyan.hatyan_core import get_const_list_hatyan
 
 
@@ -311,7 +311,7 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    const_list_all = get_const_list_hatyan(const_list='all')
+    const_list_all = get_const_list_hatyan(listtype='all_schureman')
     hatyan_freqs = get_schureman_freqs(const_list=const_list_all)[['freq']]
     const_match = []
     const_closest = []
