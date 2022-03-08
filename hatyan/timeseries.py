@@ -22,7 +22,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import os
+import io
+import numpy as np
+import pandas as pd
+import datetime as dt
+import scipy.signal as ssig
 file_path = os.path.realpath(__file__)
+import matplotlib.pyplot as plt
+from scipy.fft import fft, fftfreq
+from netCDF4 import Dataset, date2num, stringtoarr#, num2date
+from hatyan.schureman import get_schureman_freqs
+from hatyan.hatyan_core import get_const_list_hatyan
 
 
 def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
@@ -62,13 +72,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
         1 (high water) and 2 (low water). And if calc_HWLW345=True also 3 (first low water), 4 (agger) and 5 (second low water).
 
     """
-    import numpy as np
-    import pandas as pd
-    import datetime as dt
-    import scipy.signal as ssig
 
-    from hatyan.schureman import get_schureman_freqs
-    
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_min = get_schureman_freqs(['M2']).loc['M2','period [hr]']*60
     ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
@@ -148,7 +152,6 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
         DESCRIPTION.
 
     """
-    import numpy as np
     
     print('calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...')
     for iTide, dummy in enumerate(HWid_main[:-1]):
@@ -228,13 +231,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
         The input DataFrame with the column 'HWLWno' added, which contains the numbers of the extremes.
 
     """
-    import os
-    import pandas as pd
-    import numpy as np
-    import datetime as dt
-    
-    from hatyan.schureman import get_schureman_freqs
-    
+        
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]']
     firstHWcadz_fixed = dt.datetime(2000, 1, 1, 9, 45)
     searchwindow_hr = M2_period_hr/2
@@ -292,11 +289,6 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
 
 
 def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
-    import matplotlib.pyplot as plt
-    import numpy as np
-    from scipy.fft import fft, fftfreq
-    import scipy.signal as ssig
-    from hatyan.schureman import get_schureman_freqs
     
     print('analyzing timeseries with fft and fftfreq')
     
@@ -319,7 +311,8 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    hatyan_freqs = get_schureman_freqs(const_list='all')[['freq']]
+    const_list_all = get_const_list_hatyan(const_list='all')
+    hatyan_freqs = get_schureman_freqs(const_list=const_list_all)[['freq']]
     const_match = []
     const_closest = []
     for peak_freq_one in peak_freq:
@@ -363,9 +356,6 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
         The generated axis handle, whith which the figure can be adapted.
 
     """
-    
-    import numpy as np
-    import matplotlib.pyplot as plt
         
     size_figure = (15,9)
     size_line_ts = 0.7
@@ -467,8 +457,6 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         The generated axis handle, whith which the figure can be adapted.
 
     """
-    import numpy as np
-    import matplotlib.pyplot as plt
     
     print('Calculating comparison statistics for extremes')
     if 'HWLWno' not in ts_ext.columns or 'HWLWno' not in ts_ext_validation.columns:
@@ -542,10 +530,6 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
     
     """
     
-    #import os
-    import datetime as dt
-    import pandas as pd
-    from netCDF4 import Dataset, date2num, stringtoarr#, num2date
     import hatyan
     version_no = hatyan.__version__
     
@@ -721,10 +705,6 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
     None.
 
     """
-    import io
-    import datetime as dt
-    import numpy as np
-    import pandas as pd
     
     if vertref == 'NAP':
         waarnemingssoort = 18
@@ -822,9 +802,6 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
     None.
 
     """
-    import io
-    import datetime as dt
-    import pandas as pd
     
     if vertref == 'NAP':
         waarnemingssoort = 18
@@ -924,9 +901,6 @@ def writets_noos(ts, filename, metadata=None):
     None.
 
     """
-    import numpy as np
-    import datetime as dt
-    import pandas as pd
     
     timestamp = dt.datetime.now().strftime('%c')
     ts_out = pd.DataFrame({'times':ts.index.strftime('%Y%m%d%H%M'),'values':ts['values']})
@@ -1015,8 +989,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
     """
     
-    import pandas as pd
-    
     print('-'*50)
     print('resampling timeseries to %i minutes'%(timestep_min))
     
@@ -1036,7 +1008,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
 
 def check_rayleigh(ts_pd,t_const_freq_pd):
-    import numpy as np
     
     t_const_freq = t_const_freq_pd['freq']
     freq_diffs = np.diff(t_const_freq)
@@ -1071,7 +1042,6 @@ def check_ts(ts):
         For printing as a substring of another string.
 
     """
-    import numpy as np
     
     timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
     bool_int = (timesteps_min_all-timesteps_min_all.round(0))<1e-9
@@ -1137,7 +1107,6 @@ def get_diablocks_startstopstation(filename):
         Pandas DataFrame with 'block_starts','data_starts','data_ends','station'
 
     """
-    import pandas as pd
     
     #get list of starts/ends of datasets in diafile
     linenum_colnames = ['block_starts','data_starts','data_ends']
@@ -1164,8 +1133,6 @@ def get_diablocks_startstopstation(filename):
 
 
 def get_diablocks(filename):
-    import datetime as dt
-    import pandas as pd
     
     print('reading file: %s'%(filename))
     diablocks_pd = get_diablocks_startstopstation(filename)
@@ -1238,8 +1205,6 @@ def get_diablocks(filename):
 
 
 def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
-    import numpy as np
-    import pandas as pd
 
     data_nrows = diablocks_pd.loc[block_id,'data_ends'] - diablocks_pd.loc[block_id,'data_starts']
     data_pd_HWLW = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'data_starts'],nrows=data_nrows, header=None, names=['date','time','HWLWcode/qualitycode','valuecm:'], sep=';', parse_dates={'times':[0,1]})
@@ -1264,8 +1229,6 @@ def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
 
 
 def readts_dia_equidistant(filename, diablocks_pd, block_id):
-    import numpy as np
-    import pandas as pd
     
     datestart = diablocks_pd.loc[block_id,'tstart']
     datestop = diablocks_pd.loc[block_id,'tstop']
@@ -1321,9 +1284,6 @@ def readts_dia(filename, station=None, block_ids=None):
         DataFrame with a 'values' column and a pd.DatetimeIndex as index in case of an equidistant file, or more columns in case of a non-equidistant file.
 
     """
-    
-    import pandas as pd
-    import numpy as np
     
     if not isinstance(filename,list):
         filename = [filename]
@@ -1405,7 +1365,6 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
         DESCRIPTION.
 
     """
-    import pandas as pd
     
     print('-'*50)
     print('reading file: %s'%(filename))

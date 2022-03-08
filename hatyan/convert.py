@@ -4,9 +4,10 @@ Created on Thu Jan 20 22:50:18 2022
 
 @author: veenstra
 """
+from pyproj import Transformer
+import pytz
 
 def convert_coordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
-    from pyproj import Transformer
 
     epsg_dict = {'RD':28992,'W84':4326,'E50':4230}
     
@@ -33,7 +34,6 @@ def convert_coordinates(coordx_in, coordy_in, epsg_in, epsg_out=28992):
 
 
 def convert_tzone2tzinfo(tzone):
-    import pytz
 
     if tzone.startswith('UTC+') or tzone.startswith('UTC-'): #parse to fixed offset like 'Etc/GMT-1'. +/- are counter intuitive but it works: https://pvlib-python.readthedocs.io/en/stable/timetimezones.html#fixedoffsets)
         if len(tzone)!=9 or not tzone.endswith(':00'):

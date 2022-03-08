@@ -19,9 +19,9 @@ const_list_combined = np.unique(const_list_RWSyear+const_list_FES2014)
 
 dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
 
-hat_freqs_FES2014 = hatyan.get_hatyan_freqs(const_list=const_list_FES2014,dood_date=dood_date,sort_onfreq=False)
-hat_freqs_RWSyear = hatyan.get_hatyan_freqs(const_list=const_list_RWSyear,dood_date=dood_date,sort_onfreq=False)
-hat_freqs_combined = hatyan.get_hatyan_freqs(const_list=const_list_combined,dood_date=dood_date,sort_onfreq=False)
+hat_freqs_FES2014 = hatyan.get_hatyan_freqs(const_list=const_list_FES2014,dood_date=dood_date)
+hat_freqs_RWSyear = hatyan.get_hatyan_freqs(const_list=const_list_RWSyear,dood_date=dood_date)
+hat_freqs_combined = hatyan.get_hatyan_freqs(const_list=const_list_combined,dood_date=dood_date)
 hat_v0 = hatyan.get_hatyan_v0(const_list=const_list_combined,dood_date=dood_date)
 hat_u = hatyan.get_hatyan_u(const_list=const_list_combined,dood_date=dood_date)
 hat_f = hatyan.get_hatyan_f(const_list=const_list_combined,dood_date=dood_date,xfac=False)

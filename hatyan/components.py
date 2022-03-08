@@ -21,6 +21,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+import numpy as np
+import pandas as pd
+import datetime as dt
+
+from hatyan.schureman import get_schureman_freqs, get_schureman_v0 #TODO: this is not generic foreman/schureman
+from hatyan.hatyan_core import sort_const_list, get_const_list_hatyan
+
 
 def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=True):
     """
@@ -45,12 +54,6 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
         The generated axis handle, whith which the figure can be adapted.
 
     """
-    
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import pandas as pd
-    
-    from hatyan.hatyan_core import sort_const_list
     
     COMP = comp.copy()
     if comp_allyears is not None:
@@ -82,7 +85,6 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
         ax1.plot(COMP['A_diff'],'go-',linewidth=size_line_comp,markersize=size_marker_comp,label='difference')
     ax1.grid(axis='y')#, which='major')
     ax1.set_xlim(-0.5,len(const_list)+0.5)
-    from matplotlib.ticker import MaxNLocator
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.set_ylim(-.05,1)
     ax1.set_ylabel('amplitudes [m]')
@@ -131,10 +133,7 @@ def write_components(comp, filename, metadata=None):
     None.
 
     """
-    import numpy as np
     
-    from hatyan.schureman import get_const_list_hatyan, get_schureman_freqs #TODO: this is not generic foreman/schureman
-
     COMP = comp.copy()
     
     t_const_freq_pd = get_schureman_freqs(COMP.index.tolist())
@@ -185,7 +184,6 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
         DESCRIPTION.
 
     """
-    from hatyan.schureman import get_schureman_freqs #TODO: this is not generic foreman/schureman
     
     COMP_merged = comp_main.copy()
     
@@ -223,8 +221,6 @@ def read_components(filename, get_metadata=False):
         DESCRIPTION.
 
     """
-    import datetime as dt
-    import pandas as pd
     
     print('reading file: %s'%(filename))
 
@@ -261,12 +257,7 @@ def read_components(filename, get_metadata=False):
 
 
 def components_timeshift(comp,hours):
-    import datetime as dt
-    import pandas as pd
-    import numpy as np
-    
-    from hatyan.schureman import get_schureman_v0 #TODO: this is not generic for foreman/schureman
-    
+        
     comp_out = comp.copy()
     
     refdate = dt.datetime(2000,1,1)
