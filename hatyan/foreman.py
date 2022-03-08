@@ -175,6 +175,7 @@ def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900
     Shallow water componenten worden afgeleid met de relaties beschreven in de foreman tabel.
     """
     
+    #get freq/v0 for harmonic components
     from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
     
     t_const_doodson_sol = get_foreman_table()
@@ -189,6 +190,7 @@ def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900
     v_0i_rad = np.dot(t_const_doodson_sol.loc[:,['T','S','H','P','N','P1']],multiply_variables) + 2*np.pi*t_const_doodson_sol.loc[:,['EDN']].values
     v_0i_rad_harmonic_pd = pd.DataFrame(v_0i_rad,index=t_const_doodson_sol.index)
     
+    #derive freq/v0 for shallow water components
     foreman_shallowrelations = get_foreman_shallowrelations()
     #foreman_shallowrelations_pd = get_foreman_shallowrelations(pd_series=True)
     
