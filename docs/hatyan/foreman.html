@@ -105,46 +105,33 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     &#34;&#34;&#34;
     
     foreman_file = os.path.join(os.path.dirname(file_path),&#39;data&#39;,&#39;data_foreman_harmonic.txt&#39;)
-    foreman_harmonic_raw = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=[0], skip_blank_lines=True)[0]
+    foreman_harmonic_raw = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=range(16), index_col=0, skip_blank_lines=True, delim_whitespace=True)
+    bool_dupl_index = foreman_harmonic_raw.index.duplicated(keep=&#39;first&#39;)
     
     lat_rad = np.deg2rad(lat_deg)
     
     R1 = 0.36309*(1.-5.*np.sin(lat_rad)*np.sin(lat_rad))/np.sin(lat_rad) #-1 #for lat=50N
     R2 = 2.59808*np.sin(lat_rad) #2 #for lat=50N
 
-    foreman_harmonic_new = foreman_harmonic_raw.str.split(&#39; &#39;, expand=True)
-    foreman_harmonic_new = foreman_harmonic_new.set_index(0, drop=True)
-    foreman_harmonic_new.index.name = None
-    foreman_harmonic_list_new = list(set(foreman_harmonic_new.index.tolist()))
-
-    #get all foreman harmonic doodson and nodal values
-    foreman_harmonic_doodson_all_new = pd.DataFrame()
-    foreman_harmonic_nodal_all_new = pd.DataFrame()
-    for iC, const in enumerate(foreman_harmonic_list_new):
-        foreman_harmonic_sel = foreman_harmonic_new.loc[[const]]
-        
-        row1 = foreman_harmonic_sel.iloc[0,:]
-        row1 = row1[~row1.isnull()] #remove nans
-        if not len(row1) == 8:
-            raise Exception(&#39;ERROR: first row of component %s does not have length 8, so corrupt foreman file, line:\n%s&#39;%(const,row1))
-        foreman_harmonic_doodson_all_new[const] = row1
-        
-        if len(foreman_harmonic_sel.index) &gt; 1:
-            row_other_raw = foreman_harmonic_sel.iloc[1:,:]
-            row_other = row_other_raw.stack(dropna=True)
-            row_otherlen = len(row_other)
-            if (row_otherlen%5)!=0:
-                raise Exception(&#39;ERROR: length of list of nodal values should be a multiple of 5, corrupt foreman file for %s&#39;%(const))
-            row_other_reshape = row_other.values.reshape(row_otherlen//5,5)
-            row_other_reshape_pd = pd.DataFrame(row_other_reshape,index=[const]*(row_otherlen//5))
-            foreman_harmonic_nodal_all_new = foreman_harmonic_nodal_all_new.append(row_other_reshape_pd)
-    foreman_doodson_harmonic = foreman_harmonic_doodson_all_new.astype(float).T
+    #get all forman harmonic doodson values (first occurences of duplicated component names)
+    foreman_doodson_harmonic = foreman_harmonic_raw.loc[~bool_dupl_index,:8].astype(float)
+    foreman_doodson_harmonic.columns = [&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;,&#39;nsats&#39;]
     
-    bool_R1 = foreman_harmonic_nodal_all_new[4].str.contains(&#39;R1&#39;)
-    bool_R2 = foreman_harmonic_nodal_all_new[4].str.contains(&#39;R2&#39;)
-    foreman_harmonic_nodal_all_new.loc[bool_R1,4] = foreman_harmonic_nodal_all_new.loc[bool_R1,4].str.replace(&#39;R1&#39;,&#39;&#39;).astype(float)*R1
-    foreman_harmonic_nodal_all_new.loc[bool_R2,4] = foreman_harmonic_nodal_all_new.loc[bool_R2,4].str.replace(&#39;R2&#39;,&#39;&#39;).astype(float)*R2
-    foreman_nodal_harmonic = foreman_harmonic_nodal_all_new.astype(float)
+    #get all foreman harmonic nodal values (non-first occurences of duplicated component names)
+    foreman_nodal_harmonic_wide = foreman_harmonic_raw.loc[bool_dupl_index]
+    #reshape from 15 to 5 columns
+    foreman_nodal_harmonic_withna = pd.DataFrame(foreman_nodal_harmonic_wide.values.reshape(207,5),
+                                                 index=foreman_nodal_harmonic_wide.index.repeat(3),
+                                                 columns=[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;,&#39;factor&#39;])
+    #drop nan lines
+    foreman_nodal_harmonic = foreman_nodal_harmonic_withna.loc[~foreman_nodal_harmonic_withna.isnull().all(axis=1)]
+    
+    #multiply with R1/R2 if applicable and convert entire dataframe to floats
+    bool_R1 = foreman_nodal_harmonic[&#39;factor&#39;].str.contains(&#39;R1&#39;)
+    bool_R2 = foreman_nodal_harmonic[&#39;factor&#39;].str.contains(&#39;R2&#39;)
+    foreman_nodal_harmonic.loc[bool_R1,&#39;factor&#39;] = foreman_nodal_harmonic.loc[bool_R1,&#39;factor&#39;].str.replace(&#39;R1&#39;,&#39;&#39;).astype(float)*R1
+    foreman_nodal_harmonic.loc[bool_R2,&#39;factor&#39;] = foreman_nodal_harmonic.loc[bool_R2,&#39;factor&#39;].str.replace(&#39;R2&#39;,&#39;&#39;).astype(float)*R2
+    foreman_nodal_harmonic = foreman_nodal_harmonic.astype(float)
 
     return foreman_doodson_harmonic, foreman_nodal_harmonic
 
@@ -199,17 +186,11 @@ def get_foreman_shallowrelations(pd_series=False):
 def get_foreman_table(): #TODO: only harmonic and only v0
     
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-    const_list = foreman_doodson_harmonic.index
-    t_const_doodson_lun = np.concatenate([np.zeros((len(const_list),1)),foreman_doodson_harmonic.loc[:,:7].values],axis=1)
-    omega1 = t_const_doodson_lun[:,1:2]
-    corr_array = np.concatenate([omega1,np.zeros((len(const_list),1)),-omega1,omega1,np.zeros((len(const_list),4))],axis=1)
-    t_const_doodson_sol = t_const_doodson_lun+corr_array
-    t_const_doodson_sol[:,1] = 0
-    
-    index_v0 = [&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]
-    index_v0_incldummy = [&#39;T&#39;,&#39;dummy&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]
-    v0_baseT_for_raw = pd.DataFrame(t_const_doodson_sol,index=const_list,columns=index_v0_incldummy)
-    v0_baseT_for = v0_baseT_for_raw.loc[:,index_v0]
+    t_const_doodson_lun = foreman_doodson_harmonic.copy()
+    omega1 = t_const_doodson_lun.loc[:,&#39;T&#39;]
+    corr_array = pd.DataFrame({&#39;S&#39;:-omega1,&#39;H&#39;:omega1})
+    t_const_doodson_sol = t_const_doodson_lun.add(corr_array,fill_value=0)
+    v0_baseT_for = t_const_doodson_sol[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]]
     
     return v0_baseT_for
 
@@ -278,9 +259,9 @@ def get_foreman_nodalfactors_fromharmonic_oneconst(foreman_harmonic_nodal_const,
 
     doodson_pd = get_doodson_eqvals(dood_date)
     
-    fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],doodson_pd.loc[[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;],:])
-    fore_alpha_jk_all = foreman_harmonic_nodal_const.loc[:,3:3].values * 2*np.pi #phase correction satellite. 0.5=90 voor M2 en N2, 0=0 voor S2
-    fore_r_jk_all = foreman_harmonic_nodal_const.loc[:,4:4].values #amplitude ratio for satellite. 0.0373 voor M2 en N2, 0.0022 voor S2
+    fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;]],doodson_pd.loc[[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;],:])
+    fore_alpha_jk_all = foreman_harmonic_nodal_const.loc[:,[&#39;EDN&#39;]].values * 2*np.pi #phase correction satellite. 0.5=90 voor M2 en N2, 0=0 voor S2
+    fore_r_jk_all = foreman_harmonic_nodal_const.loc[:,[&#39;factor&#39;]].values #amplitude ratio for satellite. 0.0373 voor M2 en N2, 0.0022 voor S2
     fore_fj_left_all = 1 * fore_r_jk_all * np.cos(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
     fore_fj_right_all = 1 * fore_r_jk_all * np.sin(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
     fore_fj_left = fore_fj_left_all.sum(axis=0)
@@ -404,46 +385,33 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     &#34;&#34;&#34;
     
     foreman_file = os.path.join(os.path.dirname(file_path),&#39;data&#39;,&#39;data_foreman_harmonic.txt&#39;)
-    foreman_harmonic_raw = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=[0], skip_blank_lines=True)[0]
+    foreman_harmonic_raw = pd.read_csv(foreman_file, comment=&#39;#&#39;, names=range(16), index_col=0, skip_blank_lines=True, delim_whitespace=True)
+    bool_dupl_index = foreman_harmonic_raw.index.duplicated(keep=&#39;first&#39;)
     
     lat_rad = np.deg2rad(lat_deg)
     
     R1 = 0.36309*(1.-5.*np.sin(lat_rad)*np.sin(lat_rad))/np.sin(lat_rad) #-1 #for lat=50N
     R2 = 2.59808*np.sin(lat_rad) #2 #for lat=50N
 
-    foreman_harmonic_new = foreman_harmonic_raw.str.split(&#39; &#39;, expand=True)
-    foreman_harmonic_new = foreman_harmonic_new.set_index(0, drop=True)
-    foreman_harmonic_new.index.name = None
-    foreman_harmonic_list_new = list(set(foreman_harmonic_new.index.tolist()))
-
-    #get all foreman harmonic doodson and nodal values
-    foreman_harmonic_doodson_all_new = pd.DataFrame()
-    foreman_harmonic_nodal_all_new = pd.DataFrame()
-    for iC, const in enumerate(foreman_harmonic_list_new):
-        foreman_harmonic_sel = foreman_harmonic_new.loc[[const]]
-        
-        row1 = foreman_harmonic_sel.iloc[0,:]
-        row1 = row1[~row1.isnull()] #remove nans
-        if not len(row1) == 8:
-            raise Exception(&#39;ERROR: first row of component %s does not have length 8, so corrupt foreman file, line:\n%s&#39;%(const,row1))
-        foreman_harmonic_doodson_all_new[const] = row1
-        
-        if len(foreman_harmonic_sel.index) &gt; 1:
-            row_other_raw = foreman_harmonic_sel.iloc[1:,:]
-            row_other = row_other_raw.stack(dropna=True)
-            row_otherlen = len(row_other)
-            if (row_otherlen%5)!=0:
-                raise Exception(&#39;ERROR: length of list of nodal values should be a multiple of 5, corrupt foreman file for %s&#39;%(const))
-            row_other_reshape = row_other.values.reshape(row_otherlen//5,5)
-            row_other_reshape_pd = pd.DataFrame(row_other_reshape,index=[const]*(row_otherlen//5))
-            foreman_harmonic_nodal_all_new = foreman_harmonic_nodal_all_new.append(row_other_reshape_pd)
-    foreman_doodson_harmonic = foreman_harmonic_doodson_all_new.astype(float).T
+    #get all forman harmonic doodson values (first occurences of duplicated component names)
+    foreman_doodson_harmonic = foreman_harmonic_raw.loc[~bool_dupl_index,:8].astype(float)
+    foreman_doodson_harmonic.columns = [&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;,&#39;nsats&#39;]
     
-    bool_R1 = foreman_harmonic_nodal_all_new[4].str.contains(&#39;R1&#39;)
-    bool_R2 = foreman_harmonic_nodal_all_new[4].str.contains(&#39;R2&#39;)
-    foreman_harmonic_nodal_all_new.loc[bool_R1,4] = foreman_harmonic_nodal_all_new.loc[bool_R1,4].str.replace(&#39;R1&#39;,&#39;&#39;).astype(float)*R1
-    foreman_harmonic_nodal_all_new.loc[bool_R2,4] = foreman_harmonic_nodal_all_new.loc[bool_R2,4].str.replace(&#39;R2&#39;,&#39;&#39;).astype(float)*R2
-    foreman_nodal_harmonic = foreman_harmonic_nodal_all_new.astype(float)
+    #get all foreman harmonic nodal values (non-first occurences of duplicated component names)
+    foreman_nodal_harmonic_wide = foreman_harmonic_raw.loc[bool_dupl_index]
+    #reshape from 15 to 5 columns
+    foreman_nodal_harmonic_withna = pd.DataFrame(foreman_nodal_harmonic_wide.values.reshape(207,5),
+                                                 index=foreman_nodal_harmonic_wide.index.repeat(3),
+                                                 columns=[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;,&#39;factor&#39;])
+    #drop nan lines
+    foreman_nodal_harmonic = foreman_nodal_harmonic_withna.loc[~foreman_nodal_harmonic_withna.isnull().all(axis=1)]
+    
+    #multiply with R1/R2 if applicable and convert entire dataframe to floats
+    bool_R1 = foreman_nodal_harmonic[&#39;factor&#39;].str.contains(&#39;R1&#39;)
+    bool_R2 = foreman_nodal_harmonic[&#39;factor&#39;].str.contains(&#39;R2&#39;)
+    foreman_nodal_harmonic.loc[bool_R1,&#39;factor&#39;] = foreman_nodal_harmonic.loc[bool_R1,&#39;factor&#39;].str.replace(&#39;R1&#39;,&#39;&#39;).astype(float)*R1
+    foreman_nodal_harmonic.loc[bool_R2,&#39;factor&#39;] = foreman_nodal_harmonic.loc[bool_R2,&#39;factor&#39;].str.replace(&#39;R2&#39;,&#39;&#39;).astype(float)*R2
+    foreman_nodal_harmonic = foreman_nodal_harmonic.astype(float)
 
     return foreman_doodson_harmonic, foreman_nodal_harmonic</code></pre>
 </details>
@@ -516,17 +484,11 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
 def get_foreman_table(): #TODO: only harmonic and only v0
     
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-    const_list = foreman_doodson_harmonic.index
-    t_const_doodson_lun = np.concatenate([np.zeros((len(const_list),1)),foreman_doodson_harmonic.loc[:,:7].values],axis=1)
-    omega1 = t_const_doodson_lun[:,1:2]
-    corr_array = np.concatenate([omega1,np.zeros((len(const_list),1)),-omega1,omega1,np.zeros((len(const_list),4))],axis=1)
-    t_const_doodson_sol = t_const_doodson_lun+corr_array
-    t_const_doodson_sol[:,1] = 0
-    
-    index_v0 = [&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]
-    index_v0_incldummy = [&#39;T&#39;,&#39;dummy&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]
-    v0_baseT_for_raw = pd.DataFrame(t_const_doodson_sol,index=const_list,columns=index_v0_incldummy)
-    v0_baseT_for = v0_baseT_for_raw.loc[:,index_v0]
+    t_const_doodson_lun = foreman_doodson_harmonic.copy()
+    omega1 = t_const_doodson_lun.loc[:,&#39;T&#39;]
+    corr_array = pd.DataFrame({&#39;S&#39;:-omega1,&#39;H&#39;:omega1})
+    t_const_doodson_sol = t_const_doodson_lun.add(corr_array,fill_value=0)
+    v0_baseT_for = t_const_doodson_sol[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]]
     
     return v0_baseT_for</code></pre>
 </details>
@@ -611,9 +573,9 @@ Shallow water componenten worden afgeleid met de relaties beschreven in de forem
 
     doodson_pd = get_doodson_eqvals(dood_date)
     
-    fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,0:2],doodson_pd.loc[[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;],:])
-    fore_alpha_jk_all = foreman_harmonic_nodal_const.loc[:,3:3].values * 2*np.pi #phase correction satellite. 0.5=90 voor M2 en N2, 0=0 voor S2
-    fore_r_jk_all = foreman_harmonic_nodal_const.loc[:,4:4].values #amplitude ratio for satellite. 0.0373 voor M2 en N2, 0.0022 voor S2
+    fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;]],doodson_pd.loc[[&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;],:])
+    fore_alpha_jk_all = foreman_harmonic_nodal_const.loc[:,[&#39;EDN&#39;]].values * 2*np.pi #phase correction satellite. 0.5=90 voor M2 en N2, 0=0 voor S2
+    fore_r_jk_all = foreman_harmonic_nodal_const.loc[:,[&#39;factor&#39;]].values #amplitude ratio for satellite. 0.0373 voor M2 en N2, 0.0022 voor S2
     fore_fj_left_all = 1 * fore_r_jk_all * np.cos(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
     fore_fj_right_all = 1 * fore_r_jk_all * np.sin(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
     fore_fj_left = fore_fj_left_all.sum(axis=0)
