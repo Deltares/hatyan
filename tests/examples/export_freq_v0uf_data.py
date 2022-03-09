@@ -158,16 +158,16 @@ print('#### CALCULATING AND PLOTTING DOODSON NUMBERS #######################')
 print('#####################################################################')
 
 #get and plot doodson values
-dood_T_HAT, dood_S_HAT, dood_H_HAT, dood_P_HAT, dood_N_HAT, dood_P1_HAT = hatyan.get_doodson_eqvals(times_doodsonplot)
+doodson_pd = hatyan.get_doodson_eqvals(times_doodsonplot)
 
 plt.figure(figsize=(15,5))
 plt.title('doodson all')
-plt.plot(times_doodsonplot, dood_T_HAT%(2*np.pi),'-',linewidth=1,markersize=0.5, label='T')
-plt.plot(times_doodsonplot, dood_S_HAT%(2*np.pi),'-',linewidth=1,markersize=0.5, label='S')#, alpha=0.5)
-plt.plot(times_doodsonplot, dood_H_HAT%(2*np.pi),'-',linewidth=1,markersize=0.5, label='H')
-plt.plot(times_doodsonplot, dood_P_HAT%(2*np.pi),'-',linewidth=1,markersize=0.5, label='P')
-plt.plot(times_doodsonplot, dood_N_HAT%(2*np.pi),'-',linewidth=1,markersize=0.5, label='N')
-plt.plot(times_doodsonplot, dood_P1_HAT%(2*np.pi),'-',linewidth=1,markersize=0.5, label='P1')
+plt.plot(times_doodsonplot, doodson_pd.loc['T']%(2*np.pi),'-',linewidth=1,markersize=0.5, label='T')
+plt.plot(times_doodsonplot, doodson_pd.loc['S']%(2*np.pi),'-',linewidth=1,markersize=0.5, label='S')#, alpha=0.5)
+plt.plot(times_doodsonplot, doodson_pd.loc['H']%(2*np.pi),'-',linewidth=1,markersize=0.5, label='H')
+plt.plot(times_doodsonplot, doodson_pd.loc['P']%(2*np.pi),'-',linewidth=1,markersize=0.5, label='P')
+plt.plot(times_doodsonplot, doodson_pd.loc['N']%(2*np.pi),'-',linewidth=1,markersize=0.5, label='N')
+plt.plot(times_doodsonplot, doodson_pd.loc['P1']%(2*np.pi),'-',linewidth=1,markersize=0.5, label='P1')
 plt.grid()
 plt.legend(loc=1)
 #plt.yticks(np.arange(0, 2*np.pi+1, np.pi/2))
@@ -181,7 +181,7 @@ print('#####################################################################')
 v_0i_rad_F, t_const_freq_F = hatyan.get_foreman_v0_freq(const_list_freqv0uf, dood_date_v0freq)
 v_0i_deg_F = np.rad2deg(v_0i_rad_F)
 
-t_const_freq_H = hatyan.get_schureman_freqs(const_list_freqv0uf, dood_date_v0freq) #dood_date is not so relevant
+t_const_freq_H = hatyan.get_schureman_freqs(const_list_freqv0uf, dood_date_v0freq) #dood_date is not so relevant, more than one will result in one
 v_0i_rad_H = hatyan.get_schureman_v0(const_list_freqv0uf, dood_date_v0freq)
 v_0i_deg_H = np.rad2deg(v_0i_rad_H)
 
