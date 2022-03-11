@@ -30,53 +30,6 @@ import datetime as dt
 file_path = os.path.realpath(__file__)
 
 
-def get_v0uf_sel(const_list):
-    """
-    get_v0uf_sel
-
-    Parameters
-    ----------
-    const_list : TYPE
-        DESCRIPTION.
-    
-    Returns
-    -------
-    v0uf_sel : TYPE
-        DESCRIPTION.
-
-    """
-    
-    v0uf_allT = get_schureman_table()
-    
-    const_list_pd = pd.Series(const_list,index=const_list)
-    const_list_avaibool = const_list_pd.isin(v0uf_allT.index)
-    
-    if not const_list_avaibool.all():
-        const_list_notavailable = const_list_avaibool.loc[~const_list_avaibool]
-        raise Exception('ERROR: not all requested constituents are available:\n%s'%(const_list_notavailable))
-    else:
-        v0uf_sel = v0uf_allT.loc[const_list]
-    
-    return v0uf_sel
-
-
-def get_lunarSLSIHO_fromsolar(v0uf_base):
-    #conversion to lunar for comparison with SLS and IHO
-    v0uf_baseT_solar = v0uf_base.loc[['T','S','H','P','N','P1','EDN']].T
-    v0uf_baseT_lunar = v0uf_baseT_solar.copy()
-    v0uf_baseT_lunar['S'] = v0uf_baseT_solar['S'] + v0uf_baseT_solar['T'] #ib with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
-    v0uf_baseT_lunar['H'] = v0uf_baseT_solar['H'] - v0uf_baseT_solar['T'] #ic with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
-    #lunar IHO (compare to Sea Level Science book from Woodsworth and Pugh)
-    v0uf_baseT_lunar_SLS = v0uf_baseT_lunar.copy()
-    v0uf_baseT_lunar_SLS['EDN'] = -v0uf_baseT_lunar['EDN']%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
-    #lunar IHO (compare to c
-    v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
-    v0uf_baseT_lunar_IHO['EDN'] = -v0uf_baseT_lunar['EDN']/90 + 5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
-    v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO['EDN']==3,'EDN'] = 7 # convert -180 (3) to +180 (7)
-    v0uf_baseT_lunar_IHO[['S','H','P','N','P1']] += 5
-    return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO
-
-
 @functools.lru_cache()
 def get_schureman_table():
     """
@@ -116,6 +69,7 @@ def get_schureman_table():
     v0uf_all.rename(columns=shallow_eqs_pd['shallow_const'],inplace=True)
     v0uf_allT = v0uf_all.T
     
+    #from hatyan.hatyan_core import get_lunarSLSIHO_fromsolar # local import since otherwise cross-dependency
     #v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
     
     return v0uf_allT
@@ -142,12 +96,15 @@ def get_schureman_freqs(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900
 
     """
     
-    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
-        
+    from hatyan.hatyan_core import get_doodson_eqvals, check_requestedconsts # local import since otherwise cross-dependency
+    
+    check_requestedconsts(tuple(const_list),source='schureman') #TODO: move check to central location when part of hatyan_settings()?
+    
     doodson_pd = get_doodson_eqvals(dood_date=dood_date, mode='freq') #N is not used here
     multiply_variables = doodson_pd.loc[['T','S','H','P','P1'],:]
     
-    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_allT = get_schureman_table()
+    v0uf_sel = v0uf_allT.loc[const_list]
     v0uf_sel_freq = v0uf_sel[['T','S','H','P','P1']]
     
     DOMEGA_speed = np.dot(v0uf_sel_freq,multiply_variables)
@@ -182,12 +139,15 @@ def get_schureman_v0(const_list, dood_date):
 
     """
     
-    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+    from hatyan.hatyan_core import get_doodson_eqvals, check_requestedconsts # local import since otherwise cross-dependency
+    
+    check_requestedconsts(tuple(const_list),source='schureman') #TODO: move check to central location when part of hatyan_settings()?
 
     doodson_pd = get_doodson_eqvals(dood_date=dood_date) #N is not used here
     multiply_variables = doodson_pd.loc[['T','S','H','P','P1'],:]
     
-    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_allT = get_schureman_table()
+    v0uf_sel = v0uf_allT.loc[const_list]
     DV0 = np.dot(v0uf_sel.loc[:,['T','S','H','P','P1']],multiply_variables) + np.deg2rad(v0uf_sel.loc[:,['EDN']]).values
     DV0_pd = pd.DataFrame(DV0,index=const_list)
     
@@ -217,7 +177,8 @@ def get_schureman_constants(dood_date):
         DESCRIPTION.
 
     """
-
+    
+    #TODO: robust_timedelta_sec might also be necesary in other definitions, but is not there yet. Align? (also check if newer pandas version do not have this problem anymore)
     from hatyan.hatyan_core import robust_timedelta_sec # local import since otherwise cross-dependency
     
     #bercon.f: HET BEREKENEN VAN DE 'CONSTANTEN' .0365, .1681 EN .5023, DIE GEBRUIKT WORDEN BIJ DE BEREKENING VAN DE U- EN F-FACTOREN VAN DE GETIJCOMPONENTEN K1 EN K2
@@ -267,7 +228,9 @@ def get_schureman_u(const_list, dood_date):
 
     """
     
-    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+    from hatyan.hatyan_core import get_doodson_eqvals, check_requestedconsts # local import since otherwise cross-dependency
+    
+    check_requestedconsts(tuple(const_list),source='schureman') #TODO: move check to central location when part of hatyan_settings()?
 
     doodson_pd = get_doodson_eqvals(dood_date=dood_date)
     N_rad = doodson_pd.loc['N',:].values
@@ -301,7 +264,8 @@ def get_schureman_u(const_list, dood_date):
     DUK2   = -D2NU2A
     multiply_variables = np.stack([DKSI, DNU, DQ, DQU, DR, DUK1, DUK2])
     
-    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_allT = get_schureman_table()
+    v0uf_sel = v0uf_allT.loc[const_list]
     v0uf_sel_u = v0uf_sel[['DKSI','DNU', 'DQ', 'DQU', 'DR', 'DUK1', 'DUK2']]
 
     DU = np.dot(v0uf_sel_u.values,multiply_variables)
@@ -331,7 +295,9 @@ def get_schureman_f(const_list, dood_date, xfac):
 
     """
     
-    from hatyan.hatyan_core import get_doodson_eqvals # local import since otherwise cross-dependency
+    from hatyan.hatyan_core import get_doodson_eqvals, check_requestedconsts # local import since otherwise cross-dependency
+    
+    check_requestedconsts(tuple(const_list),source='schureman') #TODO: move check to central location when part of hatyan_settings()?
 
     doodson_pd = get_doodson_eqvals(dood_date=dood_date)
     N_rad = doodson_pd.loc['N',:].values
@@ -392,14 +358,15 @@ def get_schureman_f(const_list, dood_date, xfac):
     multiply_variables = np.stack([DND73,DND74,DND75,DND76,DND77,DND78,DND79,DFM1,DFK1,DFL2,DFK2,DFM1C])
     sel_cols = ['DND73','DND74','DND75','DND76','DND77','DND78','DND79','DFM1','DFK1','DFL2','DFK2','DFM1C']
     
-    v0uf_sel = get_v0uf_sel(const_list=const_list)
+    v0uf_allT = get_schureman_table()
+    v0uf_sel = v0uf_allT.loc[const_list]
     f_i = np.ones(shape=(len(const_list), len(dood_date)))
     for variable, colname in zip(multiply_variables, sel_cols): #this loop is faster than array multiplications, since it only calculates the necessary factors (saves a lot of overhead)
         power = v0uf_sel[colname].values
         idnozero = power!=0
         f_i[idnozero,:] *= variable**power[idnozero][np.newaxis].T
     
-    v0uf_M2 = get_v0uf_sel(const_list=['M2'])
+    v0uf_M2 = v0uf_allT.loc[['M2']]
     f_i_M2 = np.ones(shape=(len(['M2']), len(dood_date)))
     for variable, colname in zip(multiply_variables, sel_cols): 
         power = v0uf_M2[colname].values
