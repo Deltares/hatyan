@@ -123,15 +123,15 @@ print('#### READ FOREMAN TABLE TEST ########################################')
 print('#####################################################################')
 
 foreman_doodson_harmonic, foreman_nodal_harmonic = hatyan.get_foreman_doodson_nodal_harmonic()
-foreman_shallowrelations = hatyan.get_foreman_shallowrelations()
+foreman_shallowrelations, list_shallowdependencies = hatyan.get_foreman_shallowrelations()
 
 foreman_harmonic_doodson_all_list = foreman_doodson_harmonic.index.tolist()
 foreman_harmonic_nodal_all_list = foreman_nodal_harmonic.index.unique().tolist()
 foreman_shallowrelations_list = foreman_shallowrelations.index.tolist()
-foreman_shallow_dependencies_list = list(set(foreman_shallowrelations.loc[:,[3,5,7,9]].values.reshape(580)))
+#foreman_shallow_dependencies_list = list(set(foreman_shallowrelations.loc[:,[3,5,7,9]].values.reshape(580)))
 
 print( '#### FOREMAN FILE TEST, independent of const_list ############' )
-nodal_nodoodson = [x for x in set(foreman_harmonic_nodal_all_list+foreman_shallow_dependencies_list) if x not in foreman_harmonic_doodson_all_list] # doodson is needed. werkt niet want eerste constituent regel wordt altijd naar doodson geschreven..
+nodal_nodoodson = [x for x in set(foreman_harmonic_nodal_all_list+list_shallowdependencies.tolist()) if x not in foreman_harmonic_doodson_all_list] # doodson is needed. werkt niet want eerste constituent regel wordt altijd naar doodson geschreven..
 print( 'nodal_nodoodson, ERROR: provide doodson for:', nodal_nodoodson )
 doodson_nonodal = [x for x in foreman_harmonic_doodson_all_list if x not in foreman_harmonic_nodal_all_list] # ok, f=1, u=0
 print( 'doodson_nonodal, OK: f=1 and u=0 for:       ', doodson_nonodal )
