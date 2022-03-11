@@ -11,7 +11,7 @@ AutoReq:     no
 Summary:     Python version of the hatyan RWS program for tidal analysis and prediction, packed with Python venv with necessary Python libraries
 License:     LGPL
 Provides:    hatyan_python
-Requires:    glibc >= 2.14 coreutils expect stix-fonts fontconfig freetype libstdc++ jasper libXcursor libXrender xorg-x11-xauth mesa-libGL mesa-libEGL libXi
+Requires:    glibc >= 2.17 coreutils expect stix-fonts fontconfig freetype libstdc++ jasper libXcursor libXrender xorg-x11-xauth mesa-libGL mesa-libEGL libXi
 
 %description
 %{summary}
@@ -47,7 +47,7 @@ python -m pip install --upgrade pip setuptools
 # install setuptools-git, this helps getting the datafiles included in the installation for some reason
 python -m pip install setuptools-git
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
-python -m pip install %{_topdir}/BUILD/hatyan_github -r %{_topdir}/BUILD/hatyan_github/requirements_dev.txt
+python -m pip install %{_topdir}/BUILD/hatyan_github -r %{_topdir}/BUILD/hatyan_github/requirements.txt
 #install pyqt5 for interactive plots
 python -m pip install pyqt5
 #remove BUILDROOT prefix in bin files like activate to make it work after installation (pip/python/activate can find each other):
