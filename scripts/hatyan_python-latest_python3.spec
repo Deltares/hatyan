@@ -48,8 +48,8 @@ python -m pip install --upgrade pip setuptools
 python -m pip install setuptools-git
 #install hatyan package from source, also install old library versions to make it work on CentOS (prevent errors related to Qt and others)
 python -m pip install %{_topdir}/BUILD/hatyan_github -r %{_topdir}/BUILD/hatyan_github/requirements_dev.txt
-#install pyqt5==5.7.1 to avoid "Failed to import any qt binding" error. The fixed version is necessary since CentOS/RHEL6 have glibc 2.12 and higher pyqt5 versions require glibc>=2.14
-python -m pip install pyqt5 #==5.7.1
+#install pyqt5 for interactive plots
+python -m pip install pyqt5
 #remove BUILDROOT prefix in bin files like activate to make it work after installation (pip/python/activate can find each other):
 sed -i "s#/.*/rpmbuild/BUILDROOT/.*x86_64##g" $RPM_BUILD_ROOT/opt/hatyan_python/hatyan_env/bin/*
 deactivate #deactivate venv hatyan_env
