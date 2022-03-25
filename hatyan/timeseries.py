@@ -289,7 +289,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     return ts_ext
 
 
-def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True, source='schureman'): #TODO: does not work with hatyan_settings, necessary?
+def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True, source='schureman'):
     
     print('analyzing timeseries with fft and fftfreq')
     
