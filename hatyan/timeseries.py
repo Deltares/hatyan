@@ -31,7 +31,8 @@ file_path = os.path.realpath(__file__)
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr#, num2date
-from hatyan.schureman import get_schureman_freqs #TODO: not generic
+from hatyan.foreman import get_foreman_v0_freq
+from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
 
 
@@ -288,7 +289,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     return ts_ext
 
 
-def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
+def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True, source='schureman'): #TODO: does not work with hatyan_settings, necessary?
     
     print('analyzing timeseries with fft and fftfreq')
     
@@ -311,20 +312,24 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    const_list_all = get_const_list_hatyan(listtype='all_schureman') #TODO: not generic
-    hatyan_freqs = get_schureman_freqs(const_list=const_list_all)[['freq']]
+    if source=='schureman':
+        const_list_all = get_const_list_hatyan(listtype='all_schureman')
+        hatyan_freqs = get_schureman_freqs(const_list=const_list_all)
+    elif source=='foreman':
+        const_list_all = get_const_list_hatyan(listtype='all_foreman')
+        dummy, hatyan_freqs = get_foreman_v0_freq(const_list=const_list_all)
+        hatyan_freqs['period [hr]'] = 1/hatyan_freqs['freq']
+    
     const_match = []
     const_closest = []
     for peak_freq_one in peak_freq:
         hatyan_freqs_match = hatyan_freqs[np.abs(hatyan_freqs['freq']-peak_freq_one)<4e-5]
-        #print(peak_freq_one)
-        #print(hatyan_freqs_match)
         hatyan_freqs_match_list = [x for x in hatyan_freqs_match.index if '_IHO' not in x]
         const_match = const_match+hatyan_freqs_match_list
-        hatyan_freqs_closest = hatyan_freqs.iloc[np.argmin(np.abs(hatyan_freqs-peak_freq_one)),:]
+        hatyan_freqs_closest = hatyan_freqs.iloc[np.argmin(np.abs(hatyan_freqs['freq']-peak_freq_one)),:]
         const_closest.append(hatyan_freqs_closest.name)
-    hatyan_freqs_matches = get_schureman_freqs(const_list=const_match)[['freq','period [hr]']]
-    hatyan_freqs_suggestions = get_schureman_freqs(const_list=const_closest)[['freq','period [hr]']]
+    hatyan_freqs_matches = hatyan_freqs.loc[const_match,['freq','period [hr]']]
+    hatyan_freqs_suggestions = hatyan_freqs.loc[const_closest,['freq','period [hr]']]
     hatyan_freqs_suggestions['peak_freq'] = peak_freq
     hatyan_freqs_suggestions['peak_power'] = peak_power
     print('dominant freqs from fft:\n%s'%(peak_freq))

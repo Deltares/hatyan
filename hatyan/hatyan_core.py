@@ -284,14 +284,19 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
 
     """
     
-    v0uf_allT = get_schureman_table()
-    const_list_all = v0uf_allT.index.tolist()
+    schureman_const_list_all = get_schureman_table().index.tolist()
+    
+    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+    foreman_const_list_all = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index)).tolist()
+
     
     #TODO: add all_foreman list, first optimize it via caching
     const_lists_dict = {'all_schureman':
                             #alle binnen hatyan beschikbare componenten
                             #A0 en 195 componenten (plus potentially added components)
-                            const_list_all,
+                            schureman_const_list_all,
+                        
                         'all_schureman_originalorder': #for writing numbers in component file
                             #alle binnen hatyan beschikbare componenten
                             #A0 en 195 componenten
@@ -308,7 +313,10 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                             '4MN10','M10','3MSN10','4MS10','2(MS)N10','2MNSK10','3M2S10',
                             '4MSK11',
                             'M12','4MSN12','5MS12','3MNKS12','4M2S12'],
-                    
+                        
+                        'all_foreman':
+                            foreman_const_list_all,
+                        
                         'year':
                             #Bij analyse van een jaar wordt gebruik gemaakt
                             #van de 'standaardset' van 94 componenten aanbevolen

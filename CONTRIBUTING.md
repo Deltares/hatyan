@@ -58,5 +58,6 @@ Publish to PyPI (automatically runs via Github Actions upon release creation):
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``python setup.py sdist bdist_wheel``
+- to check before uploading: ``twine check dist/*``
 - ``twine upload dist/*``
 - a new version should now be available on https://pypi.org/manage/project/hatyan/releases/
