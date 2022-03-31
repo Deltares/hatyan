@@ -1,7 +1,7 @@
 # Harmonic constituents: doodson numbers, phase, no of satellites
 # for each sattelite, changes in: three last doodson numbers, phase, ampl ratio.
 # Copied from Foreman (2004, Appendix 7.1) and supplemented with hatyan data
-# replaced '-0.' with ' -0.', replaced 'Z0' with 'A0' and replaced 'LABDA2' with 'LABDA2'
+# replaced '-0.' with ' -0.', replaced 'Z0' with 'A0', replaced 'LDA2' with 'LABDA2', replaced 'THE1' with 'THETA1'
 #.7428797055 .7771900329 .5187051308 .3631582592 .7847990160 000GMT 1/1/76
 #13.3594019864 .9993368945 .1129517942 .0536893056 .0000477414 INCR./365DAYS
 A0 0 0 0 0 0 0 0.0 0
@@ -59,9 +59,9 @@ PSI1 0 1 0 .0 0.0190
 PHI1 1 1 2 0 0 0 -0.75 5
 PHI1 -2 0 0 .0 0.0344 -2 1 0 .0 0.0106 0 0 -2 .0 0.0132
 PHI1 0 1 0 .50 0.0384 0 2 0 .50 0.0185
-THE1 1 2 -2 1 0 0 -.75 4
-THE1 -2 -1 0 .00 .0300 -1 0 0 .25 0.0141R1 0 -1 0 .50 .0317
-THE1 0 1 0 .00 .1993
+THETA1 1 2 -2 1 0 0 -.75 4
+THETA1 -2 -1 0 .00 .0300 -1 0 0 .25 0.0141R1 0 -1 0 .50 .0317
+THETA1 0 1 0 .00 .1993
 J1 1 2 0 -1 0 0 -0.75 10
 J1 0 -1 0 .50 0.0294 0 1 0 .0 0.1980 0 2 0 .50 0.0047
 J1 1 -1 0 .75 0.0027R1 1 0 0 .25 0.0816R1 1 1 0 .25 0.0331R1
