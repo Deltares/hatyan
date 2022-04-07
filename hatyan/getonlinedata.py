@@ -56,6 +56,14 @@ def get_DDL_catalog(catalog_extrainfo=[]):
             result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
         else:
             result_cat_dict[catalog_key] = result_cat[catalog_key]
+    
+    #this part is only added to show duplicate stations, not essential code
+    cat_locatielijst = result_cat_dict['LocatieLijst'].set_index('Locatie_MessageID',drop=True)
+    bool_dupl_code = cat_locatielijst['Code'].duplicated(keep=False) #DDL IMPROVEMENT: there are duplicate station Codes present in the catalogus LocatieLijst, sometimes also the Naam+Code combination is duplicated. Possible to merge stations?
+    if bool_dupl_code.any():
+        print(f'WARNING: {bool_dupl_code.sum()} duplicate station Codes present in cat_locatielijst. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data')
+        print(cat_locatielijst.loc[bool_dupl_code,['Naam','Code']].sort_values('Code'))
+    
     return result_cat_dict
 
 
@@ -226,7 +234,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
 
     bool_timeduplicated = ts_meas_pd.index.duplicated()
     if bool_timeduplicated.any():
-        print('WARNING: query returned %d duplicate times, use less extensive allow_multipleresultsfor'%bool_timeduplicated.sum()) # DDL IMPROVEMENT: even without allow_multipleresultsfor, there are duplicates for e.g. HARVT10  dt.datetime(2013,12,31,23,0) to dt.datetime(2014,1,1), topdesk M220206235
+        print(f'WARNING: query returned {bool_timeduplicated.sum()} duplicate times, use less extensive allow_multipleresultsfor') # DDL IMPROVEMENT: even without allow_multipleresultsfor, there are duplicates for e.g. HARVT10  dt.datetime(2013,12,31,23,0) to dt.datetime(2014,1,1), topdesk M220206235
  
     return ts_meas_pd, result_wl0_aquometadata_unique, result_wl0_locatie_unique
 
