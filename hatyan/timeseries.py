@@ -1014,7 +1014,7 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
 def check_rayleigh(ts_pd,t_const_freq_pd):
     
-    t_const_freq = t_const_freq_pd['freq'].drop('A0')
+    t_const_freq = t_const_freq_pd['freq'].drop('A0',errors='ignore')
     freq_diffs = np.diff(t_const_freq)
     rayleigh_tresh = 0.99
     rayleigh = len(ts_pd['values'])*freq_diffs
