@@ -86,7 +86,7 @@ if 0: #for CMEMS
     #cat_locatielijst_sel = cat_locatielijst_sel[cat_locatielijst_sel['Code']=='VLISSGN']
     for iR, locatie_row in cat_locatielijst_sel.iterrows(): 
         request_output = hatyan.get_DDL_data(station_dict=locatie_row,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},
-                                             tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC',allow_multipleresultsfor=['WaardeBepalingsmethode'])
+                                             tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC',allow_multipleresultsfor=['WaardeBepalingsmethode'])#,'Hoedanigheid']) #adding Hoedanigheid is tricky, since it results in different vertical references
         if request_output is not None:
             ts_meas_pd, metadata, stationdata = request_output
             ts_meas_pd['values'] = ts_meas_pd['values']/100 #convert from cm to m
@@ -104,14 +104,13 @@ if 0:
     plot_stations = False
     write_measurement_files = False
     
-    # TODO: station+stationcolumn omschrijven naar station_dict?
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='Hoek van holland',stationcolumn='Naam',meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='HOEKVHLD',stationcolumn='Code',meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='VLISSGN',stationcolumn='Code',meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='VLISSGN',stationcolumn='Code',meta_dict={'Grootheid.Omschrijving':'waterhoogte','Groepering.Code':'NVT'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station=None,stationcolumn='Code',meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station=None,stationcolumn='Code',meta_dict={'Grootheid.Omschrijving':'stroom'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station='VLISSGN|HOEKVHLD',stationcolumn='Code',meta_dict=None)
+    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Naam':'Hoek van holland'},meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
+    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'HOEKVHLD'},meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
+    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'VLISSGN'},meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
+    cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'VLISSGN'},meta_dict={'Grootheid.Omschrijving':'waterhoogte','Groepering.Code':'NVT'})
+    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
+    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Omschrijving':'stroom'})
+    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'VLISSGN|HOEKVHLD'},meta_dict=None)
     
     print('Grootheid/Groepering Code/Omschrijving:\n', cat_aquometadatalijst_sel[['Grootheid.Code','Grootheid.Omschrijving','Groepering.Code']])
     print('station selection:\n', cat_locatielijst_sel[['Naam','Code']])

@@ -16,7 +16,7 @@ Create python environment hatyan_env and install hatyan in developer mode:
 - ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL6)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
 - ``conda activate hatyan_env``
-- ``python -m pip install -e . -r requirements_dev.txt`` (pip developer mode, also install all packages in requirements_dev.txt containing CentOS tested libraries, linked via setup.py)
+- ``python -m pip install -e .`` (pip developer mode, also install all packages in requirements.txt containing CentOS tested libraries, linked via setup.py)
 - ``conda deactivate``
 - to remove hatyan_env when necessary: ``conda remove -n hatyan_env --all``
 
@@ -50,9 +50,7 @@ Generate RPM (RHEL/CentOS installer, automatically runs via Github Actions upon 
 - preparation: activate environment, run testbank and check acceptancetest output, update history.rst, git add+commit, bumpversion minor, (run testbank and) backup acceptancetest output, generate documentation, git add+commit+push, merge branch with main, create tag+release on github (e.g. v2.3.0)
 - this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
 - rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input (set the versiontag variable to the newly created github tag)
-- the dependencies for the RPM are documented in the specfile
-- the required Python libraries are documented in requirements_dev.txt: these are fixed versions, which is at least relevant for sip, since it needs to be compatible with pyqt5==5.7.1 for Qt5 plots
-- additionally, the library pyqt5==5.7.1 (hardcoded in specfile) is for interative QT5 plots. There is a newer version but it requires glibc >2.14, while 2.12 is the highest version available on CentOS/RedHat 6)
+- the dependencies for the RPM are documented in the specfile and the required Python libraries are documented in requirements.txt (pyqt5 is for interative QT5 plots)
 - to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.
 
 Publish to PyPI (automatically runs via Github Actions upon release creation):
@@ -60,5 +58,6 @@ Publish to PyPI (automatically runs via Github Actions upon release creation):
 - open command line and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
 - ``conda activate hatyan_env``
 - ``python setup.py sdist bdist_wheel``
+- to check before uploading: ``twine check dist/*``
 - ``twine upload dist/*``
 - a new version should now be available on https://pypi.org/manage/project/hatyan/releases/

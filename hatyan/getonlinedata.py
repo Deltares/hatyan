@@ -56,6 +56,14 @@ def get_DDL_catalog(catalog_extrainfo=[]):
             result_cat_dict[catalog_key] = pd.json_normalize(result_cat[catalog_key])
         else:
             result_cat_dict[catalog_key] = result_cat[catalog_key]
+    
+    #this part is only added to show duplicate stations, not essential code
+    cat_locatielijst = result_cat_dict['LocatieLijst'].set_index('Locatie_MessageID',drop=True)
+    bool_dupl_code = cat_locatielijst['Code'].duplicated(keep=False) #DDL IMPROVEMENT: there are duplicate station Codes present in the catalogus LocatieLijst, sometimes also the Naam+Code combination is duplicated. Possible to merge stations?
+    if bool_dupl_code.any():
+        print(f'WARNING: {bool_dupl_code.sum()} duplicate station Codes present in cat_locatielijst. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data')
+        print(cat_locatielijst.loc[bool_dupl_code,['Naam','Code']].sort_values('Code'))
+    
     return result_cat_dict
 
 
@@ -188,7 +196,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
         else: #allow multiple results for eg ['MeetApparaat', 'WaardeBepalingsmethode']
             try:
-                list_dropcolumns = ['AquoMetadata_MessageID']+['%s.%s'%(colname,postfix) for colname in allow_multipleresultsfor for postfix in ['Code','Omschrijving']]
+                list_dropcolumns = ['AquoMetadata_MessageID','Parameter_Wat_Omschrijving']+['%s.%s'%(colname,postfix) for colname in allow_multipleresultsfor for postfix in ['Code','Omschrijving']]
                 result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique.drop(list_dropcolumns,axis=1).drop_duplicates()
             except KeyError as e:
                 metakeys_forCode = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.keys() if x.endswith('.Code')]
@@ -226,12 +234,12 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
 
     bool_timeduplicated = ts_meas_pd.index.duplicated()
     if bool_timeduplicated.any():
-        print('WARNING: query returned %d duplicate times, use less extensive allow_multipleresultsfor'%bool_timeduplicated.sum()) # DDL IMPROVEMENT: even without allow_multipleresultsfor, there are duplicates for e.g. HARVT10  dt.datetime(2013,12,31,23,0) to dt.datetime(2014,1,1), topdesk M220206235
+        print(f'WARNING: query returned {bool_timeduplicated.sum()} duplicate times, use less extensive allow_multipleresultsfor') # DDL IMPROVEMENT: even without allow_multipleresultsfor, there are duplicates for e.g. HARVT10  dt.datetime(2013,12,31,23,0) to dt.datetime(2014,1,1), topdesk M220206235
  
     return ts_meas_pd, result_wl0_aquometadata_unique, result_wl0_locatie_unique
 
 
-def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',meta_dict=None, error_empty=True):
+def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, error_empty=True):
     
     cat_aquometadatalijst = catalog_dict['AquoMetadataLijst'].set_index('AquoMetadata_MessageID')
     cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Locatie_MessageID')
@@ -239,7 +247,7 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',me
     cat_AquoMetadataLocatieLijst_metaidx = catalog_dict['AquoMetadataLocatieLijst'].set_index('AquoMetaData_MessageID')
     # DDL IMPROVEMENT: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs: [38, 43, 75, 98, 99, 176] (and probably somewhat more), so these will not be present in cat_locatielijst_sel
     
-    if meta_dict is None and station is None: #this makes the rest of the function a bit simpler to write
+    if meta_dict is None and station_dict is None: #this makes the rest of the function a bit simpler to write
         raise Exception('using this function has no added value when not supplying meta and station')
 
     if meta_dict is not None:
@@ -255,11 +263,16 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',me
             cat_AquoMetadataLocatieLijst_missingAquoIDs = cat_aquometadatalijst.loc[~bool_metaid_intranslatetable].index
             print('WARNING: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs:\n%s\nThese IDs will not be present in cat_locatielijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_aquometadatalijst.loc[cat_AquoMetadataLocatieLijst_missingAquoIDs,['Grootheid.Code','Grootheid.Omschrijving']]))
             cat_aquometadatalijst_containingmeta = cat_aquometadatalijst.loc[bool_aquometadatalijst_containingmeta & bool_metaid_intranslatetable]
-        bool_locatielijst_containingmeta = cat_locatielijst[stationcolumn].str.contains('THISSTRINGISNOTINCOLUMN') #first generate all false bool
+        bool_locatielijst_containingmeta = cat_locatielijst['Code'].str.contains('THISSTRINGISNOTINCOLUMN') #first generate all false bool
         bool_locatielijst_containingmeta_idxtrue = cat_AquoMetadataLocatieLijst_metaidx.loc[cat_aquometadatalijst_containingmeta.index,'Locatie_MessageID']
         bool_locatielijst_containingmeta.loc[bool_locatielijst_containingmeta_idxtrue] = True
-    if station is not None:
-        bool_locatielijst_containingstation = cat_locatielijst[stationcolumn].str.contains(station,case=False)
+    if station_dict is not None:
+        #loop over meta_dict keys, append to array and 
+        bool_locatielijst_containingstation_list = []
+        for stationkey in station_dict.keys():
+            bool_locatielijst_containingstation_list.append(cat_locatielijst[stationkey].str.contains(station_dict[stationkey],case=False))
+        bool_locatielijst_containingstation = np.array(bool_locatielijst_containingstation_list).all(axis=0) #logical and
+        
         cat_locatielijst_containingstation = cat_locatielijst.loc[bool_locatielijst_containingstation]
         bool_locid_intranslatetable = cat_locatielijst.index.isin(cat_AquoMetadataLocatieLijst_locidx.index)
         if not bool_locid_intranslatetable.all():
@@ -271,13 +284,13 @@ def get_DDL_stationmetasubset(catalog_dict, station=None,stationcolumn='Naam',me
         bool_aquometadatalijst_containingstation_idxtrue = cat_AquoMetadataLocatieLijst_locidx.loc[cat_locatielijst_containingstation.index,'AquoMetaData_MessageID']
         bool_aquometadatalijst_containingstation.loc[bool_aquometadatalijst_containingstation_idxtrue] = True
     
-    if meta_dict is not None and station is not None: 
+    if meta_dict is not None and station_dict is not None: 
         cat_aquometadatalijst_sel = cat_aquometadatalijst.loc[bool_aquometadatalijst_containingmeta & bool_aquometadatalijst_containingstation]
         cat_locatielijst_sel = cat_locatielijst.loc[bool_locatielijst_containingmeta & bool_locatielijst_containingstation]
-    elif meta_dict is None and station is not None:
+    elif meta_dict is None and station_dict is not None:
         cat_aquometadatalijst_sel = cat_aquometadatalijst.loc[bool_aquometadatalijst_containingstation]
         cat_locatielijst_sel = cat_locatielijst.loc[bool_locatielijst_containingstation]
-    elif meta_dict is not None and station is None:
+    elif meta_dict is not None and station_dict is None:
         cat_aquometadatalijst_sel = cat_aquometadatalijst.loc[bool_aquometadatalijst_containingmeta]
         cat_locatielijst_sel = cat_locatielijst.loc[bool_locatielijst_containingmeta]
 
