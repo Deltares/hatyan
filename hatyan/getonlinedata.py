@@ -196,7 +196,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
         else: #allow multiple results for eg ['MeetApparaat', 'WaardeBepalingsmethode']
             try:
-                list_dropcolumns = ['AquoMetadata_MessageID']+['%s.%s'%(colname,postfix) for colname in allow_multipleresultsfor for postfix in ['Code','Omschrijving']]
+                list_dropcolumns = ['AquoMetadata_MessageID','Parameter_Wat_Omschrijving']+['%s.%s'%(colname,postfix) for colname in allow_multipleresultsfor for postfix in ['Code','Omschrijving']]
                 result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique.drop(list_dropcolumns,axis=1).drop_duplicates()
             except KeyError as e:
                 metakeys_forCode = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.keys() if x.endswith('.Code')]

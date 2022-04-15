@@ -86,7 +86,7 @@ if 0: #for CMEMS
     #cat_locatielijst_sel = cat_locatielijst_sel[cat_locatielijst_sel['Code']=='VLISSGN']
     for iR, locatie_row in cat_locatielijst_sel.iterrows(): 
         request_output = hatyan.get_DDL_data(station_dict=locatie_row,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},
-                                             tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC',allow_multipleresultsfor=['WaardeBepalingsmethode'])
+                                             tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC',allow_multipleresultsfor=['WaardeBepalingsmethode'])#,'Hoedanigheid']) #adding Hoedanigheid is tricky, since it results in different vertical references
         if request_output is not None:
             ts_meas_pd, metadata, stationdata = request_output
             ts_meas_pd['values'] = ts_meas_pd['values']/100 #convert from cm to m
