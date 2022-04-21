@@ -1294,7 +1294,9 @@ def readts_dia(filename, station=None, block_ids=None):
     
     if not isinstance(filename,list):
         filename = [filename]
-        
+    if len(filename)==0:
+        raise Exception('ERROR: filename list is empty')
+    
     data_pd_all = pd.DataFrame()
     for iF, filename_one in enumerate(filename):    
         diablocks_pd = get_diablocks(filename_one)

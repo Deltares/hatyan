@@ -46,7 +46,7 @@ def get_DDL_catalog(catalog_extrainfo=[]):
         raise Exception('%s for %s: %s'%(resp.reason, resp.url, str(resp.text)))
     result_cat = resp.json()
     if not result_cat['Succesvol']:
-        raise Exception('catalog query not succesful, Foutmelding: %s'%(result_cat['Foutmelding']))
+        raise Exception('catalog query not succesful, DDL foutmelding: "%s"'%(result_cat['Foutmelding']))
     
     result_cat_dict = {}
     for catalog_key in result_cat.keys():
