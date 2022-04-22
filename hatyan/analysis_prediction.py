@@ -63,7 +63,8 @@ class HatyanSettings:
     #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, return_prediction only for analysis. Merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
-                 CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, return_prediction=False): #analysis only
+                 CS_comps=None, analysis_peryear=False, analysis_permonth=False, return_allyears=False, return_prediction=False,
+                 xTxmat_condition_max=10): #analysis only
         if not isinstance(source,str):
             raise Exception('invalid source type, should be str')
         source = source.lower()
@@ -96,6 +97,7 @@ class HatyanSettings:
         self.analysis_permonth = analysis_permonth
         self.return_allyears = return_allyears
         self.return_prediction = return_prediction
+        self.xTxmat_condition_max = xTxmat_condition_max
         
     def __str__(self):
         self_dict = vars(self)
@@ -331,7 +333,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
         xTxmat[N,N] = m
     xTxmat_condition = np.linalg.cond(xTxmat)
     print('condition of xTx matrix: %.2f'%(xTxmat_condition))
-    if xTxmat_condition > 10:#100: #random treshold
+    if xTxmat_condition > hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
         raise Exception('ERROR: condition of xTx matrix is too high (%.2f), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed %s'%(xTxmat_condition, check_ts(ts_pd)))
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
