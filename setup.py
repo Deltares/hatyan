@@ -15,7 +15,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='hatyan',
-    version='2.5.50',
+    version='2.5.51',
     author="Jelmer Veenstra",
     author_email='Jelmer.Veenstra@Deltares.nl',
     url='https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_python',
