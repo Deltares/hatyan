@@ -300,5 +300,19 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
     return cat_aquometadatalijst_sel, cat_locatielijst_sel
 
 
-
+def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
+    """
+    TVL;1;1;hoogwater
+    TVL;1;2;laagwater
+    TVL;1;3;laagwater 1
+    TVL;1;4;topagger
+    TVL;1;5;laagwater 2
+    """
+    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='hoogwater','HWLWcode'] = 1
+    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater','HWLWcode'] = 2
+    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 1','HWLWcode'] = 3
+    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='topagger','HWLWcode'] = 4
+    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 2','HWLWcode'] = 5
+    ts_measwlHWLW['HWLWcode'] = ts_measwlHWLW['HWLWcode'].astype(int)
+    return ts_measwlHWLW
 
