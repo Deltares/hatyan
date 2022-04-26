@@ -157,6 +157,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
         print('WARNING: no values present for this query, returning None')
         return #preliminary abort of definition
 
+    addcolumns_list = [f'{x}.{y}' for x in allow_multipleresultsfor for y in ['Code','Omschrijving']]
     result_wl0_metingenlijst_alldates = pd.DataFrame()
     result_wl0_aquometadata_unique = pd.DataFrame()
     result_wl0_locatie_unique = pd.DataFrame()
@@ -191,7 +192,6 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
                 result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
             #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
-            addcolumns_list = [f'{x}.{y}' for x in allow_multipleresultsfor for y in ['Code','Omschrijving']]
             for addcolumn in addcolumns_list:
                 result_wl0_metingenlijst[addcolumn] = result_wl0_aquometadata.loc[0,addcolumn]
             result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
@@ -233,6 +233,8 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
                                #'OpdrachtgevendeInstantie':result_wl0_metingenlijst_alldates['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].str[0].values,
                                },
                               index=pd.to_datetime(result_wl0_metingenlijst_alldates['Tijdstip']))
+    for addcolumn in addcolumns_list:
+        ts_meas_pd[addcolumn] = result_wl0_metingenlijst_alldates[addcolumn]
     #convert timezone from MET to requested timezone
     ts_meas_pd.index = ts_meas_pd.index.tz_convert(tstart_dt.tzinfo)
 
