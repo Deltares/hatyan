@@ -234,7 +234,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
                                },
                               index=pd.to_datetime(result_wl0_metingenlijst_alldates['Tijdstip']))
     for addcolumn in addcolumns_list:
-        ts_meas_pd[addcolumn] = result_wl0_metingenlijst_alldates[addcolumn]
+        ts_meas_pd[addcolumn] = result_wl0_metingenlijst_alldates[addcolumn].values
     #convert timezone from MET to requested timezone
     ts_meas_pd.index = ts_meas_pd.index.tz_convert(tstart_dt.tzinfo)
 
