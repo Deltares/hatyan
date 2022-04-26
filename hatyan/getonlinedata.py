@@ -233,6 +233,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
                                #'OpdrachtgevendeInstantie':result_wl0_metingenlijst_alldates['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].str[0].values,
                                },
                               index=pd.to_datetime(result_wl0_metingenlijst_alldates['Tijdstip']))
+    #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
     for addcolumn in addcolumns_list:
         ts_meas_pd[addcolumn] = result_wl0_metingenlijst_alldates[addcolumn].values
     #convert timezone from MET to requested timezone
