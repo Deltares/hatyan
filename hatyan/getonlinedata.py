@@ -178,19 +178,23 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
         range_nresults = range(len(result_wl['WaarnemingenLijst']))
         for result_idx in range_nresults:
             result_wl0 = result_wl['WaarnemingenLijst'][result_idx]
-            #print('json result waarnemingenlijst keys: %s'%(result_wl0.keys())) #['Locatie', 'MetingenLijst', 'AquoMetadata']
-            result_wl0_metingenlijst = pd.json_normalize(result_wl0['MetingenLijst']) # the actual waterlevel data for this station
-            if not result_wl0_metingenlijst['Tijdstip'].is_monotonic_increasing:
-                #print('WARNING: retrieved timeseries is not monotonic increasing, so it was sorted')
-                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values('Tijdstip').reset_index(drop=True) # DDL IMPROVEMENT: data in response is not always sorted on time
-            last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst['Tijdstip'].iloc[-1]).tz_convert(tstart_dt.tzinfo)
-            if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
-                result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
-            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
+            #get and append locatiedata and metadata
             result_wl0_locatie = pd.json_normalize(result_wl0['Locatie'])
             result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
             result_wl0_aquometadata = pd.json_normalize(result_wl0['AquoMetadata'])
             result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the 'WaardeBepalingsmethode' changes
+            #get one block of meetdata, sort on time and make timezone aware
+            result_wl0_metingenlijst = pd.json_normalize(result_wl0['MetingenLijst']) # the actual waterlevel data for this station
+            if not result_wl0_metingenlijst['Tijdstip'].is_monotonic_increasing:
+                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values('Tijdstip').reset_index(drop=True) # DDL IMPROVEMENT: data in response is not always sorted on time
+            last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst['Tijdstip'].iloc[-1]).tz_convert(tstart_dt.tzinfo)
+            if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
+                result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
+            #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
+            addcolumns_list = [f'{x}.{y}' for x in allow_multipleresultsfor for y in ['Code','Omschrijving']]
+            for addcolumn in addcolumns_list:
+                result_wl0_metingenlijst[addcolumn] = result_wl0_aquometadata.loc[0,addcolumn]
+            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
         
         if allow_multipleresultsfor==[]:
             result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
