@@ -132,6 +132,8 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     normalizing json output: https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8
 
     query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead
+    allow_multipleresultsfor: when a query returns multiple results, there is also multiple metadata lines. If e.g. allow_multipleresultsfor=['MeetApparaat'], the metadata fields 'MeetApparaat.Code' and 'MeetApparaat.Omschrijving' are allowed to be different and the multiple timeseries are merged. A column is added to the output timeseries with these fields, to be able to distinguish measurements taken with different 'MeetApparaat'.
+    
     """
 
     if not isinstance(allow_multipleresultsfor,list):
