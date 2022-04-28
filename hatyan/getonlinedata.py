@@ -208,14 +208,15 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
                 metakeys_forCode = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.keys() if x.endswith('.Code')]
                 raise Exception('%s, available are: %s'%(e,metakeys_forCode))
         
+        result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.reset_index(drop=True) #necessary to print 'Result n:' numbers properly below
         if len(result_wl0_aquometadata_uniqueallowed)>1:
             bool_nonuniquecols = (result_wl0_aquometadata_unique.iloc[0]!=result_wl0_aquometadata_unique).any(axis=0)
             metakeys_forCode_nonunique = [x.replace('.Code','') for x in result_wl0_aquometadata_unique.loc[:,bool_nonuniquecols].columns if x.endswith('.Code')]
-            for iR, result_one in enumerate(result_wl['WaarnemingenLijst']):
+            for iR, result_one in result_wl0_aquometadata_unique.iterrows():
                 print(f'Result {iR+1}:')
                 metakey_list = sorted(set(['Compartiment','Eenheid','Grootheid','Hoedanigheid','Groepering']+metakeys_forCode_nonunique))
                 for metakey in metakey_list:
-                    print('%28s: %s,'%("'%s'"%metakey,result_one['AquoMetadata'][metakey]))
+                    print('%28s: %s,'%("'%s'"%metakey,dict(result_one[[f'{metakey}.Code',f'{metakey}.Omschrijving']])))
             raise Exception('query returned more than one result (differences in %s, details above), use more specific query_metadata argument or more extensive allow_multipleresultsfor argument (the latter might result in duplicate timesteps)'%(metakeys_forCode_nonunique))
             
     result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.reset_index(drop=True)
