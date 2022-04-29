@@ -248,6 +248,34 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
     return data_pd_HWLW
 
 
+def calc_HWLW12345to21(data_HWLW_12345): #TODO: if first/last timestep is LW, these are not returned (loops from HW to HW)
+    &#34;&#34;&#34;
+    
+
+    Parameters
+    ----------
+    data_HWLW12345 : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    print(&#39;starting HWLW 12345 to 12 correction&#39;)
+    times_LWmin = []
+    data_HW1 = data_HWLW_12345.loc[data_HWLW_12345[&#39;HWLWcode&#39;]==1]
+    for iHW in np.arange(0,len(data_HW1)-1):
+        tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
+        time_minimum = tide_afterHW[&#39;values&#39;].idxmin()
+        times_LWmin.append(time_minimum)
+    data_LW2 = data_HWLW_12345.loc[times_LWmin]
+    data_LW2[&#39;HWLWcode&#39;] = 2
+    data_HWLW_12 = pd.concat([data_HW1,data_LW2]).sort_index()
+    
+    return data_HWLW_12
+
+
 def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     &#34;&#34;&#34;
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
@@ -1339,7 +1367,9 @@ def readts_dia(filename, station=None, block_ids=None):
     
     if not isinstance(filename,list):
         filename = [filename]
-        
+    if len(filename)==0:
+        raise Exception(&#39;ERROR: filename list is empty&#39;)
+    
     data_pd_all = pd.DataFrame()
     for iF, filename_one in enumerate(filename):    
         diablocks_pd = get_diablocks(filename_one)
@@ -1682,6 +1712,49 @@ When first/second low waters and aggers are calculated, the local extremes aroun
     print(&#39;finished calculating 1stLW/agger/2ndLW for all tidalperiods&#39;)
     
     return data_pd_HWLW</code></pre>
+</details>
+</dd>
+<dt id="hatyan.timeseries.calc_HWLW12345to21"><code class="name flex">
+<span>def <span class="ident">calc_HWLW12345to21</span></span>(<span>data_HWLW_12345)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data_HWLW12345</code></strong> :&ensp;<code>TYPE</code></dt>
+<dd>DESCRIPTION.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calc_HWLW12345to21(data_HWLW_12345): #TODO: if first/last timestep is LW, these are not returned (loops from HW to HW)
+    &#34;&#34;&#34;
+    
+
+    Parameters
+    ----------
+    data_HWLW12345 : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    &#34;&#34;&#34;
+    print(&#39;starting HWLW 12345 to 12 correction&#39;)
+    times_LWmin = []
+    data_HW1 = data_HWLW_12345.loc[data_HWLW_12345[&#39;HWLWcode&#39;]==1]
+    for iHW in np.arange(0,len(data_HW1)-1):
+        tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
+        time_minimum = tide_afterHW[&#39;values&#39;].idxmin()
+        times_LWmin.append(time_minimum)
+    data_LW2 = data_HWLW_12345.loc[times_LWmin]
+    data_LW2[&#39;HWLWcode&#39;] = 2
+    data_HWLW_12 = pd.concat([data_HW1,data_LW2]).sort_index()
+    
+    return data_HWLW_12</code></pre>
 </details>
 </dd>
 <dt id="hatyan.timeseries.calc_HWLWnumbering"><code class="name flex">
@@ -3123,7 +3196,9 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     
     if not isinstance(filename,list):
         filename = [filename]
-        
+    if len(filename)==0:
+        raise Exception(&#39;ERROR: filename list is empty&#39;)
+    
     data_pd_all = pd.DataFrame()
     for iF, filename_one in enumerate(filename):    
         diablocks_pd = get_diablocks(filename_one)
@@ -3271,6 +3346,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 <ul class="">
 <li><code><a title="hatyan.timeseries.calc_HWLW" href="#hatyan.timeseries.calc_HWLW">calc_HWLW</a></code></li>
 <li><code><a title="hatyan.timeseries.calc_HWLWlocalto345" href="#hatyan.timeseries.calc_HWLWlocalto345">calc_HWLWlocalto345</a></code></li>
+<li><code><a title="hatyan.timeseries.calc_HWLW12345to21" href="#hatyan.timeseries.calc_HWLW12345to21">calc_HWLW12345to21</a></code></li>
 <li><code><a title="hatyan.timeseries.calc_HWLWnumbering" href="#hatyan.timeseries.calc_HWLWnumbering">calc_HWLWnumbering</a></code></li>
 <li><code><a title="hatyan.timeseries.timeseries_fft" href="#hatyan.timeseries.timeseries_fft">timeseries_fft</a></code></li>
 <li><code><a title="hatyan.timeseries.plot_timeseries" href="#hatyan.timeseries.plot_timeseries">plot_timeseries</a></code></li>
