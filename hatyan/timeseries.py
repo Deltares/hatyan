@@ -203,6 +203,34 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
     return data_pd_HWLW
 
 
+def calc_HWLW12345to21(data_HWLW_12345): #TODO: if first/last timestep is LW, these are not returned (loops from HW to HW)
+    """
+    
+
+    Parameters
+    ----------
+    data_HWLW12345 : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    print('starting HWLW 12345 to 12 correction')
+    times_LWmin = []
+    data_HW1 = data_HWLW_12345.loc[data_HWLW_12345['HWLWcode']==1]
+    for iHW in np.arange(0,len(data_HW1)-1):
+        tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
+        time_minimum = tide_afterHW['values'].idxmin()
+        times_LWmin.append(time_minimum)
+    data_LW2 = data_HWLW_12345.loc[times_LWmin]
+    data_LW2['HWLWcode'] = 2
+    data_HWLW_12 = pd.concat([data_HW1,data_LW2]).sort_index()
+    
+    return data_HWLW_12
+
+
 def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     """
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
@@ -1294,7 +1322,9 @@ def readts_dia(filename, station=None, block_ids=None):
     
     if not isinstance(filename,list):
         filename = [filename]
-        
+    if len(filename)==0:
+        raise Exception('ERROR: filename list is empty')
+    
     data_pd_all = pd.DataFrame()
     for iF, filename_one in enumerate(filename):    
         diablocks_pd = get_diablocks(filename_one)

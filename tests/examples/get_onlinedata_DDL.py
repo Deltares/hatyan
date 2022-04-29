@@ -25,22 +25,6 @@ catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethode
 
 ######### oneline waterlevel data retrieval for one station
 if 0: #for RWS
-    def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
-        """
-        TVL;1;1;hoogwater
-        TVL;1;2;laagwater
-        TVL;1;3;laagwater 1
-        TVL;1;4;topagger
-        TVL;1;5;laagwater 2
-        """
-        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='hoogwater','HWLWcode'] = 1
-        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater','HWLWcode'] = 2
-        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 1','HWLWcode'] = 3
-        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='topagger','HWLWcode'] = 4
-        ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 2','HWLWcode'] = 5
-        ts_measwlHWLW['HWLWcode'] = ts_measwlHWLW['HWLWcode'].astype(int)
-        return ts_measwlHWLW
-    
     include_extremes = True
     stationcode = 'HOEKVHLD'
     cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
@@ -58,14 +42,14 @@ if 0: #for RWS
         ts_measwlHWLW['values'] = ts_measwlHWLW['values']/100 #convert from cm to m
         ts_measwlHWLWtype, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
                                                                        meta_dict={'Groepering.Code':'GETETM2','Typering.Code':'GETETTPE'})
-        ts_measwlHWLW = convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
+        ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
         
         ts_astroHWLW, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
                                                                   meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'GETETBRKD2'})
         ts_astroHWLW['values'] = ts_astroHWLW['values']/100 #convert from cm to m
         ts_astroHWLWtype, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
                                                                       meta_dict={'Groepering.Code':'GETETBRKD2','Typering.Code':'GETETTPE'})
-        ts_astrolHWLW = convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
+        ts_astrolHWLW = hatyan.convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
 
     if include_extremes:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl,ts_ext=ts_astroHWLW,ts_ext_validation=ts_measwlHWLW)
