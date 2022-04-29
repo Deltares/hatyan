@@ -72,7 +72,22 @@ import numpy as np
 import functools
 
 from hatyan.schureman import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f, get_schureman_table
-from hatyan.foreman import get_foreman_v0_freq, get_foreman_shallowrelations, get_foreman_nodalfactors, get_foreman_table
+from hatyan.foreman import get_foreman_v0_freq, get_foreman_doodson_nodal_harmonic, get_foreman_shallowrelations, get_foreman_nodalfactors
+
+
+@functools.lru_cache()
+def check_requestedconsts(const_list_tuple,source):
+    #TODO: move check to central location when part of hatyan_settings()?
+    if source==&#39;schureman&#39;:
+        const_list_allforsource = get_schureman_table().index
+    elif source==&#39;foreman&#39;:
+        foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+        foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+        const_list_allforsource = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index))
+    
+    bool_constavailable = pd.Series(const_list_tuple).isin(const_list_allforsource)   
+    if not bool_constavailable.all():
+        raise Exception(f&#39;ERROR: not all requested components available in schureman harmonics or shallowrelations:\n{pd.Series(const_list_tuple).loc[~bool_constavailable]}&#39;)
 
 
 def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start):
@@ -87,7 +102,7 @@ def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_sta
         t_const_freq_pd = get_schureman_freqs(const_list, dood_date=dood_date_mid)
         v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
     elif hatyan_settings.source==&#39;foreman&#39;: #TODO: this is probably quite slow since foreman is not cached
-        dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid)
+        dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid) #TODO: does this really matter, maybe just retrieve on dood_date_start? Otherwise maybe split definition?
         v_0i_rad, dummy = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
         v_0i_rad = v_0i_rad.T
     
@@ -223,6 +238,8 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
         DESCRIPTION.
 
     &#34;&#34;&#34;
+    #TODO: check if this is still necessary in newer pandas versions
+    #TODO: merging with robust_daterange_fromtimesextfreq() possible?
     
     if refdate_dt is None:
         refdate_dt = dt.datetime(1900,1,1)
@@ -237,17 +254,35 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
     return dood_tstart_sec, fancy_pddt
 
 
-@functools.lru_cache() #TODO: get_foreman_v0_freq is way slower than get_schureman_freqs because it is live, therefore caching this entire function
-def full_const_list_withfreqs():
+def get_lunarSLSIHO_fromsolar(v0uf_base): #TODO: iets simpeler implementatie in foreman.get_foreman_doodson_nodal_harmonic(), maar dit is ook prima
+    
+    #conversion to lunar for comparison with SLS and IHO
+    v0uf_baseT_solar = v0uf_base.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]].T
+    v0uf_baseT_lunar = v0uf_baseT_solar.copy()
+    v0uf_baseT_lunar[&#39;S&#39;] = v0uf_baseT_solar[&#39;S&#39;] + v0uf_baseT_solar[&#39;T&#39;] #ib with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+    v0uf_baseT_lunar[&#39;H&#39;] = v0uf_baseT_solar[&#39;H&#39;] - v0uf_baseT_solar[&#39;T&#39;] #ic with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+    #lunar IHO (compare to Sea Level Science book from Woodsworth and Pugh)
+    v0uf_baseT_lunar_SLS = v0uf_baseT_lunar.copy()
+    v0uf_baseT_lunar_SLS[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
+    #lunar IHO (compare to c
+    v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
+    v0uf_baseT_lunar_IHO[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]/90 + 5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
+    v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO[&#39;EDN&#39;]==3,&#39;EDN&#39;] = 7 # convert -180 (3) to +180 (7)
+    v0uf_baseT_lunar_IHO[[&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;]] += 5
+    return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO
+
+
+@functools.lru_cache() #TODO: get_foreman_v0_freq is way slower than get_schureman_freqs because it is live, therefore caching this entire function (can also cache hatyan.foreman.get_foreman_v0_freq() but then const_list should be a tuple instead of a list)
+def get_full_const_list_withfreqs():
 
     dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     
     v0uf_allT = get_schureman_table()
     freqs_pd_schu = get_schureman_freqs(const_list=v0uf_allT.index.tolist(),dood_date=dood_date)
     
-    v_0i_rad_harmonic_pd = get_foreman_table() #list with only harmonic components with more precision than file
-    foreman_shallowrelations = get_foreman_shallowrelations()
-    const_list_foreman = v_0i_rad_harmonic_pd.index.tolist() + foreman_shallowrelations.index.tolist()
+    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+    const_list_foreman = foreman_doodson_harmonic.index.tolist() + foreman_shallowrelations.index.tolist()
     v0_pd_for,freqs_pd_for = get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date) #TODO: this is slower than schureman, cache it instead of this definition. But then first always retrieve everything (currently foreman only retrieves requested components)
     
     freqs_pd_combined = pd.concat([freqs_pd_schu[[&#39;freq&#39;]],freqs_pd_for],axis=0)
@@ -259,9 +294,7 @@ def full_const_list_withfreqs():
 
 
 def sort_const_list(const_list):
-    from hatyan.hatyan_core import full_const_list_withfreqs # local import necessary since it is a cached function
-    
-    full_const_list_withfreqs = full_const_list_withfreqs()
+    full_const_list_withfreqs = get_full_const_list_withfreqs()
     const_list_sorted = full_const_list_withfreqs.loc[const_list].sort_values(&#39;freq&#39;).index.tolist()
     return const_list_sorted
 
@@ -296,14 +329,19 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
 
     &#34;&#34;&#34;
     
-    v0uf_allT = get_schureman_table()
-    const_list_all = v0uf_allT.index.tolist()
+    schureman_const_list_all = get_schureman_table().index.tolist()
+    
+    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+    foreman_const_list_all = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index)).tolist()
+
     
     #TODO: add all_foreman list, first optimize it via caching
     const_lists_dict = {&#39;all_schureman&#39;:
                             #alle binnen hatyan beschikbare componenten
                             #A0 en 195 componenten (plus potentially added components)
-                            const_list_all,
+                            schureman_const_list_all,
+                        
                         &#39;all_schureman_originalorder&#39;: #for writing numbers in component file
                             #alle binnen hatyan beschikbare componenten
                             #A0 en 195 componenten
@@ -320,7 +358,10 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                             &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;2MNSK10&#39;,&#39;3M2S10&#39;,
                             &#39;4MSK11&#39;,
                             &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;3MNKS12&#39;,&#39;4M2S12&#39;],
-                    
+                        
+                        &#39;all_foreman&#39;:
+                            foreman_const_list_all,
+                        
                         &#39;year&#39;:
                             #Bij analyse van een jaar wordt gebruik gemaakt
                             #van de &#39;standaardset&#39; van 94 componenten aanbevolen
@@ -456,6 +497,30 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="hatyan.hatyan_core.check_requestedconsts"><code class="name flex">
+<span>def <span class="ident">check_requestedconsts</span></span>(<span>const_list_tuple, source)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@functools.lru_cache()
+def check_requestedconsts(const_list_tuple,source):
+    #TODO: move check to central location when part of hatyan_settings()?
+    if source==&#39;schureman&#39;:
+        const_list_allforsource = get_schureman_table().index
+    elif source==&#39;foreman&#39;:
+        foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+        foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+        const_list_allforsource = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index))
+    
+    bool_constavailable = pd.Series(const_list_tuple).isin(const_list_allforsource)   
+    if not bool_constavailable.all():
+        raise Exception(f&#39;ERROR: not all requested components available in schureman harmonics or shallowrelations:\n{pd.Series(const_list_tuple).loc[~bool_constavailable]}&#39;)</code></pre>
+</details>
+</dd>
 <dt id="hatyan.hatyan_core.get_freqv0_generic"><code class="name flex">
 <span>def <span class="ident">get_freqv0_generic</span></span>(<span>hatyan_settings, const_list, dood_date_mid, dood_date_start)</span>
 </code></dt>
@@ -477,7 +542,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
         t_const_freq_pd = get_schureman_freqs(const_list, dood_date=dood_date_mid)
         v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
     elif hatyan_settings.source==&#39;foreman&#39;: #TODO: this is probably quite slow since foreman is not cached
-        dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid)
+        dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid) #TODO: does this really matter, maybe just retrieve on dood_date_start? Otherwise maybe split definition?
         v_0i_rad, dummy = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
         v_0i_rad = v_0i_rad.T
     
@@ -699,6 +764,8 @@ For dates outside this period, a list subtraction is generated.</p>
         DESCRIPTION.
 
     &#34;&#34;&#34;
+    #TODO: check if this is still necessary in newer pandas versions
+    #TODO: merging with robust_daterange_fromtimesextfreq() possible?
     
     if refdate_dt is None:
         refdate_dt = dt.datetime(1900,1,1)
@@ -713,8 +780,8 @@ For dates outside this period, a list subtraction is generated.</p>
     return dood_tstart_sec, fancy_pddt</code></pre>
 </details>
 </dd>
-<dt id="hatyan.hatyan_core.full_const_list_withfreqs"><code class="name flex">
-<span>def <span class="ident">full_const_list_withfreqs</span></span>(<span>)</span>
+<dt id="hatyan.hatyan_core.get_lunarSLSIHO_fromsolar"><code class="name flex">
+<span>def <span class="ident">get_lunarSLSIHO_fromsolar</span></span>(<span>v0uf_base)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -722,17 +789,44 @@ For dates outside this period, a list subtraction is generated.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@functools.lru_cache() #TODO: get_foreman_v0_freq is way slower than get_schureman_freqs because it is live, therefore caching this entire function
-def full_const_list_withfreqs():
+<pre><code class="python">def get_lunarSLSIHO_fromsolar(v0uf_base): #TODO: iets simpeler implementatie in foreman.get_foreman_doodson_nodal_harmonic(), maar dit is ook prima
+    
+    #conversion to lunar for comparison with SLS and IHO
+    v0uf_baseT_solar = v0uf_base.loc[[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;,&#39;EDN&#39;]].T
+    v0uf_baseT_lunar = v0uf_baseT_solar.copy()
+    v0uf_baseT_lunar[&#39;S&#39;] = v0uf_baseT_solar[&#39;S&#39;] + v0uf_baseT_solar[&#39;T&#39;] #ib with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+    v0uf_baseT_lunar[&#39;H&#39;] = v0uf_baseT_solar[&#39;H&#39;] - v0uf_baseT_solar[&#39;T&#39;] #ic with relation ω1 =ω0 − ω2 +ω3 (stated in SLS book)
+    #lunar IHO (compare to Sea Level Science book from Woodsworth and Pugh)
+    v0uf_baseT_lunar_SLS = v0uf_baseT_lunar.copy()
+    v0uf_baseT_lunar_SLS[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]%360 #klopt niet allemaal met tabel 4.1 uit SLS boek, moet dit wel?
+    #lunar IHO (compare to c
+    v0uf_baseT_lunar_IHO = v0uf_baseT_lunar.copy()
+    v0uf_baseT_lunar_IHO[&#39;EDN&#39;] = -v0uf_baseT_lunar[&#39;EDN&#39;]/90 + 5 # (-90 lijkt 6 in IHO lijst, 90 is 4, 180 is 7)
+    v0uf_baseT_lunar_IHO.loc[v0uf_baseT_lunar_IHO[&#39;EDN&#39;]==3,&#39;EDN&#39;] = 7 # convert -180 (3) to +180 (7)
+    v0uf_baseT_lunar_IHO[[&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;]] += 5
+    return v0uf_baseT_lunar, v0uf_baseT_lunar_SLS, v0uf_baseT_lunar_IHO</code></pre>
+</details>
+</dd>
+<dt id="hatyan.hatyan_core.get_full_const_list_withfreqs"><code class="name flex">
+<span>def <span class="ident">get_full_const_list_withfreqs</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@functools.lru_cache() #TODO: get_foreman_v0_freq is way slower than get_schureman_freqs because it is live, therefore caching this entire function (can also cache hatyan.foreman.get_foreman_v0_freq() but then const_list should be a tuple instead of a list)
+def get_full_const_list_withfreqs():
 
     dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
     
     v0uf_allT = get_schureman_table()
     freqs_pd_schu = get_schureman_freqs(const_list=v0uf_allT.index.tolist(),dood_date=dood_date)
     
-    v_0i_rad_harmonic_pd = get_foreman_table() #list with only harmonic components with more precision than file
-    foreman_shallowrelations = get_foreman_shallowrelations()
-    const_list_foreman = v_0i_rad_harmonic_pd.index.tolist() + foreman_shallowrelations.index.tolist()
+    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+    const_list_foreman = foreman_doodson_harmonic.index.tolist() + foreman_shallowrelations.index.tolist()
     v0_pd_for,freqs_pd_for = get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date) #TODO: this is slower than schureman, cache it instead of this definition. But then first always retrieve everything (currently foreman only retrieves requested components)
     
     freqs_pd_combined = pd.concat([freqs_pd_schu[[&#39;freq&#39;]],freqs_pd_for],axis=0)
@@ -753,9 +847,7 @@ def full_const_list_withfreqs():
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sort_const_list(const_list):
-    from hatyan.hatyan_core import full_const_list_withfreqs # local import necessary since it is a cached function
-    
-    full_const_list_withfreqs = full_const_list_withfreqs()
+    full_const_list_withfreqs = get_full_const_list_withfreqs()
     const_list_sorted = full_const_list_withfreqs.loc[const_list].sort_values(&#39;freq&#39;).index.tolist()
     return const_list_sorted</code></pre>
 </details>
@@ -824,14 +916,19 @@ def full_const_list_withfreqs():
 
     &#34;&#34;&#34;
     
-    v0uf_allT = get_schureman_table()
-    const_list_all = v0uf_allT.index.tolist()
+    schureman_const_list_all = get_schureman_table().index.tolist()
+    
+    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
+    foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+    foreman_const_list_all = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index)).tolist()
+
     
     #TODO: add all_foreman list, first optimize it via caching
     const_lists_dict = {&#39;all_schureman&#39;:
                             #alle binnen hatyan beschikbare componenten
                             #A0 en 195 componenten (plus potentially added components)
-                            const_list_all,
+                            schureman_const_list_all,
+                        
                         &#39;all_schureman_originalorder&#39;: #for writing numbers in component file
                             #alle binnen hatyan beschikbare componenten
                             #A0 en 195 componenten
@@ -848,7 +945,10 @@ def full_const_list_withfreqs():
                             &#39;4MN10&#39;,&#39;M10&#39;,&#39;3MSN10&#39;,&#39;4MS10&#39;,&#39;2(MS)N10&#39;,&#39;2MNSK10&#39;,&#39;3M2S10&#39;,
                             &#39;4MSK11&#39;,
                             &#39;M12&#39;,&#39;4MSN12&#39;,&#39;5MS12&#39;,&#39;3MNKS12&#39;,&#39;4M2S12&#39;],
-                    
+                        
+                        &#39;all_foreman&#39;:
+                            foreman_const_list_all,
+                        
                         &#39;year&#39;:
                             #Bij analyse van een jaar wordt gebruik gemaakt
                             #van de &#39;standaardset&#39; van 94 componenten aanbevolen
@@ -995,12 +1095,14 @@ def full_const_list_withfreqs():
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="hatyan.hatyan_core.check_requestedconsts" href="#hatyan.hatyan_core.check_requestedconsts">check_requestedconsts</a></code></li>
 <li><code><a title="hatyan.hatyan_core.get_freqv0_generic" href="#hatyan.hatyan_core.get_freqv0_generic">get_freqv0_generic</a></code></li>
 <li><code><a title="hatyan.hatyan_core.get_uf_generic" href="#hatyan.hatyan_core.get_uf_generic">get_uf_generic</a></code></li>
 <li><code><a title="hatyan.hatyan_core.get_doodson_eqvals" href="#hatyan.hatyan_core.get_doodson_eqvals">get_doodson_eqvals</a></code></li>
 <li><code><a title="hatyan.hatyan_core.robust_daterange_fromtimesextfreq" href="#hatyan.hatyan_core.robust_daterange_fromtimesextfreq">robust_daterange_fromtimesextfreq</a></code></li>
 <li><code><a title="hatyan.hatyan_core.robust_timedelta_sec" href="#hatyan.hatyan_core.robust_timedelta_sec">robust_timedelta_sec</a></code></li>
-<li><code><a title="hatyan.hatyan_core.full_const_list_withfreqs" href="#hatyan.hatyan_core.full_const_list_withfreqs">full_const_list_withfreqs</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_lunarSLSIHO_fromsolar" href="#hatyan.hatyan_core.get_lunarSLSIHO_fromsolar">get_lunarSLSIHO_fromsolar</a></code></li>
+<li><code><a title="hatyan.hatyan_core.get_full_const_list_withfreqs" href="#hatyan.hatyan_core.get_full_const_list_withfreqs">get_full_const_list_withfreqs</a></code></li>
 <li><code><a title="hatyan.hatyan_core.sort_const_list" href="#hatyan.hatyan_core.sort_const_list">sort_const_list</a></code></li>
 <li><code><a title="hatyan.hatyan_core.get_const_list_hatyan" href="#hatyan.hatyan_core.get_const_list_hatyan">get_const_list_hatyan</a></code></li>
 </ul>

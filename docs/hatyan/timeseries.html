@@ -76,7 +76,8 @@ file_path = os.path.realpath(__file__)
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr#, num2date
-from hatyan.schureman import get_schureman_freqs #TODO: not generic
+from hatyan.foreman import get_foreman_v0_freq
+from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
 
 
@@ -333,10 +334,12 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     return ts_ext
 
 
-def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
+def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft=True, source=&#39;schureman&#39;):
     
     print(&#39;analyzing timeseries with fft and fftfreq&#39;)
     
+    if ts_residue[&#39;values&#39;].isnull().sum() &gt; 0:
+        raise Exception(&#39;supplied timeseries contains nan values, use pd.interpolate first (dropping them will result in non-constant timestep which is also not possible for fft)&#39;)
     y = ts_residue[&#39;values&#39;].values
     N = len(y)
     T = np.unique((ts_residue.index[1:]-ts_residue.index[:-1])).astype(float)/1e9/3600 #timestep in hours.
@@ -345,7 +348,7 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
     yf = fft(y)
     power = np.abs(yf)
     freq = fftfreq(N, T[0])
-    peaks = ssig.find_peaks(power[freq &gt;=0], prominence=prominence)[0]
+    peaks, peaks_properties = ssig.find_peaks(power[freq &gt;=0], prominence=min_prominence)
     peak_freq =  freq[peaks]
     peak_power = power[peaks]
     
@@ -356,26 +359,28 @@ def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    const_list_all = get_const_list_hatyan(listtype=&#39;all_schureman&#39;) #TODO: not generic
-    hatyan_freqs = get_schureman_freqs(const_list=const_list_all)[[&#39;freq&#39;]]
-    const_match = []
+    if source==&#39;schureman&#39;:
+        const_list_all = get_const_list_hatyan(listtype=&#39;all_schureman&#39;)
+        hatyan_freqs = get_schureman_freqs(const_list=const_list_all)
+    elif source==&#39;foreman&#39;:
+        const_list_all = get_const_list_hatyan(listtype=&#39;all_foreman&#39;)
+        dummy, hatyan_freqs = get_foreman_v0_freq(const_list=const_list_all)
+        hatyan_freqs[&#39;period [hr]&#39;] = 1/hatyan_freqs[&#39;freq&#39;]
+    
     const_closest = []
     for peak_freq_one in peak_freq:
-        hatyan_freqs_match = hatyan_freqs[np.abs(hatyan_freqs[&#39;freq&#39;]-peak_freq_one)&lt;4e-5]
-        #print(peak_freq_one)
-        #print(hatyan_freqs_match)
-        hatyan_freqs_match_list = [x for x in hatyan_freqs_match.index if &#39;_IHO&#39; not in x]
-        const_match = const_match+hatyan_freqs_match_list
-        hatyan_freqs_closest = hatyan_freqs.iloc[np.argmin(np.abs(hatyan_freqs-peak_freq_one)),:]
+        hatyan_freqs_closest = hatyan_freqs.iloc[np.argmin(np.abs(hatyan_freqs[&#39;freq&#39;]-peak_freq_one)),:] #TODO: freq is not always close enough but is still added to list
         const_closest.append(hatyan_freqs_closest.name)
-    hatyan_freqs_matches = get_schureman_freqs(const_list=const_match)[[&#39;freq&#39;,&#39;period [hr]&#39;]]
-    hatyan_freqs_suggestions = get_schureman_freqs(const_list=const_closest)[[&#39;freq&#39;,&#39;period [hr]&#39;]]
+    hatyan_freqs_suggestions = hatyan_freqs.loc[const_closest,[&#39;freq&#39;,&#39;period [hr]&#39;]]
     hatyan_freqs_suggestions[&#39;peak_freq&#39;] = peak_freq
-    hatyan_freqs_suggestions[&#39;peak_power&#39;] = peak_power
-    print(&#39;dominant freqs from fft:\n%s&#39;%(peak_freq))
+    hatyan_freqs_suggestions[&#39;peak_freqdiff&#39;] = (hatyan_freqs_suggestions[&#39;freq&#39;] - hatyan_freqs_suggestions[&#39;peak_freq&#39;]).abs()
+    hatyan_freqs_suggestions[&#39;peak_prominences&#39;] = peaks_properties[&#39;prominences&#39;]
+    if max_freqdiff is not None:
+        #select below freqdiff treshold
+        hatyan_freqs_suggestions = hatyan_freqs_suggestions.loc[hatyan_freqs_suggestions[&#39;peak_freqdiff&#39;]&lt;max_freqdiff]
     print(&#39;suggested constituents+freqs from hatyan:\n%s&#39;%(hatyan_freqs_suggestions))
     
-    return peak_freq, hatyan_freqs_suggestions, hatyan_freqs_matches
+    return hatyan_freqs_suggestions
 
 
 def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None):
@@ -1054,7 +1059,7 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
 def check_rayleigh(ts_pd,t_const_freq_pd):
     
-    t_const_freq = t_const_freq_pd[&#39;freq&#39;]
+    t_const_freq = t_const_freq_pd[&#39;freq&#39;].drop(&#39;A0&#39;,errors=&#39;ignore&#39;)
     freq_diffs = np.diff(t_const_freq)
     rayleigh_tresh = 0.99
     rayleigh = len(ts_pd[&#39;values&#39;])*freq_diffs
@@ -1069,7 +1074,9 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
         print(&#39;Rayleigh criterion vandalised (not always&gt;%.2f, minimum is %.2f)&#39;%(rayleigh_tresh, np.min(rayleigh)))
         print(&#39;Frequencies with not enough difference (not always &gt;%.6f, minimum is %.6f)&#39;%(freq_diff_min,np.min(freq_diffs)))
         for ray_id in rayleigh_bool_id:
-            print(t_const_freq.iloc[[ray_id,ray_id+1]])
+            t_const_freq_sel = t_const_freq.iloc[[ray_id,ray_id+1]]
+            t_const_freq_sel[&#39;diff&#39;] = np.diff(t_const_freq_sel.values)[0]
+            print(t_const_freq_sel)
 
 
 def check_ts(ts):
@@ -1797,7 +1804,7 @@ This value is used to correct the search window of high/low water numbering. The
 </details>
 </dd>
 <dt id="hatyan.timeseries.timeseries_fft"><code class="name flex">
-<span>def <span class="ident">timeseries_fft</span></span>(<span>ts_residue, prominence=1000, plot_fft=True)</span>
+<span>def <span class="ident">timeseries_fft</span></span>(<span>ts_residue, min_prominence=1000, max_freqdiff=None, plot_fft=True, source='schureman')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1805,10 +1812,12 @@ This value is used to correct the search window of high/low water numbering. The
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def timeseries_fft(ts_residue, prominence=10**3, plot_fft=True):
+<pre><code class="python">def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft=True, source=&#39;schureman&#39;):
     
     print(&#39;analyzing timeseries with fft and fftfreq&#39;)
     
+    if ts_residue[&#39;values&#39;].isnull().sum() &gt; 0:
+        raise Exception(&#39;supplied timeseries contains nan values, use pd.interpolate first (dropping them will result in non-constant timestep which is also not possible for fft)&#39;)
     y = ts_residue[&#39;values&#39;].values
     N = len(y)
     T = np.unique((ts_residue.index[1:]-ts_residue.index[:-1])).astype(float)/1e9/3600 #timestep in hours.
@@ -1817,7 +1826,7 @@ This value is used to correct the search window of high/low water numbering. The
     yf = fft(y)
     power = np.abs(yf)
     freq = fftfreq(N, T[0])
-    peaks = ssig.find_peaks(power[freq &gt;=0], prominence=prominence)[0]
+    peaks, peaks_properties = ssig.find_peaks(power[freq &gt;=0], prominence=min_prominence)
     peak_freq =  freq[peaks]
     peak_power = power[peaks]
     
@@ -1828,26 +1837,28 @@ This value is used to correct the search window of high/low water numbering. The
         ax.grid()
         ax.set_xlim(0,0.5)
     
-    const_list_all = get_const_list_hatyan(listtype=&#39;all_schureman&#39;) #TODO: not generic
-    hatyan_freqs = get_schureman_freqs(const_list=const_list_all)[[&#39;freq&#39;]]
-    const_match = []
+    if source==&#39;schureman&#39;:
+        const_list_all = get_const_list_hatyan(listtype=&#39;all_schureman&#39;)
+        hatyan_freqs = get_schureman_freqs(const_list=const_list_all)
+    elif source==&#39;foreman&#39;:
+        const_list_all = get_const_list_hatyan(listtype=&#39;all_foreman&#39;)
+        dummy, hatyan_freqs = get_foreman_v0_freq(const_list=const_list_all)
+        hatyan_freqs[&#39;period [hr]&#39;] = 1/hatyan_freqs[&#39;freq&#39;]
+    
     const_closest = []
     for peak_freq_one in peak_freq:
-        hatyan_freqs_match = hatyan_freqs[np.abs(hatyan_freqs[&#39;freq&#39;]-peak_freq_one)&lt;4e-5]
-        #print(peak_freq_one)
-        #print(hatyan_freqs_match)
-        hatyan_freqs_match_list = [x for x in hatyan_freqs_match.index if &#39;_IHO&#39; not in x]
-        const_match = const_match+hatyan_freqs_match_list
-        hatyan_freqs_closest = hatyan_freqs.iloc[np.argmin(np.abs(hatyan_freqs-peak_freq_one)),:]
+        hatyan_freqs_closest = hatyan_freqs.iloc[np.argmin(np.abs(hatyan_freqs[&#39;freq&#39;]-peak_freq_one)),:] #TODO: freq is not always close enough but is still added to list
         const_closest.append(hatyan_freqs_closest.name)
-    hatyan_freqs_matches = get_schureman_freqs(const_list=const_match)[[&#39;freq&#39;,&#39;period [hr]&#39;]]
-    hatyan_freqs_suggestions = get_schureman_freqs(const_list=const_closest)[[&#39;freq&#39;,&#39;period [hr]&#39;]]
+    hatyan_freqs_suggestions = hatyan_freqs.loc[const_closest,[&#39;freq&#39;,&#39;period [hr]&#39;]]
     hatyan_freqs_suggestions[&#39;peak_freq&#39;] = peak_freq
-    hatyan_freqs_suggestions[&#39;peak_power&#39;] = peak_power
-    print(&#39;dominant freqs from fft:\n%s&#39;%(peak_freq))
+    hatyan_freqs_suggestions[&#39;peak_freqdiff&#39;] = (hatyan_freqs_suggestions[&#39;freq&#39;] - hatyan_freqs_suggestions[&#39;peak_freq&#39;]).abs()
+    hatyan_freqs_suggestions[&#39;peak_prominences&#39;] = peaks_properties[&#39;prominences&#39;]
+    if max_freqdiff is not None:
+        #select below freqdiff treshold
+        hatyan_freqs_suggestions = hatyan_freqs_suggestions.loc[hatyan_freqs_suggestions[&#39;peak_freqdiff&#39;]&lt;max_freqdiff]
     print(&#39;suggested constituents+freqs from hatyan:\n%s&#39;%(hatyan_freqs_suggestions))
     
-    return peak_freq, hatyan_freqs_suggestions, hatyan_freqs_matches</code></pre>
+    return hatyan_freqs_suggestions</code></pre>
 </details>
 </dd>
 <dt id="hatyan.timeseries.plot_timeseries"><code class="name flex">
@@ -2739,7 +2750,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 </summary>
 <pre><code class="python">def check_rayleigh(ts_pd,t_const_freq_pd):
     
-    t_const_freq = t_const_freq_pd[&#39;freq&#39;]
+    t_const_freq = t_const_freq_pd[&#39;freq&#39;].drop(&#39;A0&#39;,errors=&#39;ignore&#39;)
     freq_diffs = np.diff(t_const_freq)
     rayleigh_tresh = 0.99
     rayleigh = len(ts_pd[&#39;values&#39;])*freq_diffs
@@ -2754,7 +2765,9 @@ Warning: the calculated extreme numbers in this definition are not corrected for
         print(&#39;Rayleigh criterion vandalised (not always&gt;%.2f, minimum is %.2f)&#39;%(rayleigh_tresh, np.min(rayleigh)))
         print(&#39;Frequencies with not enough difference (not always &gt;%.6f, minimum is %.6f)&#39;%(freq_diff_min,np.min(freq_diffs)))
         for ray_id in rayleigh_bool_id:
-            print(t_const_freq.iloc[[ray_id,ray_id+1]])</code></pre>
+            t_const_freq_sel = t_const_freq.iloc[[ray_id,ray_id+1]]
+            t_const_freq_sel[&#39;diff&#39;] = np.diff(t_const_freq_sel.values)[0]
+            print(t_const_freq_sel)</code></pre>
 </details>
 </dd>
 <dt id="hatyan.timeseries.check_ts"><code class="name flex">
