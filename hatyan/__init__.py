@@ -17,3 +17,5 @@ from hatyan.timeseries import *
 from hatyan.wrapper_RWS import *
 from hatyan.getonlinedata import *
 from hatyan.convert import *
+from hatyan.kenmerkendewaarden import *
+from hatyan.overschrijding import *
