@@ -124,7 +124,7 @@ def nap2005_correction(data_pd,current_station):
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
-for current_station in []:#stat_list:
+for current_station in stat_list:
     file_wl_pkl = os.path.join(dir_meas_DDL,f"{current_station}_measwl.pkl")
     file_wlmeta_pkl = os.path.join(dir_meas_DDL,f"meta_{current_station}_measwl.pkl")
     
@@ -1132,7 +1132,7 @@ fig_sum.savefig(os.path.join(dir_gemgetij,'gemgetij_allstations_noshift'))
 #       break 1998: in buurt van spui was er een trendbreuk, zie rapport boyan, ook voor HOEKVHLD toegepast.
 #       die break wordt voor trendanalyse toegepast, daardoor is de trendlijn korter dan de (on)gefilterd lijnen
 #weibull lijn begint pas bij hogere freq want die begint pas bij n-de waarde, want die gaat niet met het staartje naar beneden. is niet van toepassing voor die hoogfrequente situaties, is ontwikkeld voor extremen. te voorspellen freqs wordt met np.logspace() opgegeven.
-#TODO: zie vragen in script
+#TODO: zie vragen in script, zie ook 'aantekeningen boyan' onenote
 #TODO: hoe plots beoordelen? >> rode lijn moet soort van verlengde zijn van groene, als die ineens omhoog piekt komt dat door hele extreme wardes die je dan vrmoedelijk ook al ziet in je groene lijn
 
 dir_meas_overschr = os.path.join(dir_base,'data_overschrijding')
