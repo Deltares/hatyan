@@ -66,6 +66,8 @@ if not os.path.exists(dir_overschrijding):
 catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
 cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
 cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl'))
+
+#get list of stations with extremes and add K13A
 cat_aquometadatalijst_ext, cat_locatielijst_ext = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict ={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
 K13APFM_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='K13APFM'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
 cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry)
@@ -121,6 +123,9 @@ def nap2005_correction(data_pd,current_station):
     data_pd_corr.loc[before2005bool,'values'] = data_pd_corr.loc[before2005bool,'values']+correct_value
     
     return data_pd_corr
+
+
+
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
@@ -202,6 +207,65 @@ for current_station in []:#stat_list:
 #TODO: request tijdreeksen gemiddeld hw/lw/wl bij Anneke voor alle jaren (gedaan op 28-04-2022)
 #TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
 #TODO: als extremen missen evt zelf afleiden, maar is misschien niet zomaar gedaan? (wanneer met/zonder aggers?, calcHWLW verwacht redelijk constante tijdstap) >> HWLW numbering werkt sowieso niet heel goed met metingen blijkt nu
+
+"""
+#TODO: controleren of andere datasets nuttige data bevatten?
+for current_station in stat_list: #['DORDT', 'STELLDBTN', 'ROTTDM']
+    station_dict = dict(cat_locatielijst_ext_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in getyonlinedata.py: does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
+    cat_aquometadatalijst_wl, cat_locatielijst_wl = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict ={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+    print(current_station)
+    print(cat_aquometadatalijst_wl[['MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']].drop_duplicates().T)
+EURPFM (Vlotter en NAP voor ext)
+AquoMetadata_MessageID             542      546      577
+MeetApparaat.Code                  125      127      127
+MeetApparaat.Omschrijving  Stappenbaak  Vlotter  Vlotter
+Hoedanigheid.Code                  MSL      MSL      NAP
+K13APFM (ext ontbreekt)
+AquoMetadata_MessageID       535
+MeetApparaat.Code            109
+MeetApparaat.Omschrijving  Radar
+Hoedanigheid.Code            MSL
+LICHTELGRE (Radar en NAP voor ext)
+AquoMetadata_MessageID       536          542    559
+MeetApparaat.Code            109          125    109
+MeetApparaat.Omschrijving  Radar  Stappenbaak  Radar
+Hoedanigheid.Code            MSL          MSL    NAP
+NIEUWSTZL (Radar/Vlotter en NAP voor ext)
+AquoMetadata_MessageID       559      574
+MeetApparaat.Code            109      127
+MeetApparaat.Omschrijving  Radar  Vlotter
+Hoedanigheid.Code            NAP      NAP
+NES (Vlotter en NAP voor ext)
+AquoMetadata_MessageID       561      574
+MeetApparaat.Code            109      127
+MeetApparaat.Omschrijving  Radar  Vlotter
+Hoedanigheid.Code            NAP      NAP
+IJMDBTHVN (Radar/Vlotter en NAP voor ext, Radar is tijdelijke meting voor wl maar lijkt of ext per ongeluk ook zo zijn geregistreerd)
+AquoMetadata_MessageID       559      574
+MeetApparaat.Code            109      127
+MeetApparaat.Omschrijving  Radar  Vlotter
+Hoedanigheid.Code            NAP      NAP
+ROOMPBTN (Vlotter en NAP voor ext, Radar is tijdelijke meting)
+AquoMetadata_MessageID       559      574
+MeetApparaat.Code            109      127
+MeetApparaat.Omschrijving  Radar  Vlotter
+Hoedanigheid.Code            NAP      NAP
+WESTKPLE (Vlotter en NAP voor ext)
+AquoMetadata_MessageID       559      574
+MeetApparaat.Code            109      127
+MeetApparaat.Omschrijving  Radar  Vlotter
+Hoedanigheid.Code            NAP      NAP
+VLISSGN (Vlotter en NAP voor ext)
+AquoMetadata_MessageID            563      574
+MeetApparaat.Code                 124      127
+MeetApparaat.Omschrijving  Peilschaal  Vlotter
+Hoedanigheid.Code                 NAP      NAP
+BATH (Vlotter en NAP voor ext)
+AquoMetadata_MessageID         574         589
+MeetApparaat.Code              127         155
+MeetApparaat.Omschrijving  Vlotter  Druksensor
+Hoedanigheid.Code              NAP         NAP
+"""
 
 """
 #TODO: melden servicedesk data: zes duplicate timesteps in extremen aanwezig met gelijke waarden EURPFM en NIEUWSTZL (laatste van ander MeetApparaat)
