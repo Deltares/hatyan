@@ -124,7 +124,7 @@ def nap2005_correction(data_pd,current_station):
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
-for current_station in ['EURPFM','LICHTELGRE','K13APFM']:
+for current_station in []:#stat_list:
     file_wl_pkl = os.path.join(dir_meas_DDL,f"{current_station}_measwl.pkl")
     file_wlmeta_pkl = os.path.join(dir_meas_DDL,f"meta_{current_station}_measwl.pkl")
     
@@ -141,8 +141,8 @@ for current_station in ['EURPFM','LICHTELGRE','K13APFM']:
         print(f'retrieving measwl data from DDL for {current_station} to {os.path.basename(dir_meas_DDL)}')
         request_output = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
                                              meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT',
-                                                        'Hoedanigheid.Code':'NAP',})  # Hoedanigheid is necessary for eg EURPFM, where NAP and MSL values are available. #TODO: also look at MSL data? (then duplicate MeetApparaat must be allowed and that is inconvenient as default) >>NAP data begint vanaf 2001 (en bevat ext), MSL data begint veel eerder (ook tot later?, maar bevat geen ext)
-                                                        #'MeetApparaat.Code':'127'}) # MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter) TODO: Except LICHTELGRE/K13APFM which have Radar/?? as main
+                                                        'Hoedanigheid.Code':'NAP',  # Hoedanigheid is necessary for eg EURPFM/LICHTELGRE, where NAP and MSL values are available. #TODO: also look at MSL data? (then duplicate MeetApparaat must be allowed and that is inconvenient as default) >>NAP data begint vanaf 2001 (en bevat ext) en afwezig voor K13APFM, MSL data begint veel eerder (ook tot later?, maar bevat geen ext)
+                                                        'MeetApparaat.Code':'127'}) # MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter) TODO: Except LICHTELGRE/K13APFM which have Radar/?? as main
                                             #Hoedanigheid en MeetApparaat zijn anders voor LICHTELGRE en K13APFM (MSL en variabel)
                                             #meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'} #ts_measwl
                                             #meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'} #ts_measwlHWLW
@@ -266,9 +266,10 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in []:#stat_list:
+for current_station in stat_list:
     print(f'checking data for {current_station}')
     
+    list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     #add coordinates to data_summary
     data_summary.loc[current_station,['RDx','RDy']] = cat_locatielijst_ext_codeidx.loc[current_station,['RDx','RDy']]
     time_interest_start = dt.datetime(2000,1,1)
@@ -283,10 +284,9 @@ for current_station in []:#stat_list:
         continue
     data_summary.loc[current_station,'data_wl'] = True
     ts_meas_pd = pd.read_pickle(file_wl_pkl)
-    metadata = pd.read_pickle(file_wlmeta_pkl)
-    #meta_waardebepalingsmethode_uniq = '|'.join(metadata['WaardeBepalingsmethode.Omschrijving'].unique())
-    meta_meetapparaat_uniq = '|'.join(metadata['MeetApparaat.Omschrijving'].unique())
-    meta_hoedanigheid_uniq = '|'.join(metadata['Hoedanigheid.Code'].unique())
+    metawl = pd.read_pickle(file_wlmeta_pkl)
+    for metakey in list_relevantmetadata:
+        data_summary.loc[current_station,f'{metakey}_wl'] = '|'.join(metawl[metakey].unique())
     ts_meas_pd = ts_meas_pd[['values','QC']] # reduces the memory consumption significantly
     if str(ts_meas_pd.index[0].tz) != 'Etc/GMT-1': #this means UTC+1
         raise Exception(f'measwl data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_pd.index[0].tz}')
@@ -334,11 +334,15 @@ for current_station in []:#stat_list:
 
     #load measext data
     file_ext_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measext.pkl")
+    file_extmeta_pkl = os.path.join(dir_meas_alldata,f"meta_{current_station}_measext.pkl")
     if not os.path.exists(file_ext_pkl):
         data_summary.loc[current_station,'data_ext'] = False
     else:
         data_summary.loc[current_station,'data_ext'] = True
         ts_meas_ext_pd = pd.read_pickle(file_ext_pkl)
+        metaext = pd.read_pickle(file_extmeta_pkl)
+        for metakey in list_relevantmetadata:
+            data_summary.loc[current_station,f'{metakey}_ext'] = '|'.join(metaext[metakey].unique())
         if str(ts_meas_ext_pd.index[0].tz) != 'Etc/GMT-1': #this means UTC+1
             raise Exception(f'measext data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_ext_pd.index[0].tz}')
         ts_meas_ext_pd.index = ts_meas_ext_pd.index.tz_localize(None)
@@ -416,7 +420,7 @@ for current_station in []:#stat_list:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd, ts_ext=ts_meas_ext_pd)
     else:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
-    ax1.set_title(f'timeseries for {current_station}, MeetApparaat={meta_meetapparaat_uniq}, Hoedanigheid={meta_hoedanigheid_uniq}')
+    ax1.set_title(f'timeseries for {current_station}')
     ax1_legendlabels = ax1.get_legend_handles_labels()[1]
     ax2_legendlabels = ['zero']
     ax1_legendlabels.insert(1,'zero') #legend for zero line was not displayed but will be now so it needs to be added
@@ -430,7 +434,7 @@ for current_station in []:#stat_list:
     fig_times_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
     ax1.legend(ax1_legendlabels,loc=4)
     ax2.legend(ax2_legendlabels,loc=1)
-    if os.path.exists(file_ext_pkl):
+    if os.path.exists(file_ext_pkl): #plot after legend creation, so these entries are not included
         ax1.plot(HW_mean_peryear_long,'m',linewidth=0.7)#; ax1_legendlabels.append('yearly mean')
         ax1.plot(LW_mean_peryear_long,'m',linewidth=0.7)#; ax1_legendlabels.append('yearly mean')
     ax2.set_ylim(-0.5,0.5)
