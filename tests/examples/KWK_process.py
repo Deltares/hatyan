@@ -365,18 +365,23 @@ for current_station in stat_list:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd, ts_ext=ts_meas_ext_pd)
     else:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
-    legendlabels = ax1.get_legend_handles_labels()[1]
-    legendlabels.insert(1,'zero') #legend for zero line was not displayed but will be now so it needs to be added
-    legendlabels[0] = 'measured waterlevels'
-    legendlabels[2] = 'mean'
-    ax1.plot(mean_peryearmonth_long); legendlabels.append('monthly mean')
-    ax1.plot(mean_peryear_long); legendlabels.append('yearly mean')
+    ax1_legendlabels = ax1.get_legend_handles_labels()[1]
+    ax2_legendlabels = ['zero']
+    ax1_legendlabels.insert(1,'zero') #legend for zero line was not displayed but will be now so it needs to be added
+    ax1_legendlabels[0] = 'measured waterlevels'
+    ax1_legendlabels[2] = 'mean'
+    ax1.plot(mean_peryearmonth_long,'c',linewidth=0.7); ax1_legendlabels.append('monthly mean')
+    ax1.plot(mean_peryear_long,'m',linewidth=0.7); ax1_legendlabels.append('yearly mean')
+    ax2.plot(mean_peryearmonth_long,'c',linewidth=0.7); ax2_legendlabels.append('monthly mean')
+    ax2.plot(mean_peryear_long,'m',linewidth=0.7); ax2_legendlabels.append('yearly mean')
     ax1.set_ylim(-4,4)
     fig_times_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
-    ax1.legend(legendlabels,loc=4)
-    ax1.set_xlim(fig_times_ext) #to make clear that e.g. Bath contains too few data
+    ax1.legend(ax1_legendlabels,loc=4)
+    ax2.legend(ax2_legendlabels,loc=1)
+    ax2.set_ylim(-0.5,0.5)
+    ax1.set_xlim(fig_times_ext) # entire period
     fig.savefig(file_wl_png.replace('.png','_alldata.png'))
-    ax1.set_xlim(dt.datetime(2000,1,1),dt.datetime(2022,1,1))
+    ax1.set_xlim(dt.datetime(2000,1,1),dt.datetime(2022,1,1)) # period of interest
     fig.savefig(file_wl_png)
     plt.close(fig)
     
