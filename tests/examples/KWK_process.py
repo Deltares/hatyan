@@ -124,7 +124,7 @@ def nap2005_correction(data_pd,current_station):
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
-for current_station in stat_list:
+for current_station in ['EURPFM','LICHTELGRE','K13APFM']:
     file_wl_pkl = os.path.join(dir_meas_DDL,f"{current_station}_measwl.pkl")
     file_wlmeta_pkl = os.path.join(dir_meas_DDL,f"meta_{current_station}_measwl.pkl")
     
@@ -141,8 +141,9 @@ for current_station in stat_list:
         print(f'retrieving measwl data from DDL for {current_station} to {os.path.basename(dir_meas_DDL)}')
         request_output = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
                                              meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT',
-                                                        'Hoedanigheid.Code':'NAP',  # Hoedanigheid is necessary for eg EURPFM, where NAP and MSL values are available.
-                                                        'MeetApparaat.Code':'127'}) # MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter)
+                                                        'Hoedanigheid.Code':'NAP',})  # Hoedanigheid is necessary for eg EURPFM, where NAP and MSL values are available. #TODO: also look at MSL data? (then duplicate MeetApparaat must be allowed and that is inconvenient as default) >>NAP data begint vanaf 2001 (en bevat ext), MSL data begint veel eerder (ook tot later?, maar bevat geen ext)
+                                                        #'MeetApparaat.Code':'127'}) # MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter) TODO: Except LICHTELGRE/K13APFM which have Radar/?? as main
+                                            #Hoedanigheid en MeetApparaat zijn anders voor LICHTELGRE en K13APFM (MSL en variabel)
                                             #meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'} #ts_measwl
                                             #meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'} #ts_measwlHWLW
                                             #meta_dict={'Groepering.Code':'GETETM2','Typering.Code':'GETETTPE'} #ts_measwlHWLWtype
@@ -162,7 +163,7 @@ for current_station in stat_list:
     else:
         print(f'retrieving measext data from DDL for {current_station} to {os.path.basename(dir_meas_DDL)}')
         request_output_extval = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
-                                                    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLW # TODO: MeetApparaat is necessary for IJMBTHVN, maybe remove if servicedesk has resolved this probable Vlotter/Radar issue (gemeld op 28-4-2022) (or add Hoedanigheid.Code, alles is toch NAP)
+                                                    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLW # TODO: MeetApparaat is necessary for IJMBTHVN/NIEUWSTZL, maybe remove if servicedesk has resolved this probable Vlotter/Radar issue (gemeld op 28-4-2022 voor IJMBTHVN) (or add Hoedanigheid.Code, alles is toch NAP >> niet waar)
         request_output_exttyp = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
                                                     meta_dict={'Groepering.Code':'GETETM2','Typering.Code':'GETETTPE'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLWtype
         if request_output_extval is None:
@@ -195,13 +196,17 @@ for current_station in stat_list:
 #       SCHEVNGN (extrementype bevatten nans ipv strings als 'hoogwater', data is dus ongeldig)
 #       STELLDBTN (geen data beschikbaar) >> geen ext data vanaf 2000
 #   sterke outliers in tijdreeksen (na filtering QC=99, gemeld op 26-4): IJMDBTHVN/ROOMPBTN (2001) >> is niet meer zo na verwijderen Radar metingen
+#   >> NIEUWSTZL extremen missen vanaf 2012/2013 want Radar ipv Vlotter, maar hier missen ook de metingen dus is het waarschijnlijker dat ze op Radar over zijn gegaan? (IJMDBTHVN heeft nog wel lang Vlotter measwl data na stoppen van Vlotter extremen)
 #TODO: report dubbelingen HARVT10 (2000-2022, al gedaan?) en andere stations (1900-2000), en EURPFM ext, zie data_summary.csv (er zijn ook dubbelingen met nan-waardes)
 #TODO: report wl/ext missings in recent period 2000-2021 (vanuit data_summary)
 #TODO: request tijdreeksen gemiddeld hw/lw/wl bij Anneke voor alle jaren (gedaan op 28-04-2022)
 #TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
 #TODO: als extremen missen evt zelf afleiden, maar is misschien niet zomaar gedaan? (wanneer met/zonder aggers?, calcHWLW verwacht redelijk constante tijdstap) >> HWLW numbering werkt sowieso niet heel goed met metingen blijkt nu
+
 """
-#TODO: melden servicedesk data: zes duplicate timesteps in extremen aanwezig met gelijke waarden
+#TODO: melden servicedesk data: zes duplicate timesteps in extremen aanwezig met gelijke waarden EURPFM en NIEUWSTZL (laatste van ander MeetApparaat)
+ts_meas_ext_pd.loc[ts_meas_ext_pd.index.duplicated(keep=False),['values','QC','Status','HWLWcode']].sort_index()
+
                      values  QC         Status  HWLWcode
 Tijdstip                                                
 2012-12-31 09:35:00   -0.70   0  Gecontroleerd         2
@@ -216,9 +221,26 @@ Tijdstip
 2013-01-01 09:34:00   -0.36   0  Gecontroleerd         2
 2013-01-01 16:26:00    1.39   0  Gecontroleerd         1
 2013-01-01 16:26:00    1.39   0  Gecontroleerd         1
+
+                           values  QC  ... MeetApparaat.Omschrijving HWLWcode
+Tijdstip                               ...                                   
+2012-12-31 09:20:00+01:00   -0.15   0  ...                   Vlotter        2
+2012-12-31 09:20:00+01:00   -0.15   0  ...                     Radar        2
+2012-12-31 14:04:00+01:00    1.47   0  ...                   Vlotter        1
+2012-12-31 14:04:00+01:00    1.47   0  ...                     Radar        1
+2012-12-31 21:28:00+01:00   -0.89   0  ...                   Vlotter        2
+2012-12-31 21:28:00+01:00   -0.89   0  ...                     Radar        2
+2013-01-01 02:30:00+01:00    1.79   0  ...                   Vlotter        1
+2013-01-01 02:30:00+01:00    1.79   0  ...                     Radar        1
+2013-01-01 09:50:00+01:00   -0.78   0  ...                   Vlotter        2
+2013-01-01 09:50:00+01:00   -0.78   0  ...                     Radar        2
+2013-01-01 14:31:00+01:00    2.17   0  ...                   Vlotter        1
+2013-01-01 14:31:00+01:00    2.17   0  ...                     Radar        1
+
+[12 rows x 8 columns]
 """
 """
-#gemeld op 28-4-2022 bij servicedesk data: Radar extremen IJMDBTHVN vanaf 2018 (dus missings)
+#gemeld op 28-4-2022 bij servicedesk data: Radar extremen IJMDBTHVN vanaf 2018 (dus missings) #TODO: is ook het geval voor NIEUWSTZL
 import hatyan # "pip install hatyan"
 station_dict_IJMDBTHVN = {'Locatie_MessageID': 20503,
                           'Coordinatenstelsel': '25831',
@@ -244,20 +266,27 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in stat_list:
+for current_station in []:#stat_list:
     print(f'checking data for {current_station}')
     
     #add coordinates to data_summary
     data_summary.loc[current_station,['RDx','RDy']] = cat_locatielijst_ext_codeidx.loc[current_station,['RDx','RDy']]
+    time_interest_start = dt.datetime(2000,1,1)
+    time_interest_stop = dt.datetime(2021,2,1)
     
     #load measwl data
     file_wl_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measwl.pkl")
+    file_wlmeta_pkl = os.path.join(dir_meas_alldata,f"meta_{current_station}_measwl.pkl")
     if not os.path.exists(file_wl_pkl):
         data_summary.loc[current_station,'data_wl'] = False
         data_summary.loc[current_station,'data_ext'] = False
         continue
     data_summary.loc[current_station,'data_wl'] = True
     ts_meas_pd = pd.read_pickle(file_wl_pkl)
+    metadata = pd.read_pickle(file_wlmeta_pkl)
+    #meta_waardebepalingsmethode_uniq = '|'.join(metadata['WaardeBepalingsmethode.Omschrijving'].unique())
+    meta_meetapparaat_uniq = '|'.join(metadata['MeetApparaat.Omschrijving'].unique())
+    meta_hoedanigheid_uniq = '|'.join(metadata['Hoedanigheid.Code'].unique())
     ts_meas_pd = ts_meas_pd[['values','QC']] # reduces the memory consumption significantly
     if str(ts_meas_pd.index[0].tz) != 'Etc/GMT-1': #this means UTC+1
         raise Exception(f'measwl data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_pd.index[0].tz}')
@@ -265,8 +294,10 @@ for current_station in stat_list:
     bool_99 = ts_meas_pd['QC']==99
     if bool_99.any(): #ts contains invalid values
         ts_meas_pd[bool_99] = np.nan
-    data_summary.loc[current_station,'tstart_wl'] = ts_meas_pd.index[0]#.tz_localize(None)
-    data_summary.loc[current_station,'tstop_wl'] = ts_meas_pd.index[-1]#.tz_localize(None)
+    data_summary.loc[current_station,'tstart_wl'] = ts_meas_pd.index[0]
+    data_summary.loc[current_station,'tstop_wl'] = ts_meas_pd.index[-1]
+    data_summary.loc[current_station,'tstart2000_wl'] = ts_meas_pd.index[0]<=time_interest_start
+    data_summary.loc[current_station,'tstop202102_wl'] = ts_meas_pd.index[-1]>=time_interest_stop
     data_summary.loc[current_station,'nvals_wl'] = len(ts_meas_pd['values'])
     data_summary.loc[current_station,'#nans_wl'] = bool_99.sum()
     data_summary.loc[current_station,'min_wl'] = ts_meas_pd['values'].min()
@@ -279,8 +310,8 @@ for current_station in stat_list:
     data_summary.loc[current_station,'#nans_dupltimes_wl'] = ts_meas_pd.loc[ts_meas_pd.index.duplicated(keep=False),'values'].isnull().sum()
     
     #calc #nan-values in recent period
-    ts_meas_2000to202102a = ts_meas_pd.loc[~ts_meas_dupltimes,['values']].loc[dt.datetime(2000,1,1):dt.datetime(2021,2,1)]
-    ts_meas_2000to202102b = pd.DataFrame({'values':ts_meas_pd.loc[~ts_meas_dupltimes,'values']},index=pd.date_range(start=dt.datetime(2000,1,1),end=dt.datetime(2021,2,1),freq='10min'))
+    ts_meas_2000to202102a = ts_meas_pd.loc[~ts_meas_dupltimes,['values']].loc[time_interest_start:min(ts_meas_pd.index[-1],time_interest_stop)]
+    ts_meas_2000to202102b = pd.DataFrame({'values':ts_meas_pd.loc[~ts_meas_dupltimes,'values']},index=pd.date_range(start=time_interest_start,end=time_interest_stop,freq='10min'))
     data_summary.loc[current_station,'#nans_2000to202102a_wl'] = ts_meas_2000to202102a['values'].isnull().sum()
     data_summary.loc[current_station,'#nans_2000to202102b_wl'] = ts_meas_2000to202102b['values'].isnull().sum()
 
@@ -313,8 +344,10 @@ for current_station in stat_list:
         ts_meas_ext_pd.index = ts_meas_ext_pd.index.tz_localize(None)
         ts_meas_ext_dupltimes = ts_meas_ext_pd.index.duplicated()
         data_summary.loc[current_station,'dupltimes_ext'] = ts_meas_ext_dupltimes.sum()
-        data_summary.loc[current_station,'tstart_ext'] = ts_meas_ext_pd.index[0]#.tz_localize(None)
-        data_summary.loc[current_station,'tstop_ext'] = ts_meas_ext_pd.index[-1]#.tz_localize(None)
+        data_summary.loc[current_station,'tstart_ext'] = ts_meas_ext_pd.index[0]
+        data_summary.loc[current_station,'tstop_ext'] = ts_meas_ext_pd.index[-1]
+        data_summary.loc[current_station,'tstart2000_ext'] = ts_meas_ext_pd.index[0]<=(time_interest_start+M2_period_timedelta)
+        data_summary.loc[current_station,'tstop202102_ext'] = ts_meas_ext_pd.index[-1]>=(time_interest_stop-M2_period_timedelta)
         data_summary.loc[current_station,'nvals_ext'] = len(ts_meas_ext_pd['values'])
         data_summary.loc[current_station,'min_ext'] = ts_meas_ext_pd['values'].min()
         data_summary.loc[current_station,'max_ext'] = ts_meas_ext_pd['values'].max()
@@ -325,7 +358,7 @@ for current_station in stat_list:
         else:
             data_summary.loc[current_station,'aggers_ext'] = False
         try:
-            ts_meas_ext_2000to202102 = ts_meas_ext_pd.loc[(ts_meas_ext_pd.index>=dt.datetime(2000,1,1)) & (ts_meas_ext_pd.index<=dt.datetime(2021,2,1))]
+            ts_meas_ext_2000to202102 = ts_meas_ext_pd.loc[(ts_meas_ext_pd.index>=time_interest_start) & (ts_meas_ext_pd.index<=time_interest_stop)]
             ts_meas_ext_2000to202102 = hatyan.calc_HWLWnumbering(ts_meas_ext_2000to202102, station=current_station) #station argument helpt bij 3 extra stations
             HWmissings = (ts_meas_ext_2000to202102.loc[ts_meas_ext_pd['HWLWcode']==1,'HWLWno'].diff().dropna()!=1).sum()
             data_summary.loc[current_station,'#HWgaps_2000to202102_ext'] = HWmissings
@@ -342,7 +375,7 @@ for current_station in stat_list:
         HW_mean_peryear_long = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))['values'].mean()
         LW_mean_peryear_long = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))['values'].mean()
         
-    if data_summary['data_ext'].isnull().sum() == 0: #all stat_list stations were processed
+    if data_summary['data_ext'].isnull().sum() == 0: #if all stat_list stations were processed (only True/False in this array, no nans)
         #print and save data_summary
         print(data_summary[['data_wl','tstart_wl','tstop_wl','nvals_wl','dupltimes_wl','#nans_wl','#nans_2000to202102a_wl']])
         print(data_summary[['data_ext','dupltimes_ext','#HWgaps_2000to202102_ext']])
@@ -383,6 +416,7 @@ for current_station in stat_list:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd, ts_ext=ts_meas_ext_pd)
     else:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
+    ax1.set_title(f'timeseries for {current_station}, MeetApparaat={meta_meetapparaat_uniq}, Hoedanigheid={meta_hoedanigheid_uniq}')
     ax1_legendlabels = ax1.get_legend_handles_labels()[1]
     ax2_legendlabels = ['zero']
     ax1_legendlabels.insert(1,'zero') #legend for zero line was not displayed but will be now so it needs to be added
@@ -517,7 +551,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
     
     #remove timezone-awareness, crop timeseries and apply NAP correction
     data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
-    data_pd_HWLW_all = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt+dt.timedelta(days=30)],onlyfull=False) #TODO: should be possible to crop timeseries to tstop, but results in mising last LWs for HOEKVHLD 2011.0 and possibly others (then for 2021.0 we need also jan2022, but that is not always valid data). Still decide whether to select on extremes or moonculminations in period of interest
+    data_pd_HWLW_all = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt+dt.timedelta(days=30)],onlyfull=False) #TODO: should be possible to crop timeseries to tstop, but results in mising last LWs for HOEKVHLD 2011.0 and possibly others (then for 2021.0 we need also jan2022, but measext are not yet available there). So move to extremes in period of interest and use moonculminations period_interest-culm_offset
     if NAP2005correction:
         data_pd_HWLW_all = nap2005_correction(data_pd_HWLW_all,current_station=current_station)
     
