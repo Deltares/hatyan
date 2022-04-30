@@ -14,6 +14,8 @@ import numpy as np
 import hatyan # beschikbaar via https://github.com/Deltares/hatyan
 import matplotlib.pyplot as plt
 plt.close('all')
+from matplotlib import ticker
+import contextily as ctx
 
 #TODO: apply to all measurements: remove QC==99 (always, or maybe make nans?), crop_timeseries (when applicable), NAP2005 correction?, SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
 #TODO: when to deliver data for Anneke and Robert and for which stations? (stationslijst opvragen)
@@ -340,7 +342,7 @@ for current_station in stat_list:
         HW_mean_peryear_long = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))['values'].mean()
         LW_mean_peryear_long = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))['values'].mean()
         
-    if current_station == stat_list[-1]: #indication of last station
+    if data_summary['data_ext'].isnull().sum() == 0: #all stat_list stations were processed
         #print and save data_summary
         print(data_summary[['data_wl','tstart_wl','tstop_wl','nvals_wl','dupltimes_wl','#nans_wl','#nans_2000to202102a_wl']])
         print(data_summary[['data_ext','dupltimes_ext','#HWgaps_2000to202102_ext']])
@@ -351,20 +353,26 @@ for current_station in stat_list:
         ldb_pd = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['RDx','RDy'],na_values=[999.999])
         
         fig_map,ax_map = plt.subplots(figsize=(8,7))
-        ax_map.plot(ldb_pd['RDx']/1000,ldb_pd['RDy']/1000,'-k',linewidth=0.4)
-        ax_map.plot(cat_locatielijst_ext['RDx']/1000,cat_locatielijst_ext['RDy']/1000,'xk',alpha=0.4) #all ext stations
-        ax_map.plot(cat_locatielijst_ext_codeidx.loc[stat_list,'RDx']/1000,cat_locatielijst_ext_codeidx.loc[stat_list,'RDy']/1000,'xr') # selected ext stations (stat_list)
-        ax_map.plot(data_summary.loc[data_summary['data_ext'],'RDx']/1000,data_summary.loc[data_summary['data_ext'],'RDy']/1000,'xm') # data retrieved
+        ax_map.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
+        ax_map.plot(cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'],'xk')#,alpha=0.4) #all ext stations
+        ax_map.plot(cat_locatielijst_ext_codeidx.loc[stat_list,'RDx'],cat_locatielijst_ext_codeidx.loc[stat_list,'RDy'],'xr') # selected ext stations (stat_list)
+        ax_map.plot(data_summary.loc[data_summary['data_ext'],'RDx'],data_summary.loc[data_summary['data_ext'],'RDy'],'xm') # data retrieved
         """
         for iR, row in cat_locatielijst_ext.iterrows():
-            ax_map.text(row['RDx']/1000,row['RDy']/1000,row['Code'])
+            ax_map.text(row['RDx'],row['RDy'],row['Code'])
         """
-        ax_map.set_xlim(-50,300)
-        ax_map.set_ylim(350,650)
+        ax_map.set_xlim(-50000,300000)
+        ax_map.set_ylim(350000,650000)
         ax_map.set_title('overview of stations with GETETM2 data')
         ax_map.set_aspect('equal')
-        ax_map.grid()
+        def div1000(x,pos): return f'{int(x//1000)}'
+        ax_map.xaxis.set_major_formatter(ticker.FuncFormatter(div1000))
+        ax_map.yaxis.set_major_formatter(ticker.FuncFormatter(div1000))
+        ax_map.set_xlabel('RDx [km]')
+        ax_map.set_ylabel('RDy [km]')
+        ax_map.grid(alpha=0.5)
         fig_map.tight_layout()
+        ctx.add_basemap(ax_map, source=ctx.providers.Esri.WorldImagery, crs="EPSG:28992", attribution=False)
         fig_map.savefig(os.path.join(dir_meas_alldata,'stations_map.png'))
 
     #plotting
