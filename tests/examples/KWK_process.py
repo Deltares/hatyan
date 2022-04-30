@@ -122,7 +122,7 @@ def nap2005_correction(data_pd,current_station):
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
-for current_station in stat_list:
+for current_station in []:#stat_list:
     file_wl_pkl = os.path.join(dir_meas_DDL,f"{current_station}_measwl.pkl")
     file_wlmeta_pkl = os.path.join(dir_meas_DDL,f"meta_{current_station}_measwl.pkl")
     
@@ -197,6 +197,23 @@ for current_station in stat_list:
 #TODO: request gem hw/lw/wl bij Anneke voor alle jaren (gedaan op 28-04-2022)
 #TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
 #TODO: als extremen missen evt zelf afleiden, maar is misschien niet zomaar gedaan? (wanneer met/zonder aggers?, calcHWLW verwacht redelijk constante tijdstap) >> HWLW numbering werkt sowieso niet heel goed met metingen blijkt nu
+"""
+#TODO: melden servicedesk data: zes duplicate timesteps in extremen aanwezig met gelijke waarden
+                     values  QC         Status  HWLWcode
+Tijdstip                                                
+2012-12-31 09:35:00   -0.70   0  Gecontroleerd         2
+2012-12-31 09:35:00   -0.70   0  Gecontroleerd         2
+2012-12-31 15:44:00    0.95   0  Gecontroleerd         1
+2012-12-31 15:44:00    0.95   0  Gecontroleerd         1
+2012-12-31 20:50:00   -0.63   0  Gecontroleerd         2
+2012-12-31 20:50:00   -0.63   0  Gecontroleerd         2
+2013-01-01 04:04:00    1.40   0  Gecontroleerd         1
+2013-01-01 04:04:00    1.40   0  Gecontroleerd         1
+2013-01-01 09:34:00   -0.36   0  Gecontroleerd         2
+2013-01-01 09:34:00   -0.36   0  Gecontroleerd         2
+2013-01-01 16:26:00    1.39   0  Gecontroleerd         1
+2013-01-01 16:26:00    1.39   0  Gecontroleerd         1
+"""
 """
 #gemeld op 28-4-2022 bij servicedesk data: Radar extremen IJMDBTHVN vanaf 2018 (dus missings)
 import hatyan # "pip install hatyan"
