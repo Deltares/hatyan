@@ -122,7 +122,7 @@ def nap2005_correction(data_pd,current_station):
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
-for current_station in []:
+for current_station in stat_list:
     file_wl_pkl = os.path.join(dir_meas_DDL,f"{current_station}_measwl.pkl")
     file_wlmeta_pkl = os.path.join(dir_meas_DDL,f"meta_{current_station}_measwl.pkl")
     
@@ -192,7 +192,7 @@ for current_station in []:
 #       SCHEVNGN (extrementype bevatten nans ipv strings als 'hoogwater', data is dus ongeldig)
 #       STELLDBTN (geen data beschikbaar) >> geen ext data vanaf 2000
 #   sterke outliers in tijdreeksen (na filtering QC=99, gemeld op 26-4): IJMDBTHVN/ROOMPBTN (2001) >> is niet meer zo na verwijderen Radar metingen
-#TODO: report dubbelingen HARVT10 (2000-2022, al gedaan?) en andere stations (1900-2000), en EURPFM ext, zie data_summary.csv
+#TODO: report dubbelingen HARVT10 (2000-2022, al gedaan?) en andere stations (1900-2000), en EURPFM ext, zie data_summary.csv (er zijn ook dubbelingen met nan-waardes)
 #TODO: report wl/ext missings in recent period 2000-2021 (vanuit data_summary)
 #TODO: request gem hw/lw/wl bij Anneke voor alle jaren (gedaan op 28-04-2022)
 #TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
@@ -225,7 +225,7 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
 """
 #TODO: add to data_summary: std/mean monthavg/yearavg wl/HW/LW, stats splitsen voor HW/LW?
 data_summary = pd.DataFrame(index=stat_list)
-for current_station in stat_list:
+for current_station in []:#stat_list:
     print(f'checking data for {current_station}')
     
     #add coordinates to data_summary
@@ -256,11 +256,9 @@ for current_station in stat_list:
     data_summary.loc[current_station,'mean_wl'] = ts_meas_pd['values'].mean()
     ts_meas_dupltimes = ts_meas_pd.index.duplicated()
     data_summary.loc[current_station,'dupltimes_wl'] = ts_meas_dupltimes.sum()
-    if ts_meas_dupltimes.any(): #count #nans for duplicated times, this never happened up to now
-        dupltimes_numnans = ts_meas_pd.loc[ts_meas_pd.index.duplicated(keep=False),'values'].isnull().sum()
-        if dupltimes_numnans != 0:
-            raise Exception('this never happened up to now, worth reporting') #data_summary.loc[current_station,'#nans_dupltimes_wl'] = dupltimes_numnans
-        
+    #count #nans for duplicated times, happens at HARVT10/HUIBGT/STELLDBTN
+    data_summary.loc[current_station,'#nans_dupltimes_wl'] = ts_meas_pd.loc[ts_meas_pd.index.duplicated(keep=False),'values'].isnull().sum()
+    
     #calc #nan-values in recent period
     ts_meas_2000to202102a = ts_meas_pd.loc[~ts_meas_dupltimes,['values']].loc[dt.datetime(2000,1,1):dt.datetime(2021,2,1)]
     ts_meas_2000to202102b = pd.DataFrame({'values':ts_meas_pd.loc[~ts_meas_dupltimes,'values']},index=pd.date_range(start=dt.datetime(2000,1,1),end=dt.datetime(2021,2,1),freq='10min'))
