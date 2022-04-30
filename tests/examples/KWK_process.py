@@ -241,7 +241,7 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
                                             meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2','MeetApparaat.Code':'127'}) #HWLWvalues
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
-data_summary = pd.DataFrame(index=stat_list)
+data_summary = pd.DataFrame(index=stat_list).sort_index()
 for current_station in stat_list:
     print(f'checking data for {current_station}')
     
@@ -282,7 +282,7 @@ for current_station in stat_list:
     data_summary.loc[current_station,'#nans_2000to202102a_wl'] = ts_meas_2000to202102a['values'].isnull().sum()
     data_summary.loc[current_station,'#nans_2000to202102b_wl'] = ts_meas_2000to202102b['values'].isnull().sum()
 
-    #calculate monthly mean for meas wl data
+    #calculate monthly/yearly mean for meas wl data
     mean_peryearmonth_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="M"))['values'].mean()
     data_summary.loc[current_station,'monthmean_mean_wl'] = mean_peryearmonth_long.mean()
     data_summary.loc[current_station,'monthmean_std_wl'] = mean_peryearmonth_long.std()
@@ -330,21 +330,31 @@ for current_station in stat_list:
         except Exception as e: #"tidal wave numbering: HW/LW numbers not always increasing" and "zero-size array to reduction operation minimum which has no identity" #TODO: fix by calulate and providing station or corr_tideperiods argument? Or fix otherwise in hatyan (maybe under different project)
             print(f'ERROR: {e}')
         
+        #calculate monthly/yearly mean for meas ext data
+        if len(ts_meas_ext_pd['HWLWcode'].unique()) > 2:
+            data_pd_HWLW_12 = hatyan.calc_HWLW12345to21(ts_meas_ext_pd) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+        else:
+            data_pd_HWLW_12 = ts_meas_ext_pd.copy()
+        data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
+        data_pd_LW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==2]
+        HW_mean_peryear_long = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))['values'].mean()
+        LW_mean_peryear_long = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))['values'].mean()
+        
     if current_station == stat_list[-1]: #indication of last station
-        #data_summary
-        #print(data_summary[['RDx','RDy']])
+        #print and save data_summary
         print(data_summary[['data_wl','tstart_wl','tstop_wl','nvals_wl','dupltimes_wl','#nans_wl','#nans_2000to202102a_wl']])
         print(data_summary[['data_ext','dupltimes_ext','#HWgaps_2000to202102_ext']])
         data_summary.to_csv(os.path.join(dir_meas_alldata,'data_summary.csv'))
         
+        #make spatial plot of available/retrieved stations
         file_ldb = r'p:\11206813-006-kpp2021_rmm-2d\C_Work\31_RMM_FMmodel\computations\model_setup\run_205\20101209-06.ldb' #TODO: make ldb available in code?
         ldb_pd = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['RDx','RDy'],na_values=[999.999])
         
         fig_map,ax_map = plt.subplots(figsize=(8,7))
         ax_map.plot(ldb_pd['RDx']/1000,ldb_pd['RDy']/1000,'-k',linewidth=0.4)
-        ax_map.plot(cat_locatielijst_ext['RDx']/1000,cat_locatielijst_ext['RDy']/1000,'xk',alpha=0.4)
-        ax_map.plot(cat_locatielijst_ext_codeidx.loc[stat_list,'RDx']/1000,cat_locatielijst_ext_codeidx.loc[stat_list,'RDy']/1000,'xr')
-        ax_map.plot(data_summary.loc[data_summary['data_ext'],'RDx']/1000,data_summary.loc[data_summary['data_ext'],'RDy']/1000,'xm')#,color='orange')
+        ax_map.plot(cat_locatielijst_ext['RDx']/1000,cat_locatielijst_ext['RDy']/1000,'xk',alpha=0.4) #all ext stations
+        ax_map.plot(cat_locatielijst_ext_codeidx.loc[stat_list,'RDx']/1000,cat_locatielijst_ext_codeidx.loc[stat_list,'RDy']/1000,'xr') # selected ext stations (stat_list)
+        ax_map.plot(data_summary.loc[data_summary['data_ext'],'RDx']/1000,data_summary.loc[data_summary['data_ext'],'RDy']/1000,'xm') # data retrieved
         """
         for iR, row in cat_locatielijst_ext.iterrows():
             ax_map.text(row['RDx']/1000,row['RDy']/1000,row['Code'])
@@ -378,6 +388,9 @@ for current_station in stat_list:
     fig_times_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
     ax1.legend(ax1_legendlabels,loc=4)
     ax2.legend(ax2_legendlabels,loc=1)
+    if os.path.exists(file_ext_pkl):
+        ax1.plot(HW_mean_peryear_long,'m',linewidth=0.7)#; ax1_legendlabels.append('yearly mean')
+        ax1.plot(LW_mean_peryear_long,'m',linewidth=0.7)#; ax1_legendlabels.append('yearly mean')
     ax2.set_ylim(-0.5,0.5)
     ax1.set_xlim(fig_times_ext) # entire period
     fig.savefig(file_wl_png.replace('.png','_alldata.png'))
