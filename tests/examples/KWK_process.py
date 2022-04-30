@@ -180,11 +180,12 @@ for current_station in []:#stat_list:
 
 
 ### LOAD DATA FROM PICKLE plot and do checks
+#TODO: add to data_summary?: std/mean monthavg/yearavg HW/LW, overige stats splitsen voor HW/LW?
 #TODO: getijanalyse+predictie?
 #TODO: visually check availability (start/stop/gaps/aggers) of wl/ext, monthmean wl, outliers (nog niet gedaan voor hele periode, wel voor 2000-2022 (listAB+HARVT10):
 #   IJMDBTHVN extremen missen vanaf 2018 want Radar ipv Vlotter (al gemeld op 28-4-2022)
 #   Missende data vanaf 2000 (gemeld op 26-4):
-#       BATH (2000-2020, measwl en measext, komt doordat er twee stations zijn genaamd Bath/BATH, dit is waarschijnlijk de realtime versie)
+#       BATH (2000-2020, measwl en measext, komt doordat er twee stations zijn genaamd Bath/BATH) >> andere station bevat wel een goede dataset
 #       EURPFM (2000-2001, measwl en measext)
 #       HOEKVHLD (2000-2006, 2013, 2019, measext)
 #       ROOMPBTN (2016, measext)
@@ -194,7 +195,7 @@ for current_station in []:#stat_list:
 #   sterke outliers in tijdreeksen (na filtering QC=99, gemeld op 26-4): IJMDBTHVN/ROOMPBTN (2001) >> is niet meer zo na verwijderen Radar metingen
 #TODO: report dubbelingen HARVT10 (2000-2022, al gedaan?) en andere stations (1900-2000), en EURPFM ext, zie data_summary.csv (er zijn ook dubbelingen met nan-waardes)
 #TODO: report wl/ext missings in recent period 2000-2021 (vanuit data_summary)
-#TODO: request gem hw/lw/wl bij Anneke voor alle jaren (gedaan op 28-04-2022)
+#TODO: request tijdreeksen gemiddeld hw/lw/wl bij Anneke voor alle jaren (gedaan op 28-04-2022)
 #TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
 #TODO: als extremen missen evt zelf afleiden, maar is misschien niet zomaar gedaan? (wanneer met/zonder aggers?, calcHWLW verwacht redelijk constante tijdstap) >> HWLW numbering werkt sowieso niet heel goed met metingen blijkt nu
 """
@@ -240,9 +241,8 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
                                             meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2','MeetApparaat.Code':'127'}) #HWLWvalues
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
-#TODO: add to data_summary: std/mean monthavg/yearavg wl/HW/LW, stats splitsen voor HW/LW?
 data_summary = pd.DataFrame(index=stat_list)
-for current_station in []:#stat_list:
+for current_station in stat_list:
     print(f'checking data for {current_station}')
     
     #add coordinates to data_summary
@@ -282,6 +282,23 @@ for current_station in []:#stat_list:
     data_summary.loc[current_station,'#nans_2000to202102a_wl'] = ts_meas_2000to202102a['values'].isnull().sum()
     data_summary.loc[current_station,'#nans_2000to202102b_wl'] = ts_meas_2000to202102b['values'].isnull().sum()
 
+    #calculate monthly mean for meas wl data
+    mean_peryearmonth_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="M"))['values'].mean()
+    data_summary.loc[current_station,'monthmean_mean_wl'] = mean_peryearmonth_long.mean()
+    data_summary.loc[current_station,'monthmean_std_wl'] = mean_peryearmonth_long.std()
+    mean_peryear_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="Y"))['values'].mean()
+    data_summary.loc[current_station,'yearmean_mean_wl'] = mean_peryear_long.mean()
+    data_summary.loc[current_station,'yearmean_std_wl'] = mean_peryear_long.std()
+    """#TODO: move to hatyan.timeseries.* or hatyan.kenmerkendewaarden.*. Add minimum # values to calculate monthmean? Make long2array edit simpler with pandas smart stuff?
+    numvals_peryearmonth_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="M"))['values'].count()
+    mean_peryearmonth_array = pd.DataFrame(index=range(1,13))
+    for year in mean_peryearmonth_long.index.year.unique():
+        bool_year = mean_peryearmonth_long.index.year==year
+        mean_peryearmonth_long_oneyr = mean_peryearmonth_long.loc[bool_year]
+        mean_peryearmonth_array.loc[mean_peryearmonth_long_oneyr.index.month,year] = mean_peryearmonth_long_oneyr.values
+    mean_permonth = mean_peryearmonth_array.mean(axis=1)
+    """
+
     #load measext data
     file_ext_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measext.pkl")
     if not os.path.exists(file_ext_pkl):
@@ -312,20 +329,7 @@ for current_station in []:#stat_list:
             data_summary.loc[current_station,'#HWgaps_2000to202102_ext'] = HWmissings
         except Exception as e: #"tidal wave numbering: HW/LW numbers not always increasing" and "zero-size array to reduction operation minimum which has no identity" #TODO: fix by calulate and providing station or corr_tideperiods argument? Or fix otherwise in hatyan (maybe under different project)
             print(f'ERROR: {e}')
-    
-    #calculate monthly mean
-    mean_peryearmonth_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="M"))['values'].mean()
-    mean_peryear_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="Y"))['values'].mean()/100
-    """#TODO: move to hatyan.timeseries.* or hatyan.kenmerkendewaarden.*. Add minimum # values to calculate monthmean? Make long2array edit simpler with pandas smart stuff?
-    numvals_peryearmonth_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="M"))['values'].count()
-    mean_peryearmonth_array = pd.DataFrame(index=range(1,13))
-    for year in mean_peryearmonth_long.index.year.unique():
-        bool_year = mean_peryearmonth_long.index.year==year
-        mean_peryearmonth_long_oneyr = mean_peryearmonth_long.loc[bool_year]
-        mean_peryearmonth_array.loc[mean_peryearmonth_long_oneyr.index.month,year] = mean_peryearmonth_long_oneyr.values
-    mean_permonth = mean_peryearmonth_array.mean(axis=1)
-    """
-    
+        
     if current_station == stat_list[-1]: #indication of last station
         #data_summary
         #print(data_summary[['RDx','RDy']])
@@ -361,14 +365,18 @@ for current_station in []:#stat_list:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd, ts_ext=ts_meas_ext_pd)
     else:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
-    ax1.plot(mean_peryearmonth_long)
-    ax1.plot(mean_peryear_long)
+    legendlabels = ax1.get_legend_handles_labels()[1]
+    legendlabels.insert(1,'zero') #legend for zero line was not displayed but will be now so it needs to be added
+    legendlabels[0] = 'measured waterlevels'
+    legendlabels[2] = 'mean'
+    ax1.plot(mean_peryearmonth_long); legendlabels.append('monthly mean')
+    ax1.plot(mean_peryear_long); legendlabels.append('yearly mean')
     ax1.set_ylim(-4,4)
     fig_times_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
+    ax1.legend(legendlabels,loc=4)
     ax1.set_xlim(fig_times_ext) #to make clear that e.g. Bath contains too few data
-    #ax1.grid()
     fig.savefig(file_wl_png.replace('.png','_alldata.png'))
-    ax1.set_xlim(dt.datetime(2000,1,1),dt.datetime(2022,1,1)) #to make clear that e.g. Bath contains too few data
+    ax1.set_xlim(dt.datetime(2000,1,1),dt.datetime(2022,1,1))
     fig.savefig(file_wl_png)
     plt.close(fig)
     
