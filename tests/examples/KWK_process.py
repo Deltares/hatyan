@@ -181,7 +181,7 @@ for current_station in []:
 
 ### LOAD DATA FROM PICKLE plot and do checks
 #TODO: getijanalyse+predictie?
-#TODO: visually check availability (start/stop/gaps/aggers) of wl/ext, monthmean wl, outliers (nog niet gedaan voor hele periode, wel voor 2000-2022:
+#TODO: visually check availability (start/stop/gaps/aggers) of wl/ext, monthmean wl, outliers (nog niet gedaan voor hele periode, wel voor 2000-2022 (listAB+HARVT10):
 #   IJMDBTHVN extremen missen vanaf 2018 want Radar ipv Vlotter (al gemeld op 28-4-2022)
 #   Missende data vanaf 2000 (gemeld op 26-4):
 #       BATH (2000-2020, measwl en measext, komt doordat er twee stations zijn genaamd Bath/BATH, dit is waarschijnlijk de realtime versie)
@@ -243,26 +243,30 @@ for current_station in stat_list:
     if str(ts_meas_pd.index[0].tz) != 'Etc/GMT-1': #this means UTC+1
         raise Exception(f'measwl data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_pd.index[0].tz}')
     ts_meas_pd.index = ts_meas_pd.index.tz_localize(None)
+    bool_99 = ts_meas_pd['QC']==99
+    if bool_99.any(): #ts contains invalid values
+        ts_meas_pd[bool_99] = np.nan
     data_summary.loc[current_station,'tstart_wl'] = ts_meas_pd.index[0]#.tz_localize(None)
     data_summary.loc[current_station,'tstop_wl'] = ts_meas_pd.index[-1]#.tz_localize(None)
     data_summary.loc[current_station,'nvals_wl'] = len(ts_meas_pd['values'])
+    data_summary.loc[current_station,'#nans_wl'] = bool_99.sum()
     data_summary.loc[current_station,'min_wl'] = ts_meas_pd['values'].min()
     data_summary.loc[current_station,'max_wl'] = ts_meas_pd['values'].max()
     data_summary.loc[current_station,'std_wl'] = ts_meas_pd['values'].std()
     data_summary.loc[current_station,'mean_wl'] = ts_meas_pd['values'].mean()
     ts_meas_dupltimes = ts_meas_pd.index.duplicated()
     data_summary.loc[current_station,'dupltimes_wl'] = ts_meas_dupltimes.sum()
-    bool_99 = ts_meas_pd['QC']==99
-    data_summary.loc[current_station,'QC99_wl'] = bool_99.sum()
-    if bool_99.any(): #ts contains invalid values
-        ts_meas_pd = ts_meas_pd.loc[~bool_99] #TODO: better to replace with nan values instead? Dan zouden er geen missing timesteps meer moeten zijn en kunnen nans geteld worden?
+    if ts_meas_dupltimes.any(): #count #nans for duplicated times, this never happened up to now
+        dupltimes_numnans = ts_meas_pd.loc[ts_meas_pd.index.duplicated(keep=False),'values'].isnull().sum()
+        if dupltimes_numnans != 0:
+            raise Exception('this never happened up to now, worth reporting') #data_summary.loc[current_station,'#nans_dupltimes_wl'] = dupltimes_numnans
+        
     #calc #nan-values in recent period
-    ts_meas_nodupltimes = ts_meas_pd.loc[~ts_meas_pd.index.duplicated()] #calculate duplicates again since QC==99 were dropped
-    #ts_meas_2000to202101 = pd.DataFrame({'values':ts_meas_nodupltimes['values']},index=pd.date_range(start=dt.datetime(2000,1,1),end=dt.datetime(2021,1,1),freq='10min'))
-    #data_summary.loc[current_station,'#nans_2000to202101_wl'] = ts_meas_2000to202101['values'].isnull().sum()
-    ts_meas_2000to202102 = pd.DataFrame({'values':ts_meas_nodupltimes['values']},index=pd.date_range(start=dt.datetime(2000,1,1),end=dt.datetime(2021,2,1),freq='10min'))
-    data_summary.loc[current_station,'#nans_2000to202102_wl'] = ts_meas_2000to202102['values'].isnull().sum()
-    
+    ts_meas_2000to202102a = ts_meas_pd.loc[~ts_meas_dupltimes,['values']].loc[dt.datetime(2000,1,1):dt.datetime(2021,2,1)]
+    ts_meas_2000to202102b = pd.DataFrame({'values':ts_meas_pd.loc[~ts_meas_dupltimes,'values']},index=pd.date_range(start=dt.datetime(2000,1,1),end=dt.datetime(2021,2,1),freq='10min'))
+    data_summary.loc[current_station,'#nans_2000to202102a_wl'] = ts_meas_2000to202102a['values'].isnull().sum()
+    data_summary.loc[current_station,'#nans_2000to202102b_wl'] = ts_meas_2000to202102b['values'].isnull().sum()
+
     #load measext data
     file_ext_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measext.pkl")
     if not os.path.exists(file_ext_pkl):
@@ -282,6 +286,10 @@ for current_station in stat_list:
         data_summary.loc[current_station,'max_ext'] = ts_meas_ext_pd['values'].max()
         data_summary.loc[current_station,'std_ext'] = ts_meas_ext_pd['values'].std()
         data_summary.loc[current_station,'mean_ext'] = ts_meas_ext_pd['values'].mean()
+        if len(ts_meas_ext_pd['HWLWcode'].unique()) > 2:
+            data_summary.loc[current_station,'aggers_ext'] = True
+        else:
+            data_summary.loc[current_station,'aggers_ext'] = False
         try:
             ts_meas_ext_2000to202102 = ts_meas_ext_pd.loc[(ts_meas_ext_pd.index>=dt.datetime(2000,1,1)) & (ts_meas_ext_pd.index<=dt.datetime(2021,2,1))]
             ts_meas_ext_2000to202102 = hatyan.calc_HWLWnumbering(ts_meas_ext_2000to202102, station=current_station) #station argument helpt bij 3 extra stations
@@ -306,7 +314,7 @@ for current_station in stat_list:
     if current_station == stat_list[-1]: #indication of last station
         #data_summary
         #print(data_summary[['RDx','RDy']])
-        print(data_summary[['data_wl','tstart_wl','tstop_wl','nvals_wl','dupltimes_wl','#nans_2000to202102_wl']])
+        print(data_summary[['data_wl','tstart_wl','tstop_wl','nvals_wl','dupltimes_wl','#nans_wl','#nans_2000to202102a_wl']])
         print(data_summary[['data_ext','dupltimes_ext','#HWgaps_2000to202102_ext']])
         data_summary.to_csv(os.path.join(dir_meas_alldata,'data_summary.csv'))
         
