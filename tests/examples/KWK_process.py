@@ -5,17 +5,17 @@ Created on Thu Apr  7 14:17:13 2022
 @author: veenstra
 """
 
-import sys
 import os
 import sys
 import pandas as pd
 import datetime as dt
 import numpy as np
-import hatyan # beschikbaar via https://github.com/Deltares/hatyan
 import matplotlib.pyplot as plt
 plt.close('all')
 from matplotlib import ticker
-import contextily as ctx
+import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
+import contextily as ctx #`conda install -c conda-forge contextily -y`
+import statsmodels.api as sm # `conda install -c conda-forge statsmodels -y`
 
 #TODO: apply to all measurements: remove QC==99 (always, or maybe make nans?), crop_timeseries (when applicable), NAP2005 correction?, SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
 #TODO: when to deliver data for Anneke and Robert and for which stations? (stationslijst opvragen)
@@ -23,7 +23,7 @@ import contextily as ctx
 #TODO: add tidal indicators (LAT etc)
 
 
-tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder
+tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
 tstart_dt = dt.datetime(2001,1,1)
@@ -62,6 +62,8 @@ if not os.path.exists(dir_gemgetij):
 dir_overschrijding = os.path.join(dir_base,'out_overschrijding')
 if not os.path.exists(dir_overschrijding):
     os.mkdir(dir_overschrijding)
+
+fig_alltimes_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
 
 catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
 cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
@@ -147,7 +149,7 @@ for current_station in []:#stat_list:
         request_output = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
                                              meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT',
                                                         'Hoedanigheid.Code':'NAP',  # Hoedanigheid is necessary for eg EURPFM/LICHTELGRE, where NAP and MSL values are available. #TODO: also look at MSL data? (then duplicate MeetApparaat must be allowed and that is inconvenient as default) >>NAP data begint vanaf 2001 (en bevat ext) en afwezig voor K13APFM, MSL data begint veel eerder (ook tot later?, maar bevat geen ext)
-                                                        'MeetApparaat.Code':'127'}) # MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter) TODO: Except LICHTELGRE/K13APFM which have Radar/?? as main
+                                                        'MeetApparaat.Code':'127'}) # MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter) TODO: Except LICHTELGRE/K13APFM which have Radar/Stappenbaak en Radar as MeetApparaat
                                             #Hoedanigheid en MeetApparaat zijn anders voor LICHTELGRE en K13APFM (MSL en variabel)
                                             #meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'} #ts_measwl
                                             #meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'} #ts_measwlHWLW
@@ -168,7 +170,7 @@ for current_station in []:#stat_list:
     else:
         print(f'retrieving measext data from DDL for {current_station} to {os.path.basename(dir_meas_DDL)}')
         request_output_extval = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
-                                                    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLW # TODO: MeetApparaat is necessary for IJMBTHVN/NIEUWSTZL, maybe remove if servicedesk has resolved this probable Vlotter/Radar issue (gemeld op 28-4-2022 voor IJMBTHVN) (or add Hoedanigheid.Code, alles is toch NAP >> niet waar)
+                                                    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLW # TODO: MeetApparaat is necessary for IJMBTHVN/NIEUWSTZL, maybe remove if servicedesk has resolved this probable Vlotter/Radar issue (gemeld op 28-4-2022 voor IJMBTHVN) (or keep and also add Hoedanigheid.Code, alle ext data is toch NAP)
         request_output_exttyp = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
                                                     meta_dict={'Groepering.Code':'GETETM2','Typering.Code':'GETETTPE'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLWtype
         if request_output_extval is None:
@@ -188,8 +190,6 @@ for current_station in []:#stat_list:
 
 
 ### LOAD DATA FROM PICKLE plot and do checks
-#TODO: add to data_summary?: std/mean monthavg/yearavg HW/LW, overige stats splitsen voor HW/LW?
-#TODO: getijanalyse+predictie?
 #TODO: visually check availability (start/stop/gaps/aggers) of wl/ext, monthmean wl, outliers (nog niet gedaan voor hele periode, wel voor 2000-2022 (listAB+HARVT10):
 #   IJMDBTHVN extremen missen vanaf 2018 want Radar ipv Vlotter (al gemeld op 28-4-2022)
 #   Missende data vanaf 2000 (gemeld op 26-4):
@@ -204,73 +204,55 @@ for current_station in []:#stat_list:
 #   >> NIEUWSTZL extremen missen vanaf 2012/2013 want Radar ipv Vlotter, maar hier missen ook de metingen dus is het waarschijnlijker dat ze op Radar over zijn gegaan? (IJMDBTHVN heeft nog wel lang Vlotter measwl data na stoppen van Vlotter extremen)
 #TODO: report dubbelingen HARVT10 (2000-2022, al gedaan?) en andere stations (1900-2000), en EURPFM ext, zie data_summary.csv (er zijn ook dubbelingen met nan-waardes)
 #TODO: report wl/ext missings in recent period 2000-2021 (vanuit data_summary)
-#TODO: request tijdreeksen gemiddeld hw/lw/wl bij Anneke voor alle jaren (gedaan op 28-04-2022)
-#TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
-#TODO: als extremen missen evt zelf afleiden, maar is misschien niet zomaar gedaan? (wanneer met/zonder aggers?, calcHWLW verwacht redelijk constante tijdstap) >> HWLW numbering werkt sowieso niet heel goed met metingen blijkt nu
+#TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (opgevraagd op 28-04-2022) (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
 
 """
-#TODO: controleren of andere datasets nuttige data bevatten?
-for current_station in stat_list: #['DORDT', 'STELLDBTN', 'ROTTDM']
-    station_dict = dict(cat_locatielijst_ext_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in getyonlinedata.py: does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
-    cat_aquometadatalijst_wl, cat_locatielijst_wl = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict ={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
-    print(current_station)
-    print(cat_aquometadatalijst_wl[['MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']].drop_duplicates().T)
-EURPFM (Vlotter en NAP voor ext)
-AquoMetadata_MessageID             542      546      577
-MeetApparaat.Code                  125      127      127
-MeetApparaat.Omschrijving  Stappenbaak  Vlotter  Vlotter
-Hoedanigheid.Code                  MSL      MSL      NAP
-K13APFM (ext ontbreekt)
-AquoMetadata_MessageID       535
-MeetApparaat.Code            109
-MeetApparaat.Omschrijving  Radar
-Hoedanigheid.Code            MSL
-LICHTELGRE (Radar en NAP voor ext)
-AquoMetadata_MessageID       536          542    559
-MeetApparaat.Code            109          125    109
-MeetApparaat.Omschrijving  Radar  Stappenbaak  Radar
-Hoedanigheid.Code            MSL          MSL    NAP
-NIEUWSTZL (Radar/Vlotter en NAP voor ext)
-AquoMetadata_MessageID       559      574
-MeetApparaat.Code            109      127
-MeetApparaat.Omschrijving  Radar  Vlotter
-Hoedanigheid.Code            NAP      NAP
-NES (Vlotter en NAP voor ext)
-AquoMetadata_MessageID       561      574
-MeetApparaat.Code            109      127
-MeetApparaat.Omschrijving  Radar  Vlotter
-Hoedanigheid.Code            NAP      NAP
-IJMDBTHVN (Radar/Vlotter en NAP voor ext, Radar is tijdelijke meting voor wl maar lijkt of ext per ongeluk ook zo zijn geregistreerd)
-AquoMetadata_MessageID       559      574
-MeetApparaat.Code            109      127
-MeetApparaat.Omschrijving  Radar  Vlotter
-Hoedanigheid.Code            NAP      NAP
-ROOMPBTN (Vlotter en NAP voor ext, Radar is tijdelijke meting)
-AquoMetadata_MessageID       559      574
-MeetApparaat.Code            109      127
-MeetApparaat.Omschrijving  Radar  Vlotter
-Hoedanigheid.Code            NAP      NAP
-WESTKPLE (Vlotter en NAP voor ext)
-AquoMetadata_MessageID       559      574
-MeetApparaat.Code            109      127
-MeetApparaat.Omschrijving  Radar  Vlotter
-Hoedanigheid.Code            NAP      NAP
-VLISSGN (Vlotter en NAP voor ext)
-AquoMetadata_MessageID            563      574
-MeetApparaat.Code                 124      127
-MeetApparaat.Omschrijving  Peilschaal  Vlotter
-Hoedanigheid.Code                 NAP      NAP
-BATH (Vlotter en NAP voor ext)
-AquoMetadata_MessageID         574         589
-MeetApparaat.Code              127         155
-MeetApparaat.Omschrijving  Vlotter  Druksensor
-Hoedanigheid.Code              NAP         NAP
+#TODO: controleren of andere datasets nuttige data bevatten nadat gemiddelde HW/LW/wl uitwijzen dat ze meer data bevatten? (onderstaande komt uit data_summary.T)
+	BATH (Vlotter en NAP voor ext)
+DDL_MeetApparaat.Code_wl	127|155
+DDL_MeetApparaat.Omschrijving_wl	Vlotter|Druksensor
+DDL_Hoedanigheid.Code_wl	NAP
+	EURPFM (Vlotter en NAP voor ext)
+DDL_MeetApparaat.Code_wl	125|127
+DDL_MeetApparaat.Omschrijving_wl	Stappenbaak|Vlotter
+DDL_Hoedanigheid.Code_wl	MSL|NAP
+	IJMDBTHVN (Radar/Vlotter en NAP voor ext, Radar is tijdelijke meting voor wl maar lijkt of ext per ongeluk ook zo zijn geregistreerd) >> gemeld
+DDL_MeetApparaat.Code_wl	109|127
+DDL_MeetApparaat.Omschrijving_wl	Radar|Vlotter
+DDL_Hoedanigheid.Code_wl	NAP
+	K13APFM (ext ontbreekt)
+DDL_MeetApparaat.Code_wl	109
+DDL_MeetApparaat.Omschrijving_wl	Radar
+DDL_Hoedanigheid.Code_wl	MSL
+	LICHTELGRE (Radar en NAP voor ext)
+DDL_MeetApparaat.Code_wl	109|125
+DDL_MeetApparaat.Omschrijving_wl	Radar|Stappenbaak
+DDL_Hoedanigheid.Code_wl	MSL|NAP
+	NES (Vlotter en NAP voor ext)
+DDL_MeetApparaat.Code_wl	109|127
+DDL_MeetApparaat.Omschrijving_wl	Radar|Vlotter
+DDL_Hoedanigheid.Code_wl	NAP
+	NIEUWSTZL (Radar/Vlotter en NAP voor ext)
+DDL_MeetApparaat.Code_wl	109|127
+DDL_MeetApparaat.Omschrijving_wl	Radar|Vlotter
+DDL_Hoedanigheid.Code_wl	NAP
+	ROOMPBTN (Vlotter en NAP voor ext, Radar is tijdelijke meting) >> goed zo dus
+DDL_MeetApparaat.Code_wl	109|127
+DDL_MeetApparaat.Omschrijving_wl	Radar|Vlotter
+DDL_Hoedanigheid.Code_wl	NAP
+	VLISSGN (Vlotter en NAP voor ext)
+DDL_MeetApparaat.Code_wl	124|127
+DDL_MeetApparaat.Omschrijving_wl	Peilschaal|Vlotter
+DDL_Hoedanigheid.Code_wl	NAP
+	WESTKPLE (Vlotter en NAP voor ext)
+DDL_MeetApparaat.Code_wl	109|127
+DDL_MeetApparaat.Omschrijving_wl	Radar|Vlotter
+DDL_Hoedanigheid.Code_wl	NAP
 """
 
 """
 #TODO: melden servicedesk data: zes duplicate timesteps in extremen aanwezig met gelijke waarden EURPFM en NIEUWSTZL (laatste van ander MeetApparaat)
 ts_meas_ext_pd.loc[ts_meas_ext_pd.index.duplicated(keep=False),['values','QC','Status','HWLWcode']].sort_index()
-
                      values  QC         Status  HWLWcode
 Tijdstip                                                
 2012-12-31 09:35:00   -0.70   0  Gecontroleerd         2
@@ -285,7 +267,6 @@ Tijdstip
 2013-01-01 09:34:00   -0.36   0  Gecontroleerd         2
 2013-01-01 16:26:00    1.39   0  Gecontroleerd         1
 2013-01-01 16:26:00    1.39   0  Gecontroleerd         1
-
                            values  QC  ... MeetApparaat.Omschrijving HWLWcode
 Tijdstip                               ...                                   
 2012-12-31 09:20:00+01:00   -0.15   0  ...                   Vlotter        2
@@ -300,7 +281,6 @@ Tijdstip                               ...
 2013-01-01 09:50:00+01:00   -0.78   0  ...                     Radar        2
 2013-01-01 14:31:00+01:00    2.17   0  ...                   Vlotter        1
 2013-01-01 14:31:00+01:00    2.17   0  ...                     Radar        1
-
 [12 rows x 8 columns]
 """
 """
@@ -330,10 +310,20 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in stat_list:
+for current_station in []:#stat_list:
     print(f'checking data for {current_station}')
-    
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
+    list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
+    
+    station_dict = dict(cat_locatielijst_ext_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in hatyan.getonlinedata.py: get_DDL_stationmetasubset() does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
+    cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'})
+    for metakey in list_relevantDDLdata:
+        data_summary.loc[current_station,f'DDL_{metakey}_wl'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
+    if not current_station in ['K13APFM']:
+        cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+        for metakey in list_relevantDDLdata:
+            data_summary.loc[current_station,f'DDL_{metakey}_ext'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
+    
     #add coordinates to data_summary
     data_summary.loc[current_station,['RDx','RDy']] = cat_locatielijst_ext_codeidx.loc[current_station,['RDx','RDy']]
     time_interest_start = dt.datetime(2000,1,1)
@@ -450,11 +440,11 @@ for current_station in stat_list:
         data_summary.to_csv(os.path.join(dir_meas_alldata,'data_summary.csv'))
         
         #make spatial plot of available/retrieved stations
-        file_ldb = r'p:\11206813-006-kpp2021_rmm-2d\C_Work\31_RMM_FMmodel\computations\model_setup\run_205\20101209-06.ldb' #TODO: make ldb available in code?
-        ldb_pd = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['RDx','RDy'],na_values=[999.999])
-        
         fig_map,ax_map = plt.subplots(figsize=(8,7))
-        ax_map.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
+        file_ldb = r'p:\11206813-006-kpp2021_rmm-2d\C_Work\31_RMM_FMmodel\computations\model_setup\run_205\20101209-06.ldb' #TODO: make ldb available in code or at least KWK project drive
+        if os.path.exists(file_ldb):
+            ldb_pd = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['RDx','RDy'],na_values=[999.999])
+            ax_map.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
         ax_map.plot(cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'],'xk')#,alpha=0.4) #all ext stations
         ax_map.plot(cat_locatielijst_ext_codeidx.loc[stat_list,'RDx'],cat_locatielijst_ext_codeidx.loc[stat_list,'RDy'],'xr') # selected ext stations (stat_list)
         ax_map.plot(data_summary.loc[data_summary['data_ext'],'RDx'],data_summary.loc[data_summary['data_ext'],'RDy'],'xm') # data retrieved
@@ -475,7 +465,7 @@ for current_station in stat_list:
         fig_map.tight_layout()
         ctx.add_basemap(ax_map, source=ctx.providers.Esri.WorldImagery, crs="EPSG:28992", attribution=False)
         fig_map.savefig(os.path.join(dir_meas_alldata,'stations_map.png'))
-
+    
     #plotting
     file_wl_png = os.path.join(dir_meas_alldata,f'ts_{current_station}.png')
     if os.path.exists(file_wl_png):
@@ -495,14 +485,13 @@ for current_station in stat_list:
     ax2.plot(mean_peryearmonth_long,'c',linewidth=0.7); ax2_legendlabels.append('monthly mean')
     ax2.plot(mean_peryear_long,'m',linewidth=0.7); ax2_legendlabels.append('yearly mean')
     ax1.set_ylim(-4,4)
-    fig_times_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
     ax1.legend(ax1_legendlabels,loc=4)
     ax2.legend(ax2_legendlabels,loc=1)
     if os.path.exists(file_ext_pkl): #plot after legend creation, so these entries are not included
         ax1.plot(HW_mean_peryear_long,'m',linewidth=0.7)#; ax1_legendlabels.append('yearly mean')
         ax1.plot(LW_mean_peryear_long,'m',linewidth=0.7)#; ax1_legendlabels.append('yearly mean')
     ax2.set_ylim(-0.5,0.5)
-    ax1.set_xlim(fig_times_ext) # entire period
+    ax1.set_xlim(fig_alltimes_ext) # entire period
     fig.savefig(file_wl_png.replace('.png','_alldata.png'))
     ax1.set_xlim(dt.datetime(2000,1,1),dt.datetime(2022,1,1)) # period of interest
     fig.savefig(file_wl_png)
@@ -515,7 +504,7 @@ for current_station in stat_list:
 
 
 #### SLOTGEMIDDELDEN
-for current_station in []: #stat_list:
+for current_station in []:#stat_list:
     
     ####################
     #READ HWLW
@@ -538,6 +527,8 @@ for current_station in []: #stat_list:
     
     #derive yearmean wl from wl values
     file_wl_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measwl.pkl")
+    if not os.path.exists(file_wl_pkl):
+        continue
     data_pd_meas = pd.read_pickle(file_wl_pkl)
     data_pd_meas = data_pd_meas[['values','QC']] # reduces the memory consumption significantly
     data_pd_meas.index = data_pd_meas.index.tz_localize(None)
@@ -547,20 +538,19 @@ for current_station in []: #stat_list:
 
     #derive yearmean HWLW from HWLW values
     file_ext_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measext.pkl")
-    #if not os.path.exists(file_ext_pkl):
-    #    continue
-    data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
-    data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
-    if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
-        data_pd_HWLW_12 = hatyan.calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
-    else:
-        data_pd_HWLW_12 = data_pd_HWLW_all.copy()
-    data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
-    data_pd_LW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==2]
-    HW_mean_peryear_long = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))['values'].mean()
-    HW_mean_peryear_long.index = HW_mean_peryear_long.index.to_timestamp()
-    LW_mean_peryear_long = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))['values'].mean()
-    LW_mean_peryear_long.index = LW_mean_peryear_long.index.to_timestamp()
+    if os.path.exists(file_ext_pkl):
+        data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
+        data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
+        if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
+            data_pd_HWLW_12 = hatyan.calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+        else:
+            data_pd_HWLW_12 = data_pd_HWLW_all.copy()
+        data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
+        data_pd_LW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==2]
+        HW_mean_peryear_long = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))['values'].mean()
+        HW_mean_peryear_long.index = HW_mean_peryear_long.index.to_timestamp()
+        LW_mean_peryear_long = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))['values'].mean()
+        LW_mean_peryear_long.index = LW_mean_peryear_long.index.to_timestamp()
     
     #plotting (yearly averages are plotted on 1jan, would be better on 1jul)
     fig,ax1 = plt.subplots(figsize=(14,7))
@@ -568,22 +558,58 @@ for current_station in []: #stat_list:
         ax1.plot(yearmeanHW['values'],'+g')
         ax1.plot(yearmeanLW['values'],'+g')
         ax1.plot(yearmeanwl['values'],'+g')
-        yearmeanHW_diff = (yearmeanHW['values']-HW_mean_peryear_long).dropna() #TODO: move to data check part, when validationdata for more stations is available
-        yearmeanLW_diff = (yearmeanLW['values']-LW_mean_peryear_long).dropna()
+        if os.path.exists(file_ext_pkl):
+            yearmeanHW_diff = (yearmeanHW['values']-HW_mean_peryear_long).dropna() #TODO: move to data check part, when validationdata for more stations is available
+            yearmeanLW_diff = (yearmeanLW['values']-LW_mean_peryear_long).dropna()
         yearmeanwl_diff = (yearmeanwl['values']-wl_mean_peryear_long).dropna()
 
-    ax1.plot(HW_mean_peryear_long,'xr')
-    ax1.plot(LW_mean_peryear_long,'xr')
+    if os.path.exists(file_ext_pkl):
+        ax1.plot(HW_mean_peryear_long,'xr')
+        ax1.plot(LW_mean_peryear_long,'xr')
     ax1.plot(wl_mean_peryear_long,'xr')
     ax1.grid()
+    ax1.set_xlim(fig_alltimes_ext) # entire period
     ax1.set_ylabel('waterstand [m]')
     ax1.set_title(f'yearly mean HW/wl/LW {current_station}')
     fig.tight_layout()
+    
+    # fit with sm.OLS, method from fbaart. https://github.com/openearth/sealevel/blob/master/notebooks/analysis/gtsm/nodal-tide.ipynb
+    #TODO: maybe use nodal_epoch fit from same ipynb? PLSS because of potential trendbreuk? include SLR trend
+    if 0:#os.path.exists(file_ext_pkl):
+        mean_list = [wl_mean_peryear_long,HW_mean_peryear_long,LW_mean_peryear_long]
+    else:
+        mean_list = [wl_mean_peryear_long]
+    for mean_array in mean_list:
+        # We'll just use the years. This assumes that annual waterlevels are used that are stored left-padded, the mean waterlevel for 2020 is stored as 2020-1-1. This is not logical, but common practice.
+        times_OLS = mean_array.index
+        years_OLS = times_OLS.year.values
+        if not np.allclose(np.diff(years_OLS), 1):
+            print(f"SKIPPED: all years should be sequential: {years_OLS}")
+            continue
+        #define a simple linear model, with nodal tide and without wind and without sea-level rise
+        X = np.c_[np.cos(2 * np.pi * (years_OLS - 1970) / 18.613), np.sin(2 * np.pi * (years_OLS - 1970) / 18.613),]
+        # X is of shape n year x 3 parameters
+        X = sm.add_constant(X)
+        Y = wl_mean_peryear_long.values        
+        # define and fit the model, fit the reanalysis nodal cycle through all stations
+        model = sm.OLS(Y, X, missing="drop")
+        fit = model.fit()
+        OLS_wl_yearmean = fit.predict(X)
+        ax1.plot(times_OLS, OLS_wl_yearmean, ".-", label="yearmean OLSpredict stat0")
+            
+        """
+        # define the names
+        names = ["Constant", "Nodal U", "Nodal V"]
+        Constant = fit_meanwl.params[0]
+        A = fit_meanwl.params[1]
+        B = fit_meanwl.params[2]
+        phase = np.arctan2(B, A)
+        amplitude = np.sqrt(A ** 2 + B ** 2)
+        mean = fit_meanwl.params[0]
+        """
     fig.savefig(os.path.join(dir_slotgem,f'yearly_values_{current_station}'))
     plt.close()
-    
-    #TODO: fit with sm.OLS: https://github.com/openearth/sealevel/blob/master/notebooks/analysis/gtsm/nodal-tide.ipynb (does this not work better with monthly values?, PLSS because of potential trendbreuk?, make sure yearly values are on 1jul instead of 1jan)
-    
+
 
 
 
@@ -1299,8 +1325,7 @@ for current_station in []:#stat_list:
     tstarts.loc[current_station,['last3hrint','first1hrint','first10minint']] = [datetime_last3hrint,datetime_first1hrint,datetime_first10minint]
     
     data_pd_meas = data_pd_meas[['values','QC']] # reduces the memory consumption significantly
-    data_pd_meas = data_pd_meas.loc[~(data_pd_meas['QC']==99)]
-    #data_pd_meas = data_pd_meas*100 #TODO: maybe remove this conversion to cm, but then also fix the fine gridlines in the plot
+    data_pd_meas = data_pd_meas.loc[~(data_pd_meas['QC']==99)] #TODO: maybe also drop duplicate times
 
     station_rule_type = 'break' #TODO: compare results to the ones withouth this break or break on different date
     if reproduce_oldoverschr:
