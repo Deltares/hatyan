@@ -575,6 +575,7 @@ for current_station in []:#stat_list:
     
     # fit with sm.OLS, method from fbaart. https://github.com/openearth/sealevel/blob/master/notebooks/analysis/gtsm/nodal-tide.ipynb
     #TODO: maybe use nodal_epoch fit from same ipynb? PLSS because of potential trendbreuk? include SLR trend
+    #TODO: need to include nodal tide or only trend?
     if 0:#os.path.exists(file_ext_pkl):
         mean_list = [wl_mean_peryear_long,HW_mean_peryear_long,LW_mean_peryear_long]
     else:
@@ -632,7 +633,7 @@ data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime,tLas
 if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC':
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 
-for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
+for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
 
     ####################
     #READ HWLW
@@ -654,7 +655,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
     data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
     """
     if (LWaggercode == 4) and (4 in data_pd_HWLW_all['HWLWcode'].values): #TODO: this is not used so can be removed?
-        # select dominant LW, time of first or dominant LW, LWaggercode must be 4 because of iR
+        # select time and value of lowest LW, LWaggercode must be 4 because of iR
         for iR, HWLWrow in data_pd_HWLW.loc[data_pd_HWLW['HWLWcode'] == 4].iterrows():
             print('%d of %d'%(iR,data_pd_HWLW.index.max()))
             id_min = data_pd_HWLW_all.loc[iR-1:iR+1, 'values'].idxmin()
@@ -673,7 +674,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
     
     ##### CULMINATIEBEREKENING/HAVENGETALLEN
     print('calculate HW/LWs corresponding to each culmintation') #TODO: maybe make more efficient by working with HWLWno? (might also be easier with gaps)
-    data_pd_HWLW['culm'] = np.nan
+    data_pd_HWLW['culm_time'] = pd.NaT
     data_pd_HWLW['culm_hr'] = np.nan
     data_pd_HWLW['HWLW_delay_hours'] = np.nan
     for iC,culmrow in data_pd_moonculm.iterrows():
@@ -682,13 +683,17 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
         data_pd_LW_selid = data_pd_HW_selid+1
         if np.abs((data_pd_HWLW.loc[data_pd_HW_selid,'times']-(culm_time+culm_addtime)).total_seconds()/3600) > 8:
             raise Exception('ERROR: no high waters found within 8 hours of culmination at %s +culm_addtime(=%.1f), range HW: \n%s)'%(culm_time, culm_addtime.total_seconds()/3600, data_pd_HWLW.loc[[data_pd_HWLW.index.min(),data_pd_HWLW.index.max()],'times']))
-        data_pd_HWLW.loc[[data_pd_HW_selid,data_pd_LW_selid],'culm'] = culm_time
+        data_pd_HWLW.loc[[data_pd_HW_selid,data_pd_LW_selid],'culm_time'] = culm_time
+        """
         data_pd_HWLW.loc[[data_pd_HW_selid,data_pd_LW_selid],'culm_hr'] = culm_time.round('h').hour%12
-
         HW_delay_h = (data_pd_HWLW.loc[data_pd_HW_selid,'times']-(culm_time+culm_addtime))/np.timedelta64(1,'h')
         data_pd_HWLW.loc[data_pd_HW_selid,'HWLW_delay_hours'] = HW_delay_h
         LW_delay_h = (data_pd_HWLW.loc[data_pd_LW_selid,'times']-(culm_time+culm_addtime))/np.timedelta64(1,'h')
         data_pd_HWLW.loc[data_pd_LW_selid,'HWLW_delay_hours'] = LW_delay_h
+        """
+    data_pd_HWLW['culm_hr'] = data_pd_HWLW['culm_time'].round('h').dt.hour%12
+    HWLW_delay_h = (data_pd_HWLW['times']-(data_pd_HWLW['culm_time']+culm_addtime))/np.timedelta64(1,'h')
+    data_pd_HWLW['HWLW_delay_hours'] = HWLW_delay_h
     
     HW_culmhr_valavg = []
     HW_culmhr_timavg = []
@@ -710,7 +715,9 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
     HW_culmhr_gtyperavg_gemtij = np.mean(HW_culmhr_gtyperavg)
     LW_culmhr_valavg_gemtij = np.mean(LW_culmhr_valavg)
     LW_culmhr_timavg_gemtij = np.mean(LW_culmhr_timavg)
-
+    
+    HW_culmhr_valavg
+    
     print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE')
     HW_data = data_pd_HWLW[(data_pd_HWLW['HWLWcode']==1)]
     LW_data = data_pd_HWLW[(data_pd_HWLW['HWLWcode']!=1)] #HWLWcode==2 or HWLWcode==LWaggercode (=3)
