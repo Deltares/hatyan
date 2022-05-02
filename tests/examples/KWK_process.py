@@ -635,7 +635,7 @@ if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_p
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
 
-for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
+for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
     print(f'havengetallen for {current_station}')
         
     #read HWLW data
@@ -774,7 +774,7 @@ for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
     for colname in HWLW_culmhr_summary_out.columns: #round timedelta to make outputformat nicer
         if HWLW_culmhr_summary_out[colname].dtype == 'timedelta64[ns]':
             HWLW_culmhr_summary_out[colname] = HWLW_culmhr_summary_out[colname].round('S')
-    HWLW_culmhr_summary_out.to_csv(file_outname+'.csv',float_format='%.2f')
+    HWLW_culmhr_summary_out.to_csv(file_outname+'.csv',float_format='%.3f')
 
 
 
@@ -786,10 +786,10 @@ for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
 # =============================================================================
 # slotGem  = 'rapportRWS'
 # slotGem  = 'havengetallen2011'
-slotGem  = 'havengetallen2011_redo'
+slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'havengetallen2011_PLSS'
 
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
-for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in ['HOEKVHLD','HARVT10']:#stat_list:
     """
     uit: gemiddelde getijkrommen 1991.0
         
@@ -838,19 +838,66 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     """
 
     print(f'gem getijkrommen for {current_station}')
-
+    
+    if slotGem in ['rapportRWS','havengetallen2011','havengetallen2011_PLSS']:
+        slotGem_file = slotGem
+    elif slotGem=='havengetallen2011improved':
+        slotGem_file = 'havengetallen2011'
     dir_vali_krommen = r'p:\archivedprojects\11205258-005-kpp2020_rmm-g5\C_Work\00_KenmerkendeWaarden\07_Figuren\figures_ppSCL_2\final20201211'
-    file_vali_doodtijkromme = os.path.join(dir_vali_krommen,f'doodtijkromme_{current_station}_{slotGem}.csv')
-    file_vali_gemtijkromme = os.path.join(dir_vali_krommen,f'gemGetijkromme_{current_station}_{slotGem}.csv')
-    file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_{slotGem}.csv')
+    file_vali_doodtijkromme = os.path.join(dir_vali_krommen,f'doodtijkromme_{current_station}_{slotGem_file}.csv')
+    file_vali_gemtijkromme = os.path.join(dir_vali_krommen,f'gemGetijkromme_{current_station}_{slotGem_file}.csv')
+    file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_{slotGem_file}.csv')        
     
     if year_slotgem not in [2011,'2011_olddata']:
-        raise Exception(f'gemiddelde getijkromme only possible for 2011: {year_slotgem}')
+        raise Exception(f'gemiddelde getijkromme only possible for 2011: {year_slotgem}') #TODO: almost not anymore
         
-    #TODO: make this automatic, also apply to retrieved data at top of script if necessary, or remove entirely. Also ask stendert where these values come from (delay values seem a bit weird)
-    if slotGem == 'havengetallen2011': #KW-RMM havengetallen programma
-        pass#dir_havgetpass p:\11208031-010-kenmerkende-waarden-k\work\out_havengetallen_2011\aardappelgrafiek_2011_HARVT10_aggercode3.csv
-    if slotGem == 'rapportRWS': #2011.0 rapport van Douwe Dillingh
+    #TODO: make this automatic >> also add PLSS
+    if slotGem == 'havengetallen2011improved': #KW-RMM havengetallen programma (was hardcoded in script)
+        file_havget = os.path.join(dir_havget,f'aardappelgrafiek_2011_{current_station}_aggercode3.csv') #TODO: aggercode 3? do not scale if aggers? (see comments at havengetallen section)
+        if not os.path.exists(file_havget):
+            raise Exception(f'havengetallen file does not exist: {file_havget}')
+        data_havget = pd.read_csv(file_havget)
+        for colname in ['HW_delay_median','LW_delay_median','getijperiod_mean','duurdaling_median']:
+            data_havget[colname] = data_havget[colname].apply(lambda x: pd.Timedelta(x))
+        HW_sp, LW_sp, tD_sp = data_havget.loc[0,['HW_values_median','LW_values_median','duurdaling_median']]
+        HW_np, LW_np, tD_np = data_havget.loc[6,['HW_values_median','LW_values_median','duurdaling_median']]
+        HW_av, LW_av, tD_av = data_havget.loc[12,['HW_values_median','LW_values_median','duurdaling_median']]
+        tDiff_sp = tDiff_av = tDiff_np = None #timeshift def is disabled anyway
+        
+    elif slotGem == 'havengetallen2011': #KW-RMM havengetallen programma (was hardcoded in script)
+        if current_station == 'HOEKVHLD':
+            HW_sp = 1.28
+            HW_av = 1.11
+            HW_np = 0.87
+            LW_sp = -0.64
+            LW_av = -0.61
+            LW_np = -0.57
+            # tijdsduur voor daling
+            tD_sp = dt.timedelta(hours=6-1,minutes=51-32,seconds=20.5-58)
+            tD_av = dt.timedelta(hours=7-1,minutes=21-33,seconds=29-13.875)
+            tD_np = dt.timedelta(hours=7-1,minutes=45-34,seconds=19-38)
+            # tijdsverschil voor verplaatsing HvH-->Maasmond
+            tDiff_sp = dt.timedelta(minutes=-5)
+            tDiff_av = dt.timedelta(minutes=-5)
+            tDiff_np = dt.timedelta(minutes=-5)
+        elif current_station == 'HARVT10':
+            HW_sp = 1.41
+            HW_av = 1.21
+            HW_np = 0.92
+            LW_sp = -0.94
+            LW_av = -0.86
+            LW_np = -0.77
+            # tijdsduur voor daling
+            tD_sp = dt.timedelta(hours=6-1,minutes=45-14,seconds=53-45.5)
+            tD_av = dt.timedelta(hours=7-1,minutes=5-13,seconds=41.625-33.416667)
+            tD_np = dt.timedelta(hours=7-1,minutes=31-11,seconds=17-12)
+            # tijdsverschil met HvH voor start van tijdserie van kromme (verschil in havengetal HW)
+            tDiff_sp = dt.timedelta(minutes=14-32,seconds=45.5-58)
+            tDiff_av = dt.timedelta(minutes=13-33,seconds=33.416667-13.875)
+            tDiff_np = dt.timedelta(minutes=11-34,seconds=12-38)
+        else:
+            raise Exception(f'station {current_station} not implemented for gemiddelde getijkromme method: {slotGem}')
+    elif slotGem == 'rapportRWS': #2011.0 rapport van Douwe Dillingh
         if current_station == 'HOEKVHLD':
             HW_sp = 1.32
             HW_av = 1.15
@@ -925,7 +972,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     ts_meas_pd = ts_meas_pd[['values','QC']] # reduces the memory consumption significantly
     ts_meas_pd.index = ts_meas_pd.index.tz_localize(None)
     ts_meas_pd = ts_meas_pd.loc[~(ts_meas_pd['QC']==99)]
-    ts_meas_pd = hatyan.crop_timeseries(ts_meas_pd, times_ext=[tstart_dt,tstop_dt-dt.timedelta(minutes=10)],onlyfull=False) #TODO: moet onlyfull wel False zijn?
+    ts_meas_pd = hatyan.crop_timeseries(ts_meas_pd, times_ext=[tstart_dt,tstop_dt-dt.timedelta(minutes=10)])#,onlyfull=False)
     if NAP2005correction:
         ts_meas_pd = nap2005_correction(ts_meas_pd,current_station)
     
@@ -957,7 +1004,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     print('verhouding tussen originele en kwadratensom componenten:')
     print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data
     
-    comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
+    #comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
     times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq='60 S') # TODO hatyan: when using <60sec, hatyan.calc_HWLW() goes wrong, probably since there is a minute-rounding thing somewhere, fix this
     prediction_av = hatyan.prediction(comp_av, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
     prediction_av_ext = hatyan.calc_HWLW(ts=prediction_av)#,calc_HWLWlocal=False)
@@ -983,7 +1030,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     #tD_av = tD_cav
     tU_av = M2_period_timedelta - tD_av #dt.timedelta(hours=12,minutes=25)-tD_av
     
-    # bereken schalingsratio's voor kromme #TODO: _av etc komen nu uit hardgecodeerd start van script, maar moeten komen uit live afgeleidde havengetallen/slotgemiddelden
+    # bereken schalingsratio's voor kromme
     rHW_av = HW_av/HW_cav
     rLW_av = LW_av/LW_cav
     rtU_av = tU_av/tU_cav
@@ -996,9 +1043,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
         ts_corr['values'][ts_corr['values']>0] = ts_corr['values'][ts_corr['values']>0]*ratioHW
         ts_corr['values'][ts_corr['values']<0] = ts_corr['values'][ts_corr['values']<0]*ratioLW
         ts_corr['times'] = ts_corr.index #this is necessary since datetimeindex with freq is not editable, and Series is editable
-        for i in np.arange(0,len(timesHW)): #TODO: what happens if ts starts with LW instead of HW? TODO: prevent timesHW/timesLW possible?
-            #iHW = ts_corr.index.get_loc(timesHW[i])
-            #iLW = ts_corr.index.get_loc(timesLW[i])
+        for i in np.arange(0,len(timesHW)):
             tide_HWtoLW = ts_corr.loc[timesHW[i]:timesLW[i]]
             ts_corr.loc[timesHW[i]:timesLW[i],'times'] = pd.date_range(start=ts_corr.loc[timesHW[i],'times'],freq=f'{int(ratioDown*1e9*60)} N',periods=len(tide_HWtoLW))
             if i == len(timesHW)-1: #not for last HW
@@ -1009,6 +1054,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
         return ts_corr
     
     #vermenigvuldiging van kromme met ratio's
+    print('vermenigvuldig_kromme gemgetij')
     prediction_av_corr = vermenigvuldig_kromme(prediction_av, idHW_av, idLW_av, rHW_av, rLW_av, rtD_av, rtU_av)
     
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=prediction_av,ts_ext=prediction_av_ext)
@@ -1019,10 +1065,12 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     fig.savefig(os.path.join(dir_gemgetij,"gemGetijkromme_%s_%s.png"%(current_station,slotGem)))
     
     def shift_HW_tostart(ts, timesHW, tstop_dt, tDiff):
-        #TODO: this timeshift derived from old csv writing should be eliminated, maybe not necessary to correct HvH/HARVT10 if normal times are accounted for
-        bool_av = ts.index>=timesHW[0]
-        ts_shift = ts.loc[bool_av]
-        ts_shift.index -= timesHW[0]-tstop_dt-tDiff
+        if tDiff is not None: #this timeshift derived from old csv writing should be eliminated, None results in no change
+            bool_av = ts.index>=timesHW[0]
+            ts_shift = ts.loc[bool_av]
+            ts_shift.index -= timesHW[0]-tstop_dt-tDiff
+        else:
+            ts_shift = ts.copy()
         return ts_shift
     
     prediction_av_corr_timeshift = shift_HW_tostart(prediction_av_corr, idHW_av, tstop_dt, tDiff_av)
@@ -1044,7 +1092,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     #DONE: 2001 heeft gemiddelde nodalfactor f voor M2 (getijkrommen 1991.0 spreekt van "Voor de ruwe krommen voor springtij en doodtij is het getij voorspeld voor een jaar met gemiddelde helling maansbaan")
     #DONE: de analyse wordt op die metingen gedaan, maar de predictie vervolgens op een andere periode (times_ext) Moet het niet times_ext_pred zijn? (script is dan veel trager omdat het een jaar ipv een maand is, vooral door write_csv, resultaten zijn vrijwel gelijk)
     # =============================================================================
-    components_sn = ['SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12','A0'] #TODO: should A0 be added since we look at zerocrossings eventually? >> makes a difference with A0 far from 0 since tD/tU scaling is then different?
+    components_sn = ['SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12']#,'A0'] #TODO: should A0 be added since we look at zerocrossings eventually? >> makes a difference with A0 far from 0 since tD/tU scaling is then different?
     
     # derive f values for M2 and select year where the value is closest to 0. TODO: it seems to not matter too much what year is chosen, but maybe for the scaling factors?
     yearcenters_time = pd.date_range(start=tstart_dt, end=tstop_dt, freq='Y') - dt.timedelta(days=364/2)
@@ -1061,10 +1109,10 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     #comp_oneyear_minffactor.columns = comp_oneyear_minffactor.columns.droplevel(1)
     #print(comp_oneyear_sncomp-comp_oneyear_minffactor)
     
-    #hatyan_settings_sn = hatyan.HatyanSettings(nodalfactors = False) #TODO: year does not matter too much (maybe it does for scaling), but nodalfactors=False does matter a bit for doodtij duration
+    #hatyan_settings_sn = hatyan.HatyanSettings(nodalfactors = False) #TODO: year does not matter too much (maybe it does for scaling), but nodalfactors=False does matter a bit for doodtij duration >> optionally check sensitivities?
     prediction_sn     = hatyan.prediction(comp_oneyear_sncomp, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
     
-    #TODO KW-RMM2020: "In het geval van aggers is het eerste laagwater gebruikt." >> laagste laagwater wordt genomen
+    #TODO KW-RMM2020: "In het geval van aggers is het eerste laagwater gebruikt." >> laagste laagwater wordt nu genomen, gaat niet goed met schaling
     prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn)#, calc_HWLW345=True)
     
     #karateristieken uit ruwe spring-/doodtijkromme >> schalingsratio
@@ -1074,7 +1122,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     
     zero_crossings_bool = np.sign(prediction_sn['values']).diff()>0
     zero_crossings_times = prediction_sn.loc[zero_crossings_bool].index #list of zero crossings timestamps
-
+    
     # maak ruwe springtijkromme (selecteer getijslag na maximale HW)
     time_highestHW = prediction_sn_ext['values'][idHW_sn].idxmax()
     zerocrossing_highestHW_idx = (np.abs(zero_crossings_times-time_highestHW)).argmin()
@@ -1082,11 +1130,6 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     is2 = zero_crossings_times[zerocrossing_highestHW_idx+1]
     tC_sp = is2-is1
     tU_sp = tC_sp - tD_sp
-    # repeat ruwe springtijkromme in time. #TODO: this shifts the getijkromme in time, which should probably not happen (also for doodtij)
-    prediction_sp_one = prediction_sn.loc[is1:is2].iloc[:-3] #TODO: -3 is nodig om reproductie oude lijnen te krijgen, maar dat is niet goed (moet -1 zijn) en je ziet ook een hickup bij ieder begin/eind (also for doodtij)
-    prediction_sp = pd.DataFrame(index=prediction_sn.index)
-    prediction_sp['values'] = np.tile(prediction_sp_one['values'].values,int(np.ceil(len(prediction_sn.index)/len(prediction_sp_one))))[0:len(prediction_sn.index)]
-    prediction_sp_ext = hatyan.calc_HWLW(ts=prediction_sp)
     
     # maak ruwe doodtijkromme (selecteer getijslag na minimale HW)
     time_lowestHW = prediction_sn_ext['values'][idHW_sn].idxmin()
@@ -1095,12 +1138,39 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     in2 = zero_crossings_times[zerocrossing_lowestHW_idx+1]
     tC_np = in2-in1
     tU_np = tC_np - tD_np
-    # repeat ruwe doodtijkromme in time
-    prediction_np_one = prediction_sn.loc[in1:in2].iloc[:-3]
-    prediction_np = pd.DataFrame(index=prediction_sn.index)
-    prediction_np['values'] = np.tile(prediction_np_one['values'].values,int(np.ceil(len(prediction_sn.index)/len(prediction_np_one))))[0:len(prediction_sn.index)] 
+    # repeat ruwe spring/doodtijkromme in time. 
+    if slotGem in ['rapportRWS','havengetallen2011','havengetallen2011_PLSS']:
+        prediction_sp_one = prediction_sn.loc[is1:is2].iloc[:-3] #-3 is nodig om reproductie oude lijnen te krijgen, maar dat is niet goed (moet -1 zijn) en je ziet ook een hickup bij ieder begin/eind (also for doodtij)
+        prediction_np_one = prediction_sn.loc[in1:in2].iloc[:-3]
+        #this repeat-method shifts the getijkromme in time, which should probably not happen
+        prediction_sp = pd.DataFrame(index=prediction_sn.index)
+        prediction_sp['values'] = np.tile(prediction_sp_one['values'].values,int(np.ceil(len(prediction_sn.index)/len(prediction_sp_one))))[0:len(prediction_sn.index)]
+        prediction_np = pd.DataFrame(index=prediction_sn.index)
+        prediction_np['values'] = np.tile(prediction_np_one['values'].values,int(np.ceil(len(prediction_sn.index)/len(prediction_np_one))))[0:len(prediction_sn.index)] 
+    else:
+        ntide_1month_av = int(np.ceil((prediction_av.index[-1]-prediction_av.index[0])/M2_period_timedelta)*1.1) #add 1.1 factor to just add more tideperiods to be sure
+        prediction_sp_one = prediction_sn.loc[is1:is2].iloc[:-1]
+        prediction_np_one = prediction_sn.loc[in1:in2].iloc[:-1]
+        tideperiod_sp = prediction_sp_one.index[-1]-prediction_sp_one.index[0]
+        tideperiod_np = prediction_np_one.index[-1]-prediction_np_one.index[0]
+        prediction_sp_more = pd.DataFrame(index=prediction_av.index)
+        prediction_np_more = pd.DataFrame(index=prediction_av.index)
+        for iT in range(-ntide_1month_av,ntide_1month_av+1): #repeat n times #TODO: pre-scaling of sp/np ts to M2/av length or use original lenghts? (now the ts shift in time with tideperiod_sp/np or it has gaps with M2_period_timedelta)
+            pred_sp_rep = pd.DataFrame({'values':prediction_sp_one['values'].values},index=prediction_sp_one.index+iT*M2_period_timedelta)#tideperiod_sp)
+            prediction_sp_more = prediction_sp_more.append(pred_sp_rep)
+            pred_np_rep = pd.DataFrame({'values':prediction_np_one['values'].values},index=prediction_np_one.index+iT*M2_period_timedelta)#tideperiod_np)
+            prediction_np_more = prediction_np_more.append(pred_np_rep)
+        #interpolate to 1min values and take original 1 month subset (sorting index first is required)
+        prediction_sp = prediction_sp_more.sort_index().interpolate(method='index').loc[prediction_av.index]
+        prediction_np = prediction_np_more.sort_index().interpolate(method='index').loc[prediction_av.index]
+        #drop duplicate whole-minutes values
+        prediction_sp = prediction_sp[~prediction_sp.index.duplicated(keep='first')]
+        prediction_np = prediction_np[~prediction_np.index.duplicated(keep='first')]
+    
+    #calculating extremes
+    prediction_sp_ext = hatyan.calc_HWLW(ts=prediction_sp)
     prediction_np_ext = hatyan.calc_HWLW(ts=prediction_np)
-        
+    
     # plot selection of neap/spring
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=prediction_sn,ts_ext=prediction_sn_ext)
     ax1.plot(prediction_sp_one['values'],'r')
@@ -1122,10 +1192,9 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     rLW_sp = LW_sp/LW_csp
     rtU_sp = tU_sp/tU_csp
     rtD_sp = tD_sp/tD_csp
-    ratio_tideduration_sp = M2_period_timedelta/(tU_csp+tD_csp) #TODO: use this to convert to 12u25m timeseries? beware on minute/second rounding
     
     #vermenigvuldiging van kromme met ratios
-    print('vermenigvuldig_kromme')
+    print('vermenigvuldig_kromme springtij')
     prediction_sp_corr = vermenigvuldig_kromme(prediction_sp, idHW_sp, idLW_sp, rHW_sp, rLW_sp, rtD_sp, rtU_sp)
     print('timeshift')
     prediction_sp_corr_timeshift = shift_HW_tostart(prediction_sp_corr, idHW_sp, tstop_dt, tDiff_sp)
@@ -1143,7 +1212,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     fig.savefig(os.path.join(dir_gemgetij,"springdoodtijkromme_spring_%s_%s_zoom.png"%(current_station,slotGem)))
     print('SPRINGTIJ finished')
 
-
+    
     print('DOODTIJ')
     #karakteristieken doodtij
     #selecteer alle hoogwaters en opvolgende laagwaters
@@ -1156,10 +1225,9 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     rLW_np = LW_np/LW_cnp
     rtU_np = tU_np/tU_cnp
     rtD_np = tD_np/tD_cnp
-    ratio_tideduration_np = M2_period_timedelta/(tU_cnp+tD_cnp)
-
+    
     #vermenigvuldiging van kromme met ratios
-    print('vermenigvuldig_kromme')
+    print('vermenigvuldig_kromme doodtij')
     prediction_np_corr = vermenigvuldig_kromme(prediction_np, idHW_np, idLW_np, rHW_np, rLW_np, rtD_np, rtU_np)
     print('timeshift')
     prediction_np_corr_timeshift = shift_HW_tostart(prediction_np_corr, idHW_np, tstop_dt, tDiff_np)
@@ -1181,8 +1249,10 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     ax_sum.plot(prediction_np_one['values'],'k',label=f'np kromme {current_station}, origtiming')
     ax_sum.plot(prediction_av_corr['values'],'-',label=f'gem kromme {current_station}, origtiming')
     ax_sum.plot(prediction_sn['values'],':',label=f'spnp kromme {current_station}, origtiming')
-    ax_sum.plot(prediction_sp_corr['values'],'--',label=f'sp kromme {current_station}, start0')
-    ax_sum.plot(prediction_np_corr['values'],'-.',label=f'np kromme {current_station}, start0')
+    ax_sum.plot(prediction_sp['values'],'--',label=f'sp kromme {current_station}')
+    ax_sum.plot(prediction_np['values'],'-.',label=f'np kromme {current_station}')
+    ax_sum.plot(prediction_sp_corr['values'],'--',label=f'sp kromme corr {current_station}')
+    ax_sum.plot(prediction_np_corr['values'],'-.',label=f'np kromme corr {current_station}')
 
     #TODO: this is useful to calculate delays between stations, so write to summary DataFrame? This is ruwe sprinneap cycle, so no exact values
     print(f'HWLW gemiddeld tij {current_station}:\n',prediction_av_ext.loc[is1:is2])
