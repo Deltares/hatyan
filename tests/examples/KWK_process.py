@@ -1004,7 +1004,7 @@ for current_station in ['HOEKVHLD','HARVT10']:#stat_list:
     print('verhouding tussen originele en kwadratensom componenten:')
     print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data
     
-    #comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
+    comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
     times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq='60 S') # TODO hatyan: when using <60sec, hatyan.calc_HWLW() goes wrong, probably since there is a minute-rounding thing somewhere, fix this
     prediction_av = hatyan.prediction(comp_av, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
     prediction_av_ext = hatyan.calc_HWLW(ts=prediction_av)#,calc_HWLWlocal=False)
@@ -1092,7 +1092,7 @@ for current_station in ['HOEKVHLD','HARVT10']:#stat_list:
     #DONE: 2001 heeft gemiddelde nodalfactor f voor M2 (getijkrommen 1991.0 spreekt van "Voor de ruwe krommen voor springtij en doodtij is het getij voorspeld voor een jaar met gemiddelde helling maansbaan")
     #DONE: de analyse wordt op die metingen gedaan, maar de predictie vervolgens op een andere periode (times_ext) Moet het niet times_ext_pred zijn? (script is dan veel trager omdat het een jaar ipv een maand is, vooral door write_csv, resultaten zijn vrijwel gelijk)
     # =============================================================================
-    components_sn = ['SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12']#,'A0'] #TODO: should A0 be added since we look at zerocrossings eventually? >> makes a difference with A0 far from 0 since tD/tU scaling is then different?
+    components_sn = ['SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12','A0'] #TODO: should A0 be added since we look at zerocrossings eventually? >> makes a difference with A0 far from 0 since tD/tU scaling is then different?
     
     # derive f values for M2 and select year where the value is closest to 0. TODO: it seems to not matter too much what year is chosen, but maybe for the scaling factors?
     yearcenters_time = pd.date_range(start=tstart_dt, end=tstop_dt, freq='Y') - dt.timedelta(days=364/2)
@@ -1147,7 +1147,7 @@ for current_station in ['HOEKVHLD','HARVT10']:#stat_list:
         prediction_sp['values'] = np.tile(prediction_sp_one['values'].values,int(np.ceil(len(prediction_sn.index)/len(prediction_sp_one))))[0:len(prediction_sn.index)]
         prediction_np = pd.DataFrame(index=prediction_sn.index)
         prediction_np['values'] = np.tile(prediction_np_one['values'].values,int(np.ceil(len(prediction_sn.index)/len(prediction_np_one))))[0:len(prediction_sn.index)] 
-    else:
+    else: #TODO: tijd op xas in 1991.0 was uren tov HW. Dan zou bovenstaande gelden, maar dan is het ongeschikt voor BOI. (maar wel belangrijk om sp/np/av getijduur anders te hebben in getallen)
         ntide_1month_av = int(np.ceil((prediction_av.index[-1]-prediction_av.index[0])/M2_period_timedelta)*1.1) #add 1.1 factor to just add more tideperiods to be sure
         prediction_sp_one = prediction_sn.loc[is1:is2].iloc[:-1]
         prediction_np_one = prediction_sn.loc[in1:in2].iloc[:-1]
