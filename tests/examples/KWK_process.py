@@ -65,9 +65,11 @@ if not os.path.exists(dir_overschrijding):
 
 fig_alltimes_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
 
+print('retrieving DDL catalog')
 catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
 cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
 cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl'))
+print('...done')
 
 #get list of stations with extremes and add K13A
 cat_aquometadatalijst_ext, cat_locatielijst_ext = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict ={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
@@ -627,134 +629,101 @@ TVL;1;3;laagwater 1
 TVL;1;4;topagger
 TVL;1;5;laagwater 2
 """
-culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # link with moonculmination (or M2) two days before, 24h rotates entire graph. # furthermore: 2u20min correction, this shifts the x-axis: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET, alternatively derive moonculm in different tzone)
-#data_pd_moonculm = hatyan.astrog_culminations(tFirst=dt.datetime(1979,1,1),tLast=dt.datetime(2022,1,1))
-data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime,tLast=tstop_dt-culm_addtime)#,tzone='UTC+01:00')
-if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC':
+culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # link with moonculmination (or M2) two days before, 24h rotates entire graph. # furthermore: 2u20min correction, this shifts the x-axis: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET)
+data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime,tLast=tstop_dt)#,tzone='UTC+01:00')
+if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_pd_HWLW['culm_hr']=range(12) hourvalues should be in UTC since that relates to the relation dateline/sun
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
+data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
 
 for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
-
-    ####################
-    #READ HWLW
     print(f'havengetallen for {current_station}')
-    
+        
+    #read HWLW data
     file_ext_pkl = os.path.join(dir_meas,f"{current_station}_measext.pkl")
     if not os.path.exists(file_ext_pkl):
         continue
     data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
+    data_pd_HWLW_all = data_pd_HWLW_all[['values','QC','HWLWcode']] #saves memory (only a bit, unless WaardeBepalingsmethode is included)
     
     #remove timezone-awareness, crop timeseries and apply NAP correction
     data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
-    data_pd_HWLW_all = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt+dt.timedelta(days=30)],onlyfull=False) #TODO: should be possible to crop timeseries to tstop, but results in mising last LWs for HOEKVHLD 2011.0 and possibly others (then for 2021.0 we need also jan2022, but measext are not yet available there). So move to extremes in period of interest and use moonculminations period_interest-culm_offset
+    data_pd_HWLW_all = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
     if NAP2005correction:
         data_pd_HWLW_all = nap2005_correction(data_pd_HWLW_all,current_station=current_station)
     
+    #check if amount of HWs is enough
+    numdays = (tstop_dt-tstart_dt).total_seconds()/3600/24
+    numHWs_expected = numdays*24*3600/M2_period_timedelta.total_seconds()
+    numHWs = len(data_pd_HWLW_all[data_pd_HWLW_all['HWLWcode']==1])
+    if numHWs < 0.95*numHWs_expected:
+        raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
+    
     print('SELECT/CALC HWLW VALUES')
-    LWaggercode = 3 # timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. TODO: delays should then also be used to scale with first LW in gemgetijkromme but now dominant one is used (which depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepa-lingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen."
-    data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
-    """
-    if (LWaggercode == 4) and (4 in data_pd_HWLW_all['HWLWcode'].values): #TODO: this is not used so can be removed?
-        # select time and value of lowest LW, LWaggercode must be 4 because of iR
-        for iR, HWLWrow in data_pd_HWLW.loc[data_pd_HWLW['HWLWcode'] == 4].iterrows():
-            print('%d of %d'%(iR,data_pd_HWLW.index.max()))
-            id_min = data_pd_HWLW_all.loc[iR-1:iR+1, 'values'].idxmin()
-            data_pd_HWLW.loc[iR,'times'] = data_pd_HWLW_all.loc[id_min,'times'] #on time of lowest LW
-            data_pd_HWLW.loc[iR,'values'] = data_pd_HWLW_all.loc[id_min,'values']
-            data_pd_HWLW.loc[iR,'HWLWcode'] = LWaggercode
-    """
+    LWaggercode = 3 # timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. #TODO: delays should then also be used to scale with first LW in gemgetijkromme but now dominant one is used (which depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepa-lingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen."
+    if LWaggercode == 2: #use time/value of lowest LW, 2 is actually not aggercode, but lowest LWs are converted to 2. #TODO: does not help for HOEKVHLD, what to do?
+        if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
+            data_pd_HWLW = hatyan.calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+        else:
+            data_pd_HWLW = data_pd_HWLW_all.copy()
+    else:
+        data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
+    
     data_pd_HWLW.index.name = 'times' #index is called 'Tijdstip' if retrieved from DDL.
     data_pd_HWLW = data_pd_HWLW.reset_index() # needed since we need numbered HWLW, HW is a value and LW is value+1
     
     #add duur getijperiode
-    data_pd_HWLW['duur getyper hr'] = np.nan
     HW_bool = data_pd_HWLW['HWLWcode']==1
-    gtyper_pds_hr = (data_pd_HWLW.loc[HW_bool,'times'].iloc[1:].values - data_pd_HWLW.loc[HW_bool,'times'].iloc[:-1]).dt.total_seconds()/3600
-    data_pd_HWLW.loc[HW_bool,'duur getyper hr'] = np.concatenate([gtyper_pds_hr.values,[12+25/60]]) #TODO: concatenate should be in opposite order?
+    data_pd_HWLW['getijperiod'] = (data_pd_HWLW.loc[HW_bool,'times'].iloc[1:].values - data_pd_HWLW.loc[HW_bool,'times'].iloc[:-1])
     
     ##### CULMINATIEBEREKENING/HAVENGETALLEN
-    print('calculate HW/LWs corresponding to each culmintation') #TODO: maybe make more efficient by working with HWLWno? (might also be easier with gaps)
+    print('select culminations corresponding to each HW/LW')
     data_pd_HWLW['culm_time'] = pd.NaT
-    data_pd_HWLW['culm_hr'] = np.nan
-    data_pd_HWLW['HWLW_delay_hours'] = np.nan
-    for iC,culmrow in data_pd_moonculm.iterrows():
-        culm_time = culmrow.datetime.tz_localize(None)
-        data_pd_HW_selid = (data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,'times']-(culm_time+culm_addtime)).abs().idxmin()
-        data_pd_LW_selid = data_pd_HW_selid+1
-        if np.abs((data_pd_HWLW.loc[data_pd_HW_selid,'times']-(culm_time+culm_addtime)).total_seconds()/3600) > 8:
-            raise Exception('ERROR: no high waters found within 8 hours of culmination at %s +culm_addtime(=%.1f), range HW: \n%s)'%(culm_time, culm_addtime.total_seconds()/3600, data_pd_HWLW.loc[[data_pd_HWLW.index.min(),data_pd_HWLW.index.max()],'times']))
-        data_pd_HWLW.loc[[data_pd_HW_selid,data_pd_LW_selid],'culm_time'] = culm_time
-        """
-        data_pd_HWLW.loc[[data_pd_HW_selid,data_pd_LW_selid],'culm_hr'] = culm_time.round('h').hour%12
-        HW_delay_h = (data_pd_HWLW.loc[data_pd_HW_selid,'times']-(culm_time+culm_addtime))/np.timedelta64(1,'h')
-        data_pd_HWLW.loc[data_pd_HW_selid,'HWLW_delay_hours'] = HW_delay_h
-        LW_delay_h = (data_pd_HWLW.loc[data_pd_LW_selid,'times']-(culm_time+culm_addtime))/np.timedelta64(1,'h')
-        data_pd_HWLW.loc[data_pd_LW_selid,'HWLW_delay_hours'] = LW_delay_h
-        """
-    data_pd_HWLW['culm_hr'] = data_pd_HWLW['culm_time'].round('h').dt.hour%12
-    HWLW_delay_h = (data_pd_HWLW['times']-(data_pd_HWLW['culm_time']+culm_addtime))/np.timedelta64(1,'h')
-    data_pd_HWLW['HWLW_delay_hours'] = HWLW_delay_h
+    for iHWLW,HWLWrow in data_pd_HWLW.iterrows():
+        if HWLWrow['HWLWcode']!=1: #skip non-HW rows
+            continue
+        #select culmination for this HW
+        timediff_withculm = (HWLWrow['times']-(data_pd_moonculm['datetime']+culm_addtime)).abs()
+        if timediff_withculm.min() > dt.timedelta(hours=8):
+            raise Exception(f'ERROR: no culmination found within 8 hours of high water at {HWLWrow["times"]} +culm_addtime(={culm_addtime.total_seconds()/3600:.1f}hr), range culm: \n{data_pd_moonculm["datetime"].iloc[[0,-1]]}')#%s)'%(culm_time, culm_addtime.total_seconds()/3600, data_pd_HWLW.loc[[data_pd_HWLW.index.min(),data_pd_HWLW.index.max()],'times']))
+        data_pd_HWLW.loc[iHWLW:iHWLW+1,'culm_time'] = data_pd_moonculm.loc[timediff_withculm.idxmin(),'datetime']
+        #compute duur daling for this HW
+        if iHWLW<data_pd_HWLW.index[-1]:
+            data_pd_HWLW.loc[iHWLW,'duurdaling'] = data_pd_HWLW.loc[iHWLW+1,'times']-data_pd_HWLW.loc[iHWLW,'times']
     
-    HW_culmhr_valavg = []
-    HW_culmhr_timavg = []
-    HW_culmhr_gtyperavg = []
-    LW_culmhr_valavg = []
-    LW_culmhr_timavg = []
+    #compute the rest for all extremes at once
+    data_pd_HWLW['culm_hr'] = (data_pd_HWLW['culm_time'].round('h').dt.hour)%12
+    data_pd_HWLW['HWLW_delay'] = (data_pd_HWLW['times']-(data_pd_HWLW['culm_time']+culm_addtime))
     
     print('calculate medians per hour group for LW and HW (instead of 1991 method: average of subgroups with removal of outliers)')
-    for iH in range(0,12): #TODO: havenget ipv culm_hr loop ook pd median op uren doen zoals overschrfreq?
-        data_pd_HW_hour = data_pd_HWLW[(data_pd_HWLW['HWLWcode']==1) & (data_pd_HWLW['culm_hr']==iH)]
-        HW_culmhr_valavg.append(np.median(data_pd_HW_hour['values']))
-        HW_culmhr_timavg.append(np.median(data_pd_HW_hour['HWLW_delay_hours']))
-        HW_culmhr_gtyperavg.append(np.mean(data_pd_HW_hour['duur getyper hr']))
-        data_pd_LW_hour = data_pd_HWLW[(data_pd_HWLW['HWLWcode']!=1) & (data_pd_HWLW['culm_hr']==iH)]
-        LW_culmhr_valavg.append(np.median(data_pd_LW_hour['values']))
-        LW_culmhr_timavg.append(np.median(data_pd_LW_hour['HWLW_delay_hours']))
-    HW_culmhr_valavg_gemtij = np.mean(HW_culmhr_valavg)
-    HW_culmhr_timavg_gemtij = np.mean(HW_culmhr_timavg)
-    HW_culmhr_gtyperavg_gemtij = np.mean(HW_culmhr_gtyperavg)
-    LW_culmhr_valavg_gemtij = np.mean(LW_culmhr_valavg)
-    LW_culmhr_timavg_gemtij = np.mean(LW_culmhr_timavg)
-    
-    HW_culmhr_valavg
+    data_pd_HW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1]
+    data_pd_LW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']!=1] #HWLWcode==2 or HWLWcode==LWaggercode (=3)
+    HWLW_culmhr_summary = pd.DataFrame()
+    HWLW_culmhr_summary['HW_values_median'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['values'].median()
+    HWLW_culmhr_summary['HW_delay_median'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['HWLW_delay'].median()
+    HWLW_culmhr_summary['LW_values_median'] = data_pd_LW.groupby(data_pd_LW['culm_hr'])['values'].median()
+    HWLW_culmhr_summary['LW_delay_median'] = data_pd_LW.groupby(data_pd_LW['culm_hr'])['HWLW_delay'].median()
+    HWLW_culmhr_summary['getijperiod_mean'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['getijperiod'].mean()
+    HWLW_culmhr_summary['duurdaling_median'] = HWLW_culmhr_summary['LW_delay_median']-HWLW_culmhr_summary['HW_delay_median'] #data_pd_HW.groupby(data_pd_HW['culm_hr'])['duurdaling'].mean() gives very different result for spring/mean HARVT10
     
     print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE')
-    HW_data = data_pd_HWLW[(data_pd_HWLW['HWLWcode']==1)]
-    LW_data = data_pd_HWLW[(data_pd_HWLW['HWLWcode']!=1)] #HWLWcode==2 or HWLWcode==LWaggercode (=3)
     fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(18,8), sharex=True)
     ax1.set_title('HW values %s'%(current_station))
-    ax1.plot(HW_data['culm_hr'],HW_data['values'],'.')
-    ax1.plot(range(0,12),HW_culmhr_valavg,'.-')
+    ax1.plot(data_pd_HW['culm_hr'],data_pd_HW['values'],'.')
+    ax1.plot(HWLW_culmhr_summary['HW_values_median'],'.-')
     ax2.set_title('LW values %s'%(current_station))
-    ax2.plot(LW_data['culm_hr'],LW_data['values'],'.')
-    ax2.plot(range(0,12),LW_culmhr_valavg,'.-')
+    ax2.plot(data_pd_LW['culm_hr'],data_pd_LW['values'],'.')
+    ax2.plot(HWLW_culmhr_summary['LW_values_median'],'.-')
     ax3.set_title('HW time delays %s'%(current_station))
-    ax3.plot(HW_data['culm_hr'],HW_data['HWLW_delay_hours'],'.')
-    ax3.plot(range(0,12),HW_culmhr_timavg,'.-')
+    ax3.plot(data_pd_HW['culm_hr'],data_pd_HW['HWLW_delay'].dt.total_seconds()/3600,'.')
+    ax3.plot(HWLW_culmhr_summary['HW_delay_median'].dt.total_seconds()/3600,'.-')
     ax4.set_title('LW time delays %s'%(current_station))
-    ax4.plot(LW_data['culm_hr'],LW_data['HWLW_delay_hours'],'.')
-    ax4.plot(range(0,12),LW_culmhr_timavg,'.-')
+    ax4.plot(data_pd_LW['culm_hr'],data_pd_LW['HWLW_delay'].dt.total_seconds()/3600,'.')
+    ax4.plot(HWLW_culmhr_summary['LW_delay_median'].dt.total_seconds()/3600,'.-')
     ax4.set_xlim([0-0.5,12-0.5])
     fig.tight_layout()
     fig.savefig(os.path.join(dir_havget,f'HWLW_pertijdsklasse_inclmedianline_{current_station}'))
-
-
+    
     file_outname = os.path.join(dir_havget, 'aardappelgrafiek_%s_%s_aggercode%s'%(year_slotgem, current_station, LWaggercode))
-
-    with open('%s.txt'%(file_outname),'w') as f:
-        f.write('### HIGH WATERS ###\n')
-        #for iHR, time, val in zip(range(len(HW_culmhr_valavg)), HW_culmhr_timavg, HW_culmhr_valavg):
-        #    f.write('%2i: %6s %6.2f\n'%(iHR, str(dt.timedelta(hours=time)), val))
-        f.write('%2i: %-14s %6.2f  gtyper %6s\n'%(0,str(dt.timedelta(hours=HW_culmhr_timavg[0])), HW_culmhr_valavg[0], str(dt.timedelta(hours=HW_culmhr_gtyperavg[0]))))
-        f.write('av: %-14s %6.2f  gtyper %6s\n'%(str(dt.timedelta(hours=HW_culmhr_timavg_gemtij)), HW_culmhr_valavg_gemtij, str(dt.timedelta(hours=HW_culmhr_gtyperavg_gemtij))))
-        f.write('%2i: %-14s %6.2f  gtyper %6s\n'%(6,str(dt.timedelta(hours=HW_culmhr_timavg[6])), HW_culmhr_valavg[6], str(dt.timedelta(hours=HW_culmhr_gtyperavg[6]))))
-        f.write('### LOW WATERS ###\n')
-        #for iHR, time, val in zip(range(len(LW_culmhr_valavg)), LW_culmhr_timavg, LW_culmhr_valavg):
-        #    f.write('%2i: %6s %6.2f\n'%(iHR, str(dt.timedelta(hours=time)), val))
-        f.write('%2i: %-14s %6.2f  daling %6s\n'%(0,str(dt.timedelta(hours=LW_culmhr_timavg[0])), LW_culmhr_valavg[0], str(dt.timedelta(hours=LW_culmhr_timavg[0]-HW_culmhr_timavg[0]))))
-        f.write('av: %-14s %6.2f  daling %6s\n'%(str(dt.timedelta(hours=LW_culmhr_timavg_gemtij)), LW_culmhr_valavg_gemtij, str(dt.timedelta(hours=LW_culmhr_timavg_gemtij-HW_culmhr_timavg_gemtij))))
-        f.write('%2i: %-14s %6.2f  daling %6s\n'%(6,str(dt.timedelta(hours=LW_culmhr_timavg[6])), LW_culmhr_valavg[6], str(dt.timedelta(hours=LW_culmhr_timavg[6]-HW_culmhr_timavg[6]))))
-
     print('AARDAPPELGRAFIEK')
     def timeTicks(x, pos):
         d = dt.timedelta(hours=np.abs(x))
@@ -768,19 +737,18 @@ for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
     ax1.set_title(f'HW {current_station} {year_slotgem}')
     ax1.set_xlabel('maansverloop in uu:mm:ss' )
     ax1.set_ylabel('waterstand in m t.o.v. NAP')
-    ax1.plot(HW_culmhr_timavg,HW_culmhr_valavg,'.-',label=current_station)
-    for iHR in range(0,12):
-        ax1.text(HW_culmhr_timavg[iHR],HW_culmhr_valavg[iHR], str(iHR))
+    ax1.plot(HWLW_culmhr_summary['HW_delay_median'].dt.total_seconds()/3600,HWLW_culmhr_summary['HW_values_median'],'.-',label=current_station)
     ax1.xaxis.set_major_formatter(timeTicks)
     ax1.grid()
     ax2.set_title(f'LW {current_station} {year_slotgem}')
     ax2.set_xlabel('maansverloop in uu:mm:ss' )
     ax2.set_ylabel('waterstand in m t.o.v. NAP')
-    ax2.plot(LW_culmhr_timavg,LW_culmhr_valavg,'.-',label=current_station)
-    for iHR in range(0,12):
-        ax2.text(LW_culmhr_timavg[iHR],LW_culmhr_valavg[iHR], str(iHR))
+    ax2.plot(HWLW_culmhr_summary['LW_delay_median'].dt.total_seconds()/3600,HWLW_culmhr_summary['LW_values_median'],'.-',label=current_station)
     ax2.xaxis.set_major_formatter(timeTicks)
     ax2.grid()
+    for iH,row in HWLW_culmhr_summary.iterrows():
+        ax1.text(row['HW_delay_median'].total_seconds()/3600,row['HW_values_median'], str(int(iH)))
+        ax2.text(row['LW_delay_median'].total_seconds()/3600,row['LW_values_median'], str(int(iH)))
     #set equal ylims
     ax1_xlimold = ax1.get_xlim()
     ax2_xlimold = ax2.get_xlim()
@@ -792,14 +760,21 @@ for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
     ax2.set_xlim([np.mean(ax2_xlimold)-xlimrange/2,np.mean(ax2_xlimold)+xlimrange/2])
     ax1.set_ylim([np.mean(ax1_ylimold)-ylimrange/2,np.mean(ax1_ylimold)+ylimrange/2])
     ax2.set_ylim([np.mean(ax2_ylimold)-ylimrange/2,np.mean(ax2_ylimold)+ylimrange/2])
-    #plot gemtij
-    ax1.plot(ax1.get_xlim(),[HW_culmhr_valavg_gemtij,HW_culmhr_valavg_gemtij],'k--')
-    ax1.plot([HW_culmhr_timavg_gemtij,HW_culmhr_timavg_gemtij],ax1.get_ylim(),'k--')
-    ax2.plot(ax2.get_xlim(),[LW_culmhr_valavg_gemtij,LW_culmhr_valavg_gemtij],'k--')
-    ax2.plot([LW_culmhr_timavg_gemtij,LW_culmhr_timavg_gemtij],ax2.get_ylim(),'k--')
+    #plot gemtij dotted lines
+    ax1.plot(ax1.get_xlim(),[HWLW_culmhr_summary['HW_values_median'].mean(),HWLW_culmhr_summary['HW_values_median'].mean()],'k--')
+    ax1.plot([HWLW_culmhr_summary['HW_delay_median'].mean().total_seconds()/3600,HWLW_culmhr_summary['HW_delay_median'].mean().total_seconds()/3600],ax1.get_ylim(),'k--')
+    ax2.plot(ax2.get_xlim(),[HWLW_culmhr_summary['LW_values_median'].mean(),HWLW_culmhr_summary['LW_values_median'].mean()],'k--')
+    ax2.plot([HWLW_culmhr_summary['LW_delay_median'].mean().total_seconds()/3600,HWLW_culmhr_summary['LW_delay_median'].mean().total_seconds()/3600],ax2.get_ylim(),'k--')
     fig.tight_layout()
     fig.savefig(file_outname)
-
+    
+    #write to csv
+    HWLW_culmhr_summary_out = HWLW_culmhr_summary.copy()
+    HWLW_culmhr_summary_out.loc['mean',:] = HWLW_culmhr_summary_out.mean() #add mean row to dataframe (not convenient to add immediately due to plotting with index 0-11)
+    for colname in HWLW_culmhr_summary_out.columns: #round timedelta to make outputformat nicer
+        if HWLW_culmhr_summary_out[colname].dtype == 'timedelta64[ns]':
+            HWLW_culmhr_summary_out[colname] = HWLW_culmhr_summary_out[colname].round('S')
+    HWLW_culmhr_summary_out.to_csv(file_outname+'.csv',float_format='%.2f')
 
 
 
@@ -811,7 +786,7 @@ for current_station in ['HARVT10']:#['HARVT10', 'VLISSGN']:#stat_list:
 # =============================================================================
 # slotGem  = 'rapportRWS'
 # slotGem  = 'havengetallen2011'
-slotGem  = 'havengetallen2011_PLSS'
+slotGem  = 'havengetallen2011_redo'
 
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
 for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
@@ -872,10 +847,11 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     if year_slotgem not in [2011,'2011_olddata']:
         raise Exception(f'gemiddelde getijkromme only possible for 2011: {year_slotgem}')
         
-    #HvH
-    if current_station == 'HOEKVHLD':
-        #TODO: make this automatic, also apply to retrieved data at top of script if necessary, or remove entirely. Also ask stendert where these values come from (delay values seem a bit weird)
-        if slotGem == 'rapportRWS': #2011.0 rapport van Douwe Dillingh
+    #TODO: make this automatic, also apply to retrieved data at top of script if necessary, or remove entirely. Also ask stendert where these values come from (delay values seem a bit weird)
+    if slotGem == 'havengetallen2011': #KW-RMM havengetallen programma
+        pass#dir_havgetpass p:\11208031-010-kenmerkende-waarden-k\work\out_havengetallen_2011\aardappelgrafiek_2011_HARVT10_aggercode3.csv
+    if slotGem == 'rapportRWS': #2011.0 rapport van Douwe Dillingh
+        if current_station == 'HOEKVHLD':
             HW_sp = 1.32
             HW_av = 1.15
             HW_np = 0.90
@@ -886,38 +862,11 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
             tD_sp = dt.timedelta(hours=6-1,minutes=51-32)
             tD_av = dt.timedelta(hours=7-1,minutes=17-34)
             tD_np = dt.timedelta(hours=7-1,minutes=39-36)
-        elif slotGem == 'havengetallen2011': #KW-RMM havengetallen programma
-            HW_sp = 1.28
-            HW_av = 1.11
-            HW_np = 0.87
-            LW_sp = -0.64
-            LW_av = -0.61
-            LW_np = -0.57
-            # tijdsduur voor daling
-            tD_sp = dt.timedelta(hours=6-1,minutes=51-32,seconds=20.5-58)
-            tD_av = dt.timedelta(hours=7-1,minutes=21-33,seconds=29-13.875)
-            tD_np = dt.timedelta(hours=7-1,minutes=45-34,seconds=19-38)
-        elif slotGem == 'havengetallen2011_PLSS': #KW-RMM havengetallen programma, bewerkt met PLSS correctie van Douwe (in excelsheet)
-            HW_sp = 1.32
-            HW_av = 1.15
-            HW_np = 0.91
-            LW_sp = -0.63
-            LW_av = -0.60
-            LW_np = -0.56
-            # tijdsduur voor daling
-            tD_sp = dt.timedelta(hours=6-1,minutes=51-32,seconds=20.5-58)
-            tD_av = dt.timedelta(hours=7-1,minutes=21-33,seconds=29-13.875)
-            tD_np = dt.timedelta(hours=7-1,minutes=45-34,seconds=19-38)
-
-        # tijdsverschil voor verplaatsing HvH-->Maasmond
-        tDiff_sp = dt.timedelta(minutes=-5)
-        tDiff_av = dt.timedelta(minutes=-5)
-        tDiff_np = dt.timedelta(minutes=-5)
-
-    #HV10
-    elif current_station == 'HARVT10':
-
-        if slotGem == 'rapportRWS':
+            # tijdsverschil voor verplaatsing HvH-->Maasmond
+            tDiff_sp = dt.timedelta(minutes=-5)
+            tDiff_av = dt.timedelta(minutes=-5)
+            tDiff_np = dt.timedelta(minutes=-5)
+        elif current_station == 'HARVT10':
             HW_sp = 1.45
             HW_av = 1.24
             HW_np = 0.93
@@ -932,23 +881,25 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
             tDiff_sp = dt.timedelta(minutes=14-32)
             tDiff_av = dt.timedelta(minutes=14-34)
             tDiff_np = dt.timedelta(minutes=13-36)
-
-        elif slotGem == 'havengetallen2011':
-            HW_sp = 1.41
-            HW_av = 1.21
-            HW_np = 0.92
-            LW_sp = -0.94
-            LW_av = -0.86
-            LW_np = -0.77
+        else:
+            raise Exception(f'station {current_station} not implemented for gemiddelde getijkromme method: {slotGem}')
+    elif slotGem == 'havengetallen2011_PLSS': #KW-RMM havengetallen programma, bewerkt met PLSS correctie van Douwe (in excelsheet)
+        if current_station == 'HOEKVHLD': 
+            HW_sp = 1.32
+            HW_av = 1.15
+            HW_np = 0.91
+            LW_sp = -0.63
+            LW_av = -0.60
+            LW_np = -0.56
             # tijdsduur voor daling
-            tD_sp = dt.timedelta(hours=6-1,minutes=45-14,seconds=53-45.5)
-            tD_av = dt.timedelta(hours=7-1,minutes=5-13,seconds=41.625-33.416667)
-            tD_np = dt.timedelta(hours=7-1,minutes=31-11,seconds=17-12)
-            # tijdsverschil met HvH voor start van tijdserie van kromme (verschil in havengetal HW)
-            tDiff_sp = dt.timedelta(minutes=14-32,seconds=45.5-58)
-            tDiff_av = dt.timedelta(minutes=13-33,seconds=33.416667-13.875)
-            tDiff_np = dt.timedelta(minutes=11-34,seconds=12-38)
-        elif slotGem == 'havengetallen2011_PLSS':
+            tD_sp = dt.timedelta(hours=6-1,minutes=51-32,seconds=20.5-58)
+            tD_av = dt.timedelta(hours=7-1,minutes=21-33,seconds=29-13.875)
+            tD_np = dt.timedelta(hours=7-1,minutes=45-34,seconds=19-38)
+            # tijdsverschil voor verplaatsing HvH-->Maasmond
+            tDiff_sp = dt.timedelta(minutes=-5)
+            tDiff_av = dt.timedelta(minutes=-5)
+            tDiff_np = dt.timedelta(minutes=-5)
+        elif current_station == 'HARVT10':
             HW_sp = 1.44
             HW_av = 1.24
             HW_np = 0.95
@@ -963,9 +914,10 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
             tDiff_sp = dt.timedelta(minutes=14-32,seconds=45.5-58)
             tDiff_av = dt.timedelta(minutes=13-33,seconds=33.416667-13.875)
             tDiff_np = dt.timedelta(minutes=11-34,seconds=12-38)
-
+        else:
+            raise Exception(f'station {current_station} not implemented for gemiddelde getijkromme method: {slotGem}')
     else:
-        raise Exception(f'station {current_station} not implemented for gemiddelde getijkrommen')
+        raise Exception(f'non-existent gemiddelde getijkromme method: {slotGem}')
         
     #load measurement data
     file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
