@@ -72,9 +72,10 @@ cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl')
 print('...done')
 
 #get list of stations with extremes and add K13A
-cat_aquometadatalijst_ext, cat_locatielijst_ext = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict ={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+cat_aquometadatalijst_ext, cat_locatielijst_ext = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
 K13APFM_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='K13APFM'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
-cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry)
+MAASMSMPL_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='MAASMSMPL'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
+cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry).append(MAASMSMPL_entry)
 cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_ext['X'].values, coordy_in=cat_locatielijst_ext['Y'].values, epsg_in=int(cat_locatielijst_ext['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_ext_codeidx = cat_locatielijst_ext.reset_index(drop=False).set_index('Code',drop=False)
 
@@ -94,6 +95,7 @@ Oranjezon
 Oostkapelle
 Breskens
 Perkpolder Walsoorden
+Maasmond stroommeetpaal (MAASMSMPL) >> BOI locatie
 """
 
 #stat_name_list = ['BATH','DELFZIJL','DEN HELDER','DORDRECHT','EEMSHAVEN','EURO PLATFORM','HANSWEERT','HARINGVLIETSLUIZEN','HARLINGEN','HOEK VAN HOLLAND','HUIBERTGAT','IJMUIDEN','KORNWERDERZAND','LAUWERSOOG','ROOMPOT BUITEN','ROTTERDAM','SCHEVENINGEN','STAVENISSE','TERNEUZEN','VLISSINGEN','WEST-TERSCHELLING'] # lijst AB
@@ -250,6 +252,8 @@ DDL_Hoedanigheid.Code_wl	NAP
 DDL_MeetApparaat.Code_wl	109|127
 DDL_MeetApparaat.Omschrijving_wl	Radar|Vlotter
 DDL_Hoedanigheid.Code_wl	NAP
+
+MAASMSMPL wl >> geen vlotter (geen ext data beschikbaar)
 """
 
 """
@@ -312,7 +316,7 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in []:#stat_list:
+for current_station in ['MAASMSMPL']:#stat_list:
     print(f'checking data for {current_station}')
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
@@ -321,7 +325,7 @@ for current_station in []:#stat_list:
     cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'})
     for metakey in list_relevantDDLdata:
         data_summary.loc[current_station,f'DDL_{metakey}_wl'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
-    if not current_station in ['K13APFM']:
+    if not current_station in ['K13APFM','MAASMSMPL']:# no ext available for these stations
         cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
         for metakey in list_relevantDDLdata:
             data_summary.loc[current_station,f'DDL_{metakey}_ext'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
@@ -659,7 +663,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
     print('SELECT/CALC HWLW VALUES')
-    LWaggercode = 3 # timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. #TODO: delays should then also be used to scale with first LW in gemgetijkromme but now dominant one is used (which depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepa-lingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen."
+    LWaggercode = 3 # timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. #TODO: delays should then also be used to scale with first LW in gemgetijkromme but now dominant one is used (which depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepa-lingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen." 3 is sowieso niet generiek, evt ruwe kromme maken en daar dominantie uit bepalen?
     if LWaggercode == 2: #use time/value of lowest LW, 2 is actually not aggercode, but lowest LWs are converted to 2. #TODO: does not help for HOEKVHLD, what to do?
         if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
             data_pd_HWLW = hatyan.calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
@@ -787,9 +791,9 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
 # slotGem  = 'rapportRWS'
 # slotGem  = 'havengetallen2011'
 slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'havengetallen2011_PLSS'
-
+#TODO: evt schaling naar 12u25m om repetitief signaal te maken (voor boi), dan 1 plotperiode selecteren en weer terugschalen. Voorafgaand aan dit alles de ene kromme schalen met havengetallen? (Ext berekening is ingewikkelder van 1 kromme dan repetitief signaal)
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
-for current_station in ['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     """
     uit: gemiddelde getijkrommen 1991.0
         
