@@ -1297,6 +1297,17 @@ fig_sum.savefig(os.path.join(dir_gemgetij,'gemgetij_allstations_noshift'))
 #TODO: zie vragen in script, zie ook 'aantekeningen boyan' onenote
 #TODO: hoe plots beoordelen? >> rode lijn moet soort van verlengde zijn van groene, als die ineens omhoog piekt komt dat door hele extreme wardes die je dan vrmoedelijk ook al ziet in je groene lijn
 
+"""
+○ Je vertaalt niet x aantal datapunten naar frequentie, maar je zet de punten op volgorde en je rankt ze, daarvan maak je distributie, ranking en frequentie is niet 1 op 1
+○ Max freq is 2 getij per dag, keer 365 dagen, maximale frequentie komt daarmee overeen. (on)gefilterd en trendanalys is datapunten op volgorde en frequentie, 
+○ Lezen:
+    o rapport boyan kw-rmm: n:\Projects\11205000\11205232\C. Report - advise\007 - Kenmerkende waarden RMM\11205232-007-ZKS-0003_v0.1-Kenmerkende Waarden Rijn-Maasmonding - Over- en Onderschrijdingsfrequenties.docx
+    o HKV rapport pag 5-102 = -97 113, "Methode II Conditionele Weibull fit en zichtduur": p:\11208031-010-kenmerkende-waarden-k\literatuur\Waterstandsfrequenties in de RMM - 2006.pdf
+    o Ook goederen/Fiole (oa trendbreuk 1998): https://puc.overheid.nl/rijkswaterstaat/doc/PUC_102024_31/ (tabel die Boyan heeft gebruikt, is in HKV overgenomen en ook door Boyan overgenomen)
+○ Voor bepaalde locaties waar afvoergolf rivier werkte methode van HKV het beste, Boyan heeft dit in Python gezet en veel duidelijker. Conclusies zijn in zijn rapport gezet
+
+"""
+
 dir_meas_overschr = os.path.join(dir_base,'data_overschrijding')
 
 #station_break_dict = {'HOEKVHLD':'01-01-1998'} #TODO: possible to make generic?
