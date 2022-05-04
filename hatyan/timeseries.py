@@ -36,7 +36,7 @@ from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
 
 
-def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
+def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_hr=6):
     """
     
     Calculates extremes (high and low waters) for the provided timeseries. 
@@ -73,7 +73,10 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
         1 (high water) and 2 (low water). And if calc_HWLW345=True also 3 (first low water), 4 (agger) and 5 (second low water).
 
     """
-
+    
+    if not ts.index.is_monotonic_increasing:
+        raise Exception('ERROR: timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()') #otherwise "ValueError: 'list' argument must have no negative elements"
+    
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_min = get_schureman_freqs(['M2']).loc['M2','period [hr]']*60
     ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
@@ -98,7 +101,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
-    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW['times']>=ts.index[0]+dt.timedelta(hours=6)) & (data_pd_HWLW['times']<=ts.index[-1]-dt.timedelta(hours=6))].index
+    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW['times']>=ts.index[0]+dt.timedelta(hours=buffer_hr)) & (data_pd_HWLW['times']<=ts.index[-1]-dt.timedelta(hours=buffer_hr))].index
     LWid_main = LWid_main_raw[np.in1d(LWid_main_raw,validtimes_idx)]
     HWid_main = HWid_main_raw[np.in1d(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process

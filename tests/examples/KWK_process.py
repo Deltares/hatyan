@@ -79,7 +79,8 @@ cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry).append(MAASMSM
 cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_ext['X'].values, coordy_in=cat_locatielijst_ext['Y'].values, epsg_in=int(cat_locatielijst_ext['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_ext_codeidx = cat_locatielijst_ext.reset_index(drop=False).set_index('Code',drop=False)
 
-""" #TODO: maybe add these coastal stations
+"""
+#TODO: maybe add these coastal stations
 Holwerd
 Stortemelk
 Eierland
@@ -90,16 +91,15 @@ IJmuiden zuidelijk havenhoofd / IJmuiden semafoor / IJmuiden Noordersluis (IJmui
 Noordwijk meetpost
 Katwijk / Katwijk paal
 Brouwershavensche Gat 05 / Brouwershavensche Gat, punt 02
-Oosterschelde 04 / 09 / 10 / 11 / 12 / 13 / 14 / 15
+Oosterschelde 04 / 09 / 10 / 11 / 12 / 13 / 14 / 15 (11 is toegevoegd)
 Oranjezon
 Oostkapelle
 Breskens
 Perkpolder Walsoorden
-Maasmond stroommeetpaal (MAASMSMPL) >> BOI locatie
 """
 
 #stat_name_list = ['BATH','DELFZIJL','DEN HELDER','DORDRECHT','EEMSHAVEN','EURO PLATFORM','HANSWEERT','HARINGVLIETSLUIZEN','HARLINGEN','HOEK VAN HOLLAND','HUIBERTGAT','IJMUIDEN','KORNWERDERZAND','LAUWERSOOG','ROOMPOT BUITEN','ROTTERDAM','SCHEVENINGEN','STAVENISSE','TERNEUZEN','VLISSINGEN','WEST-TERSCHELLING'] # lijst AB
-stat_name_list = ['Terneuzen','Bath','Hansweert','Vlissingen','Bergse Diepsluis west','Krammersluizen west','Stavenisse','Roompot binnen','Cadzand','Westkapelle','Roompot buiten','Brouwershavensche Gat 08','Haringvliet 10','Hoek van Holland','Scheveningen','IJmuiden buitenhaven','Petten zuid','Den Helder','Texel Noordzee','Terschelling Noordzee','Wierumergronden','Huibertgat','Oudeschild','Vlieland haven','West-Terschelling','Nes','Schiermonnikoog','Den Oever buiten','Kornwerderzand buiten','Harlingen','Lauwersoog','Eemshaven','Delfzijl','Nieuwe Statenzijl','Lichteiland Goeree','Euro platform','K13a platform'] + ['Dordrecht','Stellendam Buiten','Rotterdam']#Dillingh 2013, aangevuld met 3 stations AB
+stat_name_list = ['Terneuzen','Bath','Hansweert','Vlissingen','Bergse Diepsluis west','Krammersluizen west','Stavenisse','Roompot binnen','Cadzand','Westkapelle','Roompot buiten','Brouwershavensche Gat 08','Haringvliet 10','Hoek van Holland','Scheveningen','IJmuiden buitenhaven','Petten zuid','Den Helder','Texel Noordzee','Terschelling Noordzee','Wierumergronden','Huibertgat','Oudeschild','Vlieland haven','West-Terschelling','Nes','Schiermonnikoog','Den Oever buiten','Kornwerderzand buiten','Harlingen','Lauwersoog','Eemshaven','Delfzijl','Nieuwe Statenzijl','Lichteiland Goeree','Euro platform','K13a platform'] + ['Dordrecht','Stellendam Buiten','Rotterdam'] + ['Maasmond','Oosterschelde 11'] #"KW kust en GR Dillingh 2013" en "KW getijgebied RWS 2011.0", aangevuld met 3 stations AB, aangevuld met BOI wensen
 stat_list = []
 for stat_name in stat_name_list:
     bool_isstation = cat_locatielijst_ext_codeidx['Naam'].str.contains(stat_name,case=False)
@@ -316,7 +316,7 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in ['MAASMSMPL']:#stat_list:
+for current_station in []:#stat_list:
     print(f'checking data for {current_station}')
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
@@ -641,7 +641,7 @@ data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
 
 for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
     print(f'havengetallen for {current_station}')
-        
+    
     #read HWLW data
     file_ext_pkl = os.path.join(dir_meas,f"{current_station}_measext.pkl")
     if not os.path.exists(file_ext_pkl):
@@ -792,8 +792,9 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
 # slotGem  = 'havengetallen2011'
 slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'havengetallen2011_PLSS'
 #TODO: evt schaling naar 12u25m om repetitief signaal te maken (voor boi), dan 1 plotperiode selecteren en weer terugschalen. Voorafgaand aan dit alles de ene kromme schalen met havengetallen? (Ext berekening is ingewikkelder van 1 kromme dan repetitief signaal)
+#TODO: gemgetijkromme is maar 1x of 1.5x nodig voor figuur, dus verplaatsen naar 1 datum en ext afleiden (buffer_hr=0 keyword gebruiken). Voor boi av/sp/np eerst schalen naar 12h25m en interpoleren, dan repeteren, dan is alles precies even lang en makkelijk te repeteren.
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
-for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     """
     uit: gemiddelde getijkrommen 1991.0
         
@@ -1142,7 +1143,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     in2 = zero_crossings_times[zerocrossing_lowestHW_idx+1]
     tC_np = in2-in1
     tU_np = tC_np - tD_np
-    # repeat ruwe spring/doodtijkromme in time. 
+    # repeat ruwe spring/doodtijkromme in time.
     if slotGem in ['rapportRWS','havengetallen2011','havengetallen2011_PLSS']:
         prediction_sp_one = prediction_sn.loc[is1:is2].iloc[:-3] #-3 is nodig om reproductie oude lijnen te krijgen, maar dat is niet goed (moet -1 zijn) en je ziet ook een hickup bij ieder begin/eind (also for doodtij)
         prediction_np_one = prediction_sn.loc[in1:in2].iloc[:-3]
@@ -1170,7 +1171,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
         #drop duplicate whole-minutes values
         prediction_sp = prediction_sp[~prediction_sp.index.duplicated(keep='first')]
         prediction_np = prediction_np[~prediction_np.index.duplicated(keep='first')]
-    
+            
     #calculating extremes
     prediction_sp_ext = hatyan.calc_HWLW(ts=prediction_sp)
     prediction_np_ext = hatyan.calc_HWLW(ts=prediction_np)
