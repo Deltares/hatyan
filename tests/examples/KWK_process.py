@@ -206,6 +206,12 @@ for current_station in []:#stat_list:
 #       STELLDBTN (geen data beschikbaar) >> geen ext data vanaf 2000
 #   sterke outliers in tijdreeksen (na filtering QC=99, gemeld op 26-4): IJMDBTHVN/ROOMPBTN (2001) >> is niet meer zo na verwijderen Radar metingen
 #   >> NIEUWSTZL extremen missen vanaf 2012/2013 want Radar ipv Vlotter, maar hier missen ook de metingen dus is het waarschijnlijker dat ze op Radar over zijn gegaan? (IJMDBTHVN heeft nog wel lang Vlotter measwl data na stoppen van Vlotter extremen)
+#TODO: wadden data opvallendheden melden:
+#   Outliers HUIBGT 1979/1985/1987 en WIERMGDN 1985/1987 >> en meer jaren
+#   TEXNZE 2007/2012/2015: veel grote gaps (2007 heeft 10 maanden gap) >> 2007 is nog steeds het geval
+#   HUIBGT 1982: veel ongeldige waardes rond 1.7m >> nog steeds?
+#   HUIBGT 2017: veel missende waardes >> nog steeds?
+#   UITHZWD1/WIERMWD1 2008 tm 2012 negatieve outliers. Sowieso alle ts vlak aan onderkant door droogval >> niet bij KWK meegenomen?
 #TODO: report dubbelingen HARVT10 (2000-2022, al gedaan?) en andere stations (1900-2000), en EURPFM ext, zie data_summary.csv (er zijn ook dubbelingen met nan-waardes)
 #TODO: report wl/ext missings in recent period 2000-2021 (vanuit data_summary)
 #TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (opgevraagd op 28-04-2022) (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
@@ -1294,10 +1300,11 @@ fig_sum.savefig(os.path.join(dir_gemgetij,'gemgetij_allstations_noshift'))
 #       break 1998: in buurt van spui was er een trendbreuk, zie rapport boyan, ook voor HOEKVHLD toegepast.
 #       die break wordt voor trendanalyse toegepast, daardoor is de trendlijn korter dan de (on)gefilterd lijnen
 #weibull lijn begint pas bij hogere freq want die begint pas bij n-de waarde, want die gaat niet met het staartje naar beneden. is niet van toepassing voor die hoogfrequente situaties, is ontwikkeld voor extremen. te voorspellen freqs wordt met np.logspace() opgegeven.
-#TODO: zie vragen in script, zie ook 'aantekeningen boyan' onenote
+#TODO: zie vragen in script
 #TODO: hoe plots beoordelen? >> rode lijn moet soort van verlengde zijn van groene, als die ineens omhoog piekt komt dat door hele extreme wardes die je dan vrmoedelijk ook al ziet in je groene lijn
 
 """
+#TODO: aantekeningen gesprek Boyan
 ○ Je vertaalt niet x aantal datapunten naar frequentie, maar je zet de punten op volgorde en je rankt ze, daarvan maak je distributie, ranking en frequentie is niet 1 op 1
 ○ Max freq is 2 getij per dag, keer 365 dagen, maximale frequentie komt daarmee overeen. (on)gefilterd en trendanalys is datapunten op volgorde en frequentie, 
 ○ Lezen:
