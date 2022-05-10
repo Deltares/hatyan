@@ -215,6 +215,7 @@ for current_station in []:#stat_list:
 #TODO: report dubbelingen HARVT10 (2000-2022, al gedaan?) en andere stations (1900-2000), en EURPFM ext, zie data_summary.csv (er zijn ook dubbelingen met nan-waardes)
 #TODO: report wl/ext missings in recent period 2000-2021 (vanuit data_summary)
 #TODO: vergelijking yearmean wl/HW/LW met validatiedata Anneke (opgevraagd op 28-04-2022) (nu alleen beschikbaar voor HOEKVHLD en HARVT10, sowieso wl is nodig voor slotgemiddelde), it is clear in the HARVT10 figures that something is off for meanwl, dit gebeurt misschien ook bij andere stations met duplicate times in data_summary_filtered.xlsx (also check on nanvalues that are not nan in validationdata, this points to missing data in DDL)
+#TODO: DORDT getijslag lijkt in 1970 ineens kleiner te worden, is dit geen foute dataset?
 
 """
 #TODO: controleren of andere datasets nuttige data bevatten nadat gemiddelde HW/LW/wl uitwijzen dat ze meer data bevatten? (onderstaande komt uit data_summary.T)
