@@ -1183,17 +1183,18 @@ def get_diablocks(filename):
         #get groepering and whether dia/wia is equidistant or non-equidistant
         bool_startswithmux = data_meta_series.str.startswith('MUX')
         if bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
-            mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD']
+            mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
         else: #normal waterlevel timeseries (equidistant)
-            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD']
+            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA']
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
         
         #read all required metadata
         for get_content_sel in mincontent:
             bool_mincontent = data_meta_series.str.replace('!',';').str.startswith(get_content_sel)
             if bool_mincontent.sum()!=1:
-                raise Exception(f'unexpected amount of matched metadatalines ({bool_mincontent.sum()}) for {get_content_sel}')
+                if get_content_sel!='STA':
+                    raise Exception(f'unexpected amount of matched metadatalines ({bool_mincontent.sum()}) for {get_content_sel}')
             data_meta_mincontent = data_meta_series.loc[bool_mincontent].iloc[0].split(';') #list type
             if get_content_sel in ['GHD','MXG;2']: # Grootheid (dia/wia, dia/wia equidistant). Originally dia contains PAR and MXP;2, but they are replaced
                 file_grootheidname = data_meta_mincontent[1]
@@ -1235,7 +1236,8 @@ def get_diablocks(filename):
                 diablocks_pd.loc[block_id,'tstart'] = datestart
                 diablocks_pd.loc[block_id,'tstop'] = datestop
                 diablocks_pd.loc[block_id,'timestep_min'] = timestep_value
-
+            elif get_content_sel in ['STA']: #Status. same in all files
+                diablocks_pd.loc[block_id,'STA'] = '!'.join(data_meta_series.loc[bool_mincontent].tolist())
     return diablocks_pd
 
 
@@ -1295,7 +1297,7 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     return data_pd
 
 
-def readts_dia(filename, station=None, block_ids=None):
+def readts_dia(filename, station=None, block_ids=None, get_status=False):
     """
     Reads an equidistant or non-equidistant dia file, or a list of dia files. Also works for diafiles containing multiple blocks for one station.
 
@@ -1368,7 +1370,13 @@ def readts_dia(filename, station=None, block_ids=None):
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
-            #check_ts(data_pd_oneblock)
+            if get_status:
+                block_status_list = diablocks_pd.loc[block_id,'STA'].split('!')
+                for block_status_one in block_status_list:
+                    status_tstart = dt.datetime.strptime(block_status_one[4:17],'%Y%m%d;%H%M')
+                    status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
+                    status_val = block_status_one[-1]
+                    data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
             data_pd_allblocks = data_pd_allblocks.append(data_pd_oneblock, ignore_index=False)
         
         #append to allyears dataset
