@@ -1370,7 +1370,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
-            if get_status:
+            if get_status: #TODO: this can be more generic (eg add additional metadata) or more neat. Also in get_diablocks()
                 block_status_list = diablocks_pd.loc[block_id,'STA'].split('!')
                 for block_status_one in block_status_list:
                     status_tstart = dt.datetime.strptime(block_status_one[4:17],'%Y%m%d;%H%M')
