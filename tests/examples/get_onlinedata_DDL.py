@@ -66,7 +66,7 @@ if 0: #for RWS
 
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
-if 1: #for CMEMS
+if 0: #for CMEMS
     cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Code',drop=False)
     cat_locatielijst['lon'],cat_locatielijst['lat'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst['X'].values, coordy_in=cat_locatielijst['Y'].values, epsg_in=int(cat_locatielijst['Coordinatenstelsel'].iloc[0]),epsg_out=4326)
     
@@ -106,7 +106,7 @@ if 1: #for CMEMS
             continue
         ts_meas_pd['values'] /= 100 #convert from cm to m
         print(ts_meas_pd)
-        fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
+        #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
 
 
 ######### more complex retrieval of selection of data from DDL from selection of stations
