@@ -10,8 +10,10 @@ import hatyan
 hatyan.close('all')
 
 # input parameters
-tstart_dt = dt.datetime(2020,11,25,9,47,0) #quite recent period
-tstop_dt = dt.datetime(2021,1,30,9,50,0)
+tstart_dt = dt.datetime(2019,12,24) #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
+tstop_dt = dt.datetime(2020,1,5)
+#tstart_dt = dt.datetime(2020,11,25,9,47,0) #quite recent period
+#tstop_dt = dt.datetime(2021,1,30,9,50,0)
 #tstart_dt = dt.datetime(1993,8,25,9,47,0) #VLISSGN got new Waardebepalingsmethode in this year
 #tstop_dt = dt.datetime(1994,11,30,9,50,0)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
@@ -21,7 +23,9 @@ tstop_dt = dt.datetime(2021,1,30,9,50,0)
 #dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
+print('retrieving DDL catalog')
 catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
+print('...done')
 
 ######### oneline waterlevel data retrieval for one station
 if 0: #for RWS
@@ -62,20 +66,47 @@ if 0: #for RWS
 
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
-if 0: #for CMEMS
-    #list of all waterlevel stations
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station=None,stationcolumn='Code',
-    #                                                                                   meta_dict={'Grootheid.Omschrijving':'waterhoogte','Groepering.Code':'NVT'})
-    cat_locatielijst_sel = catalog_dict['LocatieLijst'] #list of all stations
-    #cat_locatielijst_sel = cat_locatielijst_sel[cat_locatielijst_sel['Code']=='VLISSGN']
-    for iR, locatie_row in cat_locatielijst_sel.iterrows(): 
-        request_output = hatyan.get_DDL_data(station_dict=locatie_row,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},
-                                             tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC',allow_multipleresultsfor=['WaardeBepalingsmethode'])#,'Hoedanigheid']) #adding Hoedanigheid is tricky, since it results in different vertical references
-        if request_output is not None:
-            ts_meas_pd, metadata, stationdata = request_output
-            ts_meas_pd['values'] = ts_meas_pd['values']/100 #convert from cm to m
-            print(stationdata['Naam'][0])
-            print(ts_meas_pd)
+if 1: #for CMEMS
+    cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Code',drop=False)
+    cat_locatielijst['lon'],cat_locatielijst['lat'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst['X'].values, coordy_in=cat_locatielijst['Y'].values, epsg_in=int(cat_locatielijst['Coordinatenstelsel'].iloc[0]),epsg_out=4326)
+    
+    # subset of catalog and station list with all waterlevel related values
+    cat_aquometadatalijst_waterhoogte, cat_locatielijst_waterhoogte = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Code':'WATHTE$','Groepering.Code':'NVT'}) #waterhoogte, so waterlevel measurements
+    key_list = ['Eenheid','Grootheid','Groepering','Hoedanigheid','MeetApparaat']
+    
+    #printing unique metadata in selection
+    for key in key_list:
+        print(f'unique {key} available in requested subset:\n{cat_aquometadatalijst_waterhoogte[[f"{key}.Code",f"{key}.Omschrijving"]].drop_duplicates()}')
+    
+    #data query
+    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT', #combination for measured waterlevels
+               'Hoedanigheid.Code':'NAP', # vertical reference. Hoedanigheid is necessary for eg EURPFM/LICHTELGRE, where NAP and MSL values are available while it should only contain MSL #MSL, NAP, PLAATSLR, TAW, NVT (from cat_aquometadatalijst_waterhoogte['Hoedanigheid.Code'])
+               'MeetApparaat.Code':'127', # measurement device type. MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter) TODO: Except LICHTELGRE/K13APFM which have Radar/Stappenbaak en Radar as MeetApparaat
+               }
+    
+    stat_list = cat_locatielijst_waterhoogte['Code'].tolist()
+    
+    #loop over the each station
+    for current_station in ['HOEKVHLD']: #stat_list: #['HOEKVHLD']:
+        station_dict = cat_locatielijst.loc[current_station,['Locatie_MessageID','X','Y','Naam','Code']] #station query
+        station_latlon = cat_locatielijst.loc[current_station,['lat','lon']]
+        
+        allow_multipleresultsfor = ['WaardeBepalingsmethode'] # necessary for retrieving very long timeseries
+        
+        #retrieving waterlevels
+        print(f'retrieving measwl data from DDL for {current_station}')
+        request_output = hatyan.get_DDL_data(station_dict=station_dict, tstart_dt=tstart_dt, tstop_dt=tstop_dt, tzone='UTC+00:00', meta_dict=meta_dict, allow_multipleresultsfor=allow_multipleresultsfor)
+        if request_output is None: #no output so this station is skipped
+            continue
+        
+        ts_meas_pd, metadata, stationdata = request_output #ts_meas_pd contains values/QC/Status/WaardeBepalingsmethode, metadata contains unit/reference/etc, stationdata contains X/Y/Naam/Code
+        
+        ts_meas_pd = ts_meas_pd.loc[:,['values', 'QC', 'Status']] #dropping WaardeBepalingsmethode reduces memory 
+        if not (metadata['Eenheid.Code']=='cm').all(): #skipping station if unit is not cm (should not happen)
+            continue
+        ts_meas_pd['values'] /= 100 #convert from cm to m
+        print(ts_meas_pd)
+        fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
 
 
 ######### more complex retrieval of selection of data from DDL from selection of stations
