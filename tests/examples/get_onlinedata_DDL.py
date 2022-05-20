@@ -6,7 +6,7 @@ Created on Wed Dec  1 17:03:52 2021
 """
 
 import datetime as dt
-import hatyan
+import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
 hatyan.close('all')
 
 # input parameters
