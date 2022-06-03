@@ -21,7 +21,7 @@ import statsmodels.api as sm # `conda install -c conda-forge statsmodels -y`
 #TODO: when to deliver data for Anneke and Robert and for which stations? (stationslijst opvragen)
 #TODO: move all parts to hatyan.kenmerkendewaarden.*, maybe also the stuff in hatyan/overschrijding.py (and include license header) >> indeed put it in hatyan or not?
 #TODO: add tidal indicators (LAT etc)
-
+#TODO: tstart/tstop, include tzinfo in tstart/tstop for DLL >> still does not cut properly tzoneaware
 
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
@@ -75,7 +75,9 @@ print('...done')
 cat_aquometadatalijst_ext, cat_locatielijst_ext = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
 K13APFM_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='K13APFM'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
 MAASMSMPL_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='MAASMSMPL'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
-cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry).append(MAASMSMPL_entry)
+#WIERMWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='WIERMWD1'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
+#UITHZWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='UITHZWD1'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
+cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry).append(MAASMSMPL_entry)#.append(WIERMWD1_entry).append(UITHZWD1_entry)
 cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_ext['X'].values, coordy_in=cat_locatielijst_ext['Y'].values, epsg_in=int(cat_locatielijst_ext['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_ext_codeidx = cat_locatielijst_ext.reset_index(drop=False).set_index('Code',drop=False)
 
@@ -109,6 +111,7 @@ for stat_name in stat_name_list:
     #print(f'{stat_name:30s}: {bool_isstation.sum()}')
 #stat_list = ['BATH','DELFZL','DENHDR','DORDT','EEMSHVN','EURPFM','HANSWT','STELLDBTN','HARLGN','HOEKVHLD','HUIBGT','IJMDBTHVN','KORNWDZBTN','LAUWOG','ROOMPBTN','ROTTDM','SCHEVNGN','STAVNSE','TERNZN','VLISSGN','WESTTSLG'] # lijst AB vertaald naar DONAR namen
 #stat_list = ['HOEKVHLD','HARVT10','VLISSGN']
+#stat_list2 = ['DELFZL','EEMSHVN','NIEUWSTZL','IJMDBTHVN','IJMDSMPL','SCHEVNGN','HOEKVHLD','A12','AWGPFM','D15','EURPFM','F16','J6','K13APFM','K14PFM','L9PFM','LICHTELGRE','Q1','F3PFM','BERGSDSWT','KATSBTN','KRAMMSZWT','MARLGT','ROOMPBNN','ROOMPBTN','STAVNSE','YERSKE','NORTHCMRT','SINTANLHVSGR','BROUWHVSGT02','BROUWHVSGT08','HARVT10','OOSTSDE04','OOSTSDE11','OOSTSDE14','STELLDBTN','VLAKTVDRN','HUIBGT','TERSLNZE','TEXNZE','WIERMGDN','LAUWOG','SCHIERMNOG','DENHDR','DENOVBTN','HARLGN','HOLWD','KORNWDZBTN','NES','OUDSD','VLIELHVN','WESTTSLG','BAALHK','BATH','BRESKVHVN','CADZD','GATVBSLE','HANSWT','OVLVHWT','SCHAARVDND','TERNZN','VLISSGN','WALSODN','WESTKPLE'] #list by AB 1-6-2022, ext often not available for new stations. Not in this list from previous list: PETTZD, DORDT, ROTTDM, MAASMSMPL
 
 M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
 
@@ -129,9 +132,6 @@ def nap2005_correction(data_pd,current_station):
     data_pd_corr.loc[before2005bool,'values'] = data_pd_corr.loc[before2005bool,'values']+correct_value
     
     return data_pd_corr
-
-
-
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
@@ -183,6 +183,7 @@ for current_station in []:#stat_list:
         ts_meas_exttyp_pd, metadata2, dummy = request_output_exttyp
         ts_meas_ext_pd['values'] = ts_meas_ext_pd['values']/100 #convert from cm to m
         if ts_meas_exttyp_pd['values'].isnull().any(): #TODO: remove this exception for SCHEVNGN after DDL exttype data is fixed
+            print(f'WARNING: invalid ext type values for {current_station}, skipping station')    
             continue
         ts_meas_ext_pd = hatyan.convert_HWLWstr2num(ts_meas_ext_pd,ts_meas_exttyp_pd)
         ts_meas_ext_pd.to_pickle(file_wl_pkl.replace('_measwl','_measext'))
@@ -801,7 +802,7 @@ slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'haveng
 #TODO: evt schaling naar 12u25m om repetitief signaal te maken (voor boi), dan 1 plotperiode selecteren en weer terugschalen. Voorafgaand aan dit alles de ene kromme schalen met havengetallen? (Ext berekening is ingewikkelder van 1 kromme dan repetitief signaal)
 #TODO: gemgetijkromme is maar 1x of 1.5x nodig voor figuur, dus verplaatsen naar 1 datum en ext afleiden (buffer_hr=0 keyword gebruiken). Voor boi av/sp/np eerst schalen naar 12h25m en interpoleren, dan repeteren, dan is alles precies even lang en makkelijk te repeteren.
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
-for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     """
     uit: gemiddelde getijkrommen 1991.0
         
