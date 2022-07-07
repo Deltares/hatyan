@@ -283,6 +283,8 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     else:
         file_M2phasediff = os.path.join(os.path.dirname(file_path),'data','data_M2phasediff_perstation.txt')
         stations_M2phasediff = pd.read_csv(file_M2phasediff, names=['M2phasediff'], comment='#', delim_whitespace=True)
+        if station not in stations_M2phasediff.index:
+            raise Exception(f'ERROR: station "{station}" not in file_M2phasediff ({file_M2phasediff})')
         stat_M2phasediff = stations_M2phasediff.loc[station,'M2phasediff']
         M2phasediff_hr = stat_M2phasediff/360*M2_period_hr
     HW_tdiff_cadzd = HW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr
