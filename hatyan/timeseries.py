@@ -637,9 +637,14 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
         data_HWLW_nosidx = ts_ext.copy()
         data_HWLW_nosidx['times'] = data_HWLW_nosidx.index
         data_HWLW_nosidx = data_HWLW_nosidx.set_index('HWLWno')
+        #data_HWLW_nosidx = data_HWLW_nosidx.sort_index()
         HWLWno_all = data_HWLW_nosidx.index.unique()
-        data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1],index=HWLWno_all)
-        data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2],index=HWLWno_all)
+        #data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1],index=HWLWno_all)
+        #data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2],index=HWLWno_all)
+        data_HW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1]
+        data_LW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2]
+        bool_HW = HWLWno_all.isin(data_HW.index)
+        bool_LW = HWLWno_all.isin(data_LW.index)
         
         #HWLWno
         if 'HWLWno' not in ncdimlist:
@@ -652,20 +657,20 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
         if 'times_astro_HW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('times_astro_HW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['times_astro_HW'][nstat,:] = date2num(data_HW['times'].tolist(),units=data_nc.variables['times_astro_HW'].units)
+        data_nc.variables['times_astro_HW'][nstat,bool_HW] = date2num(data_HW['times'].tolist(),units=data_nc.variables['times_astro_HW'].units)
         if 'waterlevel_astro_HW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_HWattr)
-        data_nc.variables['waterlevel_astro_HW'][nstat,:] = data_HW['values']
+        data_nc.variables['waterlevel_astro_HW'][nstat,bool_HW] = data_HW['values']
         #LW
         if 'times_astro_LW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('times_astro_LW','f8',('stations','HWLWno',)) 
             nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['times_astro_LW'][nstat,:] = date2num(data_LW['times'].tolist(),units=data_nc.variables['times_astro_LW'].units)
+        data_nc.variables['times_astro_LW'][nstat,bool_LW] = date2num(data_LW['times'].tolist(),units=data_nc.variables['times_astro_LW'].units)
         if 'waterlevel_astro_LW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_LWattr)
-        data_nc.variables['waterlevel_astro_LW'][nstat,:] = data_LW['values']
+        data_nc.variables['waterlevel_astro_LW'][nstat,bool_LW] = data_LW['values']
     
     else: #use time as index and create array with gaps (not possible to combine multiple stations)
         if nstat>0:
