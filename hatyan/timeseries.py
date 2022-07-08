@@ -1189,12 +1189,16 @@ def get_diablocks(filename):
         
         #get groepering and whether dia/wia is equidistant or non-equidistant
         bool_startswithmux = data_meta_series.str.startswith('MUX')
-        if bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
+        row_TYP = data_meta_series.loc[data_meta_series.str.startswith('TYP')].iloc[0].split(';')[1]
+        diablocks_pd.loc[block_id,'TYP'] = row_TYP
+        if row_TYP=='TN': #bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
             mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
-        else: #normal waterlevel timeseries (equidistant)
+        elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
             mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA']
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
+        else:
+            raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.readts_dia()')
         
         #read all required metadata
         for get_content_sel in mincontent:
