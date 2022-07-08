@@ -785,7 +785,7 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
                              'BEM;NVT', #niet_essentieel?
                              'BEW;NVT', #niet_essentieel?
                              'VAT;NVT', #niet_essentieel?
-                             'TYP;TE',
+                             'TYP;TE', #reekstype: equidistant
                              '[RKS]',
                              'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min),
                              ##'PLT;NVT;-999999999;6793000;44400000',
@@ -878,7 +878,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
                              'BEM;NVT;Niet van toepassing', #niet_essentieel?
                              'BEW;NVT;Niet van toepassing', #niet_essentieel?
                              'VAT;NVT;Niet van toepassing', #niet_essentieel?
-                             'TYP;TN',
+                             'TYP;TN', #reekstype: niet-equidistant
                              '[MUX]',
                              'MXW;1;15',
                              'MXP;1;GETETCDE;Getijextreem code;J',
