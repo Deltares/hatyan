@@ -1195,7 +1195,7 @@ def get_diablocks(filename):
             mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
         elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
-            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA']
+            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #WNS,CPM,HDH,ANA
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
         else:
             raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.readts_dia()')
