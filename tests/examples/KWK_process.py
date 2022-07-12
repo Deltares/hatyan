@@ -577,10 +577,14 @@ for current_station in stat_list:
             LW_min_permonth = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="m"))[['values']].min() #proxy for LW at spring tide
             LW_monthmin_peryear = LW_min_permonth.groupby(pd.PeriodIndex(LW_min_permonth.index, freq="y"))[['values']].mean()
            
-            dict_tidalindicators = {'HW_mean_peryear':HW_mean_peryear, #GHW
-                                    'LW_mean_peryear':LW_mean_peryear, #GLW
-                                    'HW_monthmax_peryear':HW_monthmax_peryear, #GHHW/GHWS
-                                    'LW_monthmin_peryear':LW_monthmin_peryear, #GLLW/GLWS
+            dict_tidalindicators = {'HW_mean':data_pd_HW['values'].mean(), #GHW 
+                                    'LW_mean':data_pd_LW['values'].mean(), #GLW 
+                                    'HW_mean_peryear':HW_mean_peryear, #GHW peryear
+                                    'LW_mean_peryear':LW_mean_peryear, #GLW peryear
+                                    'HW_monthmax':HW_max_permonth['values'].mean(), #GHHW/GHWS
+                                    'LW_monthmin':LW_min_permonth['values'].mean(), #GLLW/GLWS
+                                    'HW_monthmax_peryear':HW_monthmax_peryear, #GHHW/GHWS peryear
+                                    'LW_monthmin_peryear':LW_monthmin_peryear, #GLLW/GLWS peryear
                                     }
             for key in dict_tidalindicators.keys():
                 dict_tidalindicators[key].index = dict_tidalindicators[key].index.to_timestamp()
