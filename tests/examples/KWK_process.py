@@ -587,6 +587,8 @@ for current_station in stat_list:
                                     'LW_monthmin_peryear':LW_monthmin_peryear, #GLLW/GLWS peryear
                                     }
             for key in dict_tidalindicators.keys():
+                if not hasattr(dict_tidalindicators[key],'index'):
+                    continue
                 dict_tidalindicators[key].index = dict_tidalindicators[key].index.to_timestamp()
                 
             return dict_tidalindicators
