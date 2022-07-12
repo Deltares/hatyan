@@ -518,7 +518,7 @@ for current_station in []:#stat_list:
 
 
 #### SLOTGEMIDDELDEN
-for current_station in []:#stat_list:
+for current_station in stat_list:
     
     ####################
     #READ HWLW
@@ -547,24 +547,47 @@ for current_station in []:#stat_list:
     data_pd_meas = data_pd_meas[['values','QC']] # reduces the memory consumption significantly
     data_pd_meas.index = data_pd_meas.index.tz_localize(None)
     data_pd_meas = data_pd_meas.loc[~(data_pd_meas['QC']==99)]
-    wl_mean_peryear_long = data_pd_meas.groupby(pd.PeriodIndex(data_pd_meas.index, freq="y"))['values'].mean()
-    wl_mean_peryear_long.index = wl_mean_peryear_long.index.to_timestamp()
+    wl_mean_peryear = data_pd_meas.groupby(pd.PeriodIndex(data_pd_meas.index, freq="y"))['values'].mean()
+    wl_mean_peryear.index = wl_mean_peryear.index.to_timestamp()
 
-    #derive yearmean HWLW from HWLW values
+    #derive tidal indicators like yearmean HWLW from HWLW values
     file_ext_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measext.pkl")
     if os.path.exists(file_ext_pkl):
         data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
-        data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
-        if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
-            data_pd_HWLW_12 = hatyan.calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
-        else:
-            data_pd_HWLW_12 = data_pd_HWLW_all.copy()
-        data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
-        data_pd_LW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==2]
-        HW_mean_peryear_long = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))['values'].mean()
-        HW_mean_peryear_long.index = HW_mean_peryear_long.index.to_timestamp()
-        LW_mean_peryear_long = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))['values'].mean()
-        LW_mean_peryear_long.index = LW_mean_peryear_long.index.to_timestamp()
+        
+        def calc_HWLWtidalindicators(data_pd_HWLW_all):
+            if hasattr(data_pd_HWLW_all.index[0],'tz'): #timezone present in index
+                data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
+            if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2: #aggers are present
+                data_pd_HWLW_12 = hatyan.calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+            else:
+                data_pd_HWLW_12 = data_pd_HWLW_all.copy()
+            
+            #split to HW and LW separately, also groupby year
+            data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
+            data_pd_LW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==2]
+            
+            #yearmean HWLW from HWLW values
+            HW_mean_peryear = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))[['values']].mean()
+            LW_mean_peryear = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))[['values']].mean()
+            
+            #derive GHHW/GHWS (gemiddeld hoogwater springtij)
+            HW_max_permonth = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="m"))[['values']].max() #proxy for HW at spring tide
+            HW_monthmax_peryear = HW_max_permonth.groupby(pd.PeriodIndex(HW_max_permonth.index, freq="y"))[['values']].mean()
+            LW_min_permonth = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="m"))[['values']].min() #proxy for LW at spring tide
+            LW_monthmin_peryear = LW_min_permonth.groupby(pd.PeriodIndex(LW_min_permonth.index, freq="y"))[['values']].mean()
+           
+            dict_tidalindicators = {'HW_mean_peryear':HW_mean_peryear, #GHW
+                                    'LW_mean_peryear':LW_mean_peryear, #GLW
+                                    'HW_monthmax_peryear':HW_monthmax_peryear, #GHHW/GHWS
+                                    'LW_monthmin_peryear':LW_monthmin_peryear, #GLLW/GLWS
+                                    }
+            for key in dict_tidalindicators.keys():
+                dict_tidalindicators[key].index = dict_tidalindicators[key].index.to_timestamp()
+                
+            return dict_tidalindicators
+    
+        dict_tidalindicators = calc_HWLWtidalindicators(data_pd_HWLW_all)
     
     #plotting (yearly averages are plotted on 1jan, would be better on 1jul)
     fig,ax1 = plt.subplots(figsize=(14,7))
@@ -573,14 +596,14 @@ for current_station in []:#stat_list:
         ax1.plot(yearmeanLW['values'],'+g')
         ax1.plot(yearmeanwl['values'],'+g')
         if os.path.exists(file_ext_pkl):
-            yearmeanHW_diff = (yearmeanHW['values']-HW_mean_peryear_long).dropna() #TODO: move to data check part, when validationdata for more stations is available
-            yearmeanLW_diff = (yearmeanLW['values']-LW_mean_peryear_long).dropna()
-        yearmeanwl_diff = (yearmeanwl['values']-wl_mean_peryear_long).dropna()
+            yearmeanHW_diff = (yearmeanHW['values']-dict_tidalindicators['HW_mean_peryear']).dropna() #TODO: move to data check part, when validationdata for more stations is available
+            yearmeanLW_diff = (yearmeanLW['values']-dict_tidalindicators['LW_mean_peryear']).dropna()
+        yearmeanwl_diff = (yearmeanwl['values']-wl_mean_peryear).dropna()
 
     if os.path.exists(file_ext_pkl):
-        ax1.plot(HW_mean_peryear_long,'xr')
-        ax1.plot(LW_mean_peryear_long,'xr')
-    ax1.plot(wl_mean_peryear_long,'xr')
+        ax1.plot(dict_tidalindicators['HW_mean_peryear'],'xr')
+        ax1.plot(dict_tidalindicators['LW_mean_peryear'],'xr')
+    ax1.plot(wl_mean_peryear,'xr')
     ax1.grid()
     ax1.set_xlim(fig_alltimes_ext) # entire period
     ax1.set_ylabel('waterstand [m]')
@@ -591,9 +614,9 @@ for current_station in []:#stat_list:
     #TODO: maybe use nodal_epoch fit from same ipynb? PLSS because of potential trendbreuk? include SLR trend
     #TODO: need to include nodal tide or only trend?
     if 0:#os.path.exists(file_ext_pkl):
-        mean_list = [wl_mean_peryear_long,HW_mean_peryear_long,LW_mean_peryear_long]
+        mean_list = [wl_mean_peryear,dict_tidalindicators['HW_mean_peryear'],dict_tidalindicators['LW_mean_peryear']]
     else:
-        mean_list = [wl_mean_peryear_long]
+        mean_list = [wl_mean_peryear]
     for mean_array in mean_list:
         # We'll just use the years. This assumes that annual waterlevels are used that are stored left-padded, the mean waterlevel for 2020 is stored as 2020-1-1. This is not logical, but common practice.
         times_OLS = mean_array.index
@@ -605,7 +628,7 @@ for current_station in []:#stat_list:
         X = np.c_[np.cos(2 * np.pi * (years_OLS - 1970) / 18.613), np.sin(2 * np.pi * (years_OLS - 1970) / 18.613),]
         # X is of shape n year x 3 parameters
         X = sm.add_constant(X)
-        Y = wl_mean_peryear_long.values        
+        Y = wl_mean_peryear.values        
         # define and fit the model, fit the reanalysis nodal cycle through all stations
         model = sm.OLS(Y, X, missing="drop")
         fit = model.fit()
@@ -622,7 +645,7 @@ for current_station in []:#stat_list:
         amplitude = np.sqrt(A ** 2 + B ** 2)
         mean = fit_meanwl.params[0]
         """
-    fig.savefig(os.path.join(dir_slotgem,f'yearly_values_{current_station}'))
+    fig.savefig(os.path.join(dir_slotgem,f'yearly_values_{current_station}_try2'))
     plt.close()
 
 
