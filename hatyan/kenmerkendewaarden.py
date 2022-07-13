@@ -11,7 +11,7 @@ from hatyan.timeseries import calc_HWLW12345to21
 
 def calc_HWLWtidalindicators(data_pd_HWLW_all):
     """
-    computes several tidal extreme indicators from
+    computes several tidal extreme indicators from tidal extreme dataset
 
     Parameters
     ----------
