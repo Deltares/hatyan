@@ -334,7 +334,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     xTxmat_condition = np.linalg.cond(xTxmat)
     print('condition of xTx matrix: %.2f'%(xTxmat_condition))
     if xTxmat_condition > hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
-        raise Exception('ERROR: condition of xTx matrix is too high (%.2f), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed %s'%(xTxmat_condition, check_ts(ts_pd)))
+        raise Exception(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}')
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
     #solve matrix to get beta_roof_mat (and thus a, b)

@@ -999,7 +999,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
-    check_ts(ts_pd_out)
+    print(check_ts(ts_pd_out))
     return ts_pd_out
 
 
@@ -1039,7 +1039,7 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq='%dmin'%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample['values'] = ts['values'] #put measurements into this timeseries, matches to correct index automatically
     
-    check_ts(data_pd_resample)
+    print(check_ts(data_pd_resample))
     return data_pd_resample
 
 
@@ -1103,7 +1103,6 @@ def check_ts(ts):
     ntimesteps_uniq = len(timesteps_min)
     if len(ts)==0:
         print_statement = 'timeseries contents:\n%s'%(ts)
-        print(print_statement)
     else:
         list_statements = ['timeseries contents:\n%s'%(ts),
                            'timeseries # unique timesteps: %i'%(ntimesteps_uniq),
@@ -1115,8 +1114,7 @@ def check_ts(ts):
                            'timeseries # nan: %i'%(ntimes-ntimes_nonan),
                            'timeseries %% nan: %.1f%%'%((ntimes-ntimes_nonan)/ntimes*100)]
         print_statement = '\n'.join(list_statements)
-        print(print_statement)
-    
+        
     return print_statement
     
     
@@ -1371,7 +1369,6 @@ def readts_dia(filename, station=None, block_ids=None):
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
-            #check_ts(data_pd_oneblock)
             data_pd_allblocks = data_pd_allblocks.append(data_pd_oneblock, ignore_index=False)
         
         #append to allyears dataset
@@ -1381,7 +1378,7 @@ def readts_dia(filename, station=None, block_ids=None):
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
     data_pd_all = data_pd_all.sort_index(axis=0)
-    check_ts(data_pd_all)
+    print(check_ts(data_pd_all))
     
     return data_pd_all
 
@@ -1428,6 +1425,6 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     noos_datetime = pd.to_datetime(content_pd['times_str'],format=datetime_format)
     data_pd = pd.DataFrame({'values':content_pd['values'].values},index=noos_datetime)
     
-    check_ts(data_pd)
+    print(check_ts(data_pd))
     return data_pd
 
