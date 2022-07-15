@@ -1102,18 +1102,17 @@ def check_ts(ts):
     ntimes = len(ts)
     ntimesteps_uniq = len(timesteps_min)
     if len(ts)==0:
-        print_statement = 'timeseries contents:\n%s'%(ts)
+        print_statement = f'timeseries contents:\n{ts}'
     else:
-        list_statements = ['timeseries contents:\n%s'%(ts),
-                           'timeseries # unique timesteps: %i'%(ntimesteps_uniq),
-                           'timeseries unique timesteps (minutes):\n%s'%(timesteps_min_print),
-                           'timeseries validity: %s'%(timesteps_incr_print),
-                           'timeseries length: %i'%(ntimes),
-                           'timeseries # nonan: %i'%(ntimes_nonan),
-                           'timeseries %% nonan: %.1f%%'%(ntimes_nonan/ntimes*100),
-                           'timeseries # nan: %i'%(ntimes-ntimes_nonan),
-                           'timeseries %% nan: %.1f%%'%((ntimes-ntimes_nonan)/ntimes*100)]
-        print_statement = '\n'.join(list_statements)
+        print_statement = (f'timeseries contents:\n{ts}\n'+
+                           f'timeseries # unique timesteps: {ntimesteps_uniq}\n'+
+                           f'timeseries unique timesteps (minutes):\n{timesteps_min_print}\n'+
+                           f'timeseries validity: {timesteps_incr_print}\n'+
+                           f'timeseries length: {ntimes}\n'+
+                           f'timeseries # nonan: {ntimes_nonan}\n'+
+                           f'timeseries % nonan: {(ntimes_nonan/ntimes*100):.1f}%\n'+
+                           f'timeseries # nan: {ntimes-ntimes_nonan}\n'+
+                           f'timeseries % nan: {(ntimes-ntimes_nonan)/ntimes*100:.1f}%')
         
     return print_statement
     
