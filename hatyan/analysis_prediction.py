@@ -28,7 +28,7 @@ from packaging import version
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
-from hatyan.timeseries import check_ts, check_rayleigh
+from hatyan.timeseries import check_ts, check_rayleigh, Timeseries_Statistics
 
 
 class HatyanSettings:
@@ -244,8 +244,8 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
         return COMP_mean_pd, COMP_all_pd
     else:
         return COMP_mean_pd
-            
-            
+
+
 def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
     """
     harmonic analysis with matrix transformations (least squares fit), optionally with component splitting
@@ -313,6 +313,22 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     
     check_rayleigh(ts_pd,t_const_freq_pd)
     
+    stats = Timeseries_Statistics(ts=ts_pd)
+    unique_timesteps = stats.stats['timeseries unique timesteps (minutes)']
+    if len(unique_timesteps)==1: #constant freq, so folding is possible
+        constant_freq_phr = list(unique_timesteps)[0]/60
+        fs = 1/constant_freq_phr
+        nyquist_freq = 0.5*fs
+        bool_isnyquist = t_const_freq_pd['freq']==nyquist_freq
+        if bool_isnyquist.any():
+            raise Exception(f'there is a component on the Nyquist frequency ({nyquist_freq} [1/hr]), this not possible:\n{t_const_freq_pd.loc[bool_isnyquist]}')
+        bool_freqtoohigh = t_const_freq_pd['freq']>nyquist_freq
+        t_const_freq_pd_folded = t_const_freq_pd.copy()
+        t_const_freq_pd_folded.loc[bool_freqtoohigh,'freq'] = np.abs(fs - t_const_freq_pd_folded.loc[bool_freqtoohigh,'freq'] ) #remainder is better: 0.408%(1/3)
+        t_const_freq_pd_folded = t_const_freq_pd_folded.sort_values('freq')
+        print('check folded rayleigh')
+        check_rayleigh(ts_pd,t_const_freq_pd_folded)
+    
     #### TIMESERIES ANALYSIS
     N = len(const_list)
     m = len(ts_pd_nonan['values'])
@@ -326,6 +342,19 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     print('calculating xTx matrix')
     tic = dt.datetime.now()
     xTxmat = np.dot(xTmat,xmat)
+    
+    if 0:
+        #TODO
+        xTxmat2 = xTxmat/xTxmat[0,0]
+        xTxmat2[np.abs(xTxmat2)<0.05] = 0
+        xTxmat2_condition = np.linalg.cond(xTxmat2)
+        svd_u,svd_s,svd_vh = np.linalg.svd(xTxmat2) # s zijn singuliere waarden van groot naar klein, u en v zijn gespiegeld over diagonaal
+        xTxmat2_check = svd_u@np.diag(svd_s)@svd_vh #matrix multiplicatie geeft weer originele matrix (ongeveer)
+        xTxmat2_check = svd_u[:,:2]@np.diag(svd_s[:2])@svd_vh[:2,:] #helft van info weggooien, geeft approximatie van originele matrix
+        
+        #samp freq is 3hr, freq [1/hr],dus fs is 1/3, nyquist freq is 1/6 (0.5*fs)
+        #probleem is freq van 3M2S10 (0.408201 [1/hr]) is groter dan 1/6
+    
     print('xTx matrix calculated')
     if 'A0' in const_list: #correct center value [N,N] for better matrix condition
         xTxmat_condition = np.linalg.cond(xTxmat)

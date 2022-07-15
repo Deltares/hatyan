@@ -1081,6 +1081,12 @@ def check_ts(ts):
 
     """
     
+    stats = Timeseries_Statistics(ts=ts)
+    return stats
+    
+    #TODO: THE PART BELOW IS NOT USED
+    raise Exception('use hatyan.Timeseries_Statistics() instead')
+    
     timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
     bool_int = (timesteps_min_all-timesteps_min_all.round(0))<1e-9
     if bool_int.all():
@@ -1101,6 +1107,8 @@ def check_ts(ts):
     ntimes_nonan = ts['values'].count()
     ntimes = len(ts)
     ntimesteps_uniq = len(timesteps_min)
+
+    
     if len(ts)==0:
         print_statement = f'timeseries contents:\n{ts}'
     else:
@@ -1113,8 +1121,63 @@ def check_ts(ts):
                            f'timeseries % nonan: {(ntimes_nonan/ntimes*100):.1f}%\n'+
                            f'timeseries # nan: {ntimes-ntimes_nonan}\n'+
                            f'timeseries % nan: {(ntimes-ntimes_nonan)/ntimes*100:.1f}%')
-        
     return print_statement
+
+
+class Timeseries_Statistics:
+    #TODO: make like a dict with different __str__ method, instead of this mess https://stackoverflow.com/questions/4014621/a-python-class-that-acts-like-dict
+    #TODO: improve output dict, keys are now not convenient to use. Maybe make keys and longname?
+    def __init__(self,ts):
+        timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
+        bool_int = (timesteps_min_all-timesteps_min_all.round(0))<1e-9
+        if bool_int.all():
+            timesteps_min_all = timesteps_min_all.astype(int)
+        else: #in case of non integer minute timesteps (eg seconds)
+            timesteps_min_all[bool_int] = timesteps_min_all[bool_int].round(0)
+        timesteps_min = set(timesteps_min_all)
+        #print(timesteps_min)
+        if len(timesteps_min)<=100:
+            timesteps_min_print = timesteps_min
+        else:
+            timesteps_min_print = 'too much unique time intervals (>100) to display all of them, %i intervals ranging from %i to %i minutes'%(len(timesteps_min),np.min(list(timesteps_min)),np.max(list(timesteps_min)))
+        if (timesteps_min_all>0).all():
+            timesteps_incr_print = 'all time intervals are in increasing order and are never equal'
+        else:
+            timesteps_incr_print = 'the times-order of ts is not always increasing (duplicate values or wrong order)'
+        
+        ntimes_nonan = ts['values'].count()
+        ntimes = len(ts)
+        ntimesteps_uniq = len(timesteps_min)
+        if len(ts)==0:
+            self.stats = {'timeseries contents':ts}
+        else:
+            self.stats = {'timeseries contents':ts,
+                        'timeseries # unique timesteps': ntimesteps_uniq,
+                        'timeseries unique timesteps (minutes)':timesteps_min_print,
+                        'timeseries validity': timesteps_incr_print,
+                        'timeseries length': ntimes,
+                        'timeseries # nonan': ntimes_nonan,
+                        'timeseries % nonan': ntimes_nonan/ntimes*100,#%.1f %
+                        'timeseries # nan': ntimes-ntimes_nonan,
+                        'timeseries % nan': (ntimes-ntimes_nonan)/ntimes*100, #%.1f %
+                        }
+    def __str__(self):
+        print_statement = ''
+        for key in self.stats.keys():
+            if key in ['timeseries contents','timeseries unique timesteps (minutes)']:
+                print_statement += f'{key}:\n{self.stats[key]}\n'
+            else:
+                print_statement += f'{key}: {self.stats[key]}\n'
+        return print_statement
+    def __repr__(self): #avoid printing the class name
+        #return dict.__repr__
+        return str(self.stats)
+    """
+    @classmethod
+    def keys(self):
+        return self.stats.keys()
+    """
+        
     
     
 ###############################
