@@ -2,6 +2,16 @@
 History
 =======
 
+* Wed May 11 2022 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.5.59
+- foreman/schureman: differences resolved
+- astrog: bugfix for longitudes away from 0, removed for loops from astrab (faster code), updated leap-seconds.list for astrog and disable exact dT extrapolation, many simplifications and code quality improvements
+- hatyan_core: introduced caching and discontinued pickle file, introduced harmonic/shallow csv file, clean ups
+- analysis_prediction: introducing hatyan_settings and removal of commented code, split_compoonents() more readable
+- many improvements and code optimizations in getonlinedata (=DDL), astrog, timeseries/readts and analysis_prediction ()
+- github actions: added pypi upload so hatyan is available via pip, auto documentation generation
+- added ipynb for getting started
+- added sonarcloud code quality gate (523 code smells: 28 critical, 156 major, 308 minor, 31 info)
+
 * Thu Dec 14 2021 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.4.4
 - bugfix in diawriting for last entries of timeseries
 - bugfix in diafile writing that solves rounding issue. Made dia writing more efficient by writing values with pd.to_csv instead of in loop

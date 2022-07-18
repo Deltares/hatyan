@@ -78,7 +78,7 @@ def get_DDL_catalog(catalog_extrainfo=[]):
         raise Exception(&#39;%s for %s: %s&#39;%(resp.reason, resp.url, str(resp.text)))
     result_cat = resp.json()
     if not result_cat[&#39;Succesvol&#39;]:
-        raise Exception(&#39;catalog query not succesful, Foutmelding: %s&#39;%(result_cat[&#39;Foutmelding&#39;]))
+        raise Exception(&#39;catalog query not succesful, DDL foutmelding: &#34;%s&#34;&#39;%(result_cat[&#39;Foutmelding&#39;]))
     
     result_cat_dict = {}
     for catalog_key in result_cat.keys():
@@ -164,6 +164,8 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone=&#39;UTC+01:00&
     normalizing json output: https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8
 
     query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead
+    allow_multipleresultsfor: when a query returns multiple results, there is also multiple metadata lines. If e.g. allow_multipleresultsfor=[&#39;MeetApparaat&#39;], the metadata fields &#39;MeetApparaat.Code&#39; and &#39;MeetApparaat.Omschrijving&#39; are allowed to be different and the multiple timeseries are merged. A column is added to the output timeseries with these fields, to be able to distinguish measurements taken with different &#39;MeetApparaat&#39;.
+    
     &#34;&#34;&#34;
 
     if not isinstance(allow_multipleresultsfor,list):
@@ -189,6 +191,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone=&#39;UTC+01:00&
         print(&#39;WARNING: no values present for this query, returning None&#39;)
         return #preliminary abort of definition
 
+    addcolumns_list = [f&#39;{x}.{y}&#39; for x in allow_multipleresultsfor for y in [&#39;Code&#39;,&#39;Omschrijving&#39;]]
     result_wl0_metingenlijst_alldates = pd.DataFrame()
     result_wl0_aquometadata_unique = pd.DataFrame()
     result_wl0_locatie_unique = pd.DataFrame()
@@ -210,19 +213,22 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone=&#39;UTC+01:00&
         range_nresults = range(len(result_wl[&#39;WaarnemingenLijst&#39;]))
         for result_idx in range_nresults:
             result_wl0 = result_wl[&#39;WaarnemingenLijst&#39;][result_idx]
-            #print(&#39;json result waarnemingenlijst keys: %s&#39;%(result_wl0.keys())) #[&#39;Locatie&#39;, &#39;MetingenLijst&#39;, &#39;AquoMetadata&#39;]
-            result_wl0_metingenlijst = pd.json_normalize(result_wl0[&#39;MetingenLijst&#39;]) # the actual waterlevel data for this station
-            if not result_wl0_metingenlijst[&#39;Tijdstip&#39;].is_monotonic_increasing:
-                #print(&#39;WARNING: retrieved timeseries is not monotonic increasing, so it was sorted&#39;)
-                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values(&#39;Tijdstip&#39;).reset_index(drop=True) # DDL IMPROVEMENT: data in response is not always sorted on time
-            last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst[&#39;Tijdstip&#39;].iloc[-1]).tz_convert(tstart_dt.tzinfo)
-            if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
-                result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
-            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
+            #get and append locatiedata and metadata
             result_wl0_locatie = pd.json_normalize(result_wl0[&#39;Locatie&#39;])
             result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
             result_wl0_aquometadata = pd.json_normalize(result_wl0[&#39;AquoMetadata&#39;])
             result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the &#39;WaardeBepalingsmethode&#39; changes
+            #get one block of meetdata, sort on time and make timezone aware
+            result_wl0_metingenlijst = pd.json_normalize(result_wl0[&#39;MetingenLijst&#39;]) # the actual waterlevel data for this station
+            if not result_wl0_metingenlijst[&#39;Tijdstip&#39;].is_monotonic_increasing:
+                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values(&#39;Tijdstip&#39;).reset_index(drop=True) # DDL IMPROVEMENT: data in response is not always sorted on time
+            last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst[&#39;Tijdstip&#39;].iloc[-1]).tz_convert(tstart_dt.tzinfo)
+            if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
+                result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
+            #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
+            for addcolumn in addcolumns_list:
+                result_wl0_metingenlijst[addcolumn] = result_wl0_aquometadata.loc[0,addcolumn]
+            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
         
         if allow_multipleresultsfor==[]:
             result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
@@ -234,14 +240,15 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone=&#39;UTC+01:00&
                 metakeys_forCode = [x.replace(&#39;.Code&#39;,&#39;&#39;) for x in result_wl0_aquometadata_unique.keys() if x.endswith(&#39;.Code&#39;)]
                 raise Exception(&#39;%s, available are: %s&#39;%(e,metakeys_forCode))
         
+        result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.reset_index(drop=True) #necessary to print &#39;Result n:&#39; numbers properly below
         if len(result_wl0_aquometadata_uniqueallowed)&gt;1:
             bool_nonuniquecols = (result_wl0_aquometadata_unique.iloc[0]!=result_wl0_aquometadata_unique).any(axis=0)
             metakeys_forCode_nonunique = [x.replace(&#39;.Code&#39;,&#39;&#39;) for x in result_wl0_aquometadata_unique.loc[:,bool_nonuniquecols].columns if x.endswith(&#39;.Code&#39;)]
-            for iR, result_one in enumerate(result_wl[&#39;WaarnemingenLijst&#39;]):
+            for iR, result_one in result_wl0_aquometadata_unique.iterrows():
                 print(f&#39;Result {iR+1}:&#39;)
                 metakey_list = sorted(set([&#39;Compartiment&#39;,&#39;Eenheid&#39;,&#39;Grootheid&#39;,&#39;Hoedanigheid&#39;,&#39;Groepering&#39;]+metakeys_forCode_nonunique))
                 for metakey in metakey_list:
-                    print(&#39;%28s: %s,&#39;%(&#34;&#39;%s&#39;&#34;%metakey,result_one[&#39;AquoMetadata&#39;][metakey]))
+                    print(&#39;%28s: %s,&#39;%(&#34;&#39;%s&#39;&#34;%metakey,dict(result_one[[f&#39;{metakey}.Code&#39;,f&#39;{metakey}.Omschrijving&#39;]])))
             raise Exception(&#39;query returned more than one result (differences in %s, details above), use more specific query_metadata argument or more extensive allow_multipleresultsfor argument (the latter might result in duplicate timesteps)&#39;%(metakeys_forCode_nonunique))
             
     result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.reset_index(drop=True)
@@ -261,6 +268,9 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone=&#39;UTC+01:00&
                                #&#39;OpdrachtgevendeInstantie&#39;:result_wl0_metingenlijst_alldates[&#39;WaarnemingMetadata.OpdrachtgevendeInstantieLijst&#39;].str[0].values,
                                },
                               index=pd.to_datetime(result_wl0_metingenlijst_alldates[&#39;Tijdstip&#39;]))
+    #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
+    for addcolumn in addcolumns_list:
+        ts_meas_pd[addcolumn] = result_wl0_metingenlijst_alldates[addcolumn].values
     #convert timezone from MET to requested timezone
     ts_meas_pd.index = ts_meas_pd.index.tz_convert(tstart_dt.tzinfo)
 
@@ -329,7 +339,24 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
     if error_empty and len(cat_aquometadatalijst_sel)==0 and len(cat_locatielijst_sel)==0:
         raise Exception(&#39;Catalog query yielded no results&#39;)
         
-    return cat_aquometadatalijst_sel, cat_locatielijst_sel</code></pre>
+    return cat_aquometadatalijst_sel, cat_locatielijst_sel
+
+
+def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
+    &#34;&#34;&#34;
+    TVL;1;1;hoogwater
+    TVL;1;2;laagwater
+    TVL;1;3;laagwater 1
+    TVL;1;4;topagger
+    TVL;1;5;laagwater 2
+    &#34;&#34;&#34;
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;hoogwater&#39;,&#39;HWLWcode&#39;] = 1
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;laagwater&#39;,&#39;HWLWcode&#39;] = 2
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;laagwater 1&#39;,&#39;HWLWcode&#39;] = 3
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;topagger&#39;,&#39;HWLWcode&#39;] = 4
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;laagwater 2&#39;,&#39;HWLWcode&#39;] = 5
+    ts_measwlHWLW[&#39;HWLWcode&#39;] = ts_measwlHWLW[&#39;HWLWcode&#39;].astype(int)
+    return ts_measwlHWLW</code></pre>
 </details>
 </section>
 <section>
@@ -396,7 +423,7 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
         raise Exception(&#39;%s for %s: %s&#39;%(resp.reason, resp.url, str(resp.text)))
     result_cat = resp.json()
     if not result_cat[&#39;Succesvol&#39;]:
-        raise Exception(&#39;catalog query not succesful, Foutmelding: %s&#39;%(result_cat[&#39;Foutmelding&#39;]))
+        raise Exception(&#39;catalog query not succesful, DDL foutmelding: &#34;%s&#34;&#39;%(result_cat[&#39;Foutmelding&#39;]))
     
     result_cat_dict = {}
     for catalog_key in result_cat.keys():
@@ -491,7 +518,8 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
 <dd>
 <div class="desc"><p>ddl tutorial: <a href="https://rijkswaterstaat.github.io/wm-ws-dl/?python#tutorial-locations">https://rijkswaterstaat.github.io/wm-ws-dl/?python#tutorial-locations</a>
 normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8">https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8</a></p>
-<p>query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead</p></div>
+<p>query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead
+allow_multipleresultsfor: when a query returns multiple results, there is also multiple metadata lines. If e.g. allow_multipleresultsfor=['MeetApparaat'], the metadata fields 'MeetApparaat.Code' and 'MeetApparaat.Omschrijving' are allowed to be different and the multiple timeseries are merged. A column is added to the output timeseries with these fields, to be able to distinguish measurements taken with different 'MeetApparaat'.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -502,6 +530,8 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
     normalizing json output: https://towardsdatascience.com/how-to-convert-json-into-a-pandas-dataframe-100b2ae1e0d8
 
     query_tzone: MET/CET results in Europe/Amsterdam (so including DST), use fixed offset instead
+    allow_multipleresultsfor: when a query returns multiple results, there is also multiple metadata lines. If e.g. allow_multipleresultsfor=[&#39;MeetApparaat&#39;], the metadata fields &#39;MeetApparaat.Code&#39; and &#39;MeetApparaat.Omschrijving&#39; are allowed to be different and the multiple timeseries are merged. A column is added to the output timeseries with these fields, to be able to distinguish measurements taken with different &#39;MeetApparaat&#39;.
+    
     &#34;&#34;&#34;
 
     if not isinstance(allow_multipleresultsfor,list):
@@ -527,6 +557,7 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
         print(&#39;WARNING: no values present for this query, returning None&#39;)
         return #preliminary abort of definition
 
+    addcolumns_list = [f&#39;{x}.{y}&#39; for x in allow_multipleresultsfor for y in [&#39;Code&#39;,&#39;Omschrijving&#39;]]
     result_wl0_metingenlijst_alldates = pd.DataFrame()
     result_wl0_aquometadata_unique = pd.DataFrame()
     result_wl0_locatie_unique = pd.DataFrame()
@@ -548,19 +579,22 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
         range_nresults = range(len(result_wl[&#39;WaarnemingenLijst&#39;]))
         for result_idx in range_nresults:
             result_wl0 = result_wl[&#39;WaarnemingenLijst&#39;][result_idx]
-            #print(&#39;json result waarnemingenlijst keys: %s&#39;%(result_wl0.keys())) #[&#39;Locatie&#39;, &#39;MetingenLijst&#39;, &#39;AquoMetadata&#39;]
-            result_wl0_metingenlijst = pd.json_normalize(result_wl0[&#39;MetingenLijst&#39;]) # the actual waterlevel data for this station
-            if not result_wl0_metingenlijst[&#39;Tijdstip&#39;].is_monotonic_increasing:
-                #print(&#39;WARNING: retrieved timeseries is not monotonic increasing, so it was sorted&#39;)
-                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values(&#39;Tijdstip&#39;).reset_index(drop=True) # DDL IMPROVEMENT: data in response is not always sorted on time
-            last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst[&#39;Tijdstip&#39;].iloc[-1]).tz_convert(tstart_dt.tzinfo)
-            if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
-                result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
-            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
+            #get and append locatiedata and metadata
             result_wl0_locatie = pd.json_normalize(result_wl0[&#39;Locatie&#39;])
             result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
             result_wl0_aquometadata = pd.json_normalize(result_wl0[&#39;AquoMetadata&#39;])
             result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the &#39;WaardeBepalingsmethode&#39; changes
+            #get one block of meetdata, sort on time and make timezone aware
+            result_wl0_metingenlijst = pd.json_normalize(result_wl0[&#39;MetingenLijst&#39;]) # the actual waterlevel data for this station
+            if not result_wl0_metingenlijst[&#39;Tijdstip&#39;].is_monotonic_increasing:
+                result_wl0_metingenlijst = result_wl0_metingenlijst.sort_values(&#39;Tijdstip&#39;).reset_index(drop=True) # DDL IMPROVEMENT: data in response is not always sorted on time
+            last_timestamp_tzaware = pd.to_datetime(result_wl0_metingenlijst[&#39;Tijdstip&#39;].iloc[-1]).tz_convert(tstart_dt.tzinfo)
+            if not last_timestamp_tzaware.isoformat().startswith(str(year)): #need to remove the last data entry if it is 1 January in next year (correct for timezone first). (This is often not the necessary for eg extremes since they probably do not have a value on that exact datetime)
+                result_wl0_metingenlijst = result_wl0_metingenlijst.iloc[:-1]
+            #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
+            for addcolumn in addcolumns_list:
+                result_wl0_metingenlijst[addcolumn] = result_wl0_aquometadata.loc[0,addcolumn]
+            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
         
         if allow_multipleresultsfor==[]:
             result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
@@ -572,14 +606,15 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
                 metakeys_forCode = [x.replace(&#39;.Code&#39;,&#39;&#39;) for x in result_wl0_aquometadata_unique.keys() if x.endswith(&#39;.Code&#39;)]
                 raise Exception(&#39;%s, available are: %s&#39;%(e,metakeys_forCode))
         
+        result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.reset_index(drop=True) #necessary to print &#39;Result n:&#39; numbers properly below
         if len(result_wl0_aquometadata_uniqueallowed)&gt;1:
             bool_nonuniquecols = (result_wl0_aquometadata_unique.iloc[0]!=result_wl0_aquometadata_unique).any(axis=0)
             metakeys_forCode_nonunique = [x.replace(&#39;.Code&#39;,&#39;&#39;) for x in result_wl0_aquometadata_unique.loc[:,bool_nonuniquecols].columns if x.endswith(&#39;.Code&#39;)]
-            for iR, result_one in enumerate(result_wl[&#39;WaarnemingenLijst&#39;]):
+            for iR, result_one in result_wl0_aquometadata_unique.iterrows():
                 print(f&#39;Result {iR+1}:&#39;)
                 metakey_list = sorted(set([&#39;Compartiment&#39;,&#39;Eenheid&#39;,&#39;Grootheid&#39;,&#39;Hoedanigheid&#39;,&#39;Groepering&#39;]+metakeys_forCode_nonunique))
                 for metakey in metakey_list:
-                    print(&#39;%28s: %s,&#39;%(&#34;&#39;%s&#39;&#34;%metakey,result_one[&#39;AquoMetadata&#39;][metakey]))
+                    print(&#39;%28s: %s,&#39;%(&#34;&#39;%s&#39;&#34;%metakey,dict(result_one[[f&#39;{metakey}.Code&#39;,f&#39;{metakey}.Omschrijving&#39;]])))
             raise Exception(&#39;query returned more than one result (differences in %s, details above), use more specific query_metadata argument or more extensive allow_multipleresultsfor argument (the latter might result in duplicate timesteps)&#39;%(metakeys_forCode_nonunique))
             
     result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.reset_index(drop=True)
@@ -599,6 +634,9 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
                                #&#39;OpdrachtgevendeInstantie&#39;:result_wl0_metingenlijst_alldates[&#39;WaarnemingMetadata.OpdrachtgevendeInstantieLijst&#39;].str[0].values,
                                },
                               index=pd.to_datetime(result_wl0_metingenlijst_alldates[&#39;Tijdstip&#39;]))
+    #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
+    for addcolumn in addcolumns_list:
+        ts_meas_pd[addcolumn] = result_wl0_metingenlijst_alldates[addcolumn].values
     #convert timezone from MET to requested timezone
     ts_meas_pd.index = ts_meas_pd.index.tz_convert(tstart_dt.tzinfo)
 
@@ -679,6 +717,36 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
     return cat_aquometadatalijst_sel, cat_locatielijst_sel</code></pre>
 </details>
 </dd>
+<dt id="hatyan.getonlinedata.convert_HWLWstr2num"><code class="name flex">
+<span>def <span class="ident">convert_HWLWstr2num</span></span>(<span>ts_measwlHWLW, ts_measwlHWLWtype)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TVL;1;1;hoogwater
+TVL;1;2;laagwater
+TVL;1;3;laagwater 1
+TVL;1;4;topagger
+TVL;1;5;laagwater 2</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
+    &#34;&#34;&#34;
+    TVL;1;1;hoogwater
+    TVL;1;2;laagwater
+    TVL;1;3;laagwater 1
+    TVL;1;4;topagger
+    TVL;1;5;laagwater 2
+    &#34;&#34;&#34;
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;hoogwater&#39;,&#39;HWLWcode&#39;] = 1
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;laagwater&#39;,&#39;HWLWcode&#39;] = 2
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;laagwater 1&#39;,&#39;HWLWcode&#39;] = 3
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;topagger&#39;,&#39;HWLWcode&#39;] = 4
+    ts_measwlHWLW.loc[ts_measwlHWLWtype[&#39;values&#39;]==&#39;laagwater 2&#39;,&#39;HWLWcode&#39;] = 5
+    ts_measwlHWLW[&#39;HWLWcode&#39;] = ts_measwlHWLW[&#39;HWLWcode&#39;].astype(int)
+    return ts_measwlHWLW</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -701,6 +769,7 @@ normalizing json output: <a href="https://towardsdatascience.com/how-to-convert-
 <li><code><a title="hatyan.getonlinedata.get_DDL_queryserver" href="#hatyan.getonlinedata.get_DDL_queryserver">get_DDL_queryserver</a></code></li>
 <li><code><a title="hatyan.getonlinedata.get_DDL_data" href="#hatyan.getonlinedata.get_DDL_data">get_DDL_data</a></code></li>
 <li><code><a title="hatyan.getonlinedata.get_DDL_stationmetasubset" href="#hatyan.getonlinedata.get_DDL_stationmetasubset">get_DDL_stationmetasubset</a></code></li>
+<li><code><a title="hatyan.getonlinedata.convert_HWLWstr2num" href="#hatyan.getonlinedata.convert_HWLWstr2num">convert_HWLWstr2num</a></code></li>
 </ul>
 </li>
 </ul>
