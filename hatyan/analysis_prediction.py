@@ -313,6 +313,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     
     check_rayleigh(ts_pd,t_const_freq_pd)
     
+    #TODO: nyquist stuk code generieker maken met Henrique
     stats = Timeseries_Statistics(ts=ts_pd)
     unique_timesteps = stats.stats['timeseries unique timesteps (minutes)']
     if len(unique_timesteps)==1: #constant freq, so folding is possible
@@ -325,7 +326,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
         bool_freqtoohigh = t_const_freq_pd['freq']>nyquist_freq
         t_const_freq_pd_folded = t_const_freq_pd.copy()
         t_const_freq_pd_folded.loc[bool_freqtoohigh,'freq'] = np.abs(fs - t_const_freq_pd_folded.loc[bool_freqtoohigh,'freq'] ) #remainder is better: 0.408%(1/3)
-        t_const_freq_pd_folded = t_const_freq_pd_folded.sort_values('freq')
+        t_const_freq_pd_folded = t_const_freq_pd_folded.sort_values('freq') #TODO: sorting also done in rayleigh check
         print('check folded rayleigh')
         check_rayleigh(ts_pd,t_const_freq_pd_folded)
     

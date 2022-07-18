@@ -1045,10 +1045,10 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
 def check_rayleigh(ts_pd,t_const_freq_pd):
     
-    t_const_freq = t_const_freq_pd['freq'].drop('A0',errors='ignore')
+    t_const_freq = t_const_freq_pd.sort_values('freq')['freq'].drop('A0',errors='ignore')
     freq_diffs = np.diff(t_const_freq)
-    rayleigh_tresh = 0.99
-    rayleigh = len(ts_pd['values'])*freq_diffs
+    rayleigh_tresh = 0.7 #0.99 # Koos Doekes: "Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het Rayleigh-criterium enigszins schenden, tot zo'n 0,7 van de theoretisch vereiste reekslengte. "
+    rayleigh = len(ts_pd['values'])*freq_diffs #TODO: might be better to drop timeseries nan-values first
     freq_diff_min = rayleigh_tresh/len(ts_pd['values'])
     rayleigh_bool = rayleigh>rayleigh_tresh
     rayleigh_bool_id = np.where(~rayleigh_bool)[0]
@@ -1063,7 +1063,9 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
             t_const_freq_sel = t_const_freq.iloc[[ray_id,ray_id+1]]
             t_const_freq_sel['diff'] = np.diff(t_const_freq_sel.values)[0]
             print(t_const_freq_sel)
-
+            if t_const_freq_sel['diff'] < 1e-9:
+                print('WARNING: difference almost zero, will result in ill conditioned matrix')
+        
 
 def check_ts(ts):
     """
