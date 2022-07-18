@@ -48,7 +48,7 @@ else:
     ts_prediction_fromcomp = ts_prediction_fromcomp_2019.append(ts_prediction_fromcomp_2020)
     ts_prediction_fromcomp.index = ts_prediction_fromcomp.index-dt.timedelta(hours=1) #convert MET prediction to GMT
 
-hatyan.check_ts(ts_prediction)
+print(hatyan.check_ts(ts_prediction))
 ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)#, calc_HWLWlocal=True)
 ts_ext_prediction_nos = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=station_name)
 
