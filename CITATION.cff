@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - given-names: Jelmer
+    family-names: Veenstra
+    email: jelmer.veenstra@deltares.nl
+    affiliation: Deltares
+    orcid: https://orcid.org/0000-0002-6349-818X
+title: "hatyan: tidal analysis and prediction"
+type: software
+version: 2.5.60
+doi: 

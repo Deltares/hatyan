@@ -5,7 +5,6 @@ Created on Fri Jul 15 11:36:14 2022
 @author: veenstra
 """
 
-
 import os
 import datetime as dt
 import pandas as pd
@@ -14,7 +13,6 @@ import matplotlib.pyplot as plt
 plt.close('all')
 from matplotlib import cm
 import hatyan
-
 
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
 const_list = hatyan.get_const_list_hatyan('year') #['A0','M2','S2','M4'] # 
@@ -25,7 +23,7 @@ station_list = ['DENHDR']
 year_list = list(range(1891,2021)) #list(range(1891,2021))
 year_list = [1955]
 
-#const_list = const_list[1:48] #max 4maal daags en ook geen S4
+#const_list = const_list[:48] #max 4maal daags en ook geen S4
 drop_list = ['S4','3M2S10','2SM6','4M2S12']
 for const in drop_list:
     const_list.remove(const)
