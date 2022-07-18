@@ -1071,7 +1071,7 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
             t_const_freq_sel['diff'] = np.diff(t_const_freq_sel.values)[0]
             print(t_const_freq_sel)
             if t_const_freq_sel['diff'] < 1e-9:
-                print('WARNING: difference almost zero, will result in ill conditioned matrix')
+                print(f'WARNING: frequency difference between {t_const_freq_sel.index[0]} and {t_const_freq_sel.index[1]} almost zero, will result in ill conditioned matrix')
         
 
 def check_ts(ts):

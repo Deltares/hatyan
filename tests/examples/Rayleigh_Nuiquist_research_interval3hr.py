@@ -25,7 +25,7 @@ station_list = ['DENHDR']
 year_list = list(range(1891,2021)) #list(range(1891,2021))
 year_list = [1955]
 
-#const_list = const_list[:48] #max 4maal daags en ook geen S4
+#const_list = const_list[1:48] #max 4maal daags en ook geen S4
 drop_list = ['S4','3M2S10','2SM6','4M2S12']
 for const in drop_list:
     const_list.remove(const)
