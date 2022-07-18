@@ -283,6 +283,8 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     else:
         file_M2phasediff = os.path.join(os.path.dirname(file_path),'data','data_M2phasediff_perstation.txt')
         stations_M2phasediff = pd.read_csv(file_M2phasediff, names=['M2phasediff'], comment='#', delim_whitespace=True)
+        if station not in stations_M2phasediff.index:
+            raise Exception(f'ERROR: station "{station}" not in file_M2phasediff ({file_M2phasediff})')
         stat_M2phasediff = stations_M2phasediff.loc[station,'M2phasediff']
         M2phasediff_hr = stat_M2phasediff/360*M2_period_hr
     HW_tdiff_cadzd = HW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr
@@ -635,9 +637,14 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
         data_HWLW_nosidx = ts_ext.copy()
         data_HWLW_nosidx['times'] = data_HWLW_nosidx.index
         data_HWLW_nosidx = data_HWLW_nosidx.set_index('HWLWno')
+        #data_HWLW_nosidx = data_HWLW_nosidx.sort_index()
         HWLWno_all = data_HWLW_nosidx.index.unique()
-        data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1],index=HWLWno_all)
-        data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2],index=HWLWno_all)
+        #data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1],index=HWLWno_all)
+        #data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2],index=HWLWno_all)
+        data_HW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1]
+        data_LW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2]
+        bool_HW = HWLWno_all.isin(data_HW.index)
+        bool_LW = HWLWno_all.isin(data_LW.index)
         
         #HWLWno
         if 'HWLWno' not in ncdimlist:
@@ -650,20 +657,20 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
         if 'times_astro_HW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('times_astro_HW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['times_astro_HW'][nstat,:] = date2num(data_HW['times'].tolist(),units=data_nc.variables['times_astro_HW'].units)
+        data_nc.variables['times_astro_HW'][nstat,bool_HW] = date2num(data_HW['times'].tolist(),units=data_nc.variables['times_astro_HW'].units)
         if 'waterlevel_astro_HW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_HWattr)
-        data_nc.variables['waterlevel_astro_HW'][nstat,:] = data_HW['values']
+        data_nc.variables['waterlevel_astro_HW'][nstat,bool_HW] = data_HW['values']
         #LW
         if 'times_astro_LW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('times_astro_LW','f8',('stations','HWLWno',)) 
             nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['times_astro_LW'][nstat,:] = date2num(data_LW['times'].tolist(),units=data_nc.variables['times_astro_LW'].units)
+        data_nc.variables['times_astro_LW'][nstat,bool_LW] = date2num(data_LW['times'].tolist(),units=data_nc.variables['times_astro_LW'].units)
         if 'waterlevel_astro_LW' not in ncvarlist:
             nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('stations','HWLWno',))
             nc_newvar.setncatts(dict_LWattr)
-        data_nc.variables['waterlevel_astro_LW'][nstat,:] = data_LW['values']
+        data_nc.variables['waterlevel_astro_LW'][nstat,bool_LW] = data_LW['values']
     
     else: #use time as index and create array with gaps (not possible to combine multiple stations)
         if nstat>0:
@@ -778,7 +785,7 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
                              'BEM;NVT', #niet_essentieel?
                              'BEW;NVT', #niet_essentieel?
                              'VAT;NVT', #niet_essentieel?
-                             'TYP;TE',
+                             'TYP;TE', #reekstype: equidistant
                              '[RKS]',
                              'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min),
                              ##'PLT;NVT;-999999999;6793000;44400000',
@@ -871,7 +878,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
                              'BEM;NVT;Niet van toepassing', #niet_essentieel?
                              'BEW;NVT;Niet van toepassing', #niet_essentieel?
                              'VAT;NVT;Niet van toepassing', #niet_essentieel?
-                             'TYP;TN',
+                             'TYP;TN', #reekstype: niet-equidistant
                              '[MUX]',
                              'MXW;1;15',
                              'MXP;1;GETETCDE;Getijextreem code;J',
@@ -1182,12 +1189,16 @@ def get_diablocks(filename):
         
         #get groepering and whether dia/wia is equidistant or non-equidistant
         bool_startswithmux = data_meta_series.str.startswith('MUX')
-        if bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
+        row_TYP = data_meta_series.loc[data_meta_series.str.startswith('TYP')].iloc[0].split(';')[1]
+        diablocks_pd.loc[block_id,'TYP'] = row_TYP
+        if row_TYP=='TN': #bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
             mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
-        else: #normal waterlevel timeseries (equidistant)
-            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA']
+        elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
+            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #WNS,CPM,HDH,ANA
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
+        else:
+            raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.readts_dia()')
         
         #read all required metadata
         for get_content_sel in mincontent:
@@ -1370,7 +1381,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
-            if get_status:
+            if get_status: #TODO: this can be more generic (eg add additional metadata) or more neat. Also in get_diablocks()
                 block_status_list = diablocks_pd.loc[block_id,'STA'].split('!')
                 for block_status_one in block_status_list:
                     status_tstart = dt.datetime.strptime(block_status_one[4:17],'%Y%m%d;%H%M')
