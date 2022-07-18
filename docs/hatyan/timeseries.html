@@ -81,7 +81,7 @@ from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
 
 
-def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
+def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_hr=6):
     &#34;&#34;&#34;
     
     Calculates extremes (high and low waters) for the provided timeseries. 
@@ -118,7 +118,10 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
         1 (high water) and 2 (low water). And if calc_HWLW345=True also 3 (first low water), 4 (agger) and 5 (second low water).
 
     &#34;&#34;&#34;
-
+    
+    if not ts.index.is_monotonic_increasing:
+        raise Exception(&#39;ERROR: timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()&#39;) #otherwise &#34;ValueError: &#39;list&#39; argument must have no negative elements&#34;
+    
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_min = get_schureman_freqs([&#39;M2&#39;]).loc[&#39;M2&#39;,&#39;period [hr]&#39;]*60
     ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
@@ -143,7 +146,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW[&#39;values&#39;].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW[&#39;values&#39;].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
-    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW[&#39;times&#39;]&gt;=ts.index[0]+dt.timedelta(hours=6)) &amp; (data_pd_HWLW[&#39;times&#39;]&lt;=ts.index[-1]-dt.timedelta(hours=6))].index
+    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW[&#39;times&#39;]&gt;=ts.index[0]+dt.timedelta(hours=buffer_hr)) &amp; (data_pd_HWLW[&#39;times&#39;]&lt;=ts.index[-1]-dt.timedelta(hours=buffer_hr))].index
     LWid_main = LWid_main_raw[np.in1d(LWid_main_raw,validtimes_idx)]
     HWid_main = HWid_main_raw[np.in1d(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process
@@ -1048,7 +1051,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
-    check_ts(ts_pd_out)
+    print(check_ts(ts_pd_out))
     return ts_pd_out
 
 
@@ -1088,16 +1091,16 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq=&#39;%dmin&#39;%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample[&#39;values&#39;] = ts[&#39;values&#39;] #put measurements into this timeseries, matches to correct index automatically
     
-    check_ts(data_pd_resample)
+    print(check_ts(data_pd_resample))
     return data_pd_resample
 
 
 def check_rayleigh(ts_pd,t_const_freq_pd):
     
-    t_const_freq = t_const_freq_pd[&#39;freq&#39;].drop(&#39;A0&#39;,errors=&#39;ignore&#39;)
+    t_const_freq = t_const_freq_pd.sort_values(&#39;freq&#39;)[&#39;freq&#39;].drop(&#39;A0&#39;,errors=&#39;ignore&#39;)
     freq_diffs = np.diff(t_const_freq)
-    rayleigh_tresh = 0.99
-    rayleigh = len(ts_pd[&#39;values&#39;])*freq_diffs
+    rayleigh_tresh = 0.7 #0.99 # Koos Doekes: &#34;Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het Rayleigh-criterium enigszins schenden, tot zo&#39;n 0,7 van de theoretisch vereiste reekslengte. &#34;
+    rayleigh = len(ts_pd[&#39;values&#39;])*freq_diffs #TODO: might be better to drop timeseries nan-values first
     freq_diff_min = rayleigh_tresh/len(ts_pd[&#39;values&#39;])
     rayleigh_bool = rayleigh&gt;rayleigh_tresh
     rayleigh_bool_id = np.where(~rayleigh_bool)[0]
@@ -1112,7 +1115,9 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
             t_const_freq_sel = t_const_freq.iloc[[ray_id,ray_id+1]]
             t_const_freq_sel[&#39;diff&#39;] = np.diff(t_const_freq_sel.values)[0]
             print(t_const_freq_sel)
-
+            if t_const_freq_sel[&#39;diff&#39;] &lt; 1e-9:
+                print(&#39;WARNING: difference almost zero, will result in ill conditioned matrix&#39;)
+        
 
 def check_ts(ts):
     &#34;&#34;&#34;
@@ -1129,6 +1134,12 @@ def check_ts(ts):
         For printing as a substring of another string.
 
     &#34;&#34;&#34;
+    
+    stats = Timeseries_Statistics(ts=ts)
+    return stats
+    
+    #TODO: THE PART BELOW IS NOT USED
+    raise Exception(&#39;use hatyan.Timeseries_Statistics() instead&#39;)
     
     timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
     bool_int = (timesteps_min_all-timesteps_min_all.round(0))&lt;1e-9
@@ -1150,23 +1161,77 @@ def check_ts(ts):
     ntimes_nonan = ts[&#39;values&#39;].count()
     ntimes = len(ts)
     ntimesteps_uniq = len(timesteps_min)
-    if len(ts)==0:
-        print_statement = &#39;timeseries contents:\n%s&#39;%(ts)
-        print(print_statement)
-    else:
-        list_statements = [&#39;timeseries contents:\n%s&#39;%(ts),
-                           &#39;timeseries # unique timesteps: %i&#39;%(ntimesteps_uniq),
-                           &#39;timeseries unique timesteps (minutes):\n%s&#39;%(timesteps_min_print),
-                           &#39;timeseries validity: %s&#39;%(timesteps_incr_print),
-                           &#39;timeseries length: %i&#39;%(ntimes),
-                           &#39;timeseries # nonan: %i&#39;%(ntimes_nonan),
-                           &#39;timeseries %% nonan: %.1f%%&#39;%(ntimes_nonan/ntimes*100),
-                           &#39;timeseries # nan: %i&#39;%(ntimes-ntimes_nonan),
-                           &#39;timeseries %% nan: %.1f%%&#39;%((ntimes-ntimes_nonan)/ntimes*100)]
-        print_statement = &#39;\n&#39;.join(list_statements)
-        print(print_statement)
+
     
+    if len(ts)==0:
+        print_statement = f&#39;timeseries contents:\n{ts}&#39;
+    else:
+        print_statement = (f&#39;timeseries contents:\n{ts}\n&#39;+
+                           f&#39;timeseries # unique timesteps: {ntimesteps_uniq}\n&#39;+
+                           f&#39;timeseries unique timesteps (minutes):\n{timesteps_min_print}\n&#39;+
+                           f&#39;timeseries validity: {timesteps_incr_print}\n&#39;+
+                           f&#39;timeseries length: {ntimes}\n&#39;+
+                           f&#39;timeseries # nonan: {ntimes_nonan}\n&#39;+
+                           f&#39;timeseries % nonan: {(ntimes_nonan/ntimes*100):.1f}%\n&#39;+
+                           f&#39;timeseries # nan: {ntimes-ntimes_nonan}\n&#39;+
+                           f&#39;timeseries % nan: {(ntimes-ntimes_nonan)/ntimes*100:.1f}%&#39;)
     return print_statement
+
+
+class Timeseries_Statistics:
+    #TODO: make like a dict with different __str__ method, instead of this mess https://stackoverflow.com/questions/4014621/a-python-class-that-acts-like-dict
+    #TODO: improve output dict, keys are now not convenient to use. Maybe make keys and longname?
+    def __init__(self,ts):
+        timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
+        bool_int = (timesteps_min_all-timesteps_min_all.round(0))&lt;1e-9
+        if bool_int.all():
+            timesteps_min_all = timesteps_min_all.astype(int)
+        else: #in case of non integer minute timesteps (eg seconds)
+            timesteps_min_all[bool_int] = timesteps_min_all[bool_int].round(0)
+        timesteps_min = set(timesteps_min_all)
+        #print(timesteps_min)
+        if len(timesteps_min)&lt;=100:
+            timesteps_min_print = timesteps_min
+        else:
+            timesteps_min_print = &#39;too much unique time intervals (&gt;100) to display all of them, %i intervals ranging from %i to %i minutes&#39;%(len(timesteps_min),np.min(list(timesteps_min)),np.max(list(timesteps_min)))
+        if (timesteps_min_all&gt;0).all():
+            timesteps_incr_print = &#39;all time intervals are in increasing order and are never equal&#39;
+        else:
+            timesteps_incr_print = &#39;the times-order of ts is not always increasing (duplicate values or wrong order)&#39;
+        
+        ntimes_nonan = ts[&#39;values&#39;].count()
+        ntimes = len(ts)
+        ntimesteps_uniq = len(timesteps_min)
+        if len(ts)==0:
+            self.stats = {&#39;timeseries contents&#39;:ts}
+        else:
+            self.stats = {&#39;timeseries contents&#39;:ts,
+                        &#39;timeseries # unique timesteps&#39;: ntimesteps_uniq,
+                        &#39;timeseries unique timesteps (minutes)&#39;:timesteps_min_print,
+                        &#39;timeseries validity&#39;: timesteps_incr_print,
+                        &#39;timeseries length&#39;: ntimes,
+                        &#39;timeseries # nonan&#39;: ntimes_nonan,
+                        &#39;timeseries % nonan&#39;: ntimes_nonan/ntimes*100,#%.1f %
+                        &#39;timeseries # nan&#39;: ntimes-ntimes_nonan,
+                        &#39;timeseries % nan&#39;: (ntimes-ntimes_nonan)/ntimes*100, #%.1f %
+                        }
+    def __str__(self):
+        print_statement = &#39;&#39;
+        for key in self.stats.keys():
+            if key in [&#39;timeseries contents&#39;,&#39;timeseries unique timesteps (minutes)&#39;]:
+                print_statement += f&#39;{key}:\n{self.stats[key]}\n&#39;
+            else:
+                print_statement += f&#39;{key}: {self.stats[key]}\n&#39;
+        return print_statement
+    def __repr__(self): #avoid printing the class name
+        #return dict.__repr__
+        return str(self.stats)
+    &#34;&#34;&#34;
+    @classmethod
+    def keys(self):
+        return self.stats.keys()
+    &#34;&#34;&#34;
+        
     
     
 ###############################
@@ -1442,7 +1507,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception(&#39;ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list&#39;)
     data_pd_all = data_pd_all.sort_index(axis=0)
-    check_ts(data_pd_all)
+    print(check_ts(data_pd_all))
     
     return data_pd_all
 
@@ -1489,7 +1554,7 @@ def readts_noos(filename, datetime_format=&#39;%Y%m%d%H%M&#39;, na_values=None):
     noos_datetime = pd.to_datetime(content_pd[&#39;times_str&#39;],format=datetime_format)
     data_pd = pd.DataFrame({&#39;values&#39;:content_pd[&#39;values&#39;].values},index=noos_datetime)
     
-    check_ts(data_pd)
+    print(check_ts(data_pd))
     return data_pd</code></pre>
 </details>
 </section>
@@ -1501,7 +1566,7 @@ def readts_noos(filename, datetime_format=&#39;%Y%m%d%H%M&#39;, na_values=None):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="hatyan.timeseries.calc_HWLW"><code class="name flex">
-<span>def <span class="ident">calc_HWLW</span></span>(<span>ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False)</span>
+<span>def <span class="ident">calc_HWLW</span></span>(<span>ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_hr=6)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Calculates extremes (high and low waters) for the provided timeseries.
@@ -1540,7 +1605,7 @@ When first/second low waters and aggers are calculated, the local extremes aroun
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False):
+<pre><code class="python">def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_hr=6):
     &#34;&#34;&#34;
     
     Calculates extremes (high and low waters) for the provided timeseries. 
@@ -1577,7 +1642,10 @@ When first/second low waters and aggers are calculated, the local extremes aroun
         1 (high water) and 2 (low water). And if calc_HWLW345=True also 3 (first low water), 4 (agger) and 5 (second low water).
 
     &#34;&#34;&#34;
-
+    
+    if not ts.index.is_monotonic_increasing:
+        raise Exception(&#39;ERROR: timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()&#39;) #otherwise &#34;ValueError: &#39;list&#39; argument must have no negative elements&#34;
+    
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_min = get_schureman_freqs([&#39;M2&#39;]).loc[&#39;M2&#39;,&#39;period [hr]&#39;]*60
     ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
@@ -1602,7 +1670,7 @@ When first/second low waters and aggers are calculated, the local extremes aroun
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW[&#39;values&#39;].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW[&#39;values&#39;].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
-    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW[&#39;times&#39;]&gt;=ts.index[0]+dt.timedelta(hours=6)) &amp; (data_pd_HWLW[&#39;times&#39;]&lt;=ts.index[-1]-dt.timedelta(hours=6))].index
+    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW[&#39;times&#39;]&gt;=ts.index[0]+dt.timedelta(hours=buffer_hr)) &amp; (data_pd_HWLW[&#39;times&#39;]&lt;=ts.index[-1]-dt.timedelta(hours=buffer_hr))].index
     LWid_main = LWid_main_raw[np.in1d(LWid_main_raw,validtimes_idx)]
     HWid_main = HWid_main_raw[np.in1d(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process
@@ -2769,7 +2837,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
-    check_ts(ts_pd_out)
+    print(check_ts(ts_pd_out))
     return ts_pd_out</code></pre>
 </details>
 </dd>
@@ -2834,7 +2902,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq=&#39;%dmin&#39;%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample[&#39;values&#39;] = ts[&#39;values&#39;] #put measurements into this timeseries, matches to correct index automatically
     
-    check_ts(data_pd_resample)
+    print(check_ts(data_pd_resample))
     return data_pd_resample</code></pre>
 </details>
 </dd>
@@ -2849,10 +2917,10 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 </summary>
 <pre><code class="python">def check_rayleigh(ts_pd,t_const_freq_pd):
     
-    t_const_freq = t_const_freq_pd[&#39;freq&#39;].drop(&#39;A0&#39;,errors=&#39;ignore&#39;)
+    t_const_freq = t_const_freq_pd.sort_values(&#39;freq&#39;)[&#39;freq&#39;].drop(&#39;A0&#39;,errors=&#39;ignore&#39;)
     freq_diffs = np.diff(t_const_freq)
-    rayleigh_tresh = 0.99
-    rayleigh = len(ts_pd[&#39;values&#39;])*freq_diffs
+    rayleigh_tresh = 0.7 #0.99 # Koos Doekes: &#34;Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het Rayleigh-criterium enigszins schenden, tot zo&#39;n 0,7 van de theoretisch vereiste reekslengte. &#34;
+    rayleigh = len(ts_pd[&#39;values&#39;])*freq_diffs #TODO: might be better to drop timeseries nan-values first
     freq_diff_min = rayleigh_tresh/len(ts_pd[&#39;values&#39;])
     rayleigh_bool = rayleigh&gt;rayleigh_tresh
     rayleigh_bool_id = np.where(~rayleigh_bool)[0]
@@ -2866,7 +2934,9 @@ Warning: the calculated extreme numbers in this definition are not corrected for
         for ray_id in rayleigh_bool_id:
             t_const_freq_sel = t_const_freq.iloc[[ray_id,ray_id+1]]
             t_const_freq_sel[&#39;diff&#39;] = np.diff(t_const_freq_sel.values)[0]
-            print(t_const_freq_sel)</code></pre>
+            print(t_const_freq_sel)
+            if t_const_freq_sel[&#39;diff&#39;] &lt; 1e-9:
+                print(&#39;WARNING: difference almost zero, will result in ill conditioned matrix&#39;)</code></pre>
 </details>
 </dd>
 <dt id="hatyan.timeseries.check_ts"><code class="name flex">
@@ -2904,6 +2974,12 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 
     &#34;&#34;&#34;
     
+    stats = Timeseries_Statistics(ts=ts)
+    return stats
+    
+    #TODO: THE PART BELOW IS NOT USED
+    raise Exception(&#39;use hatyan.Timeseries_Statistics() instead&#39;)
+    
     timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
     bool_int = (timesteps_min_all-timesteps_min_all.round(0))&lt;1e-9
     if bool_int.all():
@@ -2924,22 +3000,20 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     ntimes_nonan = ts[&#39;values&#39;].count()
     ntimes = len(ts)
     ntimesteps_uniq = len(timesteps_min)
-    if len(ts)==0:
-        print_statement = &#39;timeseries contents:\n%s&#39;%(ts)
-        print(print_statement)
-    else:
-        list_statements = [&#39;timeseries contents:\n%s&#39;%(ts),
-                           &#39;timeseries # unique timesteps: %i&#39;%(ntimesteps_uniq),
-                           &#39;timeseries unique timesteps (minutes):\n%s&#39;%(timesteps_min_print),
-                           &#39;timeseries validity: %s&#39;%(timesteps_incr_print),
-                           &#39;timeseries length: %i&#39;%(ntimes),
-                           &#39;timeseries # nonan: %i&#39;%(ntimes_nonan),
-                           &#39;timeseries %% nonan: %.1f%%&#39;%(ntimes_nonan/ntimes*100),
-                           &#39;timeseries # nan: %i&#39;%(ntimes-ntimes_nonan),
-                           &#39;timeseries %% nan: %.1f%%&#39;%((ntimes-ntimes_nonan)/ntimes*100)]
-        print_statement = &#39;\n&#39;.join(list_statements)
-        print(print_statement)
+
     
+    if len(ts)==0:
+        print_statement = f&#39;timeseries contents:\n{ts}&#39;
+    else:
+        print_statement = (f&#39;timeseries contents:\n{ts}\n&#39;+
+                           f&#39;timeseries # unique timesteps: {ntimesteps_uniq}\n&#39;+
+                           f&#39;timeseries unique timesteps (minutes):\n{timesteps_min_print}\n&#39;+
+                           f&#39;timeseries validity: {timesteps_incr_print}\n&#39;+
+                           f&#39;timeseries length: {ntimes}\n&#39;+
+                           f&#39;timeseries # nonan: {ntimes_nonan}\n&#39;+
+                           f&#39;timeseries % nonan: {(ntimes_nonan/ntimes*100):.1f}%\n&#39;+
+                           f&#39;timeseries # nan: {ntimes-ntimes_nonan}\n&#39;+
+                           f&#39;timeseries % nan: {(ntimes-ntimes_nonan)/ntimes*100:.1f}%&#39;)
     return print_statement</code></pre>
 </details>
 </dd>
@@ -3290,7 +3364,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception(&#39;ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list&#39;)
     data_pd_all = data_pd_all.sort_index(axis=0)
-    check_ts(data_pd_all)
+    print(check_ts(data_pd_all))
     
     return data_pd_all</code></pre>
 </details>
@@ -3360,13 +3434,81 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     noos_datetime = pd.to_datetime(content_pd[&#39;times_str&#39;],format=datetime_format)
     data_pd = pd.DataFrame({&#39;values&#39;:content_pd[&#39;values&#39;].values},index=noos_datetime)
     
-    check_ts(data_pd)
+    print(check_ts(data_pd))
     return data_pd</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="hatyan.timeseries.Timeseries_Statistics"><code class="flex name class">
+<span>class <span class="ident">Timeseries_Statistics</span></span>
+<span>(</span><span>ts)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Timeseries_Statistics:
+    #TODO: make like a dict with different __str__ method, instead of this mess https://stackoverflow.com/questions/4014621/a-python-class-that-acts-like-dict
+    #TODO: improve output dict, keys are now not convenient to use. Maybe make keys and longname?
+    def __init__(self,ts):
+        timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
+        bool_int = (timesteps_min_all-timesteps_min_all.round(0))&lt;1e-9
+        if bool_int.all():
+            timesteps_min_all = timesteps_min_all.astype(int)
+        else: #in case of non integer minute timesteps (eg seconds)
+            timesteps_min_all[bool_int] = timesteps_min_all[bool_int].round(0)
+        timesteps_min = set(timesteps_min_all)
+        #print(timesteps_min)
+        if len(timesteps_min)&lt;=100:
+            timesteps_min_print = timesteps_min
+        else:
+            timesteps_min_print = &#39;too much unique time intervals (&gt;100) to display all of them, %i intervals ranging from %i to %i minutes&#39;%(len(timesteps_min),np.min(list(timesteps_min)),np.max(list(timesteps_min)))
+        if (timesteps_min_all&gt;0).all():
+            timesteps_incr_print = &#39;all time intervals are in increasing order and are never equal&#39;
+        else:
+            timesteps_incr_print = &#39;the times-order of ts is not always increasing (duplicate values or wrong order)&#39;
+        
+        ntimes_nonan = ts[&#39;values&#39;].count()
+        ntimes = len(ts)
+        ntimesteps_uniq = len(timesteps_min)
+        if len(ts)==0:
+            self.stats = {&#39;timeseries contents&#39;:ts}
+        else:
+            self.stats = {&#39;timeseries contents&#39;:ts,
+                        &#39;timeseries # unique timesteps&#39;: ntimesteps_uniq,
+                        &#39;timeseries unique timesteps (minutes)&#39;:timesteps_min_print,
+                        &#39;timeseries validity&#39;: timesteps_incr_print,
+                        &#39;timeseries length&#39;: ntimes,
+                        &#39;timeseries # nonan&#39;: ntimes_nonan,
+                        &#39;timeseries % nonan&#39;: ntimes_nonan/ntimes*100,#%.1f %
+                        &#39;timeseries # nan&#39;: ntimes-ntimes_nonan,
+                        &#39;timeseries % nan&#39;: (ntimes-ntimes_nonan)/ntimes*100, #%.1f %
+                        }
+    def __str__(self):
+        print_statement = &#39;&#39;
+        for key in self.stats.keys():
+            if key in [&#39;timeseries contents&#39;,&#39;timeseries unique timesteps (minutes)&#39;]:
+                print_statement += f&#39;{key}:\n{self.stats[key]}\n&#39;
+            else:
+                print_statement += f&#39;{key}: {self.stats[key]}\n&#39;
+        return print_statement
+    def __repr__(self): #avoid printing the class name
+        #return dict.__repr__
+        return str(self.stats)
+    &#34;&#34;&#34;
+    @classmethod
+    def keys(self):
+        return self.stats.keys()
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -3403,6 +3545,13 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 <li><code><a title="hatyan.timeseries.readts_dia_equidistant" href="#hatyan.timeseries.readts_dia_equidistant">readts_dia_equidistant</a></code></li>
 <li><code><a title="hatyan.timeseries.readts_dia" href="#hatyan.timeseries.readts_dia">readts_dia</a></code></li>
 <li><code><a title="hatyan.timeseries.readts_noos" href="#hatyan.timeseries.readts_noos">readts_noos</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="hatyan.timeseries.Timeseries_Statistics" href="#hatyan.timeseries.Timeseries_Statistics">Timeseries_Statistics</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>
