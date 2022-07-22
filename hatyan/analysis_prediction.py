@@ -28,7 +28,7 @@ from packaging import version
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
-from hatyan.timeseries import check_ts, check_rayleigh, Timeseries_Statistics
+from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh, Timeseries_Statistics
 
 
 class HatyanSettings:
@@ -315,26 +315,9 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
     v_u = v_0i_rad.values + u_i_rad.values
     
-    #check_rayleigh(ts_pd,t_const_freq_pd)
-    
-    #deriving dominant timestep, sampling frequency and nyquist frequency
-    timestep_hr_all = ((ts_pd.index[1:]-ts_pd.index[:-1]).total_seconds()/3600)#.astype(int).values
-    uniq_vals, uniq_counts = np.unique(timestep_hr_all,return_counts=True)
-    timestep_hr_dominant = uniq_vals[np.argmax(uniq_counts)]
-    fs_phr = 1/timestep_hr_dominant #sampling freq [1/hr]
-    fn_phr = fs_phr/2 #nyquist freq [1/hr]
-    
-    #check if there is a component with exactly the same frequency as the nyquist frequency #TODO: or its multiples (but with remainder, A0 also gets flagged)
-    bool_isnyquist = t_const_freq_pd['freq']==fn_phr
-    if bool_isnyquist.any():
-        raise Exception(f'there is a component on the Nyquist frequency ({fn_phr} [1/hr]), this not possible:\n{t_const_freq_pd.loc[bool_isnyquist]}')
-    
-    print(f'folding frequencies over Nyquist frequency, which is half of the dominant timestep ({timestep_hr_dominant} hour), there are {len(uniq_counts)} unique timesteps)')
-    #folding frequencies over nyquist frequency: https://users.encs.concordia.ca/~kadem/CHAPTER%20V.pdf (fig 5.6)
-    freq_div,freq_rem = np.divmod(t_const_freq_pd[['freq']],fn_phr) # remainder gives folded frequencies for even divisions (freqs for odd divisions are not valid yet)
-    freq_div_isodd = (freq_div%2).astype(bool)
-    freq_rem[freq_div_isodd] = fn_phr-freq_rem[freq_div_isodd] # fn-remainder gives folded frequencies for odd divisions
-    check_rayleigh(ts_pd,freq_rem)
+    #check rayleigh frequency after nyquist frequency folding process
+    freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
+    check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
     
     #### TIMESERIES ANALYSIS
     N = len(const_list)

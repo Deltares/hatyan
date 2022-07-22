@@ -1050,6 +1050,27 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     return data_pd_resample
 
 
+def nyquist_folding(ts_pd,t_const_freq_pd):
+    #deriving dominant timestep, sampling frequency and nyquist frequency
+    timestep_hr_all = ((ts_pd.index[1:]-ts_pd.index[:-1]).total_seconds()/3600)#.astype(int).values
+    uniq_vals, uniq_counts = np.unique(timestep_hr_all,return_counts=True)
+    timestep_hr_dominant = uniq_vals[np.argmax(uniq_counts)]
+    fs_phr = 1/timestep_hr_dominant #sampling freq [1/hr]
+    fn_phr = fs_phr/2 #nyquist freq [1/hr]
+    
+    #check if there is a component with exactly the same frequency as the nyquist frequency #TODO: or its multiples (but with remainder, A0 also gets flagged)
+    bool_isnyquist = t_const_freq_pd['freq']==fn_phr
+    if bool_isnyquist.any():
+        raise Exception(f'there is a component on the Nyquist frequency ({fn_phr} [1/hr]), this not possible:\n{t_const_freq_pd.loc[bool_isnyquist]}')
+    
+    print(f'folding frequencies over Nyquist frequency, which is half of the dominant timestep ({timestep_hr_dominant} hour), there are {len(uniq_counts)} unique timesteps)')
+    #folding frequencies over nyquist frequency: https://users.encs.concordia.ca/~kadem/CHAPTER%20V.pdf (fig 5.6)
+    freq_div,freq_rem = np.divmod(t_const_freq_pd[['freq']],fn_phr) # remainder gives folded frequencies for even divisions (freqs for odd divisions are not valid yet)
+    freq_div_isodd = (freq_div%2).astype(bool)
+    freq_rem[freq_div_isodd] = fn_phr-freq_rem[freq_div_isodd] # fn-remainder gives folded frequencies for odd divisions
+    return freq_rem
+
+
 def check_rayleigh(ts_pd,t_const_freq_pd):
     """
     The Rayleigh criterion: |freq1-freq2| * T > R, where T is the period length of the timeseries, R is the Rayleigh number.
