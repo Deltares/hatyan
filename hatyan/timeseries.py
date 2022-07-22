@@ -992,7 +992,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     """
     ts_pd_in = ts
     
-    print('-'*50)
+    #print('-'*50)
     print('cropping timeseries')
     if not times_ext[0]<times_ext[1]:
         raise Exception('ERROR: the two times times_ext should be increasing, but they are not: %s.'%(times_ext))
@@ -1006,7 +1006,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
-    print(check_ts(ts_pd_out))
+    #print(check_ts(ts_pd_out))
     return ts_pd_out
 
 
@@ -1032,7 +1032,7 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
     """
     
-    print('-'*50)
+    #print('-'*50)
     print('resampling timeseries to %i minutes'%(timestep_min))
     
     bool_duplicated_index = ts.index.duplicated()
@@ -1046,29 +1046,47 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq='%dmin'%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample['values'] = ts['values'] #put measurements into this timeseries, matches to correct index automatically
     
-    print(check_ts(data_pd_resample))
+    #print(check_ts(data_pd_resample))
     return data_pd_resample
 
 
 def check_rayleigh(ts_pd,t_const_freq_pd):
+    """
+    The Rayleigh criterion: |freq1-freq2| * T > R, where T is the period length of the timeseries, R is the Rayleigh number.
+    This comes down to: ts_period / period_difference > R
+    
+    Parameters
+    ----------
+    ts_pd : TYPE
+        DESCRIPTION.
+    t_const_freq_pd : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     
     t_const_freq = t_const_freq_pd.sort_values('freq')['freq'].drop('A0',errors='ignore')
     freq_diffs = np.diff(t_const_freq)
+    ts_period_hr = (ts_pd.index.max()-ts_pd.index.min()).total_seconds()/3600
     rayleigh_tresh = 0.7 #0.99 # Koos Doekes: "Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het Rayleigh-criterium enigszins schenden, tot zo'n 0,7 van de theoretisch vereiste reekslengte. "
-    rayleigh = len(ts_pd['values'])*freq_diffs #TODO: might be better to drop timeseries nan-values first
-    freq_diff_min = rayleigh_tresh/len(ts_pd['values'])
+    rayleigh = ts_period_hr*freq_diffs #TODO: might be better to drop timeseries nan-values first, especially from start/end of series since it decreases ts_period_hr
+    freq_diff_phr_minimum = rayleigh_tresh/ts_period_hr
     rayleigh_bool = rayleigh>rayleigh_tresh
     rayleigh_bool_id = np.where(~rayleigh_bool)[0]
     
     if rayleigh_bool.all():
         print('Rayleigh criterion OK (always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
-        print('Frequencies are far enough apart (always >%.6f, minimum is %.6f)'%(freq_diff_min,np.min(freq_diffs)))
+        print('Frequencies are far enough apart (always >%.6f, minimum is %.6f)'%(freq_diff_phr_minimum,np.min(freq_diffs)))
     else:
         print('Rayleigh criterion vandalised (not always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
-        print('Frequencies with not enough difference (not always >%.6f, minimum is %.6f)'%(freq_diff_min,np.min(freq_diffs)))
+        print('Frequencies with not enough difference (not always >%.6f, minimum is %.6f)'%(freq_diff_phr_minimum,np.min(freq_diffs)))
         for ray_id in rayleigh_bool_id:
             t_const_freq_sel = t_const_freq.iloc[[ray_id,ray_id+1]]
             t_const_freq_sel['diff'] = np.diff(t_const_freq_sel.values)[0]
+            t_const_freq_sel['ndays min'] = rayleigh_tresh/np.diff(t_const_freq_sel.values)[0]/24
             print(t_const_freq_sel)
             if t_const_freq_sel['diff'] < 1e-9:
                 print(f'WARNING: frequency difference between {t_const_freq_sel.index[0]} and {t_const_freq_sel.index[1]} almost zero, will result in ill conditioned matrix')
@@ -1076,7 +1094,7 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
 
 def check_ts(ts):
     """
-    prints several statistics of the provided timeseries
+    returns several statistics of the provided timeseries as a Timeseries_Statistics class, which is a like a dict that pretty prints automatically.
 
     Parameters
     ----------
@@ -1085,8 +1103,8 @@ def check_ts(ts):
 
     Returns
     -------
-    print_statement: str
-        For printing as a substring of another string.
+    stats: class Timeseries_Statistics
+        Timeseries_Statistics is a like a dict that pretty prints automatically.
 
     """
     
@@ -1423,7 +1441,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
     data_pd_all = data_pd_all.sort_index(axis=0)
-    print(check_ts(data_pd_all))
+    #print(check_ts(data_pd_all))
     
     return data_pd_all
 
@@ -1448,7 +1466,7 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
 
     """
     
-    print('-'*50)
+    #print('-'*50)
     print('reading file: %s'%(filename))
     noosheader = []
     noosheader_dict = {}
