@@ -28,7 +28,7 @@ from packaging import version
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
-from hatyan.timeseries import check_ts, check_rayleigh, Timeseries_Statistics
+from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh, Timeseries_Statistics
 
 
 class HatyanSettings:
@@ -258,7 +258,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
-    print('-'*50)
+    #print('-'*50)
     print('ANALYSIS initializing')
     print(hatyan_settings)
         
@@ -286,6 +286,10 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
         const_list_counts = pd.DataFrame({'constituent':const_list_uniq,'occurences':const_list_uniq_counts})
         raise Exception('remove duplicate constituents from const_list:\n%s'%(const_list_counts.loc[const_list_counts['occurences']>1]))
     
+    #check for length
+    if len(ts_pd)<2:
+        raise Exception('provided timeseries is less than 2 timesteps long, analysis not possible')
+
     #remove nans
     ts_pd_nonan = ts_pd[~ts_pd['values'].isna()]
     if len(ts_pd_nonan)==0:
@@ -311,24 +315,9 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
     v_u = v_0i_rad.values + u_i_rad.values
     
-    check_rayleigh(ts_pd,t_const_freq_pd)
-    
-    #TODO: nyquist stuk code generieker maken met Henrique
-    stats = Timeseries_Statistics(ts=ts_pd)
-    unique_timesteps = stats.stats['timeseries unique timesteps (minutes)']
-    if len(unique_timesteps)==1: #constant freq, so folding is possible
-        constant_freq_phr = list(unique_timesteps)[0]/60
-        fs = 1/constant_freq_phr
-        nyquist_freq = 0.5*fs
-        bool_isnyquist = t_const_freq_pd['freq']==nyquist_freq
-        if bool_isnyquist.any():
-            raise Exception(f'there is a component on the Nyquist frequency ({nyquist_freq} [1/hr]), this not possible:\n{t_const_freq_pd.loc[bool_isnyquist]}')
-        bool_freqtoohigh = t_const_freq_pd['freq']>nyquist_freq
-        t_const_freq_pd_folded = t_const_freq_pd.copy()
-        t_const_freq_pd_folded.loc[bool_freqtoohigh,'freq'] = np.abs(fs - t_const_freq_pd_folded.loc[bool_freqtoohigh,'freq'] ) #remainder is better: 0.408%(1/3)
-        t_const_freq_pd_folded = t_const_freq_pd_folded.sort_values('freq') #TODO: sorting also done in rayleigh check
-        print('check folded rayleigh')
-        check_rayleigh(ts_pd,t_const_freq_pd_folded)
+    #check rayleigh frequency after nyquist frequency folding process
+    freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
+    check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
     
     #### TIMESERIES ANALYSIS
     N = len(const_list)
@@ -343,18 +332,6 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     print('calculating xTx matrix')
     tic = dt.datetime.now()
     xTxmat = np.dot(xTmat,xmat)
-    
-    if 0:
-        #TODO
-        xTxmat2 = xTxmat/xTxmat[0,0]
-        xTxmat2[np.abs(xTxmat2)<0.05] = 0
-        xTxmat2_condition = np.linalg.cond(xTxmat2)
-        svd_u,svd_s,svd_vh = np.linalg.svd(xTxmat2) # s zijn singuliere waarden van groot naar klein, u en v zijn gespiegeld over diagonaal
-        xTxmat2_check = svd_u@np.diag(svd_s)@svd_vh #matrix multiplicatie geeft weer originele matrix (ongeveer)
-        xTxmat2_check = svd_u[:,:2]@np.diag(svd_s[:2])@svd_vh[:2,:] #helft van info weggooien, geeft approximatie van originele matrix
-        
-        #samp freq is 3hr, freq [1/hr],dus fs is 1/3, nyquist freq is 1/6 (0.5*fs)
-        #probleem is freq van 3M2S10 (0.408201 [1/hr]) is groter dan 1/6
     
     print('xTx matrix calculated')
     if 'A0' in const_list: #correct center value [N,N] for better matrix condition
@@ -484,7 +461,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
-    print('-'*50)
+    #print('-'*50)
     print('PREDICTION initializing')
     print(hatyan_settings)
     

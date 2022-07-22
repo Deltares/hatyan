@@ -2,6 +2,15 @@
 History
 =======
 
+* Fri Jul 22 2022 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.5.64
+- added get_status keyword to readts_dia()
+- improved HWLWnumbering error in case of missing station from phasediff textfile
+- used proper (non)equidistant distinguising method for diafiles
+- added calc_HWLWtidalindicators to hatyan.kenmerkendewaarden, includes GHW/GLW and GHHW/GLLW statistics
+- added citation.cff
+- added nyquist folding method to properly distinguish overlapping frequencies after folding
+- improved rayleigh calculation method
+
 * Wed May 11 2022 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.5.59
 - foreman/schureman: differences resolved
 - astrog: bugfix for longitudes away from 0, removed for loops from astrab (faster code), updated leap-seconds.list for astrog and disable exact dT extrapolation, many simplifications and code quality improvements
