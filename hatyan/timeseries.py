@@ -1138,7 +1138,7 @@ class Timeseries_Statistics:
     #TODO: improve output dict, keys are now not convenient to use. Maybe make keys and longname?
     def __init__(self,ts):
         timesteps_min_all = ts.index.to_series().diff()[1:].dt.total_seconds()/60
-        bool_int = (timesteps_min_all-timesteps_min_all.round(0))<1e-9
+        bool_int = np.abs(timesteps_min_all-timesteps_min_all.round(0))<1e-9
         if bool_int.all():
             timesteps_min_all = timesteps_min_all.astype(int)
         else: #in case of non integer minute timesteps (eg seconds)
