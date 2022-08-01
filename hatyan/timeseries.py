@@ -924,7 +924,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
         metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
         metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)#.split(';')[0])
         metadata_pd[metadata_pd.str.startswith('MXP;1')] = 'MXT;1;GETETTPE' # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
-        metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater'
+        metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater' #TODO: kan ook met metadata_pd.str.replace(';10;Oppervlaktewater',';OW;Oppervlaktewater')
         metadata_pd[metadata_pd.str.startswith('MXP;2')] = 'MXG;2;%s'%(grootheid)
         metadata_pd[metadata_pd.str.startswith('MXC;2')] = 'MXC;2;OW;Oppervlaktewater'
 
