@@ -199,7 +199,7 @@ def get_schureman_constants(dood_date):
     DC5023 = 0.5+0.75*DE*DE
 
     #time dependent
-    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    dood_tstart_sec = robust_timedelta_sec(dood_date)    
     dood_Tj = (dood_tstart_sec/3600+12)/(24*36525)
     DE1 = 0.01675104-0.0000418*dood_Tj        #E1 >> ZIE BLZ. 162 VAN SCHUREMAN, eccentricity of earths orbit, epoch 1 Jan 1900
     DCOFSI = (0.5+0.75*DE1**2)*DSACCE         #COEFFICIENT VAN DE SINUSTERMEN IN (217) EN (219) OP BLZ. 45 VAN SCHUREMAN
@@ -349,10 +349,10 @@ def get_schureman_f(const_list, dood_date, xfac):
     DND77 = DSIH*DSHIH**2/DMOF69 
     DND78 = DCHIH**4/DMOF70 #DFN2/DFNU2/DFM2/DFLAB2
     DND79 = DSIH**2/DMOF71 
-    DFM1 = DND75/DQA #DFO1/DQA #tides.def points to Schureman eq 144
-    DFK1 = np.sqrt(DC5023*DC5023*DS2IH*DS2IH+2*DC5023*DC1681*DS2IH*np.cos(DNU)+DC1681*DC1681)/(DC5023*DMOF68+DC1681) #tides.def points to Schureman eq 227
-    DFL2 = DND78/DRA #DFM2/DRA #tides.def points to Schureman eq 215
-    DFK2 = np.sqrt(DC5023*DC5023*DSIH**2*DSIH**2+2*DC5023*DC0365*DSIH**2*np.cos(DNU+DNU)+DC0365*DC0365)/(DC5023*DMOF71+DC0365)#tides.def points to Schureman eq 235
+    DFM1 = DND75/DQA #DFO1/DQA #tugo tides.def points to Schureman eq 144
+    DFK1 = np.sqrt(DC5023*DC5023*DS2IH*DS2IH+2*DC5023*DC1681*DS2IH*np.cos(DNU)+DC1681*DC1681)/(DC5023*DMOF68+DC1681) #tugo tides.def points to Schureman eq 227
+    DFL2 = DND78/DRA #DFM2/DRA #tugo tides.def points to Schureman eq 215
+    DFK2 = np.sqrt(DC5023*DC5023*DSIH**2*DSIH**2+2*DC5023*DC0365*DSIH**2*np.cos(DNU+DNU)+DC0365*DC0365)/(DC5023*DMOF71+DC0365) #tugo tides.def points to Schureman eq 235
     DFM1C = (1-10*DSHIH**2+15*DSHIH**2*DSHIH**2)*DCHIH**2/((1-10*DSHOM2+15*DSHOM2*DSHOM2)*DCHOM2)
     
     multiply_variables = np.stack([DND73,DND74,DND75,DND76,DND77,DND78,DND79,DFM1,DFK1,DFL2,DFK2,DFM1C])

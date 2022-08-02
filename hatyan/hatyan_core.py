@@ -114,7 +114,7 @@ def get_doodson_eqvals(dood_date, mode=None):
     """
     
     DNUJE = 24*36525
-    dood_tstart_sec, fancy_pddt = robust_timedelta_sec(dood_date)    
+    dood_tstart_sec = robust_timedelta_sec(dood_date)    
     
     dood_Tj = (dood_tstart_sec/3600+12)/(24*36525) #DTIJJE, #Aantal Juliaanse eeuwen ( = 36525 dagen) die zijn verstreken sinds 31 december 1899 12.00 uur GMT. Number of Julian centuries (36525 days) with respect to Greenwich mean noon, 31 December 1899 (Gregorian calendar)
     if mode=='freq':
@@ -127,10 +127,14 @@ def get_doodson_eqvals(dood_date, mode=None):
         dood_P1_rad = (   0.0300053 + 0.0000079*dood_Tj*2)/DNUJE
     else: #for everything else
         #hatyan documentation. Zie ook p162 of Schureman book
-        if fancy_pddt:
-            dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
-        else:
+        #if fancy_pddt:
+        #    dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
+        #else:
+        #    dood_T_rad = np.array([np.deg2rad(180 + x.hour*15.0+x.minute*15.0/60) for x in dood_date])
+        if isinstance(dood_date,pd.core.indexes.base.Index): #in case of out of bound dates it is an Index instead of a DatetimeIndex
             dood_T_rad = np.array([np.deg2rad(180 + x.hour*15.0+x.minute*15.0/60) for x in dood_date])
+        else:
+            dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
         dood_S_rad =  (4.7200089 + 8399.7092745*dood_Tj + 0.0000346*dood_Tj**2)
         dood_H_rad =  (4.8816280 + 628.3319500*dood_Tj  + 0.0000052*dood_Tj**2)
         dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
@@ -161,11 +165,11 @@ def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
 
     """
     
-    if (np.array(times_ext) > pd.Timestamp.min).all() and (np.array(times_ext) < pd.Timestamp.max).all():
+    try:
         times_pred_all = pd.date_range(start=times_ext[0], end=times_ext[-1], freq='%imin'%(timestep_min))
         times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
-    else:
-        print('WARNING: OutOfBoundsDatetime: Out of bounds nanosecond timestamp, so reverting to less fancy (slower) datetime ranges. Fancy ones are possible between %s and %s'%(pd.Timestamp.min, pd.Timestamp.max))
+    except pd._libs.tslibs.np_datetime.OutOfBoundsDatetime as e: #OutOfBoundsDatetime: Out of bounds nanosecond timestamp
+        print(f'WARNING: "{e}". Falling back to less fancy (slower) datetime ranges. Fancy ones are possible between {pd.Timestamp.min} and {pd.Timestamp.max}')
         td_mins = (times_ext[-1]-times_ext[0]).total_seconds()/60
         nsteps = int(td_mins/timestep_min)
         times_pred_all = pd.Series([times_ext[0]+dt.timedelta(minutes=x*timestep_min) for x in range(nsteps+1)])
@@ -193,20 +197,17 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
         DESCRIPTION.
 
     """
-    #TODO: check if this is still necessary in newer pandas versions
+    #TODO: check if this is still necessary in newer pandas versions (might account for out of bounds timestamps automatically)
     #TODO: merging with robust_daterange_fromtimesextfreq() possible?
     
     if refdate_dt is None:
         refdate_dt = dt.datetime(1900,1,1)
         
-    if (dood_date[[0,-1]] > pd.Timestamp.min).all() and (dood_date[[0,-1]] < pd.Timestamp.max).all():
-        fancy_pddt = True
+    if isinstance(dood_date,pd.core.indexes.datetimes.DatetimeIndex): # not OutOfBoundsDatetime datetime result in default DatetimeIndex
         dood_tstart_sec = ( dood_date-refdate_dt ).total_seconds().values
-    else:
-        fancy_pddt = False
-        #print('WARNING: OutOfBoundsDatetime: Out of bounds nanosecond timestamp, so reverting to less fancy (slower) timedelta arrays. For fancy ones: min=%s and max=%s'%(pd.Timestamp.min, pd.Timestamp.max))
+    else: #in case of OutOfBoundsDatetime it is an Index instead of a DatetimeIndex (following from hatyan.robust_daterange_fromtimesextfreq())
         dood_tstart_sec = np.array([(x-refdate_dt).total_seconds() for x in dood_date])
-    return dood_tstart_sec, fancy_pddt
+    return dood_tstart_sec
 
 
 def get_lunarSLSIHO_fromsolar(v0uf_base): #TODO: iets simpeler implementatie in foreman.get_foreman_doodson_nodal_harmonic(), maar dit is ook prima
