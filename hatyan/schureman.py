@@ -341,18 +341,18 @@ def get_schureman_f(const_list, dood_date, xfac):
     DQA = 1./np.sqrt(0.25+1.5*DIGHI2*DC2PMK+2.25*DIGHI2*DIGHI2)
     DRA = 1./np.sqrt(1-12*DTHIH2*DC2PMK+36*DTHIH2*DTHIH2)
     
-    #actual values used in the component list below (12 uniques)
+    #actual values used in the component list below (12 uniques) Equations 73 to 79 from Schureman
     DND73 = (2./3.-DSIH**2)/DMOF65
     DND74 = DSIH**2/DMOF66 
     DND75 = DSIH*DCHIH**2/DMOF67 #DFQ1/DFO1
     DND76 = DS2IH/DMOF68 #DFJ1
     DND77 = DSIH*DSHIH**2/DMOF69 
-    DND78 = DCHIH**2*DCHIH**2/DMOF70 #DFN2/DFNU2/DFM2/DFLAB2
+    DND78 = DCHIH**4/DMOF70 #DFN2/DFNU2/DFM2/DFLAB2
     DND79 = DSIH**2/DMOF71 
-    DFM1 = DND75/DQA #DFO1/DQA
-    DFK1 = np.sqrt(DC5023*DC5023*DS2IH*DS2IH+2*DC5023*DC1681*DS2IH*np.cos(DNU)+DC1681*DC1681)/(DC5023*DMOF68+DC1681) 
-    DFL2 = DND78/DRA #DFM2/DRA
-    DFK2 = np.sqrt(DC5023*DC5023*DSIH**2*DSIH**2+2*DC5023*DC0365*DSIH**2*np.cos(DNU+DNU)+DC0365*DC0365)/(DC5023*DMOF71+DC0365)
+    DFM1 = DND75/DQA #DFO1/DQA #tides.def points to Schureman eq 144
+    DFK1 = np.sqrt(DC5023*DC5023*DS2IH*DS2IH+2*DC5023*DC1681*DS2IH*np.cos(DNU)+DC1681*DC1681)/(DC5023*DMOF68+DC1681) #tides.def points to Schureman eq 227
+    DFL2 = DND78/DRA #DFM2/DRA #tides.def points to Schureman eq 215
+    DFK2 = np.sqrt(DC5023*DC5023*DSIH**2*DSIH**2+2*DC5023*DC0365*DSIH**2*np.cos(DNU+DNU)+DC0365*DC0365)/(DC5023*DMOF71+DC0365)#tides.def points to Schureman eq 235
     DFM1C = (1-10*DSHIH**2+15*DSHIH**2*DSHIH**2)*DCHIH**2/((1-10*DSHOM2+15*DSHOM2*DSHOM2)*DCHOM2)
     
     multiply_variables = np.stack([DND73,DND74,DND75,DND76,DND77,DND78,DND79,DFM1,DFK1,DFL2,DFK2,DFM1C])
