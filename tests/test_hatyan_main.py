@@ -758,7 +758,7 @@ def test_allfromdia_2008xfac0():
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
 
 
-@pytest.mark.systemtest
+@pytest.mark.acceptance
 def test_DDL_QCvalues():
     tstart_dt = dt.datetime(2019,10,1)
     tstop_dt = dt.datetime(2019,10,10)

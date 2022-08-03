@@ -263,9 +263,13 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     print(hatyan_settings)
         
     #drop duplicate times
-    ts_pd = ts[~ts.index.duplicated(keep='first')]
-    if len(ts_pd) != len(ts):
-        print('WARNING: %i duplicate times of the input timeseries were dropped prior to the analysis'%(len(ts)-len(ts_pd)))
+    bool_ts_duplicated = ts.index.duplicated(keep='first')
+    #ts_pd = ts[~bool_ts_duplicated]
+    #if len(ts_pd) != len(ts):
+    #    print('WARNING: %i duplicate times of the input timeseries were dropped prior to the analysis'%(len(ts)-len(ts_pd)))
+    ts_pd = ts.copy() #TODO: this is not necessary
+    if bool_ts_duplicated.any():
+        raise Exception(f'ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
     print(f'#timesteps           = {len(ts)}')
     print(f'tstart               = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}')
     print(f'tstop                = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
@@ -294,7 +298,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     ts_pd_nonan = ts_pd[~ts_pd['values'].isna()]
     if len(ts_pd_nonan)==0:
         raise Exception('provided timeseries only contains nan values, analysis not possible')
-    times_pred_all_pdDTI = pd.DatetimeIndex(ts_pd_nonan.index)
+    times_pred_all_pdDTI = ts_pd_nonan.index.copy() #pd.DatetimeIndex(ts_pd_nonan.index) #TODO: this will not work for OutOfBoundsDatetime
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
     print(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
     
@@ -306,7 +310,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     else:
         dood_date_fu = dood_date_mid
     #times_from0_s = (pd.DatetimeIndex(ts_pd_nonan.index)-dood_date_start[0]).total_seconds().values
-    times_from0_s, fancy_pddt = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
+    times_from0_s = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
     times_from0_s = times_from0_s[:,np.newaxis]
     
     #get frequency and v0
@@ -333,7 +337,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     tic = dt.datetime.now()
     xTxmat = np.dot(xTmat,xmat)
     
-    print('xTx matrix calculated')
+    #print('xTx matrix calculated')
     if 'A0' in const_list: #correct center value [N,N] for better matrix condition
         xTxmat_condition = np.linalg.cond(xTxmat)
         print('condition of xTx matrix before center adjustment for A0: %.2f'%(xTxmat_condition))
