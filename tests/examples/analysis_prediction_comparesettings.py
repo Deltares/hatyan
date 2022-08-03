@@ -40,7 +40,7 @@ for current_station in selected_stations:
     for fu_alltimes in [True,False]:
         for xfac in [True, False]:
             for source in ['schureman','foreman']:
-                COMP_merged = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, analysis_peryear=True, fu_alltimes=fu_alltimes, xfac=xfac, source=source)
+                COMP_merged = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, analysis_perperiod='Y', fu_alltimes=fu_alltimes, xfac=xfac, source=source)
                 #print(COMP_merged)
                 ts_prediction = hatyan.prediction(comp=COMP_merged, fu_alltimes=fu_alltimes, xfac=xfac, times_pred_all=ts_measurements_group0_lastyear.index, source=source)
                 overlapdiff = ts_prediction['values']-ts_measurements_group0_lastyear['values']

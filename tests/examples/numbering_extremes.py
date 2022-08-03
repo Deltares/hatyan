@@ -91,8 +91,8 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             xfac=False
         else:
             xfac=True
-        #analysis_peryear
-        #analysis_peryear=True
+        #analysis_perperiod
+        #analysis_perperiod='Y'
         #constituent list
         const_list = hatyan.get_const_list_hatyan('year') #94 const
         #vertical reference

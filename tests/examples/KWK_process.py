@@ -985,7 +985,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     hatyan_settings = hatyan.HatyanSettings(nodalfactors = True,
                                             fu_alltimes = False, # False is RWS-default
                                             xfac = True, #wordt niet besproken, moet die wel aan?
-                                            analysis_peryear = True,
+                                            analysis_perperiod = 'Y',
                                             xTxmat_condition_max=15, #TODO: for some reason this is necessary for HOEKVHLD 2006 (default=10), also strong difference in springneap ts when using smaller component set, what is happening?
                                             return_allyears=True)
     comp_frommeasurements_avg, comp_frommeasurements_allyears = hatyan.get_components_from_ts(ts_meas_pd, const_list=const_list, hatyan_settings=hatyan_settings)
