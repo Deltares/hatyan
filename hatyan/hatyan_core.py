@@ -127,11 +127,7 @@ def get_doodson_eqvals(dood_date, mode=None):
         dood_P1_rad = (   0.0300053 + 0.0000079*dood_Tj*2)/DNUJE
     else: #for everything else
         #hatyan documentation. Zie ook p162 of Schureman book
-        #if fancy_pddt:
-        #    dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
-        #else:
-        #    dood_T_rad = np.array([np.deg2rad(180 + x.hour*15.0+x.minute*15.0/60) for x in dood_date])
-        if isinstance(dood_date,pd.core.indexes.base.Index): #in case of out of bound dates it is an Index instead of a DatetimeIndex
+        if isinstance(dood_date,pd.core.indexes.base.Index): #in case of OutOfBoundsDatetime it is an Index instead of a DatetimeIndex (following from hatyan.robust_daterange_fromtimesextfreq())
             dood_T_rad = np.array([np.deg2rad(180 + x.hour*15.0+x.minute*15.0/60) for x in dood_date])
         else:
             dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)

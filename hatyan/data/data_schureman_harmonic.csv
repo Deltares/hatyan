@@ -23,13 +23,13 @@
 "M1B_IHO1", 1,-1, 1,-1, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND75" #    #newly added, M1B 1st option from IHO
 "M1B_IHO2", 1,-1, 1,-1, 0, 0,-90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND75" #    #newly added, M1B 2nd option from IHO (used in hatyan)
  "M1C",     1,-1, 1, 0, 0, 0,  0,     1,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1,  "DFM1C" # 24 #not in SLS
- "M1D",     1,-1, 1, 0, 0, 0,-90,     1,-1, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,  "DFM1"  # 25 #not in SLS
+ "M1D",     1,-1, 1, 0, 0, 0,-90,     1,-1, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,   "DFM1" # 25 #not in SLS
  "M1A",     1,-1, 1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,  "DND76" # 26 #not in SLS
- "M1",      1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,  "DFM1"  # 27 #M1 3rd option from IHO
- "M1_IHO1", 1,-1, 1, 0, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,  "DFM1"  #    #newly added, M1 1st option from IHO
- "M1_IHO2", 1,-1, 1, 0, 0, 0,180,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,  "DFM1"  #    #newly added, M1 2nd option from IHO (used in SLS
- "M1_IHO3", 1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,  "DFM1"  #    #newly added, M1 3rd option from IHO (used in hatyan)
- "M1_tugo", 1,-1, 1, 1, 0, 0,-90,     1,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,  "DFM1"  #    #newly added, M1 from Tugo (Henrique Guarneri) DKSI instead of -DQU
+ "M1",      1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,   "DFM1" # 27 #M1 3rd option from IHO
+ "M1_IHO1", 1,-1, 1, 0, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,   "DFM1" #    #newly added, M1 1st option from IHO
+ "M1_IHO2", 1,-1, 1, 0, 0, 0,180,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,   "DFM1" #    #newly added, M1 2nd option from IHO (used in SLS
+ "M1_IHO3", 1,-1, 1, 1, 0, 0,-90,     0,-1, 0,-1, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,   "DFM1" #    #newly added, M1 3rd option from IHO (used in hatyan)
+ "M1_tugo", 1,-1, 1, 1, 0, 0,-90,     1,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0,   "DFM1" #    #newly added, M1 from Tugo (Henrique Guarneri) DKSI instead of -DQU
  "CHI1",    1,-1, 3,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,  "DND76" # 29 #lunar conversion EDN different than SLS #also called KI1?
  "PI1",     1, 0,-2, 0, 0, 1, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" # 31
  "P1",      1, 0,-1, 0, 0, 0, 90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" # 33
@@ -37,23 +37,24 @@
  "S1_IHO1", 1, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" #    #newly added, S1 1st option from IHO (used in hatyan)
  "S1_IHO2", 1, 0, 0, 0, 0, 0,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" #    #newly added, S1 2nd option from IHO 
  "S1_IHO3", 1, 0, 0, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" #    #newly added, S1 3rd option from IHO (used in SLS)
- "K1",      1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,  "DFK1"  # 35 #S=w2=ib is 0 instead of 1 in SLS (mistake in SLS?). K1 2nd option from IHO. 
- "K1_IHO1", 1, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,  "DFK1"  #    #newly added, K1 1st option from IHO
- "K1_IHO2", 1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,  "DFK1"  #    #newly added, K1 2nd option from IHO (used in hatyan)
+ "K1",      1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,   "DFK1" # 35 #S=w2=ib is 0 instead of 1 in SLS (mistake in SLS?). K1 2nd option from IHO. 
+ "K1_IHO1", 1, 0, 1, 0, 0, 0,  0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,   "DFK1" #    #newly added, K1 1st option from IHO
+ "K1_IHO2", 1, 0, 1, 0, 0, 0,-90,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0,   "DFK1" #    #newly added, K1 2nd option from IHO (used in hatyan)
  "PSI1",    1, 0, 2, 0, 0,-1,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" # 36 #EDN 270 instead of 90 in SLS (mistake in SLS?)
  "FI1",     1, 0, 3, 0, 0, 0,-90,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" # 38 #EDN 270 instead of 90 in SLS (mistake in SLS?). IHO also called PHI1
  "THETA1",  1, 1,-1, 1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,  "DND76" # 40 #EDN 0 instead of 90 in SLS (mistake in SLS?). #also called TTA1?
  "J1",      1, 1, 1,-1, 0, 0,-90,     0,-1, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0, 0, 0,     0, 0, 0, 0, 0,  "DND76" # 42 #EDN 270 instead of 90 in SLS (mistake in SLS?).
  "OO1",     1, 2, 1, 0, 0, 0,-90,    -2,-1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 1, 0, 0,     0, 0, 0, 0, 0,  "DND77" # 45
- "OQ2",     2,-5, 2, 1, 0, 0,180,     4,-2, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND75" # 49 O1+Q1 moved from shallow relations to harmonics (just like foreman), only difference is DND75 vs DND75**2
+ "OQ2",     2,-5, 2, 1, 0, 0,180,     4,-2, 0, 0, 0, 0, 0,     0, 0, 2, 0, 0, 0, 0,     0, 0, 0, 0, 0,"DND75^2" # 49 OQ2=O1+Q1 moved from shallow relations to harmonics, purely administrative
+ "OQ2_tugo",2,-5, 2, 1, 0, 0,180,     4,-2, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND75" #    newly added, OQ2 from Tugo (Henrique Guarneri), harmonic instead of shallow water (just like foreman), only difference is DND75 instead of DND75**2
  "EPS2",    2,-5, 4, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" #    #newly added, EPS2 (same v0/freq as MNS2 and same u/f as M2) #also called E2?
  "2N2",     2,-4, 2, 2, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" # 55
  "MU2",     2,-4, 4, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" # 56
  "N2",      2,-3, 2, 1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" # 59
  "NU2",     2,-3, 4,-1, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" # 60
- "MA2",     2,-2, 1, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" #    #newly added from IHO table, MA2, α2, H1. Corresponds to MPS2 (except for EDN)
+ "MA2",     2,-2, 1, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" #    #newly added from IHO table, MA2, α2, H1. Corresponds to MPS2 (except for EDN). Although theoretically they should have the same values of u and f as M2, they are so small that they are commonly treated as having values of u = 0 and f = 1.
  "M2",      2,-2, 2, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" # 65
- "MB2",     2,-2, 3, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" #    #newly added from IHO table, MB2, β2, H2, Ma2 and MA2*. Corresponds to MSP2 (except for EDN)
+ "MB2",     2,-2, 3, 0, 0, 0,  0,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" #    #newly added from IHO table, MB2, β2, H2, Ma2 and MA2*. Corresponds to MSP2 (except for EDN). Although theoretically they should have the same values of u and f as M2, they are so small that they are commonly treated as having values of u = 0 and f = 1.
  "LABDA2",  2,-1, 0, 1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" # 70 IHO also called LAMBDA2, FES2014 calls it LA2
  "L2",      2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0,-1, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0,  "DFL2"  # 72
  "L2A",     2,-1, 2,-1, 0, 0,180,     2,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 1, 0,     0, 0, 0, 0, 0,  "DND78" # 73 #not in SLS
