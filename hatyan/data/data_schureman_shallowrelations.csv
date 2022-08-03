@@ -151,3 +151,6 @@ M12,        5*M2 + M2               #[191]
 3MNKS12,    3*M2 + N2 + K2 + S2     #[194]
 4M2S12,     4*M2 + 2*S2             #[195]
 N4,         2*N2                    #extra added
+2MK2,       2*M2 - K2               #extra added from Tugo (Henrique Guarneri)
+M(SK)2,     M2 + S1 - K1            #extra added from Tugo (Henrique Guarneri)
+M(KS)2,     M2 + K1 - S1            #extra added from Tugo (Henrique Guarneri)

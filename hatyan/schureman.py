@@ -57,7 +57,7 @@ def get_schureman_table():
     shallow_eqs_pd['shallow_eq'] = shallow_eqs_pd['shallow_eq'].str.strip() #remove spaces after
     shallow_eqs_pd['shallow_const'] = shallow_eqs_pd.index
     
-    shallow_eqs_pd.index = 'comp_'+shallow_eqs_pd.index.str.replace('(','',regex=False).str.replace(')','',regex=False)#brackets are temporarily removed in order to evaluate functions
+    shallow_eqs_pd.index = 'comp_'+shallow_eqs_pd.index.str.replace('(','_',regex=False).str.replace(')','_',regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
     shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].iteritems()) 
     
     #calculate shallow water components and rename back to original component name

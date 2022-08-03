@@ -11,7 +11,9 @@
  "MM",      0, 1, 0,-1, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND73" #  4 #not in SLS
  "MSF",     0, 2,-2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     1, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND73" #  5 #not in SLS
  "MF",      0, 2, 0, 0, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND74" #  7 
+ "MSTM",    0, 3,-2, 1, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND74" #    #newly added, MSTM from Tugo (Henrique Guarneri)
  "MFM",     0, 3, 0,-1, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND74" # 10 #corresponds to MTM in FES2014?
+ "MQM",     0, 4, 0,-2, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND74" #    #newly added, MQM from Tugo (Henrique Guarneri)
  "MSQM",    0, 4,-2, 0, 0, 0,  0,    -2, 0, 0, 0, 0, 0, 0,     0, 1, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND74" #    #newly added, MSQM from IHO, nodal factors u and f derived from Tugo (Henrique Guarneri), same as MF. IHO table indicates it should be equal for MSF, but that is probably wrong.
  "2Q1",     1,-4, 1, 2, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND75" # 13
  "SIGMA1",  1,-4, 3, 0, 0, 0, 90,     2,-1, 0, 0, 0, 0, 0,     0, 0, 1, 0, 0, 0, 0,     0, 0, 0, 0, 0,  "DND75" # 15 #also called SIG1
@@ -64,4 +66,5 @@
  "R2",      2, 0, 1, 0, 0,-1,180,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,       "" # 78
  "K2",      2, 0, 2, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 1, 0,   "DFK2" # 79
  "ETA2",    2, 1, 2,-1, 0, 0,  0,     0,-2, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 0, 1,     0, 0, 0, 0, 0,  "DND79" # 81 #not in SLS
+ "S3",      3, 0, 0, 0, 0, 0,  0,     0, 0, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0, 2, 0,     0, 0, 0, 0, 0,"DND78^2" #    #newly added, S3 from Tugo (Henrique Guarneri)
  "M3",      3,-3, 3, 0, 0, 0,  0,     3,-3, 0, 0, 0, 0, 0,     0, 0, 0, 0, 0,1.5,0,     0, 0, 0, 0, 0, "78f1p5" # 96 #EDN 180 instead of 0 in SLS and IHO (mistake in hatyan?)
