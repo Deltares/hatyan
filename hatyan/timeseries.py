@@ -170,7 +170,6 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
         
         if len(data_pd_HWLW_1tide_noHWs) > 3: #(attempt to) reduce to three values between two HWs
             print('WARNING: more than 3 values between HWs, removing part of them')
-            #print(data_pd_HWLW_1tide)
             agger35_prim = data_pd_HWLW_1tide_noHWs[data_pd_HWLW_1tide_noHWs['HWLWcode']==2]
             if len(agger35_prim)>1:
                 raise Exception('should be only one HWLWcode=2 per tide period')
@@ -197,7 +196,6 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
             raise Exception('unexpected number of values between two HWs (0 or more than 3):\n%s'%(data_pd_HWLW_1tide))
     
     #remove remaining 11 and 22 values from array
-    #if calc_HWLW345_cleanup1122:
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11].index)
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22].index)
     
@@ -1000,7 +998,6 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     """
     ts_pd_in = ts
     
-    #print('-'*50)
     print('cropping timeseries')
     if not times_ext[0]<times_ext[1]:
         raise Exception('ERROR: the two times times_ext should be increasing, but they are not: %s.'%(times_ext))
@@ -1014,7 +1011,6 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
-    #print(check_ts(ts_pd_out))
     return ts_pd_out
 
 
@@ -1040,7 +1036,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
     """
     
-    #print('-'*50)
     print('resampling timeseries to %i minutes'%(timestep_min))
     
     bool_duplicated_index = ts.index.duplicated()
@@ -1054,7 +1049,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq='%dmin'%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample['values'] = ts['values'] #put measurements into this timeseries, matches to correct index automatically
     
-    #print(check_ts(data_pd_resample))
     return data_pd_resample
 
 
@@ -1152,7 +1146,6 @@ class Timeseries_Statistics:
         else: #in case of non integer minute timesteps (eg seconds)
             timesteps_min_all[bool_int] = timesteps_min_all[bool_int].round(0)
         timesteps_min = set(timesteps_min_all)
-        #print(timesteps_min)
         if len(timesteps_min)<=100:
             timesteps_min_print = timesteps_min
         else:
@@ -1470,7 +1463,6 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
     data_pd_all = data_pd_all.sort_index(axis=0)
-    #print(check_ts(data_pd_all))
     
     return data_pd_all
 
@@ -1495,7 +1487,6 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
 
     """
     
-    #print('-'*50)
     print('reading file: %s'%(filename))
     noosheader = []
     noosheader_dict = {}

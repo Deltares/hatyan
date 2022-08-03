@@ -258,15 +258,11 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
-    #print('-'*50)
     print('ANALYSIS initializing')
     print(hatyan_settings)
         
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
-    #ts_pd = ts[~bool_ts_duplicated]
-    #if len(ts_pd) != len(ts):
-    #    print('WARNING: %i duplicate times of the input timeseries were dropped prior to the analysis'%(len(ts)-len(ts_pd)))
     ts_pd = ts.copy() #TODO: this is not necessary
     if bool_ts_duplicated.any():
         raise Exception(f'ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
@@ -309,7 +305,6 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-    #times_from0_s = (pd.DatetimeIndex(ts_pd_nonan.index)-dood_date_start[0]).total_seconds().values
     times_from0_s = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
     times_from0_s = times_from0_s[:,np.newaxis]
     
@@ -337,7 +332,6 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     tic = dt.datetime.now()
     xTxmat = np.dot(xTmat,xmat)
     
-    #print('xTx matrix calculated')
     if 'A0' in const_list: #correct center value [N,N] for better matrix condition
         xTxmat_condition = np.linalg.cond(xTxmat)
         print('condition of xTx matrix before center adjustment for A0: %.2f'%(xTxmat_condition))
@@ -465,7 +459,6 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
-    #print('-'*50)
     print('PREDICTION initializing')
     print(hatyan_settings)
     
