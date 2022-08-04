@@ -128,8 +128,10 @@ def distribution(df: pd.DataFrame, col: str = None,
     else:
         df = df.sort_values(by=col)
     rank = np.array(range(len(df[col]))) + 1
-    df['{}_Tfreq'.format(col)] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
-    return df.sort_values(by='{}_Tfreq'.format(col), ascending=False)
+    df[f'{col}_Tfreq'] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
+    df_sorted = df.sort_values(by=f'{col}_Tfreq', ascending=False)
+    
+    return df_sorted
 
 
 def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str = None,
@@ -140,7 +142,7 @@ def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str
     if inverse:
         values = -values
         threshold = -threshold
-    p_val_gt_threshold = df[col+'_Tfreq'].loc[values > threshold].iloc[0]
+    p_val_gt_threshold = df[f'{col}_Tfreq'].loc[values > threshold].iloc[0]
 
     def pfunc(x, p_val_gt_threshold, threshold, sigma, alpha):
         return p_val_gt_threshold * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
@@ -168,8 +170,9 @@ def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str
     new_values = pfunc_inverse(Tfreqs, p_val_gt_threshold, threshold, sigma, alpha)
     if inverse:
         new_values = -new_values
-    return pd.DataFrame(data={'{}_Tfreq'.format(col): Tfreqs,
-                              col: new_values}).sort_values(by='{}_Tfreq'.format(col), ascending=False)
+    pd_return = pd.DataFrame(data={f'{col}_Tfreq': Tfreqs,col: new_values}).sort_values(by=f'{col}_Tfreq', ascending=False)
+    
+    return pd_return
 
 
 def filter_with_threshold(df_raw: pd.DataFrame,
@@ -320,5 +323,5 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                                                       np.flip(df['values'].values)),
                                    'values_Tfreq': Tfreqs}).sort_values(by='values_Tfreq', ascending=False)
     #prefix = os.path.basename(csv_dir)
-    df_interp.to_csv(os.path.join(csv_dir, '{}_{}.csv'.format(prefix, id)), index=False, sep=';')
+    df_interp.to_csv(os.path.join(csv_dir, f'{prefix}_{id}.csv'), index=False, sep=';')
     return df_interp

@@ -18,10 +18,10 @@ import contextily as ctx #`conda install -c conda-forge contextily -y`
 import statsmodels.api as sm # `conda install -c conda-forge statsmodels -y`
 
 #TODO: apply to all measurements: remove QC==99 (always, or maybe make nans?), crop_timeseries (when applicable), NAP2005 correction?, SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
-#TODO: when to deliver data for Anneke and Robert and for which stations? (stationslijst opvragen)
 #TODO: move all parts to hatyan.kenmerkendewaarden.*, maybe also the stuff in hatyan/overschrijding.py (and include license header) >> indeed put it in hatyan or not?
 #TODO: add tidal indicators (LAT etc)
 #TODO: tstart/tstop, include tzinfo in tstart/tstop for DLL >> still does not cut properly tzoneaware
+get_catalog = False
 
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
@@ -66,7 +66,11 @@ if not os.path.exists(dir_overschrijding):
 fig_alltimes_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
 
 print('retrieving DDL catalog')
-catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
+if get_catalog:
+    catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
+    pd.to_pickle(catalog_dict,os.path.join(dir_base,'DDL_catalog.pkl'))
+else:
+    catalog_dict = pd.read_pickle(os.path.join(dir_base,'DDL_catalog.pkl'))
 cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
 cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl'))
 print('...done')
@@ -74,9 +78,9 @@ print('...done')
 #get list of stations with extremes and add K13A
 cat_aquometadatalijst_ext, cat_locatielijst_ext = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
 K13APFM_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='K13APFM'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
-MAASMSMPL_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='MAASMSMPL'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
-#WIERMWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='WIERMWD1'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
-#UITHZWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='UITHZWD1'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
+MAASMSMPL_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='MAASMSMPL'].set_index('Locatie_MessageID',drop=True)
+#WIERMWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='WIERMWD1'].set_index('Locatie_MessageID',drop=True)
+#UITHZWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='UITHZWD1'].set_index('Locatie_MessageID',drop=True)
 cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry).append(MAASMSMPL_entry)#.append(WIERMWD1_entry).append(UITHZWD1_entry)
 cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_ext['X'].values, coordy_in=cat_locatielijst_ext['Y'].values, epsg_in=int(cat_locatielijst_ext['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_ext_codeidx = cat_locatielijst_ext.reset_index(drop=False).set_index('Code',drop=False)
@@ -518,7 +522,7 @@ for current_station in []:#stat_list:
 
 
 #### SLOTGEMIDDELDEN
-for current_station in ['HARVT10','HOEKVHLD']:#stat_list:
+for current_station in []:#stat_list:
     
     ####################
     #READ HWLW
@@ -790,7 +794,7 @@ slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'haveng
 #TODO: evt schaling naar 12u25m om repetitief signaal te maken (voor boi), dan 1 plotperiode selecteren en weer terugschalen. Voorafgaand aan dit alles de ene kromme schalen met havengetallen? (Ext berekening is ingewikkelder van 1 kromme dan repetitief signaal)
 #TODO: gemgetijkromme is maar 1x of 1.5x nodig voor figuur, dus verplaatsen naar 1 datum en ext afleiden (buffer_hr=0 keyword gebruiken). Voor boi av/sp/np eerst schalen naar 12h25m en interpoleren, dan repeteren, dan is alles precies even lang en makkelijk te repeteren.
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
-for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     """
     uit: gemiddelde getijkrommen 1991.0
         
@@ -1006,9 +1010,10 @@ for current_station in []:#['HOEKVHLD','HARVT10']:#stat_list:
     print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data
     
     comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
-    times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq='60 S') # TODO hatyan: when using <60sec, hatyan.calc_HWLW() goes wrong, probably since there is a minute-rounding thing somewhere, fix this
+    times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq='20 S') # TODO hatyan: when using <60sec, hatyan.calc_HWLW() goes wrong, probably since there is a minute-rounding thing somewhere, fix this
     prediction_av = hatyan.prediction(comp_av, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
     prediction_av_ext = hatyan.calc_HWLW(ts=prediction_av)#,calc_HWLWlocal=False)
+    continue
 
 
     # karateristieken uit ruwe gemiddelde getijkromme >> schalingsratio
@@ -1298,8 +1303,8 @@ fig_sum.savefig(os.path.join(dir_gemgetij,'gemgetij_allstations_noshift'))
 ○ Je vertaalt niet x aantal datapunten naar frequentie, maar je zet de punten op volgorde en je rankt ze, daarvan maak je distributie, ranking en frequentie is niet 1 op 1
 ○ Max freq is 2 getij per dag, keer 365 dagen, maximale frequentie komt daarmee overeen. (on)gefilterd en trendanalys is datapunten op volgorde en frequentie, 
 ○ Lezen:
-    o rapport boyan kw-rmm: n:\Projects\11205000\11205232\C. Report - advise\007 - Kenmerkende waarden RMM\11205232-007-ZKS-0003_v0.1-Kenmerkende Waarden Rijn-Maasmonding - Over- en Onderschrijdingsfrequenties.docx
-    o HKV rapport pag 5-102 = -97 113, "Methode II Conditionele Weibull fit en zichtduur": p:\11208031-010-kenmerkende-waarden-k\literatuur\Waterstandsfrequenties in de RMM - 2006.pdf
+    o rapport boyan kw-rmm: n:\\Projects\\11205000\11205232\\C. Report - advise\\007 - Kenmerkende waarden RMM\\11205232-007-ZKS-0003_v0.1-Kenmerkende Waarden Rijn-Maasmonding - Over- en Onderschrijdingsfrequenties.docx
+    o HKV rapport pag 5-102 = -97 113, "Methode II Conditionele Weibull fit en zichtduur": p:\\11208031-010-kenmerkende-waarden-k\\literatuur\\Waterstandsfrequenties in de RMM - 2006.pdf
     o Ook goederen/Fiole (oa trendbreuk 1998): https://puc.overheid.nl/rijkswaterstaat/doc/PUC_102024_31/ (tabel die Boyan heeft gebruikt, is in HKV overgenomen en ook door Boyan overgenomen)
 ○ Voor bepaalde locaties waar afvoergolf rivier werkte methode van HKV het beste, Boyan heeft dit in Python gezet en veel duidelijker. Conclusies zijn in zijn rapport gezet
 
@@ -1458,13 +1463,13 @@ for current_station in []:#stat_list:
                                         keys=None, color_map=color_map, legend_loc='lower right',
                                         xlabel='Frequentie [1/jaar]', ylabel='Hoogwater [m+NAP]')
     ax.set_ylim(0,5.5)
+    continue #TODO: skips rest of function
     fig.savefig(os.path.join(dir_overschrijding, f'Exceedance_lines_{current_station}.png')) #.svg
     plt.close(fig)
     """
     hatyan.interpolate_interested_Tfreqs_to_csv(dist['Gecombineerd'], Tfreqs=Tfreqs_interested, id=current_station,
                                               csv_dir=dir_overschrijding, prefix='Exceedance_lines')
     """
-    continue
     # 2. Deceedance
     print('Deceedance')
     dist = {}
