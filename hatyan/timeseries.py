@@ -638,10 +638,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
         data_HWLW_nosidx = ts_ext.copy()
         data_HWLW_nosidx['times'] = data_HWLW_nosidx.index
         data_HWLW_nosidx = data_HWLW_nosidx.set_index('HWLWno')
-        #data_HWLW_nosidx = data_HWLW_nosidx.sort_index()
         HWLWno_all = data_HWLW_nosidx.index.unique()
-        #data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1],index=HWLWno_all)
-        #data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2],index=HWLWno_all)
         data_HW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1]
         data_LW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2]
         bool_HW = HWLWno_all.isin(data_HW.index)
@@ -796,13 +793,13 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
                              '[WRD]'])
     if headerformat=='wia':
-        for metalinestart in ['WNS']:#['[IDT;','WNS']:
+        for metalinestart in ['WNS']:
             bool_drop = metadata_pd.str.startswith(metalinestart)
             metadata_pd = metadata_pd[~bool_drop]
         metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
-        metadata_pd[metadata_pd.str.startswith('PAR')] = 'GHD;%s'%(grootheid)#.split(';')[0])
+        metadata_pd[metadata_pd.str.startswith('PAR')] = 'GHD;%s'%(grootheid)
         metadata_pd[metadata_pd.str.startswith('CPM')] = 'CPM;OW;Oppervlaktewater'
-        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)#.split(';')[0])
+        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)
     
     linestr_list = []
     linestr = ''
@@ -920,7 +917,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
             bool_drop = metadata_pd.str.startswith(metalinestart)
             metadata_pd = metadata_pd[~bool_drop]
         metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
-        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)#.split(';')[0])
+        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)
         metadata_pd[metadata_pd.str.startswith('MXP;1')] = 'MXT;1;GETETTPE' # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
         metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater' #TODO: kan ook met metadata_pd.str.replace(';10;Oppervlaktewater',';OW;Oppervlaktewater')
         metadata_pd[metadata_pd.str.startswith('MXP;2')] = 'MXG;2;%s'%(grootheid)
