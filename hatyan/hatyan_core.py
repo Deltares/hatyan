@@ -316,7 +316,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                             
                         'xtrack':
                             ['SA','SSA','MSM','MM','MSF','MF','MSTM','MFM','MSQM','MQM',
-                             '2Q1','SIGMA1','Q1','RO1','O1','MP1','M1','CHI1','PI1','P1','K1','PSI1','FI1','THETA1','J1','SO1','OO1','KQ1',
+                             '2Q1','SIGMA1','Q1','RO1','O1','MP1','M1','CHI1','PI1','P1','S1','K1','PSI1','FI1','THETA1','J1','SO1','OO1','KQ1',
                              'OQ2','EPS2','MNS2','2MK2','2N2','MU2','N2','NU2','MSK2','M(SK)2','M2','M(KS)2','MKS2','LABDA2',
                              'L2','T2','S2','R2','K2','MSN2','KJ2','2SM2',
                              '2MK3','M3','SO3','MK3','S3','SK3',
