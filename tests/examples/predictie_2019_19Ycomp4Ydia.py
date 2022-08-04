@@ -46,8 +46,8 @@ for current_station in selected_stations:
         xfac=False
     else:
         xfac=True
-    #analysis_peryear
-    analysis_peryear=True
+    #analysis_perperiod
+    analysis_perperiod='Y'
     #constituent list
     if current_station in ['D15','F3PFM','K14PFM','MAESLKRZZDE','Q1','A12','AWGPFM','F16','J6','L9PFM']:
         const_list = hatyan.get_const_list_hatyan('month') #21 const, potentially extended with component splitting (5 components) and SA+SM
@@ -107,7 +107,7 @@ for current_station in selected_stations:
     times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
     times_stepcomp0 = (ts_measurements_group0.index[1]-ts_measurements_group0.index[0]).total_seconds()/60
 
-    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_peryear=analysis_peryear, return_allyears=True, CS_comps=CS_comps)
+    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allyears=True, CS_comps=CS_comps)
 
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allyears=comp_frommeasurements_all_group0)
     #fig.savefig('components_%s_4Y.png'%(current_station))

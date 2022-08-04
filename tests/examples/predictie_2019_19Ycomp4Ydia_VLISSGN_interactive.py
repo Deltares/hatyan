@@ -31,8 +31,8 @@ for current_station in selected_stations:
     nodalfactors = True
     #xfactor
     xfac=True
-    #analysis_peryear
-    analysis_peryear=True
+    #analysis_perperiod
+    analysis_perperiod='Y'
     #constituent list
     const_list = hatyan.get_const_list_hatyan('year') #94 const
     #component splitting
@@ -59,7 +59,7 @@ for current_station in selected_stations:
     times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
     times_step_comp0 = (ts_measurements_group0.index[1]-ts_measurements_group0.index[0]).total_seconds()/60
 
-    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_peryear=analysis_peryear, return_allyears=True)
+    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allyears=True)
 
     fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allyears=comp_frommeasurements_all_group0)
     fig.savefig('components_%s_4Y.png'%(current_station))

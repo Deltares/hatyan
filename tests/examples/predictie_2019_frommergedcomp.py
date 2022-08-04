@@ -39,8 +39,8 @@ for current_station in selected_stations:
         xfac=False
     else:
         xfac=True
-    #analysis_peryear
-    analysis_peryear=True
+    #analysis_perperiod
+    analysis_perperiod='Y'
     #constituent list
     if current_station in ['D15','F3PFM','K14PFM','MAESLKRZZDE','Q1','A12','AWGPFM','F16','J6','L9PFM']:
         const_list = hatyan.get_const_list_hatyan('month') #21 const, potentially extended with component splitting (5 components) and SA+SM

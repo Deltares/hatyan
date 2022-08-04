@@ -291,7 +291,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
     #TODO: add all_foreman list, first optimize it via caching
     const_lists_dict = {'all_schureman':
                             #alle binnen hatyan beschikbare componenten
-                            #A0 en 195 componenten (plus potentially added components)
+                            #A0 en 195 componenten (plus added components)
                             schureman_const_list_all,
                         
                         'all_schureman_originalorder': #for writing numbers in component file
@@ -313,6 +313,24 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                         
                         'all_foreman':
                             foreman_const_list_all,
+                            
+                        'xtrack':
+                            ['SA','SSA','MSM','MM','MSF','MF','MSTM','MFM','MSQM','MQM',
+                             '2Q1','SIGMA1','Q1','RO1','O1','MP1','M1','CHI1','PI1','P1','S1','K1','PSI1','FI1','THETA1','J1','SO1','OO1','KQ1',
+                             'OQ2','EPS2','MNS2','2MK2','2N2','MU2','N2','NU2','MSK2','M(SK)2','M2','M(KS)2','MKS2','LABDA2',
+                             'L2','T2','S2','R2','K2','MSN2','KJ2','2SM2',
+                             '2MK3','M3','SO3','MK3','S3','SK3',
+                             'N4','3MS4','MN4','M4','SN4','MS4','MK4','S4','SK4',
+                             '2MN6','M6','MSN6','2MS6','2MK6','2SM6','MSK6',
+                             '3MS8'],
+                            
+                        'fes2014b':
+                            ['SA','SSA','MM','MSF','MF','MFM','MSQM','Q1','O1','P1','S1','K1','J1',
+                             'EPS2','2N2','MU2','N2','NU2','M2','MKS2','LABDA2','L2','T2','S2','R2','K2',
+                             'M3',
+                             'N4','MN4','M4','MS4','S4',
+                             'M6',
+                             'M8'],
                         
                         'year':
                             #Bij analyse van een jaar wordt gebruik gemaakt
