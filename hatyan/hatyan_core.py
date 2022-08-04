@@ -323,6 +323,14 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                              'N4','3MS4','MN4','M4','SN4','MS4','MK4','S4','SK4',
                              '2MN6','M6','MSN6','2MS6','2MK6','2SM6','MSK6',
                              '3MS8'],
+                            
+                        'fes2014b':
+                            ['SA','SSA','MM','MSF','MF','MFM','MSQM','Q1','O1','P1','S1','K1','J1',
+                             'EPS2','2N2','MU2','N2','NU2','M2','MKS2','LABDA2','L2','T2','S2','R2','K2',
+                             'M3',
+                             'N4','MN4','M4','MS4','S4',
+                             'M6',
+                             'M8'],
                         
                         'year':
                             #Bij analyse van een jaar wordt gebruik gemaakt
