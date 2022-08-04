@@ -336,7 +336,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
     #TODO: add all_foreman list, first optimize it via caching
     const_lists_dict = {&#39;all_schureman&#39;:
                             #alle binnen hatyan beschikbare componenten
-                            #A0 en 195 componenten (plus potentially added components)
+                            #A0 en 195 componenten (plus added components)
                             schureman_const_list_all,
                         
                         &#39;all_schureman_originalorder&#39;: #for writing numbers in component file
@@ -358,6 +358,24 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                         
                         &#39;all_foreman&#39;:
                             foreman_const_list_all,
+                            
+                        &#39;xtrack&#39;:
+                            [&#39;SA&#39;,&#39;SSA&#39;,&#39;MSM&#39;,&#39;MM&#39;,&#39;MSF&#39;,&#39;MF&#39;,&#39;MSTM&#39;,&#39;MFM&#39;,&#39;MSQM&#39;,&#39;MQM&#39;,
+                             &#39;2Q1&#39;,&#39;SIGMA1&#39;,&#39;Q1&#39;,&#39;RO1&#39;,&#39;O1&#39;,&#39;MP1&#39;,&#39;M1&#39;,&#39;CHI1&#39;,&#39;PI1&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,&#39;PSI1&#39;,&#39;FI1&#39;,&#39;THETA1&#39;,&#39;J1&#39;,&#39;SO1&#39;,&#39;OO1&#39;,&#39;KQ1&#39;,
+                             &#39;OQ2&#39;,&#39;EPS2&#39;,&#39;MNS2&#39;,&#39;2MK2&#39;,&#39;2N2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;MSK2&#39;,&#39;M(SK)2&#39;,&#39;M2&#39;,&#39;M(KS)2&#39;,&#39;MKS2&#39;,&#39;LABDA2&#39;,
+                             &#39;L2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;R2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;KJ2&#39;,&#39;2SM2&#39;,
+                             &#39;2MK3&#39;,&#39;M3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;S3&#39;,&#39;SK3&#39;,
+                             &#39;N4&#39;,&#39;3MS4&#39;,&#39;MN4&#39;,&#39;M4&#39;,&#39;SN4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;S4&#39;,&#39;SK4&#39;,
+                             &#39;2MN6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,
+                             &#39;3MS8&#39;],
+                            
+                        &#39;fes2014b&#39;:
+                            [&#39;SA&#39;,&#39;SSA&#39;,&#39;MM&#39;,&#39;MSF&#39;,&#39;MF&#39;,&#39;MFM&#39;,&#39;MSQM&#39;,&#39;Q1&#39;,&#39;O1&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,&#39;J1&#39;,
+                             &#39;EPS2&#39;,&#39;2N2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;M2&#39;,&#39;MKS2&#39;,&#39;LABDA2&#39;,&#39;L2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;R2&#39;,&#39;K2&#39;,
+                             &#39;M3&#39;,
+                             &#39;N4&#39;,&#39;MN4&#39;,&#39;M4&#39;,&#39;MS4&#39;,&#39;S4&#39;,
+                             &#39;M6&#39;,
+                             &#39;M8&#39;],
                         
                         &#39;year&#39;:
                             #Bij analyse van een jaar wordt gebruik gemaakt
@@ -920,7 +938,7 @@ def get_full_const_list_withfreqs():
     #TODO: add all_foreman list, first optimize it via caching
     const_lists_dict = {&#39;all_schureman&#39;:
                             #alle binnen hatyan beschikbare componenten
-                            #A0 en 195 componenten (plus potentially added components)
+                            #A0 en 195 componenten (plus added components)
                             schureman_const_list_all,
                         
                         &#39;all_schureman_originalorder&#39;: #for writing numbers in component file
@@ -942,6 +960,24 @@ def get_full_const_list_withfreqs():
                         
                         &#39;all_foreman&#39;:
                             foreman_const_list_all,
+                            
+                        &#39;xtrack&#39;:
+                            [&#39;SA&#39;,&#39;SSA&#39;,&#39;MSM&#39;,&#39;MM&#39;,&#39;MSF&#39;,&#39;MF&#39;,&#39;MSTM&#39;,&#39;MFM&#39;,&#39;MSQM&#39;,&#39;MQM&#39;,
+                             &#39;2Q1&#39;,&#39;SIGMA1&#39;,&#39;Q1&#39;,&#39;RO1&#39;,&#39;O1&#39;,&#39;MP1&#39;,&#39;M1&#39;,&#39;CHI1&#39;,&#39;PI1&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,&#39;PSI1&#39;,&#39;FI1&#39;,&#39;THETA1&#39;,&#39;J1&#39;,&#39;SO1&#39;,&#39;OO1&#39;,&#39;KQ1&#39;,
+                             &#39;OQ2&#39;,&#39;EPS2&#39;,&#39;MNS2&#39;,&#39;2MK2&#39;,&#39;2N2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;MSK2&#39;,&#39;M(SK)2&#39;,&#39;M2&#39;,&#39;M(KS)2&#39;,&#39;MKS2&#39;,&#39;LABDA2&#39;,
+                             &#39;L2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;R2&#39;,&#39;K2&#39;,&#39;MSN2&#39;,&#39;KJ2&#39;,&#39;2SM2&#39;,
+                             &#39;2MK3&#39;,&#39;M3&#39;,&#39;SO3&#39;,&#39;MK3&#39;,&#39;S3&#39;,&#39;SK3&#39;,
+                             &#39;N4&#39;,&#39;3MS4&#39;,&#39;MN4&#39;,&#39;M4&#39;,&#39;SN4&#39;,&#39;MS4&#39;,&#39;MK4&#39;,&#39;S4&#39;,&#39;SK4&#39;,
+                             &#39;2MN6&#39;,&#39;M6&#39;,&#39;MSN6&#39;,&#39;2MS6&#39;,&#39;2MK6&#39;,&#39;2SM6&#39;,&#39;MSK6&#39;,
+                             &#39;3MS8&#39;],
+                            
+                        &#39;fes2014b&#39;:
+                            [&#39;SA&#39;,&#39;SSA&#39;,&#39;MM&#39;,&#39;MSF&#39;,&#39;MF&#39;,&#39;MFM&#39;,&#39;MSQM&#39;,&#39;Q1&#39;,&#39;O1&#39;,&#39;P1&#39;,&#39;S1&#39;,&#39;K1&#39;,&#39;J1&#39;,
+                             &#39;EPS2&#39;,&#39;2N2&#39;,&#39;MU2&#39;,&#39;N2&#39;,&#39;NU2&#39;,&#39;M2&#39;,&#39;MKS2&#39;,&#39;LABDA2&#39;,&#39;L2&#39;,&#39;T2&#39;,&#39;S2&#39;,&#39;R2&#39;,&#39;K2&#39;,
+                             &#39;M3&#39;,
+                             &#39;N4&#39;,&#39;MN4&#39;,&#39;M4&#39;,&#39;MS4&#39;,&#39;S4&#39;,
+                             &#39;M6&#39;,
+                             &#39;M8&#39;],
                         
                         &#39;year&#39;:
                             #Bij analyse van een jaar wordt gebruik gemaakt

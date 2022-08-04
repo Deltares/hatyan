@@ -215,7 +215,6 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
         
         if len(data_pd_HWLW_1tide_noHWs) &gt; 3: #(attempt to) reduce to three values between two HWs
             print(&#39;WARNING: more than 3 values between HWs, removing part of them&#39;)
-            #print(data_pd_HWLW_1tide)
             agger35_prim = data_pd_HWLW_1tide_noHWs[data_pd_HWLW_1tide_noHWs[&#39;HWLWcode&#39;]==2]
             if len(agger35_prim)&gt;1:
                 raise Exception(&#39;should be only one HWLWcode=2 per tide period&#39;)
@@ -242,7 +241,6 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
             raise Exception(&#39;unexpected number of values between two HWs (0 or more than 3):\n%s&#39;%(data_pd_HWLW_1tide))
     
     #remove remaining 11 and 22 values from array
-    #if calc_HWLW345_cleanup1122:
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==11].index)
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==22].index)
     
@@ -685,10 +683,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
         data_HWLW_nosidx = ts_ext.copy()
         data_HWLW_nosidx[&#39;times&#39;] = data_HWLW_nosidx.index
         data_HWLW_nosidx = data_HWLW_nosidx.set_index(&#39;HWLWno&#39;)
-        #data_HWLW_nosidx = data_HWLW_nosidx.sort_index()
         HWLWno_all = data_HWLW_nosidx.index.unique()
-        #data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==1],index=HWLWno_all)
-        #data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==2],index=HWLWno_all)
         data_HW = data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==1]
         data_LW = data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==2]
         bool_HW = HWLWno_all.isin(data_HW.index)
@@ -843,13 +838,13 @@ def write_tsdia(ts, station, vertref, filename, headerformat=&#39;dia&#39;):
                              &#39;STA;%10s;%10s;O&#39;%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
                              &#39;[WRD]&#39;])
     if headerformat==&#39;wia&#39;:
-        for metalinestart in [&#39;WNS&#39;]:#[&#39;[IDT;&#39;,&#39;WNS&#39;]:
+        for metalinestart in [&#39;WNS&#39;]:
             bool_drop = metadata_pd.str.startswith(metalinestart)
             metadata_pd = metadata_pd[~bool_drop]
         metadata_pd[metadata_pd.str.startswith(&#39;[IDT;&#39;)] = &#39;[IDT;*WIF*;A;;%6s]&#39;%(time_today)
-        metadata_pd[metadata_pd.str.startswith(&#39;PAR&#39;)] = &#39;GHD;%s&#39;%(grootheid)#.split(&#39;;&#39;)[0])
+        metadata_pd[metadata_pd.str.startswith(&#39;PAR&#39;)] = &#39;GHD;%s&#39;%(grootheid)
         metadata_pd[metadata_pd.str.startswith(&#39;CPM&#39;)] = &#39;CPM;OW;Oppervlaktewater&#39;
-        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)#.split(&#39;;&#39;)[0])
+        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)
     
     linestr_list = []
     linestr = &#39;&#39;
@@ -967,7 +962,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat=&#39;dia&#
             bool_drop = metadata_pd.str.startswith(metalinestart)
             metadata_pd = metadata_pd[~bool_drop]
         metadata_pd[metadata_pd.str.startswith(&#39;[IDT;&#39;)] = &#39;[IDT;*WIF*;A;;%6s]&#39;%(time_today)
-        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)#.split(&#39;;&#39;)[0])
+        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)
         metadata_pd[metadata_pd.str.startswith(&#39;MXP;1&#39;)] = &#39;MXT;1;GETETTPE&#39; # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
         metadata_pd[metadata_pd.str.startswith(&#39;MXC;1&#39;)] = &#39;MXC;1;OW;Oppervlaktewater&#39; #TODO: kan ook met metadata_pd.str.replace(&#39;;10;Oppervlaktewater&#39;,&#39;;OW;Oppervlaktewater&#39;)
         metadata_pd[metadata_pd.str.startswith(&#39;MXP;2&#39;)] = &#39;MXG;2;%s&#39;%(grootheid)
@@ -1045,7 +1040,6 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     &#34;&#34;&#34;
     ts_pd_in = ts
     
-    #print(&#39;-&#39;*50)
     print(&#39;cropping timeseries&#39;)
     if not times_ext[0]&lt;times_ext[1]:
         raise Exception(&#39;ERROR: the two times times_ext should be increasing, but they are not: %s.&#39;%(times_ext))
@@ -1059,7 +1053,6 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
-    #print(check_ts(ts_pd_out))
     return ts_pd_out
 
 
@@ -1085,7 +1078,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
     &#34;&#34;&#34;
     
-    #print(&#39;-&#39;*50)
     print(&#39;resampling timeseries to %i minutes&#39;%(timestep_min))
     
     bool_duplicated_index = ts.index.duplicated()
@@ -1099,7 +1091,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq=&#39;%dmin&#39;%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample[&#39;values&#39;] = ts[&#39;values&#39;] #put measurements into this timeseries, matches to correct index automatically
     
-    #print(check_ts(data_pd_resample))
     return data_pd_resample
 
 
@@ -1197,7 +1188,6 @@ class Timeseries_Statistics:
         else: #in case of non integer minute timesteps (eg seconds)
             timesteps_min_all[bool_int] = timesteps_min_all[bool_int].round(0)
         timesteps_min = set(timesteps_min_all)
-        #print(timesteps_min)
         if len(timesteps_min)&lt;=100:
             timesteps_min_print = timesteps_min
         else:
@@ -1515,7 +1505,6 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception(&#39;ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list&#39;)
     data_pd_all = data_pd_all.sort_index(axis=0)
-    #print(check_ts(data_pd_all))
     
     return data_pd_all
 
@@ -1540,7 +1529,6 @@ def readts_noos(filename, datetime_format=&#39;%Y%m%d%H%M&#39;, na_values=None):
 
     &#34;&#34;&#34;
     
-    #print(&#39;-&#39;*50)
     print(&#39;reading file: %s&#39;%(filename))
     noosheader = []
     noosheader_dict = {}
@@ -1773,7 +1761,6 @@ When first/second low waters and aggers are calculated, the local extremes aroun
         
         if len(data_pd_HWLW_1tide_noHWs) &gt; 3: #(attempt to) reduce to three values between two HWs
             print(&#39;WARNING: more than 3 values between HWs, removing part of them&#39;)
-            #print(data_pd_HWLW_1tide)
             agger35_prim = data_pd_HWLW_1tide_noHWs[data_pd_HWLW_1tide_noHWs[&#39;HWLWcode&#39;]==2]
             if len(agger35_prim)&gt;1:
                 raise Exception(&#39;should be only one HWLWcode=2 per tide period&#39;)
@@ -1800,7 +1787,6 @@ When first/second low waters and aggers are calculated, the local extremes aroun
             raise Exception(&#39;unexpected number of values between two HWs (0 or more than 3):\n%s&#39;%(data_pd_HWLW_1tide))
     
     #remove remaining 11 and 22 values from array
-    #if calc_HWLW345_cleanup1122:
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==11].index)
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW[&#39;HWLWcode&#39;]==22].index)
     
@@ -2381,10 +2367,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
         data_HWLW_nosidx = ts_ext.copy()
         data_HWLW_nosidx[&#39;times&#39;] = data_HWLW_nosidx.index
         data_HWLW_nosidx = data_HWLW_nosidx.set_index(&#39;HWLWno&#39;)
-        #data_HWLW_nosidx = data_HWLW_nosidx.sort_index()
         HWLWno_all = data_HWLW_nosidx.index.unique()
-        #data_HW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==1],index=HWLWno_all)
-        #data_LW = pd.DataFrame(data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==2],index=HWLWno_all)
         data_HW = data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==1]
         data_LW = data_HWLW_nosidx.loc[data_HWLW_nosidx[&#39;HWLWcode&#39;]==2]
         bool_HW = HWLWno_all.isin(data_HW.index)
@@ -2566,13 +2549,13 @@ Warning: the calculated extreme numbers in this definition are not corrected for
                              &#39;STA;%10s;%10s;O&#39;%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
                              &#39;[WRD]&#39;])
     if headerformat==&#39;wia&#39;:
-        for metalinestart in [&#39;WNS&#39;]:#[&#39;[IDT;&#39;,&#39;WNS&#39;]:
+        for metalinestart in [&#39;WNS&#39;]:
             bool_drop = metadata_pd.str.startswith(metalinestart)
             metadata_pd = metadata_pd[~bool_drop]
         metadata_pd[metadata_pd.str.startswith(&#39;[IDT;&#39;)] = &#39;[IDT;*WIF*;A;;%6s]&#39;%(time_today)
-        metadata_pd[metadata_pd.str.startswith(&#39;PAR&#39;)] = &#39;GHD;%s&#39;%(grootheid)#.split(&#39;;&#39;)[0])
+        metadata_pd[metadata_pd.str.startswith(&#39;PAR&#39;)] = &#39;GHD;%s&#39;%(grootheid)
         metadata_pd[metadata_pd.str.startswith(&#39;CPM&#39;)] = &#39;CPM;OW;Oppervlaktewater&#39;
-        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)#.split(&#39;;&#39;)[0])
+        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)
     
     linestr_list = []
     linestr = &#39;&#39;
@@ -2717,7 +2700,7 @@ Warning: the calculated extreme numbers in this definition are not corrected for
             bool_drop = metadata_pd.str.startswith(metalinestart)
             metadata_pd = metadata_pd[~bool_drop]
         metadata_pd[metadata_pd.str.startswith(&#39;[IDT;&#39;)] = &#39;[IDT;*WIF*;A;;%6s]&#39;%(time_today)
-        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)#.split(&#39;;&#39;)[0])
+        metadata_pd[metadata_pd.str.startswith(&#39;ANA&#39;)] = &#39;WBM;other:%s&#39;%(ana)
         metadata_pd[metadata_pd.str.startswith(&#39;MXP;1&#39;)] = &#39;MXT;1;GETETTPE&#39; # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
         metadata_pd[metadata_pd.str.startswith(&#39;MXC;1&#39;)] = &#39;MXC;1;OW;Oppervlaktewater&#39; #TODO: kan ook met metadata_pd.str.replace(&#39;;10;Oppervlaktewater&#39;,&#39;;OW;Oppervlaktewater&#39;)
         metadata_pd[metadata_pd.str.startswith(&#39;MXP;2&#39;)] = &#39;MXG;2;%s&#39;%(grootheid)
@@ -2839,7 +2822,6 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     &#34;&#34;&#34;
     ts_pd_in = ts
     
-    #print(&#39;-&#39;*50)
     print(&#39;cropping timeseries&#39;)
     if not times_ext[0]&lt;times_ext[1]:
         raise Exception(&#39;ERROR: the two times times_ext should be increasing, but they are not: %s.&#39;%(times_ext))
@@ -2853,7 +2835,6 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
     ts_pd_out = ts_pd_in.loc[times_selected_bool]
     
-    #print(check_ts(ts_pd_out))
     return ts_pd_out</code></pre>
 </details>
 </dd>
@@ -2904,7 +2885,6 @@ Warning: the calculated extreme numbers in this definition are not corrected for
 
     &#34;&#34;&#34;
     
-    #print(&#39;-&#39;*50)
     print(&#39;resampling timeseries to %i minutes&#39;%(timestep_min))
     
     bool_duplicated_index = ts.index.duplicated()
@@ -2918,7 +2898,6 @@ Warning: the calculated extreme numbers in this definition are not corrected for
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq=&#39;%dmin&#39;%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample[&#39;values&#39;] = ts[&#39;values&#39;] #put measurements into this timeseries, matches to correct index automatically
     
-    #print(check_ts(data_pd_resample))
     return data_pd_resample</code></pre>
 </details>
 </dd>
@@ -3399,7 +3378,6 @@ This comes down to: ts_period / period_difference &gt; R</p>
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception(&#39;ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list&#39;)
     data_pd_all = data_pd_all.sort_index(axis=0)
-    #print(check_ts(data_pd_all))
     
     return data_pd_all</code></pre>
 </details>
@@ -3447,7 +3425,6 @@ This comes down to: ts_period / period_difference &gt; R</p>
 
     &#34;&#34;&#34;
     
-    #print(&#39;-&#39;*50)
     print(&#39;reading file: %s&#39;%(filename))
     noosheader = []
     noosheader_dict = {}
@@ -3499,7 +3476,6 @@ This comes down to: ts_period / period_difference &gt; R</p>
         else: #in case of non integer minute timesteps (eg seconds)
             timesteps_min_all[bool_int] = timesteps_min_all[bool_int].round(0)
         timesteps_min = set(timesteps_min_all)
-        #print(timesteps_min)
         if len(timesteps_min)&lt;=100:
             timesteps_min_print = timesteps_min
         else:
