@@ -70,7 +70,7 @@ def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False)
     try:
         import hatyan
         version_no = hatyan.__version__
-    except:
+    except ModuleNotFoundError:
         version_no = None
     
     #set the storage location of interactive plots

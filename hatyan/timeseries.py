@@ -444,7 +444,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
         #print HWLW statistics
         try:
             plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext_validation, create_plot=False)        
-        except:
+        except: #TODO: replace this generic except with specific ones, but first convert 'raise Exception()' in plot_HWLW_validatestats() to more specific (maybe custom) ones
             print('WARNING: plot_HWLW_validatestats() failed, probably due to missing HWLWno where autocalculation failed. Consider adding HWLWno to ts_ext and ts_ext_validation with calc_HWLWnumbering() before plotting.')
     ax1.set_ylim(figure_ylim_ts)
     ax2.set_xlabel('Time')
@@ -500,7 +500,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         try:
             ts_ext_nrs = calc_HWLWnumbering(ts_ext=ts_ext)
             ts_ext_validation_nrs = calc_HWLWnumbering(ts_ext=ts_ext_validation)
-        except:
+        except: #TODO: replace this generic except with specific ones, but first convert 'raise Exception()' in calc_HWLWnumbering() to more specific (maybe custom) ones
             raise Exception('ERROR: deriving HWLWno failed, so HWLW statistics cannot be calculated. Add HWLWno with calc_HWLWnumbering() before calling plot_HWLW_validatestats().')
     else:
         ts_ext_nrs = ts_ext.copy()

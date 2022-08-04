@@ -33,6 +33,10 @@ from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
 
 
+class MatrixConditionTooHigh(Exception):
+    pass
+
+
 class HatyanSettings:
     """
     Settings class containing default hatyan settings, to be overwritten by input, initiate with:
@@ -237,8 +241,8 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
                 COMP_one = analysis(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iP] = COMP_one.loc[:,'A']
                 phi_i_deg_all[:,iP] = COMP_one.loc[:,'phi_deg']
-            except Exception as e:
-                print(f'WARNING: analysis of {period_dt} failed, error message: "{e}"')
+            except MatrixConditionTooHigh: # accept exception if matrix condition is too high, since some years can then be skipped
+                print(f'WARNING: analysis of {period_dt} failed because MatrixConditionTooHigh, check if const_list is appropriate for timeseries lenght.')
         if np.isnan(A_i_all).all():
             raise Exception('analysis peryear or permonth failed for all years/months, check warnings above')
         
@@ -350,7 +354,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     xTxmat_condition = np.linalg.cond(xTxmat)
     print('condition of xTx matrix: %.2f'%(xTxmat_condition))
     if xTxmat_condition > hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
-        raise Exception(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}')
+        raise MatrixConditionTooHigh(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}')
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
     #solve matrix to get beta_roof_mat (and thus a, b)
