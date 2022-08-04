@@ -1140,13 +1140,13 @@ class Timeseries_Statistics:
         bool_int = np.abs(timesteps_min_all-timesteps_min_all.round(0))<1e-9
         if bool_int.all():
             timesteps_min_all = timesteps_min_all.astype(int)
-        else: #in case of non integer minute timesteps (eg seconds)
-            timesteps_min_all[bool_int] = timesteps_min_all[bool_int].round(0)
-        timesteps_min = set(timesteps_min_all)
-        if len(timesteps_min)<=100:
-            timesteps_min_print = timesteps_min
-        else:
-            timesteps_min_print = 'too much unique time intervals (>100) to display all of them, %i intervals ranging from %i to %i minutes'%(len(timesteps_min),np.min(list(timesteps_min)),np.max(list(timesteps_min)))
+        
+        #uniq timesteps and counts
+        uniq_vals, uniq_counts = np.unique(timesteps_min_all,return_counts=True)
+        timestep_min_valcounts_pd = pd.DataFrame({'timestep_min':uniq_vals},index=uniq_counts)
+        timestep_min_valcounts_pd.index.name = 'counts'
+        
+        #ordering of timesteps
         if (timesteps_min_all>0).all():
             timesteps_incr_print = 'all time intervals are in increasing order and are never equal'
         else:
@@ -1154,13 +1154,14 @@ class Timeseries_Statistics:
         
         ntimes_nonan = ts['values'].count()
         ntimes = len(ts)
-        ntimesteps_uniq = len(timesteps_min)
+        ntimesteps_uniq = len(timestep_min_valcounts_pd)
+        
         if len(ts)==0:
             self.stats = {'timeseries contents':ts}
         else:
             self.stats = {'timeseries contents':ts,
                         'timeseries # unique timesteps': ntimesteps_uniq,
-                        'timeseries unique timesteps (minutes)':timesteps_min_print,
+                        'timeseries dominant timesteps':timestep_min_valcounts_pd.sort_index(ascending=False),
                         'timeseries validity': timesteps_incr_print,
                         'timeseries length': ntimes,
                         'timeseries # nonan': ntimes_nonan,
@@ -1169,12 +1170,15 @@ class Timeseries_Statistics:
                         'timeseries % nan': (ntimes-ntimes_nonan)/ntimes*100, #%.1f %
                         }
     def __str__(self):
+        pd_max_rows_backup = pd.options.display.max_rows #backup max_rows default setting (60 or so) and set to 15
+        pd.options.display.max_rows = 10
         print_statement = ''
         for key in self.stats.keys():
-            if key in ['timeseries contents','timeseries unique timesteps (minutes)']:
+            if key in ['timeseries contents','timeseries dominant timesteps']:
                 print_statement += f'{key}:\n{self.stats[key]}\n'
             else:
                 print_statement += f'{key}: {self.stats[key]}\n'
+        pd.options.display.max_rows = pd_max_rows_backup #revert max_rows default setting after printing
         return print_statement
     def __repr__(self): #avoid printing the class name
         #return dict.__repr__

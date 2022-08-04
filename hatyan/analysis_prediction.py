@@ -203,7 +203,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
     COMP_all_pd : pandas.DataFrame, optional
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
-    ts_pd = ts
+    ts_pd = ts #TODO: this is not necessary
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
@@ -224,7 +224,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
         print(f'analysis_perperiod={hatyan_settings.analysis_perperiod}, separate periods are automatically determined from timeseries')
-        ts_periods_dt = ts_pd.index.to_period(period).unique()
+        ts_periods_dt = ts_pd.index.to_period(period).unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
         n_periods = len(ts_periods_dt)
@@ -232,9 +232,9 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
         phi_i_deg_all = np.zeros((n_const,n_periods))*np.nan
         for iP, period_dt in enumerate(ts_periods_dt):
             print('analyzing %s of sequence %s'%(period_dt,ts_periods_strlist))
-            ts_oneyear_pd = ts_pd[ts_pd.index.to_period(period)==period_dt]
+            ts_oneperiod_pd = ts_pd[ts_pd.index.to_period(period)==period_dt]
             try:
-                COMP_one = analysis(ts_oneyear_pd, const_list=const_list, hatyan_settings=hatyan_settings)
+                COMP_one = analysis(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iP] = COMP_one.loc[:,'A']
                 phi_i_deg_all[:,iP] = COMP_one.loc[:,'phi_deg']
             except Exception as e:
