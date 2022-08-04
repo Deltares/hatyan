@@ -224,7 +224,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
         print(f'analysis_perperiod={hatyan_settings.analysis_perperiod}, separate periods are automatically determined from timeseries')
-        ts_periods_dt = ts_pd.index.to_period(period).unique()
+        ts_periods_dt = ts_pd.index.to_period(period).unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
         n_periods = len(ts_periods_dt)
