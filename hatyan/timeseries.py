@@ -1232,6 +1232,8 @@ def get_diablocks_startstopstation(filename):
             elif 'LOC' in line:
                 diablocks_pd_startstopstation.loc[block_id,'station'] = line.rstrip().split(';')[1]
     diablocks_pd_startstopstation['data_ends'] = (diablocks_pd_startstopstation['block_starts']-1).tolist()[1:]+[linenum]
+    if block_id == -1:
+        raise Exception('ERROR: empty dia file')
     if diablocks_pd_startstopstation.isnull().any().any():
         raise Exception('ERROR: multiple blocks in diafile, but unequal amount of start/end/datastart/stationnames')
     
