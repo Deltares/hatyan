@@ -229,7 +229,7 @@ def get_foreman_nodalfactors(const_list, dood_date):
         if const in foreman_nodal_harmonic.index.unique(): # if harmonic constituent has nodal factors
             foreman_harmonic_nodal_const = foreman_nodal_harmonic.loc[[const]]
             fore_delta_jk_rad_all = np.dot(foreman_harmonic_nodal_const.loc[:,['P','N','P1']],doodson_pd.loc[['P','N','P1'],:])
-            fore_alpha_jk_all = foreman_harmonic_nodal_const.loc[:,['EDN']].values * 2*np.pi #phase correction satellite. 0.5=90 voor M2 en N2, 0=0 voor S2
+            fore_alpha_jk_all = foreman_harmonic_nodal_const.loc[:,['EDN']].values * 2*np.pi #phase correction satellite. 0.5=90deg voor M2 en N2, 0=0deg voor S2
             fore_r_jk_all = foreman_harmonic_nodal_const.loc[:,['factor']].values #amplitude ratio for satellite. 0.0373 voor M2 en N2, 0.0022 voor S2
             fore_fj_left_all = 1 * fore_r_jk_all * np.cos(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
             fore_fj_right_all = 1 * fore_r_jk_all * np.sin(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
