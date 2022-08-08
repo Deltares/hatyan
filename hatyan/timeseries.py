@@ -762,7 +762,7 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
     
     ts_values = ts['values']
     #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
-    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: systeemcode is nu leeg, was soms CENT igv dia en WADA igv wia als WADAR export) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
+    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                              '[W3H]', #WIE, WAT, WAAR en HOE
                              'WNS;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia dus geheel weglaten?
                              'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55. GHD in wia (PAR is daar parameter, maar betekent wat anders)
@@ -862,7 +862,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
     if 11 in ts_ext['HWLWcode'].values or 22 in ts_ext['HWLWcode'].values:
         raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
     
-    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok #TODO: zie IDT equidistant
+    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                              '[W3H]', #WIE, WAT, WAAR en HOE
                              'MUX;%s'%(parameterX), #Mux
                              ##IVS;NVT;Niet van toepassing

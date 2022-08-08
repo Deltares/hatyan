@@ -151,7 +151,7 @@ def write_components(comp, filename, metadata=None):
     
     with open(filename,'w') as f:
         if metadata is None:
-            f.write('* no metadata available\n')
+            f.write('* no metadata available\n') #TODO: HATYAN40\anadea.f regel 297 schrijft format van header voor, '60' na start/stop datetime is tijdzone, '1' na eenheid is Waarnemingssoort. Beide belangrijke regels/gegevens
         else:
             for key in metadata.keys():
                 f.write('* %-20s: %s\n'%(key, metadata[key]))
