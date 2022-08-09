@@ -97,9 +97,12 @@ class HatyanSettings:
             return_allperiods = return_allyears
             return_allyears = None
         
-        for var_in in [nodalfactors,fu_alltimes,xfac,return_allperiods,return_prediction]:
+        for var_in in [nodalfactors,fu_alltimes,return_allperiods,return_prediction]:
             if not isinstance(var_in,bool):
                 raise Exception(f'invalid {var_in} type, should be bool')
+        
+        if not (isinstance(xfac,bool) or isinstance(xfac,dict)):
+            raise Exception(f'invalid xfac={xfac} type, should be bool or dict')
         
         if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
             raise Exception(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
@@ -279,6 +282,8 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
     ts_pd = ts.copy() #TODO: this is not necessary
+    if not (isinstance(ts.index[0],pd.Timestamp) or isinstance(ts.index[0],dt.datetime)): #works better than isinstance(ts.index,pd.DatetimeIndex) since 1018 time indexes are Index instead of DatetimeIndex
+        raise TypeError(f'ts.index is not of expected type ({type(ts.index[0])} instead of pd.Timestamp or dt.datetime)')
     if bool_ts_duplicated.any():
         raise Exception(f'ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
     print(f'#timesteps           = {len(ts)}')
@@ -329,9 +334,10 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
     v_u = v_0i_rad.values + u_i_rad.values
     
-    #check rayleigh frequency after nyquist frequency folding process
-    freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
-    check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
+    #check rayleigh frequency after nyquist frequency folding process. Only relevant (and possible) if there more than one non-A0 component
+    if len(t_const_freq_pd.drop('A0',errors='ignore'))>1:
+        freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
+        check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
     
     #### TIMESERIES ANALYSIS
     N = len(const_list)

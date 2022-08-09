@@ -45,8 +45,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     The prominence for local extremes is set to 0.01m, to filter out very minor dips in the timeseries.
     If there are two equal high or low water values, the first one is taken. 
     There are no main high/low waters calculated within 6 hours of the start/end of the timeseries (keyword buffer_hr), since these can be invalid.
-    This function can deal with gaps. Since scipy.signal.find_peaks() warns about nan values, those are removed first.
-    This does influence the results since find_peaks does not know about time registration. This is also tricky for input timeseries with varying time interval.
+    Since scipy.signal.find_peaks() warns about nan values, those are removed first. Nans/gaps can influence the results since find_peaks does not know about time registration. This is also tricky for input timeseries with varying time interval.
     
     Parameters
     ----------
