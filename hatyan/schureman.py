@@ -31,6 +31,17 @@ file_path = os.path.realpath(__file__)
 
 
 @functools.lru_cache()
+def get_schureman_shallowrelations():
+    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),'data','data_schureman_shallowrelations.csv')
+    shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment='#',skipinitialspace=True,index_col=0,names=['shallow_eq'])
+    shallow_eqs_pd['shallow_eq'] = shallow_eqs_pd['shallow_eq'].str.strip() #remove spaces after
+    shallow_eqs_pd['shallow_const'] = shallow_eqs_pd.index
+    
+    shallow_eqs_pd.index = 'comp_'+shallow_eqs_pd.index.str.replace('(','_',regex=False).str.replace(')','_',regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
+    return shallow_eqs_pd
+
+
+@functools.lru_cache()
 def get_schureman_table():
     """
     Calculate all schureman constituents
@@ -52,14 +63,9 @@ def get_schureman_table():
     v0uf_base = v0uf_baseT.T
     #v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     
-    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),'data','data_schureman_shallowrelations.csv')
-    shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment='#',skipinitialspace=True,index_col=0,names=['shallow_eq'])
-    shallow_eqs_pd['shallow_eq'] = shallow_eqs_pd['shallow_eq'].str.strip() #remove spaces after
-    shallow_eqs_pd['shallow_const'] = shallow_eqs_pd.index
-    
-    shallow_eqs_pd.index = 'comp_'+shallow_eqs_pd.index.str.replace('(','_',regex=False).str.replace(')','_',regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
+    shallow_eqs_pd = get_schureman_shallowrelations()
     shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].iteritems()) 
-    
+
     #calculate shallow water components and rename back to original component name
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
     v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=True)
