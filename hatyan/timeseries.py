@@ -1088,6 +1088,8 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
     """
     
     t_const_freq = t_const_freq_pd.sort_values('freq')['freq'].drop('A0',errors='ignore')
+    if not len(t_const_freq)>1:
+        return #Rayleigh check is only relevant (and possible) if there more than one non-A0 component, otherwise stop.
     freq_diffs = np.diff(t_const_freq)
     ts_period_hr = (ts_pd.index.max()-ts_pd.index.min()).total_seconds()/3600
     rayleigh_tresh = 0.7 #0.99 # Koos Doekes: "Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het Rayleigh-criterium enigszins schenden, tot zo'n 0,7 van de theoretisch vereiste reekslengte. "

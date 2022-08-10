@@ -334,11 +334,10 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
     v_u = v_0i_rad.values + u_i_rad.values
     
-    #check rayleigh frequency after nyquist frequency folding process. Only relevant (and possible) if there more than one non-A0 component
-    if len(t_const_freq_pd.drop('A0',errors='ignore'))>1:
-        freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
-        check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
-    
+    #check rayleigh frequency after nyquist frequency folding process.
+    freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
+    check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
+
     #### TIMESERIES ANALYSIS
     N = len(const_list)
     m = len(ts_pd_nonan['values'])

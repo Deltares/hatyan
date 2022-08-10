@@ -86,7 +86,8 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     #get all foreman harmonic nodal values (non-first occurences of duplicated component names)
     foreman_nodal_harmonic_wide = foreman_harmonic_raw.loc[bool_dupl_index]
     #reshape from 15 to 5 columns and drop nan lines
-    foreman_nodal_harmonic = pd.DataFrame(foreman_nodal_harmonic_wide.values.reshape(207,5),
+    nrows_wide = len(foreman_nodal_harmonic_wide)
+    foreman_nodal_harmonic = pd.DataFrame(foreman_nodal_harmonic_wide.values.reshape(nrows_wide*3,5),
                                           index=foreman_nodal_harmonic_wide.index.repeat(3),
                                           columns=['P','N','P1','EDN','factor']).dropna(axis=0)
     
@@ -145,7 +146,7 @@ def get_foreman_shallowrelations():
 
 
 @functools.lru_cache()
-def get_foreman_doodson_nodal_all(lat_deg=51.45): #TODO: use this definition to replace harmonic/shallow separate part in freq/v0 and uf definitions
+def get_foreman_doodson_nodal_all_NOTUSED(lat_deg=51.45): #TODO: maybe use this definition to replace harmonic/shallow separate part in freq/v0 and uf definitions. Tricky because of factors and mainly M2=3.5*M1 (non-int factor)
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic(lat_deg=lat_deg)
     
     #from hatyan.schureman import get_schureman_shallowrelations
@@ -159,16 +160,22 @@ def get_foreman_doodson_nodal_all(lat_deg=51.45): #TODO: use this definition to 
     foreman_doodson_all = foreman_doodson_harmonic.T.eval(shallow_eqs_pd_str).T
     foreman_doodson_all.rename(index=shallow_eqs_pd_foreman['shallow_const'],inplace=True)
     
+    duplicate_PNP1EDN = pd.Series(index=shallow_eqs_pd_foreman['shallow_const'],dtype=int)
     foreman_nodal_all = foreman_nodal_harmonic.copy()
+    foreman_nodal_all['fac'] = 1
     for iC,const in enumerate(foreman_shallowrelations.index):
         foreman_nodal_oneconst = pd.DataFrame()
         foreman_shallow_const = foreman_shallowrelations.loc[const].dropna().values
         list_shallow_facs = foreman_shallow_const[1::2]
         list_shallow_deps = foreman_shallow_const[2::2]
         for harm_factor,harm_const in zip(list_shallow_facs,list_shallow_deps):
-            foreman_nodal_oneconst = foreman_nodal_oneconst.append(harm_factor * foreman_nodal_harmonic.loc[harm_const])
+            foreman_nodal_depconst = foreman_nodal_harmonic.loc[[harm_const]].copy()
+            foreman_nodal_depconst['fac'] = harm_factor
+            foreman_nodal_depconst['dep'] = harm_const
+            foreman_nodal_oneconst = foreman_nodal_oneconst.append(foreman_nodal_depconst)
         foreman_nodal_oneconst.index = [const]*len(foreman_nodal_oneconst) #overwrite index values with const name
-        foreman_nodal_oneconst = foreman_nodal_oneconst.sort_values('EDN').sort_values('P1').sort_values('N').sort_values('P') #sorting makes duplicates easier to see
+        duplicate_PNP1EDN.loc[const] = foreman_nodal_oneconst.loc[:,['P','N','P1','EDN']].duplicated().sum()
+        #foreman_nodal_oneconst = foreman_nodal_oneconst.sort_values('EDN').sort_values('P1').sort_values('N').sort_values('P') #sorting makes duplicates easier to see
         foreman_nodal_all = foreman_nodal_all.append(foreman_nodal_oneconst)
     return foreman_doodson_all, foreman_nodal_all
 
@@ -207,7 +214,6 @@ def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900
     shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
     v_0i_rad = pd.DataFrame(np.zeros((len(const_list),len(dood_date))),index=const_list)
     t_const_freq = pd.DataFrame({'freq':np.zeros((len(const_list)))},index=const_list)
-    
     
     #v and freq for harmonic and shallow constituents
     for iC,const in enumerate(const_list):
@@ -278,7 +284,7 @@ def get_foreman_nodalfactors(const_list, dood_date):
             fore_fj_right_all = 1 * fore_r_jk_all * np.sin(fore_delta_jk_rad_all + fore_alpha_jk_all) #should be sum for n sattelites
             fore_fj_left = fore_fj_left_all.sum(axis=0)
             fore_fj_right = fore_fj_right_all.sum(axis=0)
-            f_i_FOR_inclshallow.loc[const,:] = ( (1+fore_fj_left)**2 + (fore_fj_right)**2)**(1/2.)
+            f_i_FOR_inclshallow.loc[const,:] = ( (1+fore_fj_left)**2 + (fore_fj_right)**2)**(1/2.) 
             u_i_rad_FOR_inclshallow.loc[const,:] = -np.arctan2(fore_fj_right,1+fore_fj_left) #TODO: added minus to get sign comparable to hatyan
         elif const in foreman_doodson_harmonic.index: #if harmonic constituent has no nodal factors, default values 1 and 0 are applicable
             continue
