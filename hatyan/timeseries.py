@@ -409,6 +409,8 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.set_title('hatyan timeseries')
     ax1.plot(ts.index, ts['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts')
     if ts_validation is not None:
+        if ts.index.duplicated().sum() + ts_validation.index.duplicated().sum() >0:
+            print(f'WARNING: duplicated timesteps in ts ({ts.index.duplicated().sum()}) or ts_validation ({ts_validation.index.duplicated().sum()}), timeseries difference computation will probably fail')
         #overlap between timeseries for difference plots
         times_id_validationinpred = np.where(ts_validation.index.isin(ts.index))[0]
         times_id_predinvalidation = np.where(ts.index.isin(ts_validation.index))[0]
