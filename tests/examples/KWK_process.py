@@ -7,6 +7,7 @@ Created on Thu Apr  7 14:17:13 2022
 
 import os
 import sys
+import glob
 import pandas as pd
 import datetime as dt
 import numpy as np
@@ -19,8 +20,7 @@ import statsmodels.api as sm # `conda install -c conda-forge statsmodels -y`
 
 #TODO: apply to all measurements: remove QC==99 (always, or maybe make nans?), crop_timeseries (when applicable), NAP2005 correction?, SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
 #TODO: move all parts to hatyan.kenmerkendewaarden.*, maybe also the stuff in hatyan/overschrijding.py (and include license header) >> indeed put it in hatyan or not?
-#TODO: add tidal indicators (LAT etc)
-#TODO: tstart/tstop, include tzinfo in tstart/tstop for DLL >> still does not cut properly tzoneaware
+#TODO: add tidal indicators (LAT etc) >> done at slotgemiddelden part
 get_catalog = False
 
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
@@ -76,42 +76,37 @@ cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl')
 print('...done')
 
 #get list of stations with extremes and add K13A
-cat_aquometadatalijst_ext, cat_locatielijst_ext = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
-K13APFM_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='K13APFM'].set_index('Locatie_MessageID',drop=True) #K13a does not have extremes, so is manually added to the interest-list
-MAASMSMPL_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='MAASMSMPL'].set_index('Locatie_MessageID',drop=True)
-#WIERMWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='WIERMWD1'].set_index('Locatie_MessageID',drop=True)
-#UITHZWD1_entry = cat_locatielijst.loc[cat_locatielijst['Code']=='UITHZWD1'].set_index('Locatie_MessageID',drop=True)
-cat_locatielijst_ext = cat_locatielijst_ext.append(K13APFM_entry).append(MAASMSMPL_entry)#.append(WIERMWD1_entry).append(UITHZWD1_entry)
-cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_ext['X'].values, coordy_in=cat_locatielijst_ext['Y'].values, epsg_in=int(cat_locatielijst_ext['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
-cat_locatielijst_ext_codeidx = cat_locatielijst_ext.reset_index(drop=False).set_index('Code',drop=False)
-
+cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None, meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'}) #TODO: this was filtered for extremes, but was not possible with list AB (should be possible after DDL synchronization)
 """
-#TODO: maybe add these coastal stations
-Holwerd
-Stortemelk
-Eierland
-Texel Westgat (Texel Noordzee is er wel)
-Oostoever
-Petten (Petten zuid is er wel)
-IJmuiden zuidelijk havenhoofd / IJmuiden semafoor / IJmuiden Noordersluis (IJmuiden buitenhaven is er wel)
-Noordwijk meetpost
-Katwijk / Katwijk paal
-Brouwershavensche Gat 05 / Brouwershavensche Gat, punt 02
-Oosterschelde 04 / 09 / 10 / 11 / 12 / 13 / 14 / 15 (11 is toegevoegd)
-Oranjezon
-Oostkapelle
-Breskens
-Perkpolder Walsoorden
+stat_list_ABTC = []
+list_dia_ABTC = glob.glob('p:\\11208031-010-kenmerkende-waarden-k\\work\\data_vanRWS\\wetransfer_waterstandsgegevens_2022-08-05_1306\\WATHTE_oud\\*.dia')
+for file_dia_ABTC in list_dia_ABTC:
+    diablocks = hatyan.get_diablocks_startstopstation(file_dia_ABTC)
+    stat_code = diablocks.loc[0,'station']
+    stat_list_ABTC.append(stat_code)
+print(stat_list_ABTC)
 """
+stat_list_ABTC = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE']
+stat_list_addnonext=['K13APFM','MAASMSMPL'] + stat_list_ABTC #two stations + missing from dialist ABCT (OVLVHWT is left out since HANSWT is there)
+for stat_addnonext in stat_list_addnonext:
+    if stat_addnonext in cat_locatielijst_sel['Code'].tolist():
+        continue
+    addnonext_entry = cat_locatielijst.loc[cat_locatielijst['Code']==stat_addnonext].set_index('Locatie_MessageID',drop=True) #K13APFM/MAASMSMPL/etc do not have extremes (at least not in DDL), so is manually added to the interest-list
+    if not len(addnonext_entry)==1:
+        #print(f'station name {stat_addnonext} found {len(addnonext_entry)} times, should be 1.:\n{addnonext_entry}, using last one')
+        addnonext_entry = addnonext_entry.iloc[[-1]] #TODO: stations ['A12', 'D15', 'J6', 'Q1'] are now duplicated in cat_locatielijst, using last entry which corresponds to "Platform *" instead of "* Platform", which is what is in the dia. This should be fixed.
+    cat_locatielijst_sel = cat_locatielijst_sel.append(addnonext_entry)
+cat_locatielijst_sel['RDx'],cat_locatielijst_sel['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=int(cat_locatielijst_sel['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
+cat_locatielijst_sel_codeidx = cat_locatielijst_sel.reset_index(drop=False).set_index('Code',drop=False)
 
 #stat_name_list = ['BATH','DELFZIJL','DEN HELDER','DORDRECHT','EEMSHAVEN','EURO PLATFORM','HANSWEERT','HARINGVLIETSLUIZEN','HARLINGEN','HOEK VAN HOLLAND','HUIBERTGAT','IJMUIDEN','KORNWERDERZAND','LAUWERSOOG','ROOMPOT BUITEN','ROTTERDAM','SCHEVENINGEN','STAVENISSE','TERNEUZEN','VLISSINGEN','WEST-TERSCHELLING'] # lijst AB
-stat_name_list = ['Terneuzen','Bath','Hansweert','Vlissingen','Bergse Diepsluis west','Krammersluizen west','Stavenisse','Roompot binnen','Cadzand','Westkapelle','Roompot buiten','Brouwershavensche Gat 08','Haringvliet 10','Hoek van Holland','Scheveningen','IJmuiden buitenhaven','Petten zuid','Den Helder','Texel Noordzee','Terschelling Noordzee','Wierumergronden','Huibertgat','Oudeschild','Vlieland haven','West-Terschelling','Nes','Schiermonnikoog','Den Oever buiten','Kornwerderzand buiten','Harlingen','Lauwersoog','Eemshaven','Delfzijl','Nieuwe Statenzijl','Lichteiland Goeree','Euro platform','K13a platform'] + ['Dordrecht','Stellendam Buiten','Rotterdam'] + ['Maasmond','Oosterschelde 11'] #"KW kust en GR Dillingh 2013" en "KW getijgebied RWS 2011.0", aangevuld met 3 stations AB, aangevuld met BOI wensen
+stat_name_list = ['Terneuzen','Bath','HANSWT','Vlissingen','Bergse Diepsluis west','Krammersluizen west','Stavenisse','Roompot binnen','Cadzand','Westkapelle','Roompot buiten','Brouwershavensche Gat 08','Haringvliet 10','Hoek van Holland','Scheveningen','IJmuiden buitenhaven','Petten zuid','Den Helder','Texel Noordzee','Terschelling Noordzee','Wierumergronden','Huibertgat','Oudeschild','Vlieland haven','West-Terschelling','Nes','Schiermonnikoog','Den Oever buiten','Kornwerderzand buiten','Harlingen','Lauwersoog','Eemshaven','Delfzijl','Nieuwe Statenzijl','Lichteiland Goeree','Euro platform','K13a platform'] + ['Dordrecht','Stellendam Buiten','Rotterdam'] + ['Maasmond','Oosterschelde 11'] + stat_list_addnonext[2:] #"KW kust en GR Dillingh 2013" en "KW getijgebied RWS 2011.0", aangevuld met 3 stations AB, aangevuld met BOI wensen, aangevuld met dialijst ABCT
 stat_list = []
 for stat_name in stat_name_list:
-    bool_isstation = cat_locatielijst_ext_codeidx['Naam'].str.contains(stat_name,case=False)
+    bool_isstation = cat_locatielijst_sel_codeidx['Naam'].str.contains(stat_name,case=False) | cat_locatielijst_sel_codeidx['Code'].str.contains(stat_name,case=False)
     if not bool_isstation.sum()==1:
-        raise Exception(f'station name {stat_name} found {bool_isstation.sum()} times, should be 1.')
-    stat_list.append(cat_locatielijst_ext_codeidx.loc[bool_isstation,'Code'].iloc[0])
+        print(f'station name {stat_name} found {bool_isstation.sum()} times, should be 1.:\n{cat_locatielijst_sel_codeidx.loc[bool_isstation,["Naam"]]}')
+    stat_list.append(cat_locatielijst_sel_codeidx.loc[bool_isstation,'Code'].iloc[0])
     #print(f'{stat_name:30s}: {bool_isstation.sum()}')
 #stat_list = ['BATH','DELFZL','DENHDR','DORDT','EEMSHVN','EURPFM','HANSWT','STELLDBTN','HARLGN','HOEKVHLD','HUIBGT','IJMDBTHVN','KORNWDZBTN','LAUWOG','ROOMPBTN','ROTTDM','SCHEVNGN','STAVNSE','TERNZN','VLISSGN','WESTTSLG'] # lijst AB vertaald naar DONAR namen
 #stat_list = ['HOEKVHLD','HARVT10','VLISSGN']
@@ -139,11 +134,11 @@ def nap2005_correction(data_pd,current_station):
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
-for current_station in []:#stat_list:
+for current_station in stat_list:
     file_wl_pkl = os.path.join(dir_meas_DDL,f"{current_station}_measwl.pkl")
     file_wlmeta_pkl = os.path.join(dir_meas_DDL,f"meta_{current_station}_measwl.pkl")
     
-    station_dict = cat_locatielijst_ext_codeidx.loc[current_station,['Locatie_MessageID','X','Y','Naam','Code']]
+    station_dict = cat_locatielijst_sel_codeidx.loc[current_station,['Locatie_MessageID','X','Y','Naam','Code']]
     
     allow_multipleresultsfor = ['WaardeBepalingsmethode'] # necessary for retrieving very long timeseries
     
@@ -333,7 +328,7 @@ for current_station in []:#stat_list:
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
     
-    station_dict = dict(cat_locatielijst_ext_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in hatyan.getonlinedata.py: get_DDL_stationmetasubset() does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
+    station_dict = dict(cat_locatielijst_sel_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in hatyan.getonlinedata.py: get_DDL_stationmetasubset() does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
     cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'})
     for metakey in list_relevantDDLdata:
         data_summary.loc[current_station,f'DDL_{metakey}_wl'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
@@ -343,7 +338,7 @@ for current_station in []:#stat_list:
             data_summary.loc[current_station,f'DDL_{metakey}_ext'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
     
     #add coordinates to data_summary
-    data_summary.loc[current_station,['RDx','RDy']] = cat_locatielijst_ext_codeidx.loc[current_station,['RDx','RDy']]
+    data_summary.loc[current_station,['RDx','RDy']] = cat_locatielijst_sel_codeidx.loc[current_station,['RDx','RDy']]
     time_interest_start = dt.datetime(2000,1,1)
     time_interest_stop = dt.datetime(2021,2,1)
     
@@ -463,11 +458,11 @@ for current_station in []:#stat_list:
         if os.path.exists(file_ldb):
             ldb_pd = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['RDx','RDy'],na_values=[999.999])
             ax_map.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
-        ax_map.plot(cat_locatielijst_ext['RDx'],cat_locatielijst_ext['RDy'],'xk')#,alpha=0.4) #all ext stations
-        ax_map.plot(cat_locatielijst_ext_codeidx.loc[stat_list,'RDx'],cat_locatielijst_ext_codeidx.loc[stat_list,'RDy'],'xr') # selected ext stations (stat_list)
+        ax_map.plot(cat_locatielijst_sel['RDx'],cat_locatielijst_sel['RDy'],'xk')#,alpha=0.4) #all ext stations
+        ax_map.plot(cat_locatielijst_sel_codeidx.loc[stat_list,'RDx'],cat_locatielijst_sel_codeidx.loc[stat_list,'RDy'],'xr') # selected ext stations (stat_list)
         ax_map.plot(data_summary.loc[data_summary['data_ext'],'RDx'],data_summary.loc[data_summary['data_ext'],'RDy'],'xm') # data retrieved
         """
-        for iR, row in cat_locatielijst_ext.iterrows():
+        for iR, row in cat_locatielijst_sel.iterrows():
             ax_map.text(row['RDx'],row['RDy'],row['Code'])
         """
         ax_map.set_xlim(-50000,300000)
@@ -794,7 +789,7 @@ slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'haveng
 #TODO: evt schaling naar 12u25m om repetitief signaal te maken (voor boi), dan 1 plotperiode selecteren en weer terugschalen. Voorafgaand aan dit alles de ene kromme schalen met havengetallen? (Ext berekening is ingewikkelder van 1 kromme dan repetitief signaal)
 #TODO: gemgetijkromme is maar 1x of 1.5x nodig voor figuur, dus verplaatsen naar 1 datum en ext afleiden (buffer_hr=0 keyword gebruiken). Voor boi av/sp/np eerst schalen naar 12h25m en interpoleren, dan repeteren, dan is alles precies even lang en makkelijk te repeteren.
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
-for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     """
     uit: gemiddelde getijkrommen 1991.0
         
