@@ -65,15 +65,15 @@ if not os.path.exists(dir_overschrijding):
 
 fig_alltimes_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
 
-print('retrieving DDL catalog')
 if get_catalog:
+    print('retrieving DDL catalog')
     catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
     pd.to_pickle(catalog_dict,os.path.join(dir_base,'DDL_catalog.pkl'))
+    print('...done')
 else:
     catalog_dict = pd.read_pickle(os.path.join(dir_base,'DDL_catalog.pkl'))
 cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
 cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl'))
-print('...done')
 
 #get list of stations with extremes and add K13A
 cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None, meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'}) #TODO: this was filtered for extremes, but was not possible with list AB (should be possible after DDL synchronization)
@@ -134,7 +134,7 @@ def nap2005_correction(data_pd,current_station):
 
 
 ### RETRIEVE DATA FROM DDL AND WRITE TO PICKLE
-for current_station in stat_list:
+for current_station in []:#stat_list:
     file_wl_pkl = os.path.join(dir_meas_DDL,f"{current_station}_measwl.pkl")
     file_wlmeta_pkl = os.path.join(dir_meas_DDL,f"meta_{current_station}_measwl.pkl")
     
@@ -173,7 +173,7 @@ for current_station in stat_list:
     else:
         print(f'retrieving measext data from DDL for {current_station} to {os.path.basename(dir_meas_DDL)}')
         request_output_extval = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
-                                                    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLW # TODO: MeetApparaat is necessary for IJMBTHVN/NIEUWSTZL, maybe remove if servicedesk has resolved this probable Vlotter/Radar issue (gemeld op 28-4-2022 voor IJMBTHVN) (or keep and also add Hoedanigheid.Code, alle ext data is toch NAP)
+                                                    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLW # TODO: MeetApparaat is necessary for IJMBTHVN/NIEUWSTZL/HOLWD, maybe remove if servicedesk has resolved this probable Vlotter/Radar issue (gemeld op 28-4-2022 voor IJMBTHVN) (or keep and also add Hoedanigheid.Code, alle ext data is toch NAP)
         request_output_exttyp = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt_DDL,tstop_dt=tstop_dt_DDL,tzone=tzone_DLL, allow_multipleresultsfor=allow_multipleresultsfor,
                                                     meta_dict={'Groepering.Code':'GETETM2','Typering.Code':'GETETTPE'})#,'MeetApparaat.Code':'127'}) #ts_measwlHWLWtype
         if request_output_extval is None:
@@ -195,7 +195,7 @@ for current_station in stat_list:
 
 ### LOAD DATA FROM PICKLE plot and do checks
 #TODO: visually check availability (start/stop/gaps/aggers) of wl/ext, monthmean wl, outliers (nog niet gedaan voor hele periode, wel voor 2000-2022 (listAB+HARVT10):
-#   IJMDBTHVN extremen missen vanaf 2018 want Radar ipv Vlotter (al gemeld op 28-4-2022)
+#   IJMDBTHVN extremen missen vanaf 2018 want Radar ipv Vlotter (al gemeld op 28-4-2022). HOLWD ook vanaf 2012, terwijl measwl allemaal Vlotter is.
 #   Missende data vanaf 2000 (gemeld op 26-4):
 #       BATH (2000-2020, measwl en measext, komt doordat er twee stations zijn genaamd Bath/BATH) >> andere station bevat wel een goede dataset
 #       EURPFM (2000-2001, measwl en measext)
@@ -322,8 +322,14 @@ request_output_extval = hatyan.get_DDL_data(station_dict=station_dict_IJMDBTHVN,
                                             meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2','MeetApparaat.Code':'127'}) #HWLWvalues
 #now with 'MeetApparaat.Code':'127' included in query, this does the trick.
 """
+"""
+not in M2phasediff document: ['LICHTELGRE','EURPFM']
+HW/LW numbers not always increasing: ['HANSWT','BROUWHVSGT08','PETTZD','DORDT']
+no extremes in requested time frame: ['STELLDBTN','OOSTSDE11']
+Catalog query yielded no results (no ext available like K13APFM): A12
+"""
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in []:#stat_list:
+for current_station in ['BROUWHVSGT08']: #stat_list:
     print(f'checking data for {current_station}')
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
@@ -381,7 +387,7 @@ for current_station in []:#stat_list:
     ts_meas_2000to202102b = pd.DataFrame({'values':ts_meas_pd.loc[~ts_meas_dupltimes,'values']},index=pd.date_range(start=time_interest_start,end=time_interest_stop,freq='10min'))
     data_summary.loc[current_station,'#nans_2000to202102a_wl'] = ts_meas_2000to202102a['values'].isnull().sum()
     data_summary.loc[current_station,'#nans_2000to202102b_wl'] = ts_meas_2000to202102b['values'].isnull().sum()
-
+    
     #calculate monthly/yearly mean for meas wl data
     mean_peryearmonth_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="M"))['values'].mean()
     data_summary.loc[current_station,'monthmean_mean_wl'] = mean_peryearmonth_long.mean()
@@ -407,6 +413,9 @@ for current_station in []:#stat_list:
     else:
         data_summary.loc[current_station,'data_ext'] = True
         ts_meas_ext_pd = pd.read_pickle(file_ext_pkl)
+        timediff_ext = ts_meas_ext_pd.index[1:]-ts_meas_ext_pd.index[:-1]
+        if timediff_ext.min() < dt.timedelta(hours=4): #TODO: fix this: for e.g. BROUWHVSGT08: ts_meas_ext_pd.loc[dt.datetime(2015,1,1):dt.datetime(2015,1,2)]
+            raise Exception(f'extreme data contains values that are too close ({timediff_ext.min()}), should be at least 4 hours difference')
         metaext = pd.read_pickle(file_extmeta_pkl)
         for metakey in list_relevantmetadata:
             data_summary.loc[current_station,f'{metakey}_ext'] = '|'.join(metaext[metakey].unique())
@@ -430,15 +439,17 @@ for current_station in []:#stat_list:
             data_summary.loc[current_station,'aggers_ext'] = False
         try:
             ts_meas_ext_2000to202102 = ts_meas_ext_pd.loc[(ts_meas_ext_pd.index>=time_interest_start) & (ts_meas_ext_pd.index<=time_interest_stop)]
+            ts_meas_ext_pd.loc[dt.datetime(2015,1,1):dt.datetime(2015,1,2)]
             ts_meas_ext_2000to202102 = hatyan.calc_HWLWnumbering(ts_meas_ext_2000to202102, station=current_station) #station argument helpt bij 3 extra stations
             HWmissings = (ts_meas_ext_2000to202102.loc[ts_meas_ext_pd['HWLWcode']==1,'HWLWno'].diff().dropna()!=1).sum()
             data_summary.loc[current_station,'#HWgaps_2000to202102_ext'] = HWmissings
         except Exception as e: #"tidal wave numbering: HW/LW numbers not always increasing" and "zero-size array to reduction operation minimum which has no identity" #TODO: fix by calulate and providing station or corr_tideperiods argument? Or fix otherwise in hatyan (maybe under different project)
             print(f'ERROR: {e}')
+        #continue
         
         #calculate monthly/yearly mean for meas ext data
         if len(ts_meas_ext_pd['HWLWcode'].unique()) > 2:
-            data_pd_HWLW_12 = hatyan.calc_HWLW12345to21(ts_meas_ext_pd) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+            data_pd_HWLW_12 = hatyan.calc_HWLW12345to21(ts_meas_ext_pd) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater). first/last values are skipped if LW
         else:
             data_pd_HWLW_12 = ts_meas_ext_pd.copy()
         data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
@@ -658,7 +669,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
     print('SELECT/CALC HWLW VALUES')
-    LWaggercode = 3 # timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. #TODO: delays should then also be used to scale with first LW in gemgetijkromme but now dominant one is used (which depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepa-lingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen." 3 is sowieso niet generiek, evt ruwe kromme maken en daar dominantie uit bepalen?
+    LWaggercode = 3 # timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. #TODO: delays should then also be used to scale with first LW in gemgetijkromme but now dominant one is used (which depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen." 3 is sowieso niet generiek, evt ruwe kromme maken en daar dominantie uit bepalen?
     if LWaggercode == 2: #use time/value of lowest LW, 2 is actually not aggercode, but lowest LWs are converted to 2. #TODO: does not help for HOEKVHLD, what to do?
         if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
             data_pd_HWLW = hatyan.calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed

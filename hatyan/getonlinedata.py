@@ -271,7 +271,7 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
         bool_metaid_intranslatetable = cat_aquometadatalijst.index.isin(cat_AquoMetadataLocatieLijst_metaidx.index)
         if not bool_metaid_intranslatetable.all():
             cat_AquoMetadataLocatieLijst_missingAquoIDs = cat_aquometadatalijst.loc[~bool_metaid_intranslatetable].index
-            print('WARNING: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs:\n%s\nThese IDs will not be present in cat_locatielijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_aquometadatalijst.loc[cat_AquoMetadataLocatieLijst_missingAquoIDs,['Grootheid.Code','Grootheid.Omschrijving']]))
+            #print('WARNING: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs:\n%s\nThese IDs will not be present in cat_locatielijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_aquometadatalijst.loc[cat_AquoMetadataLocatieLijst_missingAquoIDs,['Grootheid.Code','Grootheid.Omschrijving']])) #TODO: this was commented since it is inconvenient and occurs always.
             cat_aquometadatalijst_containingmeta = cat_aquometadatalijst.loc[bool_aquometadatalijst_containingmeta & bool_metaid_intranslatetable]
         bool_locatielijst_containingmeta = cat_locatielijst['Code'].str.contains('THISSTRINGISNOTINCOLUMN') #first generate all false bool
         bool_locatielijst_containingmeta_idxtrue = cat_AquoMetadataLocatieLijst_metaidx.loc[cat_aquometadatalijst_containingmeta.index,'Locatie_MessageID']

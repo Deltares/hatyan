@@ -265,6 +265,9 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     firstHWcadz_fixed = dt.datetime(2000, 1, 1, 9, 45)
     searchwindow_hr = M2_period_hr/2
     
+    if len(ts_ext) == 0:
+        raise Exception('length of provided ts_ext is zero')
+    
     if not all((ts_ext['HWLWcode']==1) | (ts_ext['HWLWcode']==2) | (ts_ext['HWLWcode']==3) | (ts_ext['HWLWcode']==4) | (ts_ext['HWLWcode']==5)):
         raise Exception('calc_HWLWnumbering() not implemented for HWLWcode other than 1,2,3,4,5 (so no HWLWcode 11 or 22 supported), provide extreme timeseries derived with Timeseries.calc_HWLW(calc_HWLW345=False) or Timeseries.calc_HWLW(calc_HWLW345=True, calc_HWLW345_cleanup1122=True)')
     ts_ext = ts_ext.copy()
