@@ -203,7 +203,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
     return data_pd_HWLW
 
 
-def calc_HWLW12345to21(data_HWLW_12345): #TODO: if first/last timestep is LW, these are not returned (loops from HW to HW)
+def calc_HWLW12345to12(data_HWLW_12345): #TODO: if first/last timestep is LW, these are not returned (loops from HW to HW)
     """
     
 

@@ -6,7 +6,7 @@ Created on Thu Apr  7 17:12:42 2022
 """
 
 import pandas as pd
-from hatyan.timeseries import calc_HWLW12345to21
+from hatyan.timeseries import calc_HWLW12345to12
 
 
 def calc_HWLWtidalindicators(data_pd_HWLW_all):
@@ -27,7 +27,7 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
     if hasattr(data_pd_HWLW_all.index[0],'tz'): #timezone present in index
         data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
     if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2: #aggers are present
-        data_pd_HWLW_12 = calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+        data_pd_HWLW_12 = calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
     else:
         data_pd_HWLW_12 = data_pd_HWLW_all.copy()
     
