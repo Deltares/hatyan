@@ -95,7 +95,7 @@ for stat_addnonext in stat_list_addnonext:
     if not len(addnonext_entry)==1:
         #print(f'station name {stat_addnonext} found {len(addnonext_entry)} times, should be 1.:\n{addnonext_entry}, using last one')
         addnonext_entry = addnonext_entry.iloc[[-1]] #TODO: stations ['A12', 'D15', 'J6', 'Q1'] are now duplicated in cat_locatielijst, using last entry which corresponds to "Platform *" instead of "* Platform", which is what is in the dia. This should be fixed.
-    cat_locatielijst_sel = cat_locatielijst_sel.append(addnonext_entry)
+    cat_locatielijst_sel = pd.concat([cat_locatielijst_sel,addnonext_entry])
 cat_locatielijst_sel['RDx'],cat_locatielijst_sel['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=int(cat_locatielijst_sel['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_sel_codeidx = cat_locatielijst_sel.reset_index(drop=False).set_index('Code',drop=False)
 
@@ -329,7 +329,7 @@ no extremes in requested time frame: ['STELLDBTN','OOSTSDE11']
 Catalog query yielded no results (no ext available like K13APFM): A12
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in stat_list:
+for current_station in ['BROUWHVSGT08']:#stat_list:
     print(f'checking data for {current_station}')
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
@@ -414,8 +414,8 @@ for current_station in stat_list:
         data_summary.loc[current_station,'data_ext'] = True
         ts_meas_ext_pd = pd.read_pickle(file_ext_pkl)
         timediff_ext = ts_meas_ext_pd.index[1:]-ts_meas_ext_pd.index[:-1]
-        if timediff_ext.min() < dt.timedelta(hours=4): #TODO: fix this: for e.g. BROUWHVSGT08: ts_meas_ext_pd.loc[dt.datetime(2015,1,1):dt.datetime(2015,1,2)]
-            raise Exception(f'extreme data contains values that are too close ({timediff_ext.min()}), should be at least 4 hours difference')
+        if timediff_ext.min() < dt.timedelta(hours=4): #TODO: min timediff for e.g. BROUWHVSGT08 is 3 minutes: ts_meas_ext_pd.loc[dt.datetime(2015,1,1):dt.datetime(2015,1,2),['values', 'QC', 'Status']]. This should not happen and with new dataset should be converted to an error
+            print(f'WARNING: extreme data contains values that are too close ({timediff_ext.min()}), should be at least 4 hours difference')
         metaext = pd.read_pickle(file_extmeta_pkl)
         for metakey in list_relevantmetadata:
             data_summary.loc[current_station,f'{metakey}_ext'] = '|'.join(metaext[metakey].unique())
@@ -423,6 +423,7 @@ for current_station in stat_list:
             raise Exception(f'measext data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_ext_pd.index[0].tz}')
         ts_meas_ext_pd.index = ts_meas_ext_pd.index.tz_localize(None)
         ts_meas_ext_dupltimes = ts_meas_ext_pd.index.duplicated()
+        data_summary.loc[current_station,'mintimediff_ext'] = timediff_ext.min()
         data_summary.loc[current_station,'dupltimes_ext'] = ts_meas_ext_dupltimes.sum()
         data_summary.loc[current_station,'tstart_ext'] = ts_meas_ext_pd.index[0]
         data_summary.loc[current_station,'tstop_ext'] = ts_meas_ext_pd.index[-1]
@@ -449,7 +450,7 @@ for current_station in stat_list:
         
         #calculate monthly/yearly mean for meas ext data
         if len(ts_meas_ext_pd['HWLWcode'].unique()) > 2:
-            data_pd_HWLW_12 = hatyan.calc_HWLW12345to12(ts_meas_ext_pd) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater). first/last values are skipped if LW
+            data_pd_HWLW_12 = hatyan.calc_HWLW12345to12(ts_meas_ext_pd) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater). TODO: currently, first/last values are skipped if LW
         else:
             data_pd_HWLW_12 = ts_meas_ext_pd.copy()
         data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
@@ -1169,9 +1170,9 @@ for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
         prediction_np_more = pd.DataFrame(index=prediction_av.index)
         for iT in range(-ntide_1month_av,ntide_1month_av+1): #repeat n times #TODO: pre-scaling of sp/np ts to M2/av length or use original lenghts? (now the ts shift in time with tideperiod_sp/np or it has gaps with M2_period_timedelta)
             pred_sp_rep = pd.DataFrame({'values':prediction_sp_one['values'].values},index=prediction_sp_one.index+iT*M2_period_timedelta)#tideperiod_sp)
-            prediction_sp_more = prediction_sp_more.append(pred_sp_rep)
+            prediction_sp_more = pd.concat([prediction_sp_more,pred_sp_rep])
             pred_np_rep = pd.DataFrame({'values':prediction_np_one['values'].values},index=prediction_np_one.index+iT*M2_period_timedelta)#tideperiod_np)
-            prediction_np_more = prediction_np_more.append(pred_np_rep)
+            prediction_np_more = pd.concat([prediction_np_more,pred_np_rep])
         #interpolate to 1min values and take original 1 month subset (sorting index first is required)
         prediction_sp = prediction_sp_more.sort_index().interpolate(method='index').loc[prediction_av.index]
         prediction_np = prediction_np_more.sort_index().interpolate(method='index').loc[prediction_av.index]
