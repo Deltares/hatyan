@@ -110,7 +110,6 @@ for stat_name in stat_name_list:
     #print(f'{stat_name:30s}: {bool_isstation.sum()}')
 #stat_list = ['BATH','DELFZL','DENHDR','DORDT','EEMSHVN','EURPFM','HANSWT','STELLDBTN','HARLGN','HOEKVHLD','HUIBGT','IJMDBTHVN','KORNWDZBTN','LAUWOG','ROOMPBTN','ROTTDM','SCHEVNGN','STAVNSE','TERNZN','VLISSGN','WESTTSLG'] # lijst AB vertaald naar DONAR namen
 #stat_list = ['HOEKVHLD','HARVT10','VLISSGN']
-#stat_list2 = ['DELFZL','EEMSHVN','NIEUWSTZL','IJMDBTHVN','IJMDSMPL','SCHEVNGN','HOEKVHLD','A12','AWGPFM','D15','EURPFM','F16','J6','K13APFM','K14PFM','L9PFM','LICHTELGRE','Q1','F3PFM','BERGSDSWT','KATSBTN','KRAMMSZWT','MARLGT','ROOMPBNN','ROOMPBTN','STAVNSE','YERSKE','NORTHCMRT','SINTANLHVSGR','BROUWHVSGT02','BROUWHVSGT08','HARVT10','OOSTSDE04','OOSTSDE11','OOSTSDE14','STELLDBTN','VLAKTVDRN','HUIBGT','TERSLNZE','TEXNZE','WIERMGDN','LAUWOG','SCHIERMNOG','DENHDR','DENOVBTN','HARLGN','HOLWD','KORNWDZBTN','NES','OUDSD','VLIELHVN','WESTTSLG','BAALHK','BATH','BRESKVHVN','CADZD','GATVBSLE','HANSWT','OVLVHWT','SCHAARVDND','TERNZN','VLISSGN','WALSODN','WESTKPLE'] #list by AB 1-6-2022, ext often not available for new stations. Not in this list from previous list: PETTZD, DORDT, ROTTDM, MAASMSMPL
 
 M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
 
@@ -329,7 +328,7 @@ no extremes in requested time frame: ['STELLDBTN','OOSTSDE11']
 Catalog query yielded no results (no ext available like K13APFM): A12
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in ['BROUWHVSGT08']:#stat_list:
+for current_station in []:#stat_list:
     print(f'checking data for {current_station}')
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
@@ -529,8 +528,9 @@ for current_station in ['BROUWHVSGT08']:#stat_list:
 
 
 #### SLOTGEMIDDELDEN
-for current_station in []:#stat_list:
+for current_station in []: #stat_list:
     
+    plt.close()
     ####################
     #READ HWLW
     print(f'slotgemiddelden for {current_station}')
@@ -588,43 +588,43 @@ for current_station in []:#stat_list:
     ax1.set_title(f'yearly mean HW/wl/LW {current_station}')
     fig.tight_layout()
     
-    # fit with sm.OLS, method from fbaart. https://github.com/openearth/sealevel/blob/master/notebooks/analysis/gtsm/nodal-tide.ipynb
-    #TODO: maybe use nodal_epoch fit from same ipynb? PLSS because of potential trendbreuk? include SLR trend
-    #TODO: need to include nodal tide or only trend?
     if 0:#os.path.exists(file_ext_pkl):
         mean_list = [wl_mean_peryear,dict_HWLWtidalindicators['HW_mean_peryear'],dict_HWLWtidalindicators['LW_mean_peryear']]
     else:
         mean_list = [wl_mean_peryear]
     for mean_array in mean_list:
         # We'll just use the years. This assumes that annual waterlevels are used that are stored left-padded, the mean waterlevel for 2020 is stored as 2020-1-1. This is not logical, but common practice.
-        times_OLS = mean_array.index
-        years_OLS = times_OLS.year.values
-        if not np.allclose(np.diff(years_OLS), 1):
-            print(f"SKIPPED: all years should be sequential: {years_OLS}")
-            continue
-        #define a simple linear model, with nodal tide and without wind and without sea-level rise
-        X = np.c_[np.cos(2 * np.pi * (years_OLS - 1970) / 18.613), np.sin(2 * np.pi * (years_OLS - 1970) / 18.613),]
-        # X is of shape n year x 3 parameters
-        X = sm.add_constant(X)
-        Y = wl_mean_peryear.values        
-        # define and fit the model, fit the reanalysis nodal cycle through all stations
-        model = sm.OLS(Y, X, missing="drop")
-        fit = model.fit()
-        OLS_wl_yearmean = fit.predict(X)
-        ax1.plot(times_OLS, OLS_wl_yearmean, ".-", label="yearmean OLSpredict stat0")
-            
-        """
-        # define the names
-        names = ["Constant", "Nodal U", "Nodal V"]
-        Constant = fit_meanwl.params[0]
-        A = fit_meanwl.params[1]
-        B = fit_meanwl.params[2]
-        phase = np.arctan2(B, A)
-        amplitude = np.sqrt(A ** 2 + B ** 2)
-        mean = fit_meanwl.params[0]
-        """
+        # below methods are copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
+        # TODO: which model to use?
+        # TODO: also plot trend+acceleration without nodal cycle? (set nodal to 0 in X?)
+        # TODO: if broken_linear (like PLSS), trendbreuk is possible, update break year?
+        # TODO: less weight for years with nans in between (just like tidal analysis), so skip those? Maybe not relevant, but we now see strong difference in early HOEKVHLD years, could also be because of outlier?
+        
+        allyears_DTI = pd.date_range(mean_array.index.min(),mean_array.index.max()+dt.timedelta(days=5*360),freq='AS')
+        mean_array_allyears = pd.Series(mean_array,index=allyears_DTI)
+        df = pd.DataFrame({'year':mean_array_allyears.index.year, 'height':mean_array_allyears.values}) #TODO: make functions accept mean_array instead of df as argument
+        
+        fit, names, X = hatyan.linear_acceleration_model(df)
+        pred_linear_acceleration = fit.predict(X) #default is fit.model.exog as argument, X contains also years for which 'height' is nan
+        fit, names, X = hatyan.quadratic_model(df, with_wind=False)
+        pred_quadratic = fit.predict(X)
+        fit, names, X = hatyan.broken_linear_model(df, with_wind=False)
+        pred_broken_linear = fit.predict(X)
+        fit, names, X = hatyan.linear_model(df, with_wind=False)
+        pred_linear = fit.predict(X)
+        
+        pred_pd = pd.DataFrame({'pred_linear_acceleration':pred_linear_acceleration,
+                                'pred_quadratic':pred_quadratic,
+                                'pred_broken_linear':pred_broken_linear,
+                                'pred_linear':pred_linear},
+                               index=allyears_DTI)
+        ax1.plot(pred_pd, ".-", label=pred_pd.columns)
+        
+        #2021.0 value
+        print(pred_pd.loc[[dt.datetime(2021,1,1)]].T)
+        
+    ax1.legend(loc=2)
     fig.savefig(os.path.join(dir_slotgem,f'yearly_values_{current_station}'))
-    plt.close()
 
 
 

@@ -21,7 +21,7 @@ plt.close('all')
 if 1:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
-    stat_list = ['HOEKVHLD','DENHDR','IJMDBTHVN']
+    stat_list = ['HOEKVHLD','DENHDR','IJMDBTHVN'] #'K13APFM'
     
     times_ext_pred = [dt.datetime(2010,1,1),dt.datetime(2010,2,1)]
     times_ext_somedays = [dt.datetime(2010,1,9),dt.datetime(2010,1,16)]
@@ -38,6 +38,7 @@ if 1:
         bool_end2 = COMP_merged.index.astype(str).str.endswith('2')
         bool_end4 = COMP_merged.index.astype(str).str.endswith('4')
         bool_Mstar = COMP_merged.index.isin([f'M{num}' for num in [1,2,3,4,5,6,7,8,9,12,11,12]])
+        bool_Sstar = COMP_merged.index.isin([f'S{num}' for num in [1,2,3,4,5,6,7,8,9,12,11,12]])
         bool_Msome = COMP_merged.index.isin([f'M{num}' for num in [1,2,3,5,6,7,8,9,12,11,12]])
         
         #ts_prediction_M2_nonodal = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=False, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
@@ -51,7 +52,22 @@ if 1:
         ts_prediction_S2 = hatyan.prediction(comp=COMP_merged.loc[['S2']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
         ts_prediction_S4 = hatyan.prediction(comp=COMP_merged.loc[['S4']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
         ts_prediction_Mstar = hatyan.prediction(comp=COMP_merged.loc[bool_Mstar], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+        ts_prediction_Sstar = hatyan.prediction(comp=COMP_merged.loc[bool_Sstar], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
         ts_prediction_Msome = hatyan.prediction(comp=COMP_merged.loc[bool_Msome], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+        
+        #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
+        fig,(ax1) = plt.subplots(1,1,figsize=(10,4),sharex=True,sharey=True)
+        ax1.set_title(f'maansgetij (M2) en zonsgetij (S2) {current_station}')
+        ax1.plot(ts_prediction_M2,linewidth=1,label='M2')
+        ax1.plot(ts_prediction_S2,linewidth=1,label='S2')
+        ax1.plot(ts_prediction_Mstar,linewidth=1,label='Moon')
+        ax1.plot(ts_prediction_Sstar,linewidth=1,label='Sun')
+        ax1.legend(loc=1)
+        #ax2.legend(loc=1)
+        ax1.set_xlim(times_ext_pred)
+        ax1.set_xlim(times_ext_somedays)
+        fig.tight_layout()
+        fig.savefig(f'moonsun_{current_station}')
         
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
         fig,(ax1,ax2) = plt.subplots(2,1,figsize=(10,6),sharex=True,sharey=True)
