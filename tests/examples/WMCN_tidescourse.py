@@ -18,12 +18,13 @@ plt.close('all')
 
 
 # predictin M2 / S2, spring/neap cycle
-if 0:
+if 1:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
-    stat_list = ['HOEKVHLD','DENHDR','IJMDBTHVN'] #'K13APFM'
+    stat_list = ['HOEKVHLD']#,'DENHDR','IJMDBTHVN'] #'K13APFM'
     
     times_ext_pred = [dt.datetime(2010,1,1),dt.datetime(2010,2,1)]
+    times_ext_twoweeks = [dt.datetime(2010,1,1),dt.datetime(2010,1,16)]
     times_ext_somedays = [dt.datetime(2010,1,9),dt.datetime(2010,1,16)]
     times_step_pred = 10
         
@@ -124,7 +125,41 @@ if 0:
         ax1.set_xlim(times_ext_somedays)
         fig.tight_layout()
         fig.savefig(f'dagelijkseongelijkheid_{current_station}')
-
+        
+        
+        hatyan.close('all')
+        fig,(ax1) = plt.subplots(1,1,figsize=(10,6),sharex=True,sharey=True)
+        ax1.set_title(f'fullset vs M2 {current_station}')
+        ax1.plot(ts_prediction,linewidth=1,label='full set')
+        ax1.plot(ts_prediction_M2,linewidth=1,label='M2')
+        ax1.legend(loc=1)
+        ax1.grid()
+        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_ylim(-1.1,1.6)
+        fig.tight_layout()
+        fig.savefig(f'fullset_vs_M2_{current_station}')
+        
+        fig,(ax1) = plt.subplots(1,1,figsize=(10,6),sharex=True,sharey=True)
+        ax1.set_title(f'fullset vs M2+S2 {current_station}')
+        ax1.plot(ts_prediction,linewidth=1,label='full set')
+        ax1.plot(ts_prediction_M2+ts_prediction_S2,linewidth=1,label='M2+S2')
+        ax1.legend(loc=1)
+        ax1.grid()
+        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_ylim(-1.1,1.6)
+        fig.tight_layout()
+        fig.savefig(f'fullset_vs_M2S2_{current_station}')
+        
+        fig,(ax1) = plt.subplots(1,1,figsize=(10,6),sharex=True,sharey=True)
+        ax1.set_title(f'fullset vs M2+S2+M4 {current_station}')
+        ax1.plot(ts_prediction,linewidth=1,label='full set')
+        ax1.plot(ts_prediction_M2+ts_prediction_S2+ts_prediction_M4,linewidth=1,label='M2+S2+M4')
+        ax1.legend(loc=1)
+        ax1.grid()
+        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_ylim(-1.1,1.6)
+        fig.tight_layout()
+        fig.savefig(f'fullset_vs_M2S2M4_{current_station}')
 
 
 ########################
@@ -174,7 +209,7 @@ if 0:
 
 ########################
 # analysis form long meas, tried to show Nodal cycle >> failed
-if 1:
+if 0:
     data_pkl = pd.read_pickle(r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101\DELFZL_measwl.pkl')
     ts_meas = data_pkl[['values']]
     ts_meas.index = ts_meas.index.tz_localize(None)
