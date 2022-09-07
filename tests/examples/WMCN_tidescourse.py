@@ -44,6 +44,7 @@ if 1:
         
         #ts_prediction_M2_nonodal = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=False, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
         ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+        ts_prediction_20 = hatyan.prediction(comp=COMP_merged.loc[['M2','S2','M4','N2','O1','MS4','A0','SA','MU2','K1','2MN2','MN4','K2','NU2','M6','Q1','2MS6','MK4','P1','3MS8']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
         ts_prediction_M2 = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
         ts_prediction_M4 = hatyan.prediction(comp=COMP_merged.loc[['M4']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
         ts_prediction_end1 = hatyan.prediction(comp=COMP_merged.loc[bool_end1], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
@@ -85,33 +86,6 @@ if 1:
         
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
         fig,(ax1,ax2) = plt.subplots(2,1,figsize=(10,6),sharex=True,sharey=True)
-        ax1.set_title(f'maansgetij (M*) viermaaldaags getij (*4) {current_station}')
-        #ax1.plot(ts_prediction_M2,linewidth=1,label='M2')
-        ax1.plot(ts_prediction_M2,linewidth=1,label='M*')
-        ax1.plot(ts_prediction_Mstar,linewidth=1,label='M*')
-        #ax1.plot(ts_prediction_end2,linewidth=1,label='*2')
-        ax1.plot(ts_prediction_end4,linewidth=1,label='*4')
-        #ax1.plot(ts_prediction_M4,linewidth=1,label='M4')
-        ax2.set_title(f'combinatie (M*+*4) {current_station}')
-        #ax2.plot(ts_prediction_end2+ts_prediction_end4,linewidth=1,label='*2+*4')
-        ax2.plot(ts_prediction_M2+ts_prediction_end4,linewidth=1,label='M2+*4')
-        ax2.plot(ts_prediction_M2+ts_prediction_M4+ts_prediction_S4,linewidth=1,label='M2+M4+S4')
-        #ax2.plot(ts_prediction_Mstar+ts_prediction_end4,linewidth=1,label='M*+*4 (M4 duplicated)')
-        ax2.plot(ts_prediction_Msome+ts_prediction_end4,linewidth=1,label='Msome+*4')
-        #ax2.plot(ts_prediction_M2+ts_prediction_end4,linewidth=1,label='M2+*4')
-        #ax2.plot(ts_prediction_M2+ts_prediction_M4+ts_prediction_S4,linewidth=1,label='M2+M4+S4')
-        #ax2.plot(ts_prediction,linewidth=1,label='full set')
-        #ax2.plot(ts_prediction_M2+ts_prediction_M4,linewidth=1,label='M2+M4')
-        ax1.legend(loc=1)
-        ax1.grid()
-        ax2.legend(loc=1)
-        ax2.grid()
-        ax1.set_xlim(times_ext_somedays)
-        fig.tight_layout()
-        fig.savefig(f'fourdaily_{current_station}')
-        
-        #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
-        fig,(ax1,ax2) = plt.subplots(2,1,figsize=(10,6),sharex=True,sharey=True)
         ax1.set_title(f'samengesteld (M2+S2) eenmaaldaags getij (*1) {current_station}')
         #ax1.plot(ts_prediction_M2_nonodal,linewidth=1,label='M2_nonodal')
         ax1.plot(ts_prediction_M2+ts_prediction_S2,linewidth=1,label='M2+S2')
@@ -127,7 +101,6 @@ if 1:
         fig.savefig(f'dagelijkseongelijkheid_{current_station}')
         
         
-        hatyan.close('all')
         fig,(ax1) = plt.subplots(1,1,figsize=(10,6),sharex=True,sharey=True)
         ax1.set_title(f'fullset vs M2 {current_station}')
         ax1.plot(ts_prediction,linewidth=1,label='full set')
@@ -160,6 +133,17 @@ if 1:
         ax1.set_ylim(-1.1,1.6)
         fig.tight_layout()
         fig.savefig(f'fullset_vs_M2S2M4_{current_station}')
+        
+        fig,(ax1) = plt.subplots(1,1,figsize=(10,6),sharex=True,sharey=True)
+        ax1.set_title(f'fullset vs M2+S2+M4 {current_station}')
+        ax1.plot(ts_prediction,linewidth=1,label='full set')
+        ax1.plot(ts_prediction_20,linewidth=1,label='20 components')
+        ax1.legend(loc=1)
+        ax1.grid()
+        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_ylim(-1.1,1.6)
+        fig.tight_layout()
+        fig.savefig(f'fullset_vs_20comp_{current_station}')
 
 
 ########################
