@@ -546,12 +546,16 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
 
 
 def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwargs):
+    raise Exception('ERROR: prediction_peryear() is deprecated, use prediction_perperiod() instead')
+
+
+def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **kwargs):
     """
-    Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.
+    Wrapper around prediction(), to use component set of multiple years/months to generate multi-year/month timeseries.
 
     Parameters
     ----------
-    comp_allyears : TYPE
+    comp_allperiods : TYPE
         DESCRIPTION.
     timestep_min : TYPE
         DESCRIPTION.
@@ -570,13 +574,20 @@ def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwar
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
-    list_years = comp_allyears.columns.levels[1]
-    ts_prediction_peryear = pd.DataFrame()
-    for year in list_years:
-        print('generating prediction %d of sequence %s'%(year,list(list_years)))
-        comp_oneyear = comp_allyears.loc[:,(slice(None),year)]
+    ts_periods_dt = comp_allperiods.columns.levels[1]
+    ts_periods_strlist = [str(x) for x in ts_periods_dt]
+    
+    ts_prediction_perperiod = pd.DataFrame()
+    for period_dt in ts_periods_dt:
+        print(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
+        comp_oneyear = comp_allperiods.loc[:,(slice(None),period_dt)]
         comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
-        times_ext = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)-dt.timedelta(minutes=timestep_min)]
-        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
-        ts_prediction_peryear = ts_prediction_peryear.append(ts_prediction_oneyear)
-    return ts_prediction_peryear
+        if period_dt.freqstr in ['A-DEC']: #year frequency
+            times_ext = [dt.datetime(period_dt.year,1,1),dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+        elif period_dt.freqstr in ['M']: #month frequency
+            times_ext = [period_dt.to_timestamp().to_pydatetime(),period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)]
+        else:
+            raise Exception(f'unknown freqstr: {period_dt.freqstr}')
+        ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
+        ts_prediction_perperiod = pd.concat([ts_prediction_perperiod,ts_prediction_oneperiod])
+    return ts_prediction_perperiod

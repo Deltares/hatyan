@@ -29,8 +29,8 @@ Installation
 
 Install hatyan OPTION 1: Install from pip/github in an existing or new environment:
 
-- optional: download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section
-- open command window (or anaconda prompt)
+- optional: download and install Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section
+- open anaconda prompt
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
 - ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version. Optionally add ``--upgrade``)

@@ -18,7 +18,7 @@ plt.close('all')
 
 
 # predictin M2 / S2, spring/neap cycle
-if 1:
+if 0:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
     stat_list = ['HOEKVHLD','DENHDR','IJMDBTHVN'] #'K13APFM'
@@ -174,17 +174,33 @@ if 0:
 
 ########################
 # analysis form long meas, tried to show Nodal cycle >> failed
-if 0:
+if 1:
     data_pkl = pd.read_pickle(r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101\DELFZL_measwl.pkl')
     ts_meas = data_pkl[['values']]
     ts_meas.index = ts_meas.index.tz_localize(None)
-    ts_meas = hatyan.crop_timeseries(ts_meas,times_ext=[dt.datetime(2000,1,1),dt.datetime(2019,12,31,23,50)])#,onlyfull=False)
+    ts_meas = hatyan.crop_timeseries(ts_meas,times_ext=[dt.datetime(2001,1,1),dt.datetime(2019,12,31,23,50)])#,onlyfull=False)
     
-    A0_allyears = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).mean()
+    comp_avg, comp_allperiods = hatyan.get_components_from_ts(ts_meas,const_list='year',analysis_perperiod='Y',return_allperiods=True)
+    #comp_allyears = comp_allyears.drop('A0')
+    ts_pred_py = hatyan.prediction_perperiod(comp_allperiods, timestep_min=10)
+    
+    A0_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).mean()
+    A0_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).mean()
+    min_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).min()
+    min_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).min()
+    max_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).max()
+    max_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).max()
     
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas, ts_validation=None)
-    ax2.plot(A0_allyears)
-    ax2.set_ylim(A0_allyears.min(),A0_allyears.max())
+    ax1.plot(ts_pred_py)
+    #ax2.plot(A0_allyears_meas,label='A0_allyears_meas')
+    ax2.plot(A0_allyears_pred,label='A0_allyears_pred')
+    #ax2.plot(min_allyears_meas,label='min_allyears_meas')
+    #ax2.plot(min_allyears_pred,label='min_allyears_pred')
+    #ax2.plot(max_allyears_meas,label='max_allyears_meas')
+    #ax2.plot(max_allyears_pred,label='max_allyears_pred')
+    ax2.set_ylim(A0_allyears_pred.min()-0.02,A0_allyears_pred.max()+0.02)
+    ax2.legend()
 
 
 
