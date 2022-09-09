@@ -9,7 +9,9 @@ voor alle stations indien mogelijk:
 """
 
 import os, sys
+import numpy as np
 import datetime as dt
+import matplotlib.pyplot as plt
 import hatyan
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,7 +20,7 @@ plt.close('all')
 
 
 # predictin M2 / S2, spring/neap cycle
-if 1:
+if 0:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
     stat_list = ['HOEKVHLD']#,'DENHDR','IJMDBTHVN'] #'K13APFM'
@@ -27,7 +29,7 @@ if 1:
     times_ext_twoweeks = [dt.datetime(2010,1,1),dt.datetime(2010,1,16)]
     times_ext_somedays = [dt.datetime(2010,1,9),dt.datetime(2010,1,16)]
     times_step_pred = 10
-        
+    
     for current_station in stat_list:
     
         #component groups
@@ -194,32 +196,144 @@ if 0:
 ########################
 # analysis form long meas, tried to show Nodal cycle >> failed
 if 0:
-    data_pkl = pd.read_pickle(r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101\DELFZL_measwl.pkl')
+    current_station = 'HOEKVHLD'
+    file_pkl = os.path.join(r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101',f'{current_station}_measwl.pkl')
+    data_pkl = pd.read_pickle(file_pkl)
     ts_meas = data_pkl[['values']]
     ts_meas.index = ts_meas.index.tz_localize(None)
-    ts_meas = hatyan.crop_timeseries(ts_meas,times_ext=[dt.datetime(2001,1,1),dt.datetime(2019,12,31,23,50)])#,onlyfull=False)
-    
-    comp_avg, comp_allperiods = hatyan.get_components_from_ts(ts_meas,const_list='year',analysis_perperiod='Y',return_allperiods=True)
-    #comp_allyears = comp_allyears.drop('A0')
-    ts_pred_py = hatyan.prediction_perperiod(comp_allperiods, timestep_min=10)
-    
+    ts_meas = hatyan.crop_timeseries(ts_meas,times_ext=[dt.datetime(1972,1,1),dt.datetime(2019,12,31,23,50)])#,onlyfull=False)
+    #bool_duplicatetimes = ts_meas.index.duplicated(keep='first')
+    #ts_meas = ts_meas.loc[~bool_duplicatetimes]
+        
     A0_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).mean()
-    A0_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).mean()
     min_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).min()
-    min_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).min()
     max_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).max()
-    max_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).max()
+
+    comp_avg, comp_allperiods = hatyan.get_components_from_ts(ts_meas,const_list='year',analysis_perperiod='Y',return_allperiods=True)
+    ts_pred_py = hatyan.prediction_perperiod(comp_allperiods, timestep_min=20)
+    ts_pred_ext = hatyan.calc_HWLW(ts_pred_py)
+    if 0: #dropp close extremes (why do they occur with 5/10/30min interval??)
+        idx_smalltdiff = np.where((ts_pred_ext.index[1:]-ts_pred_ext.index[:-1])<dt.timedelta(hours=2))[0]
+        ts_pred_ext = ts_pred_ext.drop(ts_pred_ext.index[idx_smalltdiff],axis=0)
+    ts_pred_ext = hatyan.calc_HWLWnumbering(ts_pred_ext, station=current_station)
+    ts_pred_HW = ts_pred_ext.loc[ts_pred_ext['HWLWcode']==1].copy()
+    ts_pred_HW['times'] = ts_pred_HW.index
+    ts_pred_HW = ts_pred_HW.set_index('HWLWno')
+    ts_pred_LW = ts_pred_ext.loc[ts_pred_ext['HWLWcode']==2].copy()
+    ts_pred_LW['times'] = ts_pred_LW.index
+    ts_pred_LW = ts_pred_LW.set_index('HWLWno')
+    ts_pred_range = (ts_pred_HW-ts_pred_LW).loc[ts_pred_HW.index]
+    ts_pred_range['times'] = ts_pred_HW.loc[ts_pred_range.index]['times']
+    ts_pred_range = ts_pred_range.set_index('times')
     
+    A0_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).mean()
+    min_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).min()
+    max_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).max()
+    max_allyears_predrange = ts_pred_range['values'].groupby(by=pd.Grouper(freq='Y')).max()
+    
+
+    fig, (ax2) = plt.subplots()
+    ax2.plot(max_allyears_predrange-A0_allyears_pred,label='A0_allyears_predrange')
+    #ax1.plot(ts_pred_py)
+    ax2.plot(A0_allyears_pred,label='A0_allyears_meas')
+    #ax2.plot(A0_allyears_pred,label='A0_allyears_pred')
+    ax2.plot(min_allyears_pred-A0_allyears_pred,label='min_allyears_meas')
+    #ax2.plot(min_allyears_pred,label='min_allyears_pred')
+    ax2.plot(max_allyears_pred-A0_allyears_pred,label='max_allyears_meas')
+    #ax2.plot(max_allyears_pred,label='max_allyears_pred')
+    ax2.set_ylim(-0.2,0.2)
+    ax2.legend()
+    
+    
+    breakit
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas, ts_validation=None)
-    ax1.plot(ts_pred_py)
+    #ax1.plot(ts_pred_py)
     #ax2.plot(A0_allyears_meas,label='A0_allyears_meas')
-    ax2.plot(A0_allyears_pred,label='A0_allyears_pred')
+    #ax2.plot(A0_allyears_pred,label='A0_allyears_pred')
     #ax2.plot(min_allyears_meas,label='min_allyears_meas')
     #ax2.plot(min_allyears_pred,label='min_allyears_pred')
-    #ax2.plot(max_allyears_meas,label='max_allyears_meas')
+    ax2.plot(max_allyears_meas,label='max_allyears_meas')
     #ax2.plot(max_allyears_pred,label='max_allyears_pred')
-    ax2.set_ylim(A0_allyears_pred.min()-0.02,A0_allyears_pred.max()+0.02)
+    ax2.set_ylim(max_allyears_meas.min()-0.02,max_allyears_meas.max()+0.02)
     ax2.legend()
+
+
+
+
+if 0:
+    import matplotlib.dates as mdates
+    dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
+
+    const_list = hatyan.get_const_list_hatyan('year')
+    selected_stations = ['CADZD','BATH','VLISSGN','HOEKVHLD','IJMDBTHVN','DENHDR','TERSLNZE','SCHIERMNOG','DELFZL']
+    selected_stations_names = ['Cadzand','Bath','Vlissingen','Hoek van Holland','IJmuiden Buitenhaven','Den Helder','Terschelling','Schiermonnikoog','Delfzijl']
+
+    times_ext = [dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,0)]
+
+    tstart = dt.datetime(2019,1,6,2,30) #nieuwe maan op 6 jan
+    tstart = dt.datetime(2019,1,6,13,1) #midden tussen opkomst en ondergang van de maan, dus maansdoorgang?
+    times_ext_pred = [tstart, tstart+dt.timedelta(hours=1.2*24, minutes=49)]
+    timestep_pred = 1
+    
+    fig, ax1 = plt.subplots(1,1,figsize=(10,5))
+    n_colors = len(selected_stations)
+    colors = plt.cm.jet(np.linspace(0,1,n_colors))
+    for i_stat, current_station in enumerate(selected_stations):
+        comp_frommeasurements_avg_group = hatyan.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
+        ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times_ext=times_ext_pred, timestep_min=timestep_pred)
+        vals_real = ts_prediction['values']
+        times_real = ts_prediction.index
+        ax1.plot(times_real, vals_real, label=current_station, color=colors[i_stat])
+    
+    ax1.grid()
+    ax1.legend(bbox_to_anchor=(1,1))
+    ax1.set_xlim(tstart,times_ext_pred[1])
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    fig.tight_layout()
+    fig.savefig('tides_dutchcoast.png', dpi=250)
+
+
+
+
+if 0:
+    import xarray as xr
+    data_nc_TS = xr.open_dataset(r'p:\1204257-dcsmzuno\1980-2017\DCSM-FM\A03_FES2014_GTSM_H1H2\DFM_OUTPUT_DCSM-FM_0_5nm\DCSM-FM_0_5nm_0000_his.nc')
+    data_nc_tide = xr.open_dataset(r'p:\1204257-dcsmzuno\1980-2017\DCSM-FM\A03_FES2014_GTSM_H1H2_astro\DFM_OUTPUT_DCSM-FM_0_5nm\DCSM-FM_0_5nm_0000_his.nc')
+    
+    station_name_pd = pd.Series(data_nc_TS.station_name.astype(str)).str.strip()
+    bool_HvH = station_name_pd.str.contains('hoekvh',case=False)
+    idx_HvH = station_name_pd.loc[bool_HvH].index[0]
+    
+    time_slice = slice(dt.datetime(2013,1,1),dt.datetime(2013,12,31))
+    
+    wl_HvH_TS = data_nc_TS.waterlevel.sel(time=time_slice).isel(stations=idx_HvH)
+    wl_HvH_tide = data_nc_tide.waterlevel.sel(time=time_slice).isel(stations=idx_HvH)
+    
+    ts_TS = pd.DataFrame({'values':wl_HvH_TS.to_numpy()},index=wl_HvH_TS.time)
+    comp_set = hatyan.analysis(ts_TS,const_list='year',xfac=True)
+    ts_pred = hatyan.prediction(comp_set,times_pred_all=ts_TS.index)
+    
+    fig,ax = plt.subplots()
+    ax.plot(wl_HvH_TS.time, wl_HvH_TS, linewidth=1, label='model TS (tide+surge)')
+    ax.plot(wl_HvH_tide.time, wl_HvH_tide, linewidth=1, label='model tide-only')
+    ax.plot(ts_pred, linewidth=1, label='astro from TS')
+    ax.plot(wl_HvH_tide.time, wl_HvH_TS-wl_HvH_tide, linewidth=1, label='model TS-tide')
+    ax.plot(ts_TS-ts_pred, linewidth=1, label='TS - astro')
+    
+    #surgediff = wl_HvH_TS.data-wl_HvH_tide.data-(ts_TS['values'].values-ts_pred['values'].values)
+    #ax.plot(wl_HvH_tide.time, surgediff, label='surgediff')
+    ax.plot(wl_HvH_tide.time[[0,-1]],[0,0],'k', linewidth=0.7)
+    ax.grid()
+    ax.legend()
+    ax.set_ylim(-1.2,2.9)
+    ax.set_xlim(dt.datetime(2013,12,4),dt.datetime(2013,12,10))
+    fig.tight_layout()
+    fig.savefig('TS_model_astro.png', dpi=250)
+
+
+
+
+
 
 
 
