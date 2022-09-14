@@ -23,6 +23,7 @@ import statsmodels.api as sm # `conda install -c conda-forge statsmodels -y`
 #TODO: add tidal indicators (LAT etc) >> done at slotgemiddelden part
 #TODO: add tidal coefficient: The tidal coefficient is the size of the tide in relation to its mean. It usually varies between 20 and 120. The higher the tidal coefficient, the larger the tidal range – i.e. the difference in water height between high and low tide. This means that the sea level rises and falls back a long way. The mean value is 70. We talk of strong tides – called spring tides – from coefficient 95.  Conversely, weak tides are called neap tides. https://escales.ponant.com/en/high-low-tide/ en https://www.manche-toerisme.com/springtij
 get_catalog = False
+dataTKdia = True
 
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
@@ -48,6 +49,10 @@ if reproduce_2011_olddata:
 else:
     dir_meas = os.path.join(dir_base,'measurements_wl_20000101_20220101')
     dir_meas_alldata = os.path.join(dir_base,'measurements_wl_18700101_20220101')
+if dataTKdia:
+    dir_meas = os.path.join(dir_base,'measurements_wl_18700101_20220101_dataTKdia')
+    dir_meas_alldata = os.path.join(dir_base,'measurements_wl_18700101_20220101_dataTKdia')
+    
 dir_meas_DDL = os.path.join(dir_base,f"measurements_wl_{tstart_dt_DDL.strftime('%Y%m%d')}_{tstop_dt_DDL.strftime('%Y%m%d')}")
 if not os.path.exists(dir_meas_DDL):
     os.mkdir(dir_meas_DDL)
@@ -64,7 +69,7 @@ dir_overschrijding = os.path.join(dir_base,'out_overschrijding')
 if not os.path.exists(dir_overschrijding):
     os.mkdir(dir_overschrijding)
 
-fig_alltimes_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:]]
+fig_alltimes_ext = [dt.datetime.strptime(x,'%Y%m%d') for x in os.path.basename(dir_meas_alldata).split('_')[2:4]]
 
 if get_catalog:
     print('retrieving DDL catalog')
@@ -111,6 +116,9 @@ for stat_name in stat_name_list:
     #print(f'{stat_name:30s}: {bool_isstation.sum()}')
 #stat_list = ['BATH','DELFZL','DENHDR','DORDT','EEMSHVN','EURPFM','HANSWT','STELLDBTN','HARLGN','HOEKVHLD','HUIBGT','IJMDBTHVN','KORNWDZBTN','LAUWOG','ROOMPBTN','ROTTDM','SCHEVNGN','STAVNSE','TERNZN','VLISSGN','WESTTSLG'] # lijst AB vertaald naar DONAR namen
 #stat_list = ['HOEKVHLD','HARVT10','VLISSGN']
+
+if dataTKdia:
+    stat_list = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE']
 
 M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
 
@@ -329,19 +337,20 @@ no extremes in requested time frame: ['STELLDBTN','OOSTSDE11']
 Catalog query yielded no results (no ext available like K13APFM): A12
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in []:#stat_list:
+for current_station in stat_list:
     print(f'checking data for {current_station}')
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
     
     station_dict = dict(cat_locatielijst_sel_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in hatyan.getonlinedata.py: get_DDL_stationmetasubset() does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
-    cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'})
-    for metakey in list_relevantDDLdata:
-        data_summary.loc[current_station,f'DDL_{metakey}_wl'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
-    if not current_station in ['K13APFM','MAASMSMPL']:# no ext available for these stations
-        cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+    if not dataTKdia:
+        cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'})
         for metakey in list_relevantDDLdata:
-            data_summary.loc[current_station,f'DDL_{metakey}_ext'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
+            data_summary.loc[current_station,f'DDL_{metakey}_wl'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
+        if not current_station in ['K13APFM','MAASMSMPL']:# no ext available for these stations
+            cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+            for metakey in list_relevantDDLdata:
+                data_summary.loc[current_station,f'DDL_{metakey}_ext'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
     
     #add coordinates to data_summary
     data_summary.loc[current_station,['RDx','RDy']] = cat_locatielijst_sel_codeidx.loc[current_station,['RDx','RDy']]
@@ -357,9 +366,10 @@ for current_station in []:#stat_list:
         continue
     data_summary.loc[current_station,'data_wl'] = True
     ts_meas_pd = pd.read_pickle(file_wl_pkl)
-    metawl = pd.read_pickle(file_wlmeta_pkl)
-    for metakey in list_relevantmetadata:
-        data_summary.loc[current_station,f'{metakey}_wl'] = '|'.join(metawl[metakey].unique())
+    if not dataTKdia:
+        metawl = pd.read_pickle(file_wlmeta_pkl)
+        for metakey in list_relevantmetadata:
+            data_summary.loc[current_station,f'{metakey}_wl'] = '|'.join(metawl[metakey].unique())
     ts_meas_pd = ts_meas_pd[['values','QC']] # reduces the memory consumption significantly
     if str(ts_meas_pd.index[0].tz) != 'Etc/GMT-1': #this means UTC+1
         raise Exception(f'measwl data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_pd.index[0].tz}')
@@ -416,11 +426,12 @@ for current_station in []:#stat_list:
         timediff_ext = ts_meas_ext_pd.index[1:]-ts_meas_ext_pd.index[:-1]
         if timediff_ext.min() < dt.timedelta(hours=4): #TODO: min timediff for e.g. BROUWHVSGT08 is 3 minutes: ts_meas_ext_pd.loc[dt.datetime(2015,1,1):dt.datetime(2015,1,2),['values', 'QC', 'Status']]. This should not happen and with new dataset should be converted to an error
             print(f'WARNING: extreme data contains values that are too close ({timediff_ext.min()}), should be at least 4 hours difference')
-        metaext = pd.read_pickle(file_extmeta_pkl)
-        for metakey in list_relevantmetadata:
-            data_summary.loc[current_station,f'{metakey}_ext'] = '|'.join(metaext[metakey].unique())
-        if str(ts_meas_ext_pd.index[0].tz) != 'Etc/GMT-1': #this means UTC+1
-            raise Exception(f'measext data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_ext_pd.index[0].tz}')
+        if not dataTKdia:
+            metaext = pd.read_pickle(file_extmeta_pkl)
+            for metakey in list_relevantmetadata:
+                data_summary.loc[current_station,f'{metakey}_ext'] = '|'.join(metaext[metakey].unique())
+            if str(ts_meas_ext_pd.index[0].tz) != 'Etc/GMT-1': #this means UTC+1
+                raise Exception(f'measext data for {current_station} is not in expected timezone (Etc/GMT-1): {ts_meas_ext_pd.index[0].tz}')
         ts_meas_ext_pd.index = ts_meas_ext_pd.index.tz_localize(None)
         ts_meas_ext_dupltimes = ts_meas_ext_pd.index.duplicated()
         data_summary.loc[current_station,'mintimediff_ext'] = timediff_ext.min()
@@ -493,7 +504,7 @@ for current_station in []:#stat_list:
     
     #plotting
     file_wl_png = os.path.join(dir_meas_alldata,f'ts_{current_station}.png')
-    if os.path.exists(file_wl_png):
+    if 0:#os.path.exists(file_wl_png):
         continue #skip the plotting if there is already a png available
     if os.path.exists(file_ext_pkl):
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd, ts_ext=ts_meas_ext_pd)

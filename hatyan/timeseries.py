@@ -1420,7 +1420,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
         print_cols = ['block_starts', 'station', 'grootheid', 'groepering', 'tstart', 'tstop']
         print('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))
-        str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=Timeseries.get_diablocks(filename)"'
+        str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=hatyan.get_diablocks(filename)"'
         
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids=='allstation':
@@ -1463,10 +1463,10 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
                     status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
-            data_pd_allblocks = data_pd_allblocks.append(data_pd_oneblock, ignore_index=False)
+            data_pd_allblocks = pd.concat([data_pd_allblocks,data_pd_oneblock], ignore_index=False)
         
         #append to allyears dataset
-        data_pd_all = data_pd_all.append(data_pd_allblocks, ignore_index=False)
+        data_pd_all = pd.concat([data_pd_all,data_pd_allblocks], ignore_index=False)
 
     #check overlapping timesteps, sort values on time and check_ts
     if len(data_pd_all) != len(data_pd_all.index.unique()):
