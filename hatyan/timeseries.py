@@ -77,12 +77,14 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
         raise Exception('ERROR: timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()') #otherwise "ValueError: 'list' argument must have no negative elements"
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
-    M2_period_min = get_schureman_freqs(['M2']).loc['M2','period [hr]']*60
-    ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
-    if ts_steps_min_most > 1:
-        print('WARNING: the timestep of the series for which to calculate extremes/HWLW is %i minutes, but 1 minute is recommended'%(ts_steps_min_most))
-    M2period_numsteps = M2_period_min/ts_steps_min_most
-    
+    M2_period_sec = get_schureman_freqs(['M2']).loc['M2','period [hr]']*3600
+    ts_steps_sec_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()).astype(int).values))
+    if ts_steps_sec_most > 60:
+        print(f'WARNING: the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
+    elif ts_steps_sec_most == 0:
+        raise Exception('ERROR: ts_steps_sec_most=0, check rounding issue')
+    M2period_numsteps = M2_period_sec/ts_steps_sec_most
+
     data_pd_HWLW = pd.DataFrame({'times':ts.index,'values':ts['values'],'HWLWcode':np.nan}).reset_index(drop=True)
     #create empty HWLW dataframe
     if data_pd_HWLW['values'].isnull().any():

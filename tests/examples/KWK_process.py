@@ -31,7 +31,7 @@ tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
 tstart_dt = dt.datetime(2001,1,1)
 tstop_dt = dt.datetime(2011,1,1)
 reproduce_2011_olddata = False #TODO: difference in gemgetijkromme (summary figure) for HARVT10 2011.0 (spnp/sp/np lines), probably because of duplicate values in measwl DDL
-NAP2005correction = True
+NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
     if reproduce_2011_olddata:
@@ -91,9 +91,9 @@ for file_dia_ABTC in list_dia_ABTC:
     stat_code = diablocks.loc[0,'station']
     stat_list_ABTC.append(stat_code)
 print(stat_list_ABTC)
-"""
 stat_list_ABTC = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE']
-stat_list_addnonext=['K13APFM','MAASMSMPL'] + stat_list_ABTC #two stations + missing from dialist ABCT (OVLVHWT is left out since HANSWT is there)
+"""
+stat_list_addnonext=['K13APFM','MAASMSMPL'] #+ stat_list_ABTC #two stations + missing from dialist ABCT (OVLVHWT is left out since HANSWT is there)
 for stat_addnonext in stat_list_addnonext:
     if stat_addnonext in cat_locatielijst_sel['Code'].tolist():
         continue
@@ -102,11 +102,12 @@ for stat_addnonext in stat_list_addnonext:
         #print(f'station name {stat_addnonext} found {len(addnonext_entry)} times, should be 1.:\n{addnonext_entry}, using last one')
         addnonext_entry = addnonext_entry.iloc[[-1]] #TODO: stations ['A12', 'D15', 'J6', 'Q1'] are now duplicated in cat_locatielijst, using last entry which corresponds to "Platform *" instead of "* Platform", which is what is in the dia. This should be fixed.
     cat_locatielijst_sel = pd.concat([cat_locatielijst_sel,addnonext_entry])
+
 cat_locatielijst_sel['RDx'],cat_locatielijst_sel['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=int(cat_locatielijst_sel['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_sel_codeidx = cat_locatielijst_sel.reset_index(drop=False).set_index('Code',drop=False)
 
 #stat_name_list = ['BATH','DELFZIJL','DEN HELDER','DORDRECHT','EEMSHAVEN','EURO PLATFORM','HANSWEERT','HARINGVLIETSLUIZEN','HARLINGEN','HOEK VAN HOLLAND','HUIBERTGAT','IJMUIDEN','KORNWERDERZAND','LAUWERSOOG','ROOMPOT BUITEN','ROTTERDAM','SCHEVENINGEN','STAVENISSE','TERNEUZEN','VLISSINGEN','WEST-TERSCHELLING'] # lijst AB
-stat_name_list = ['Terneuzen','Bath','HANSWT','Vlissingen','Bergse Diepsluis west','Krammersluizen west','Stavenisse','Roompot binnen','Cadzand','Westkapelle','Roompot buiten','Brouwershavensche Gat 08','Haringvliet 10','Hoek van Holland','Scheveningen','IJmuiden buitenhaven','Petten zuid','Den Helder','Texel Noordzee','Terschelling Noordzee','Wierumergronden','Huibertgat','Oudeschild','Vlieland haven','West-Terschelling','Nes','Schiermonnikoog','Den Oever buiten','Kornwerderzand buiten','Harlingen','Lauwersoog','Eemshaven','Delfzijl','Nieuwe Statenzijl','Lichteiland Goeree','Euro platform','K13a platform'] + ['Dordrecht','Stellendam Buiten','Rotterdam'] + ['Maasmond','Oosterschelde 11'] + stat_list_addnonext[2:] #"KW kust en GR Dillingh 2013" en "KW getijgebied RWS 2011.0", aangevuld met 3 stations AB, aangevuld met BOI wensen, aangevuld met dialijst ABCT
+stat_name_list = ['Terneuzen','Bath','HANSWT','Vlissingen','Bergse Diepsluis west','Krammersluizen west','Stavenisse','Roompot binnen','Cadzand','Westkapelle','Roompot buiten','Brouwershavensche Gat 08','Haringvliet 10','Hoek van Holland','Scheveningen','IJmuiden buitenhaven','Petten zuid','Den Helder','Texel Noordzee','Terschelling Noordzee','Wierumergronden','Huibertgat','Oudeschild','Vlieland haven','West-Terschelling','Nes','Schiermonnikoog','Den Oever buiten','Kornwerderzand buiten','Harlingen','Lauwersoog','Eemshaven','Delfzijl','Nieuwe Statenzijl','Lichteiland Goeree','Euro platform','K13a platform'] + ['Dordrecht','Stellendam Buiten','Rotterdam'] + ['Maasmond','Oosterschelde 11'] #+ stat_list_addnonext[2:] #"KW kust en GR Dillingh 2013" en "KW getijgebied RWS 2011.0", aangevuld met 3 stations AB, aangevuld met BOI wensen, aangevuld met dialijst ABCT
 stat_list = []
 for stat_name in stat_name_list:
     bool_isstation = cat_locatielijst_sel_codeidx['Naam'].str.contains(stat_name,case=False) | cat_locatielijst_sel_codeidx['Code'].str.contains(stat_name,case=False)
@@ -118,8 +119,9 @@ for stat_name in stat_name_list:
 #stat_list = ['HOEKVHLD','HARVT10','VLISSGN']
 
 if dataTKdia:
-    stat_list = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE']
-
+    stat_list = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE'] #all stations from TK
+    stat_list = ['BAALHK','BATH','BERGSDSWT','BRESKVHVN','CADZD','DELFZL','DENHDR','DENOVBTN','EEMSHVN','GATVBSLE','HANSWT','HARLGN','HARVT10','HOEKVHLD','IJMDBTHVN','KATSBTN','KORNWDZBTN','KRAMMSZWT','LAUWOG','OUDSD','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','STAVNSE','STELLDBTN','TERNZN','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN'] #all files with valid data for 2010 to 2021
+    stat_list = stat_list[stat_list.index('ROOMPBNN'):]
 M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
 
 
@@ -337,7 +339,7 @@ no extremes in requested time frame: ['STELLDBTN','OOSTSDE11']
 Catalog query yielded no results (no ext available like K13APFM): A12
 """
 data_summary = pd.DataFrame(index=stat_list).sort_index()
-for current_station in stat_list:
+for current_station in []:#stat_list:
     print(f'checking data for {current_station}')
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
@@ -540,7 +542,7 @@ for current_station in stat_list:
 
 
 #### SLOTGEMIDDELDEN
-for current_station in []: #stat_list:
+for current_station in []:#stat_list:
     
     plt.close()
     ####################
@@ -653,7 +655,7 @@ TVL;1;4;topagger
 TVL;1;5;laagwater 2
 """
 culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # link with moonculmination (or M2) two days before, 24h rotates entire graph. # furthermore: 2u20min correction, this shifts the x-axis: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET)
-data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime,tLast=tstop_dt)#,tzone='UTC+01:00')
+data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=24),tLast=tstop_dt)#,tzone='UTC+01:00')
 if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_pd_HWLW['culm_hr']=range(12) hourvalues should be in UTC since that relates to the relation dateline/sun
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
@@ -708,6 +710,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
         timediff_withculm = (HWLWrow['times']-(data_pd_moonculm['datetime']+culm_addtime)).abs()
         if timediff_withculm.min() > dt.timedelta(hours=8):
             raise Exception(f'ERROR: no culmination found within 8 hours of high water at {HWLWrow["times"]} +culm_addtime(={culm_addtime.total_seconds()/3600:.1f}hr), range culm: \n{data_pd_moonculm["datetime"].iloc[[0,-1]]}')#%s)'%(culm_time, culm_addtime.total_seconds()/3600, data_pd_HWLW.loc[[data_pd_HWLW.index.min(),data_pd_HWLW.index.max()],'times']))
+            print(data_pd_moonculm["datetime"].head(30))
         data_pd_HWLW.loc[iHWLW:iHWLW+1,'culm_time'] = data_pd_moonculm.loc[timediff_withculm.idxmin(),'datetime']
         #compute duur daling for this HW
         if iHWLW<data_pd_HWLW.index[-1]:
@@ -803,7 +806,6 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
 
 
 
-
 ##### gemiddelde getijkrommen
 # slotgemiddelden uit:
 # =============================================================================
@@ -813,7 +815,7 @@ slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'haveng
 #TODO: evt schaling naar 12u25m om repetitief signaal te maken (voor boi), dan 1 plotperiode selecteren en weer terugschalen. Voorafgaand aan dit alles de ene kromme schalen met havengetallen? (Ext berekening is ingewikkelder van 1 kromme dan repetitief signaal)
 #TODO: gemgetijkromme is maar 1x of 1.5x nodig voor figuur, dus verplaatsen naar 1 datum en ext afleiden (buffer_hr=0 keyword gebruiken). Voor boi av/sp/np eerst schalen naar 12h25m en interpoleren, dan repeteren, dan is alles precies even lang en makkelijk te repeteren.
 fig_sum,ax_sum = plt.subplots(figsize=(14,7))
-for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     """
     uit: gemiddelde getijkrommen 1991.0
         
@@ -1012,7 +1014,10 @@ for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
                                             xTxmat_condition_max=15, #TODO: for some reason this is necessary for HOEKVHLD 2006 (default=10), also strong difference in springneap ts when using smaller component set, what is happening?
                                             return_allyears=True)
     comp_frommeasurements_avg, comp_frommeasurements_allyears = hatyan.get_components_from_ts(ts_meas_pd, const_list=const_list, hatyan_settings=hatyan_settings)
-    
+    comp_years = comp_frommeasurements_allyears['A'].columns
+    expected_years = tstop_dt.year-tstart_dt.year
+    if len(comp_years) < expected_years:
+        raise Exception('ERROR: analysis result contains not all years')
     # =============================================================================
     # gemiddelde getijkromme
     # =============================================================================
@@ -1029,12 +1034,11 @@ for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data
     
     comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
-    times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq='20 S') # TODO hatyan: when using <60sec, hatyan.calc_HWLW() goes wrong, probably since there is a minute-rounding thing somewhere, fix this
+    freq_sec = 20
+    times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq=f'{freq_sec} S')
     prediction_av = hatyan.prediction(comp_av, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
     prediction_av_ext = hatyan.calc_HWLW(ts=prediction_av)#,calc_HWLWlocal=False)
-    continue
-
-
+    
     # karateristieken uit ruwe gemiddelde getijkromme >> schalingsratio
     idHW_av = prediction_av_ext.index[prediction_av_ext.HWLWcode==1][:-1]
     # selecteer eerste laagwater
@@ -1042,6 +1046,7 @@ for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     
     def get_tide_meanext_valstimes(ts_ext):
         #TODO: vorm van iedere getijslag is in principe identiek (maar niet als deze is afgerond op 1min), dus onderstaande is eigenlijk niet nodig hoewel er nu het risico is op 12:24 of 12:26 getijduur >> 10sec voorspelling maken (maar kan nu niet). Afronding prediction_av op 1min zorgt voor timeUp/timeDown die meestal 0 maar soms 60 seconden van elkaar verschillen. Geldt ook voor spring en doodtij?
+        #TODO: iedere getijslag identiek, is dat zo? want nodalfactors
         #TODO: ongetwijfeld gaat er iets in dit script uit van 1/2/1/2 alternerende HWLW, bouw hier een check voor in (eg identify potential gaps)
         HW_val_mean = ts_ext.loc[ts_ext['HWLWcode']==1,'values'].mean() # np.mean(HW)
         LW_val_mean = ts_ext.loc[ts_ext['HWLWcode']==2,'values'].mean() # np.mean(LW)
@@ -1060,7 +1065,6 @@ for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     rLW_av = LW_av/LW_cav
     rtU_av = tU_av/tU_cav
     rtD_av = tD_av/tD_cav
-
     
     def vermenigvuldig_kromme(ts, timesHW, timesLW, ratioHW, ratioLW, ratioDown, ratioUp):
         #TODO: is boven/onder nul goede indicator aangezien A0 ook wordt gebruikt? >> misschien boven/onder A0 of A0 weglaten?
@@ -1070,11 +1074,12 @@ for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
         ts_corr['times'] = ts_corr.index #this is necessary since datetimeindex with freq is not editable, and Series is editable
         for i in np.arange(0,len(timesHW)):
             tide_HWtoLW = ts_corr.loc[timesHW[i]:timesLW[i]]
-            ts_corr.loc[timesHW[i]:timesLW[i],'times'] = pd.date_range(start=ts_corr.loc[timesHW[i],'times'],freq=f'{int(ratioDown*1e9*60)} N',periods=len(tide_HWtoLW))
+            tempval = pd.date_range(start=ts_corr.loc[timesHW[i],'times'],freq=f'{int(ratioDown*1e9*freq_sec)} N',periods=len(tide_HWtoLW))
+            ts_corr.loc[timesHW[i]:timesLW[i],'times'] = tempval
             if i == len(timesHW)-1: #not for last HW
                 continue
             tide_LWtoHW = ts_corr.loc[timesLW[i]:timesHW[i+1]]
-            ts_corr.loc[timesLW[i]:timesHW[i+1],'times'] = pd.date_range(start=ts_corr.loc[timesLW[i],'times'],freq=f'{int(ratioUp*1e9*60)} N',periods=len(tide_LWtoHW))
+            ts_corr.loc[timesLW[i]:timesHW[i+1],'times'] = pd.date_range(start=ts_corr.loc[timesLW[i],'times'],freq=f'{int(ratioUp*1e9*freq_sec)} N',periods=len(tide_LWtoHW))
         ts_corr = ts_corr.set_index('times',drop=True)
         return ts_corr
     
@@ -1135,7 +1140,7 @@ for current_station in []:#'HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     #print(comp_oneyear_sncomp-comp_oneyear_minffactor)
     
     #hatyan_settings_sn = hatyan.HatyanSettings(nodalfactors = False) #TODO: year does not matter too much (maybe it does for scaling), but nodalfactors=False does matter a bit for doodtij duration >> optionally check sensitivities?
-    prediction_sn     = hatyan.prediction(comp_oneyear_sncomp, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
+    prediction_sn = hatyan.prediction(comp_oneyear_sncomp, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
     
     #TODO KW-RMM2020: "In het geval van aggers is het eerste laagwater gebruikt." >> laagste laagwater wordt nu genomen, gaat niet goed met schaling
     prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn)#, calc_HWLW345=True)
@@ -1345,7 +1350,7 @@ reproduce_oldoverschr = False
 
 temp = {}
 tstarts = pd.DataFrame()
-for current_station in []:#stat_list:
+for current_station in []:#stat_list:#[]:#stat_list:
     print(f'overschrijdingsfrequenties for {current_station}')
 
     file_wl_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measwl.pkl")
