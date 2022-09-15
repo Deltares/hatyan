@@ -1034,10 +1034,14 @@ for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data
     
     comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
-    freq_sec = 20
+    freq_sec = 20 #frequency must be high enough, otherwise tidalperiods have different lengths and concatenating them to get repeating gemgetijkromme is not valid
     times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq=f'{freq_sec} S')
     prediction_av = hatyan.prediction(comp_av, times_pred_all=times_pred_1mnth, hatyan_settings=hatyan_settings)
     prediction_av_ext = hatyan.calc_HWLW(ts=prediction_av)#,calc_HWLWlocal=False)
+    
+    #compute tidalperiods >> TODO: should be all equal with enough time resolution
+    #prediction_av_ext_HW = prediction_av_ext.loc[prediction_av_ext['HWLWcode']==1]
+    #timediff_HW = pd.Series(prediction_av_ext_HW.index,index=prediction_av_ext_HW.index).diff()
     
     # karateristieken uit ruwe gemiddelde getijkromme >> schalingsratio
     idHW_av = prediction_av_ext.index[prediction_av_ext.HWLWcode==1][:-1]
@@ -1045,16 +1049,16 @@ for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']:#stat_list:
     idLW_av = prediction_av_ext.iloc[np.where(prediction_av_ext.HWLWcode==1)[0][:-1]+1].index
     
     def get_tide_meanext_valstimes(ts_ext):
-        #TODO: vorm van iedere getijslag is in principe identiek (maar niet als deze is afgerond op 1min), dus onderstaande is eigenlijk niet nodig hoewel er nu het risico is op 12:24 of 12:26 getijduur >> 10sec voorspelling maken (maar kan nu niet). Afronding prediction_av op 1min zorgt voor timeUp/timeDown die meestal 0 maar soms 60 seconden van elkaar verschillen. Geldt ook voor spring en doodtij?
-        #TODO: iedere getijslag identiek, is dat zo? want nodalfactors
+        #TODO: vorm van iedere getijslag is in principe identiek, dus middelen is niet nodig (indien freq hoog genoeg is). Is dat zo? want nodalfactors
         #TODO: ongetwijfeld gaat er iets in dit script uit van 1/2/1/2 alternerende HWLW, bouw hier een check voor in (eg identify potential gaps)
-        HW_val_mean = ts_ext.loc[ts_ext['HWLWcode']==1,'values'].mean() # np.mean(HW)
-        LW_val_mean = ts_ext.loc[ts_ext['HWLWcode']==2,'values'].mean() # np.mean(LW)
+        HW_val_mean = ts_ext.loc[ts_ext['HWLWcode']==1,'values'].mean()
+        LW_val_mean = ts_ext.loc[ts_ext['HWLWcode']==2,'values'].mean()
         timediff = pd.Series(ts_ext.index,index=ts_ext.index).diff()
-        time_up = timediff.loc[ts_ext['HWLWcode']==1].mean() # np.mean(timeUp)
-        time_down = timediff.loc[ts_ext['HWLWcode']==2].mean() # np.mean(timeDown)
+        time_up = timediff.loc[ts_ext['HWLWcode']==1].mean()
+        time_down = timediff.loc[ts_ext['HWLWcode']==2].mean()
         return HW_val_mean, LW_val_mean, time_up, time_down
     HW_cav, LW_cav, tU_cav, tD_cav = get_tide_meanext_valstimes(prediction_av_ext)
+    
     
     # tijd daling uit metingen
     #tD_av = tD_cav
