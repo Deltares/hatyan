@@ -650,6 +650,7 @@ if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_p
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
 
 #TODO: maybe match HWLWno of moonculm with that of station, to compute time difference. Maybe with offset for HWLWno of 5 or so
+#TODO: does that fix scheveningen issue?
 data_pd_moonculm_timeidx = data_pd_moonculm.set_index('datetime')
 #data_pd_moonculm_timeidx.index = data_pd_moonculm_timeidx.index + dt.timedelta(hours=1)
 #fig,(ax1,ax2,ax3) = plt.subplots(3,1)
