@@ -26,8 +26,8 @@ dataTKdia = True
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
-tstart_dt = dt.datetime(2001,1,1)
-tstop_dt = dt.datetime(2011,1,1)
+tstart_dt = dt.datetime(2011,1,1)
+tstop_dt = dt.datetime(2021,1,1)
 NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
@@ -35,7 +35,7 @@ else:
     year_slotgem = 'invalid'
 print(f'year_slotgem: {year_slotgem}')
 
-#TODO: LWaggercode used in havengetallen en gemgetijkromme loops
+#LWaggercode is used in both havengetallen en gemgetijkromme loops. 3 is first LW, 5 is second HW. 2 is not an aggercode but results in the dominant LW
 #TODO: delays should also be used to scale with first LW in gemgetijkromme and this is currently done, but is not a generic approach (dominance depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen." 3 is sowieso niet generiek, evt ruwe kromme maken en daar dominantie uit bepalen?
 LWaggercode = 3 # havengetallen timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. 
 
@@ -115,7 +115,7 @@ for stat_name in stat_name_list:
 if dataTKdia:
     stat_list = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE'] #all stations from TK
     stat_list = ['BAALHK','BATH','BERGSDSWT','BRESKVHVN','CADZD','DELFZL','DENHDR','DENOVBTN','EEMSHVN','GATVBSLE','HANSWT','HARLGN','HARVT10','HOEKVHLD','IJMDBTHVN','KATSBTN','KORNWDZBTN','KRAMMSZWT','LAUWOG','OUDSD','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','STAVNSE','STELLDBTN','TERNZN','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN'] #all files with valid data for 2010 to 2021
-    stat_list = stat_list[stat_list.index('ROOMPBNN'):]
+    #stat_list = stat_list[stat_list.index('ROOMPBNN'):]
 M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
 
 
@@ -650,7 +650,7 @@ if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_p
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
 
-for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
+for current_station in []:#'DENHDR']:#['HARVT10','VLISSGN']:#stat_list:
     print(f'havengetallen for {current_station}')
     
     #read HWLW data
@@ -674,9 +674,9 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
     print('SELECT/CALC HWLW VALUES')
-    if LWaggercode == 2: #use time/value of lowest LW, 2 is actually not aggercode, but lowest LWs are converted to 2. #TODO: does not help for HOEKVHLD, what to do?
+    if LWaggercode == 2: #use time+value of lowest LW, 2 is actually not aggercode, but lowest of 345 LWs are converted to 2.
         if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
-            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
         else:
             data_pd_HWLW = data_pd_HWLW_all.copy()
     else:
@@ -796,7 +796,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
 
 
 ##### gemiddelde getijkrommen
-for current_station in stat_list:#['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
+for current_station in stat_list:#['HOEKVHLD','HARVT10']:
     """
     
     """
@@ -847,12 +847,15 @@ for current_station in stat_list:#['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT1
             LW_val = ts_corr.loc[timesLW[i],'values']
             TR1_val = HW1_val-LW_val
             TR2_val = HW2_val-LW_val
-            print(f'tidalrange factor: {TR_goal/TR1_val:.2f}')
             tP_val = timesHW[i+1]-timesHW[i]
             if tP_goal is None:
                 tP_goal = tP_val
             tD_goal = tD_goal/tP_val*tP_goal #no change if tP_goal is None
             tU_goal = tP_goal-tD_goal #equal to tP_val-tD_goal if tP_goal is None
+            
+            tD_val = timesLW[i]-timesHW[i]
+            print(f'tidalrange factor: {TR_goal/TR1_val:.2f}')
+            print(f'timeDown factor: {tD_goal/tD_val:.2f}')
             
             tide_HWtoLW = ts_corr.loc[timesHW[i]:timesLW[i]]
             tide_LWtoHW = ts_corr.loc[timesLW[i]:timesHW[i+1]]
@@ -939,7 +942,7 @@ for current_station in stat_list:#['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT1
     
     In het aldus gemodelleerde getij is de vorm van iedere getijslag identiek, met een getijduur van 12 h 25 min.
     Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; 
-    dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differen-tiele getijduur, 
+    dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, 
     en daarmee de duur rijzing, afgeleid uit de ruwe krommen.
     
     """
@@ -982,38 +985,44 @@ for current_station in stat_list:#['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT1
     
     In het aldus gemodelleerde getij is de vorm van iedere getijslag, gegeven de getijfase, identiek. 
     Vervolgens is aan de hand van de havengetallen een springtij- en een doodtijkromme geselecteerd.
-
     """
-    """ #TODO, this is different than provided list, these shallow ones are extra: ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
-    #shallow relations, derive 'zuivere harmonischen van M2 en S2'
+    
+    """
+    #TODO, below is different than provided list, these shallow ones are extra: ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
+    #shallow relations, derive 'zuivere harmonischen van M2 en S2' (this means averaging over eenmaaldaagse componenten, but why is that chosen?)
+    #adding above extra components or oneday freqs, gives a modulation and therefore there is no repetative signal
     dummy,shallowrel,dummy = hatyan.get_foreman_shallowrelations()
     bool_M2S2only = shallowrel[1].isin([1,2]) & shallowrel[3].isin(['M2','S2']) & shallowrel[5].isin(['M2','S2',np.nan]) & shallowrel.index.isin(const_list_year)
     shallowdeps_M2S2 = shallowrel.loc[bool_M2S2only,:5]
     print(shallowdeps_M2S2)
     """
-    components_sn = ['A0','SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12'] #+ ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
+    components_sn = ['A0','SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12']
     
     #make prediction with springneap components with nodalfactors=False (alternative for choosing a year with a neutral nodal factor). Using 1yr instead of 1month does not make a difference in min/max tidal range and shape, also because of nodalfactors=False. (when using more components, there is a slight difference)
     comp_frommeasurements_avg_sncomp = comp_frommeasurements_avg.loc[components_sn]
     prediction_sn = hatyan.prediction(comp_frommeasurements_avg_sncomp, times_pred_all=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to make independent on chosen year
     
-    prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=True) # we need aggers since scaling timedown is also derived with firstLW (dominance alternates, so would be unsafe to do with dominant LW)
-    if len(prediction_sn_ext['HWLWcode'].unique()) > 2: 
-        #select first LW's (LWaggercode=3) as LW (code 4 and 5 are dropped in this case). This results in a dataframe with HW and LW/aggercode alternating, so one HW every two values. This is impotant because is1/is2/in1/in2 assume a HW every on other extreme
-        prediction_sn_ext = prediction_sn_ext.loc[(prediction_sn_ext['HWLWcode']==1) | (prediction_sn_ext['HWLWcode']==2) | (prediction_sn_ext['HWLWcode']==LWaggercode)]
+    if LWaggercode == 2: #only compute dominant LW
+        prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=False)
+    else:
+        prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=True) # we need aggers since scaling timedown is also derived with firstLW (dominance alternates, so would be unsafe to do with dominant LW)
+        if len(prediction_sn_ext['HWLWcode'].unique()) > 2:
+            #select first LW's (LWaggercode=3) as LW (code 4 and 5 are dropped in this case). This results in a dataframe with HW and LW/aggercode alternating, so one HW every two values. This is impotant because is1/is2/in1/in2 assume a HW every on other extreme
+            prediction_sn_ext = prediction_sn_ext.loc[(prediction_sn_ext['HWLWcode']==1) | (prediction_sn_ext['HWLWcode']==2) | (prediction_sn_ext['HWLWcode']==LWaggercode)]
     
-    #selecteer getijslag met minimale tidalrange en maximale tidalrange
-    #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complex. hoe wordt het bij havengetallen gedaan? #NOTE: in 1991.0 worden stations met aggers niet geschaald?
-    #TODO: origineel zijn de krommes adhv havengetallen geselecteerd
-    try:
-        prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext,station=current_station)
-    except:
-        raise Exception('WARNING: calc_HWLWnumbering failed') #TODO: check if it fails and maybe fix numbering algorithm
-        time_HWfirst = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1].index[0]
-        bool_HW = (prediction_sn_ext['HWLWcode']==1) & (prediction_sn_ext.index>=time_HWfirst)
-        bool_LW = (prediction_sn_ext['HWLWcode']!=1) & (prediction_sn_ext.index>=time_HWfirst)
-        prediction_sn_ext.loc[bool_HW,'HWLWno'] = range(bool_HW.sum())
-        prediction_sn_ext.loc[bool_LW,'HWLWno'] = range(bool_LW.sum())
+    #selecteer getijslag met minimale tidalrange en maximale tidalrange (werd geselecteerd adhv havengetallen in 1991.0 doc)
+    #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complexer. hoe wordt het bij havengetallen gedaan? #NOTE: in 1991.0 worden stations met aggers niet geschaald?
+    #TODO: issue with aggers might vanish if we do not scale timeDown/timeUp (although with havengetallen it is still an issue)
+    #try:
+    prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext)#,station=current_station)
+    # except:
+    #     raise Exception('WARNING: calc_HWLWnumbering failed') #TODO: check if it fails and maybe fix numbering algorithm
+    #     time_HWfirst = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1].index[0]
+    #     bool_HW = (prediction_sn_ext['HWLWcode']==1) & (prediction_sn_ext.index>=time_HWfirst)
+    #     bool_LW = (prediction_sn_ext['HWLWcode']!=1) & (prediction_sn_ext.index>=time_HWfirst)
+    #     prediction_sn_ext.loc[bool_HW,'HWLWno'] = range(bool_HW.sum())
+    #     prediction_sn_ext.loc[bool_LW,'HWLWno'] = range(bool_LW.sum())
+    continue
     prediction_sn_ext['times_backup'] = prediction_sn_ext.index
     prediction_sn_ext_idxHWLWno = prediction_sn_ext.set_index('HWLWno',drop=False)
     prediction_sn_ext_idxHWLWno['tidalrange'] = prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==1,'values'] - prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']!=1,'values']  #!=1 means HWLWcode==2 or HWLWcode==LWaggercode (=3)
