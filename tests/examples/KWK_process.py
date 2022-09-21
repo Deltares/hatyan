@@ -7,7 +7,6 @@ Created on Thu Apr  7 14:17:13 2022
 
 import os
 import sys
-import glob
 import pandas as pd
 import datetime as dt
 import numpy as np
@@ -16,7 +15,6 @@ plt.close('all')
 from matplotlib import ticker
 import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
 import contextily as ctx #`conda install -c conda-forge contextily -y`
-import statsmodels.api as sm # `conda install -c conda-forge statsmodels -y`
 
 #TODO: apply to all measurements: remove QC==99 (always, or maybe make nans?), crop_timeseries (when applicable), NAP2005 correction?, SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
 #TODO: move all parts to hatyan.kenmerkendewaarden.*, maybe also the stuff in hatyan/overschrijding.py (and include license header) >> indeed put it in hatyan or not?
@@ -30,28 +28,24 @@ tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
 tstart_dt = dt.datetime(2001,1,1)
 tstop_dt = dt.datetime(2011,1,1)
-reproduce_2011_olddata = False #TODO: difference in gemgetijkromme (summary figure) for HARVT10 2011.0 (spnp/sp/np lines), probably because of duplicate values in measwl DDL
 NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
-    if reproduce_2011_olddata:
-        if not ((tstart_dt==dt.datetime(2001,1,1)) & (tstop_dt==dt.datetime(2011,1,1))):
-            raise Exception('INVALID DATES WITH reproduce_2011_olddata')
-        else:
-            year_slotgem = '2011_olddata'
 else:
     year_slotgem = 'invalid'
 print(f'year_slotgem: {year_slotgem}')
 
+#TODO: LWaggercode used in havengetallen en gemgetijkromme loops
+#TODO: delays should also be used to scale with first LW in gemgetijkromme and this is currently done, but is not a generic approach (dominance depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen." 3 is sowieso niet generiek, evt ruwe kromme maken en daar dominantie uit bepalen?
+LWaggercode = 3 # havengetallen timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. 
+
 dir_base = r'p:\11208031-010-kenmerkende-waarden-k\work'
-if reproduce_2011_olddata:
-    dir_meas = r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_20010101_20110101_olddata'
-else:
-    dir_meas = os.path.join(dir_base,'measurements_wl_20000101_20220101')
-    dir_meas_alldata = os.path.join(dir_base,'measurements_wl_18700101_20220101')
 if dataTKdia:
     dir_meas = os.path.join(dir_base,'measurements_wl_18700101_20220101_dataTKdia')
     dir_meas_alldata = os.path.join(dir_base,'measurements_wl_18700101_20220101_dataTKdia')
+else:
+    dir_meas = os.path.join(dir_base,'measurements_wl_20000101_20220101')
+    dir_meas_alldata = os.path.join(dir_base,'measurements_wl_18700101_20220101')
     
 dir_meas_DDL = os.path.join(dir_base,f"measurements_wl_{tstart_dt_DDL.strftime('%Y%m%d')}_{tstop_dt_DDL.strftime('%Y%m%d')}")
 if not os.path.exists(dir_meas_DDL):
@@ -650,14 +644,6 @@ for current_station in []:#stat_list:
 
 
 ### HAVENGETALLEN
-"""
-LWaggercode uitleg
-TVL;1;1;hoogwater
-TVL;1;2;laagwater
-TVL;1;3;laagwater 1
-TVL;1;4;topagger
-TVL;1;5;laagwater 2
-"""
 culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # link with moonculmination (or M2) two days before, 24h rotates entire graph. # furthermore: 2u20min correction, this shifts the x-axis: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET)
 data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=24),tLast=tstop_dt)#,tzone='UTC+01:00')
 if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_pd_HWLW['culm_hr']=range(12) hourvalues should be in UTC since that relates to the relation dateline/sun
@@ -688,7 +674,6 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
     print('SELECT/CALC HWLW VALUES')
-    LWaggercode = 3 # timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. #TODO: delays should then also be used to scale with first LW in gemgetijkromme but now dominant one is used (which depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen." 3 is sowieso niet generiek, evt ruwe kromme maken en daar dominantie uit bepalen?
     if LWaggercode == 2: #use time/value of lowest LW, 2 is actually not aggercode, but lowest LWs are converted to 2. #TODO: does not help for HOEKVHLD, what to do?
         if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
             data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
@@ -811,7 +796,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
 
 
 ##### gemiddelde getijkrommen
-for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
+for current_station in stat_list:#['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     """
     
     """
@@ -824,8 +809,7 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_havengetallen{year_slotgem}.csv')        
     
     #TODO: add correctie havengetallen HW/LW av/sp/np met slotgemiddelde uit PLSS/modelfit (HW/LW av)
-    LWaggercode = 3 # TODO: also defined elsewehere, move to top of script
-    file_havget = os.path.join(dir_havget,f'aardappelgrafiek_2011_{current_station}_aggercode{LWaggercode}.csv')
+    file_havget = os.path.join(dir_havget,f'aardappelgrafiek_{year_slotgem}_{current_station}_aggercode{LWaggercode}.csv')
     if not os.path.exists(file_havget):
         raise Exception(f'havengetallen file does not exist: {file_havget}')
     data_havget = pd.read_csv(file_havget)
