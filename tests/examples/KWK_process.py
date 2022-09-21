@@ -542,6 +542,10 @@ for current_station in []:#stat_list:
 
 
 #### SLOTGEMIDDELDEN
+"""
+De havengetallen (waarden maansverloop) zijn bepaald over de periode van 2001 t/m 2010 en geven waarden voor springtij, gemiddeld tij en doodtij. Het bepaalde slotgemiddelde met PLSS wordt als juist beschouwd, maar geldt alleen voor gemiddeld tij. Daarom wordt het eventuele verschil tussen het gemiddeld tij (tussen de PLSS-methode en de havengetallen) ook toegepast op de uitkomsten van doodtij en springtij.
+"""
+#TODO: bovenstaande comment verwerken (verschil slotgemiddelde gemgetij en havengetal gemgetij ook toepassen op spring/doodtij)
 for current_station in []:#stat_list:
     
     plt.close()
@@ -731,7 +735,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
     HWLW_culmhr_summary['getijperiod_mean'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['getijperiod'].mean()
     HWLW_culmhr_summary['duurdaling_median'] = HWLW_culmhr_summary['LW_delay_median']-HWLW_culmhr_summary['HW_delay_median'] #data_pd_HW.groupby(data_pd_HW['culm_hr'])['duurdaling'].mean() gives very different result for spring/mean HARVT10
     
-    print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE')
+    print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE') #TODO: DENHDR en andere stations hebben invalid grafiek, dit nog oplossen
     fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(18,8), sharex=True)
     ax1.set_title('HW values %s'%(current_station))
     ax1.plot(data_pd_HW['culm_hr'],data_pd_HW['values'],'.')
@@ -758,7 +762,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
         else:
             d_str = '-'+str(d)
         return d_str
-
+    
     fig, (ax1,ax2) = plt.subplots(1,2,figsize=(7.5,4), sharex=False)
     ax1.set_title(f'HW {current_station} {year_slotgem}')
     ax1.set_xlabel('maansverloop in uu:mm:ss' )
@@ -815,7 +819,7 @@ slotGem  = 'havengetallen2011improved' #'rapportRWS' 'havengetallen2011' 'haveng
 #TODO: evt schaling naar 12u25m om repetitief signaal te maken (voor boi), dan 1 plotperiode selecteren en weer terugschalen. Voorafgaand aan dit alles de ene kromme schalen met havengetallen? (Ext berekening is ingewikkelder van 1 kromme dan repetitief signaal)
 #TODO: gemgetijkromme is maar 1x of 1.5x nodig voor figuur, dus verplaatsen naar 1 datum en ext afleiden (buffer_hr=0 keyword gebruiken). Voor boi av/sp/np eerst schalen naar 12h25m en interpoleren, dan repeteren, dan is alles precies even lang en makkelijk te repeteren.
 
-for current_station in ['HOEKVHLD']:# ['HOEKVHLD','HARVT10']:#stat_list:
+for current_station in stat_list: # ['HOEKVHLD','HARVT10']:#
     """
     uit: gemiddelde getijkrommen 1991.0
         
@@ -862,17 +866,23 @@ for current_station in ['HOEKVHLD']:# ['HOEKVHLD','HARVT10']:#stat_list:
     Te denken valt aan: buitenlandse meetpunten; gedurende korte tijd bemeten locaties; 
     modelresultaten; hypothetische hydrologische omstandigheden.
     """
-
+    plt.close('all')
     print(f'gem getijkrommen for {current_station}')
     
     if slotGem in ['rapportRWS','havengetallen2011','havengetallen2011_PLSS']:
         slotGem_file = slotGem
     elif slotGem=='havengetallen2011improved':
-        slotGem_file = 'havengetallen2011'
+        slotGem_file = 'havengetallen2011' #TODO: remove this and then test 2021 (also remove coupling with old hardcoded values)
     dir_vali_krommen = r'p:\archivedprojects\11205258-005-kpp2020_rmm-g5\C_Work\00_KenmerkendeWaarden\07_Figuren\figures_ppSCL_2\final20201211'
     file_vali_doodtijkromme = os.path.join(dir_vali_krommen,f'doodtijkromme_{current_station}_{slotGem_file}.csv')
     file_vali_gemtijkromme = os.path.join(dir_vali_krommen,f'gemGetijkromme_{current_station}_{slotGem_file}.csv')
     file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_{slotGem_file}.csv')        
+    if not os.path.exists(file_vali_doodtijkromme):
+        file_vali_doodtijkromme = None
+    if not os.path.exists(file_vali_gemtijkromme):
+        file_vali_gemtijkromme = None
+    if not os.path.exists(file_vali_springtijkromme):
+        file_vali_springtijkromme = None
     
     if year_slotgem not in [2011,'2011_olddata']:
         raise Exception(f'gemiddelde getijkromme only possible for 2011: {year_slotgem}') #TODO: almost not anymore
@@ -1242,7 +1252,7 @@ for current_station in ['HOEKVHLD']:# ['HOEKVHLD','HARVT10']:#stat_list:
     ax_sum.plot(prediction_sp_corr_rep5_trefHW['values'], color=cmap(1), label='sp kromme, corr')
     ax_sum.plot(prediction_np_one_trefHW['values'],'--', color=cmap(2),linewidth=0.7, label='np kromme, one')
     ax_sum.plot(prediction_np_corr_rep5_trefHW['values'], color=cmap(2), label='np kromme, corr')
-    ax_sum.legend()
+    ax_sum.legend(loc=4)
     ax_sum.grid()
     ax_sum.set_xlim(-15.5,15.5)
     ax_sum.set_xlabel('hours since HW (ts are shifted to this reference)')
@@ -1268,7 +1278,7 @@ for current_station in ['HOEKVHLD']:# ['HOEKVHLD','HARVT10']:#stat_list:
         data_vali_doodtij = pd.read_csv(file_vali_doodtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_doodtij['Water Level [m]'],'--',color=cmap(2),linewidth=0.7, label='validation KW2020 doodtij')
     ax1_boi.grid()
-    ax1_boi.legend(loc=1)
+    ax1_boi.legend(loc=4)
     ax1_boi.set_xlabel('times since first av HW (start of ts)')
     ax1_boi.set_xlim(tstop_dt-dt.timedelta(hours=2),tstop_dt+dt.timedelta(hours=48))
     fig_boi.tight_layout()
