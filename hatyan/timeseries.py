@@ -241,7 +241,7 @@ def calc_HWLW12345to12(data_HWLW_12345):
     return data_HWLW_12
 
 
-def calc_HWLWnumbering(ts_ext, station=None, mode='M2phase'):
+def calc_HWLWnumbering(ts_ext, station=None, mode='M2phase',doHWLWcheck=True):
     """
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
     The number of every high and low water is calculated by taking the time difference between itself and the first high water at Cadzand, correcting it with the station phase difference (M2phasediff). 
@@ -295,14 +295,14 @@ def calc_HWLWnumbering(ts_ext, station=None, mode='M2phase'):
                 HW_tdiff_cadzdraw_M2remainders = (HW_tdiff_cadzdraw+3)%M2_period_hr-3
             M2phasediff_hr = (HW_tdiff_cadzdraw_M2remainders).median()
             M2phasediff_deg = M2phasediff_hr/M2_period_hr*360
-        print(f'no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand (mode={mode}):',end='')
+        print(f'no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand (mode={mode}): ',end='')
     else:
         file_M2phasediff = os.path.join(os.path.dirname(file_path),'data','data_M2phasediff_perstation.txt')
         stations_M2phasediff = pd.read_csv(file_M2phasediff, names=['M2phasediff'], comment='#', delim_whitespace=True)
         if station not in stations_M2phasediff.index:
             raise Exception(f'ERROR: station "{station}" not in file_M2phasediff ({file_M2phasediff})')
         M2phasediff_deg = stations_M2phasediff.loc[station,'M2phasediff']
-        print('M2phasediff retrieved from file, correction w.r.t. Cadzand:',end='')
+        print('M2phasediff retrieved from file, correction w.r.t. Cadzand: ',end='')
     M2phasediff_hr = M2phasediff_deg/360*M2_period_hr
     print(f'{M2phasediff_hr:.2f} hours ({M2phasediff_deg:.2f} degrees)')
     HW_tdiff_cadzd = HW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr
@@ -328,9 +328,10 @@ def calc_HWLWnumbering(ts_ext, station=None, mode='M2phase'):
     
     #check if LW is after HW
     ts_ext_checkfirst = ts_ext[ts_ext['HWLWno']==np.min(HW_tdiff_div)]
-    tdiff_firstHWLW = (ts_ext_checkfirst.index.to_series().diff().dt.total_seconds()/3600).values[1]
-    if (tdiff_firstHWLW<0) or (tdiff_firstHWLW>M2_period_hr):
-        raise Exception('tidal wave numbering: first LW does not match first HW')
+    if doHWLWcheck:
+        tdiff_firstHWLW = (ts_ext_checkfirst.index.to_series().diff().dt.total_seconds()/3600).values[1]
+        if (tdiff_firstHWLW<0) or (tdiff_firstHWLW>M2_period_hr):
+            raise Exception('tidal wave numbering: first LW does not match first HW')
     
     ts_ext['HWLWno'] = ts_ext['HWLWno'].astype(int)
     

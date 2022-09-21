@@ -26,8 +26,8 @@ dataTKdia = True
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
-tstart_dt = dt.datetime(2011,1,1)
-tstop_dt = dt.datetime(2021,1,1)
+tstart_dt = dt.datetime(2001,1,1)
+tstop_dt = dt.datetime(2011,1,1)
 NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
@@ -448,12 +448,11 @@ for current_station in []:#stat_list:
         try:
             ts_meas_ext_2000to202102 = ts_meas_ext_pd.loc[(ts_meas_ext_pd.index>=time_interest_start) & (ts_meas_ext_pd.index<=time_interest_stop)]
             ts_meas_ext_pd.loc[dt.datetime(2015,1,1):dt.datetime(2015,1,2)]
-            ts_meas_ext_2000to202102 = hatyan.calc_HWLWnumbering(ts_meas_ext_2000to202102, station=current_station) #station argument helpt bij 3 extra stations
+            ts_meas_ext_2000to202102 = hatyan.calc_HWLWnumbering(ts_meas_ext_2000to202102)
             HWmissings = (ts_meas_ext_2000to202102.loc[ts_meas_ext_pd['HWLWcode']==1,'HWLWno'].diff().dropna()!=1).sum()
             data_summary.loc[current_station,'#HWgaps_2000to202102_ext'] = HWmissings
         except Exception as e: #"tidal wave numbering: HW/LW numbers not always increasing" and "zero-size array to reduction operation minimum which has no identity" #TODO: fix by calulate and providing station or corr_tideperiods argument? Or fix otherwise in hatyan (maybe under different project)
             print(f'ERROR: {e}')
-        #continue
         
         #calculate monthly/yearly mean for meas ext data
         if len(ts_meas_ext_pd['HWLWcode'].unique()) > 2:
@@ -642,15 +641,45 @@ for current_station in []:#stat_list:
 
 
 
-
+#TODO IMPORTANT: match HWLWno station and moonculminations
 ### HAVENGETALLEN
 culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # link with moonculmination (or M2) two days before, 24h rotates entire graph. # furthermore: 2u20min correction, this shifts the x-axis: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET)
-data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=24),tLast=tstop_dt)#,tzone='UTC+01:00')
+data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt)#,tzone='UTC+01:00')
 if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_pd_HWLW['culm_hr']=range(12) hourvalues should be in UTC since that relates to the relation dateline/sun
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
 
-for current_station in []:#'DENHDR']:#['HARVT10','VLISSGN']:#stat_list:
+#TODO: maybe match HWLWno of moonculm with that of station, to compute time difference. Maybe with offset for HWLWno of 5 or so
+data_pd_moonculm_timeidx = data_pd_moonculm.set_index('datetime')
+#data_pd_moonculm_timeidx.index = data_pd_moonculm_timeidx.index + dt.timedelta(hours=1)
+#fig,(ax1,ax2,ax3) = plt.subplots(3,1)
+#ax1.plot(data_pd_moonculm_timeidx['type'])
+#ax2.plot(data_pd_moonculm_timeidx['declination'])
+#ax3.plot(data_pd_moonculm_timeidx['parallax'])
+data_pd_parallax = pd.DataFrame({'values':data_pd_moonculm_timeidx['parallax']})
+data_pd_declination = pd.DataFrame({'values':data_pd_moonculm_timeidx['declination']})
+data_pd_type = pd.DataFrame({'values':data_pd_moonculm_timeidx['type']})
+data_pd_HWLWcode = pd.DataFrame({'values':data_pd_moonculm_timeidx['type'],'HWLWcode':1+0*data_pd_moonculm_timeidx['type']})
+test = hatyan.calc_HWLWnumbering(data_pd_HWLWcode,doHWLWcheck=False)
+test['times_backup'] = test.index
+test = test.set_index('HWLWno')
+"""
+hatyan.analysis(data_pd_type-data_pd_type.mean(),const_list=['M2'],nodalfactors=False, xTxmat_condition_max=50)
+hatyan.analysis(data_pd_parallax-data_pd_parallax.mean(),const_list=['M2'],nodalfactors=False, xTxmat_condition_max=50)
+hatyan.analysis(data_pd_declination-data_pd_declination.mean(),const_list=['M2'],nodalfactors=False, xTxmat_condition_max=50)
+phi_type = 118.8#88.8
+phi_parallax = 117.38#89.4
+phi_declination = 298.94#270
+phi_M2_cadzd = 48
+
+hr_type = phi_type/360*M2_period_timedelta #+ dt.timedelta(hours=2,minutes=20)
+
+phi_parallax/360*M2_period_timedelta #+ dt.timedelta(hours=2,minutes=20)
+phi_declination/360*M2_period_timedelta #+ dt.timedelta(hours=2,minutes=20)
+phi_M2_cadzd/360*M2_period_timedelta
+"""
+for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+    plt.close('all')
     print(f'havengetallen for {current_station}')
     
     #read HWLW data
@@ -682,13 +711,21 @@ for current_station in []:#'DENHDR']:#['HARVT10','VLISSGN']:#stat_list:
     else:
         data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
     
+    #derive stat_addtime based on M2 phase difference with CADZD
+    M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
+    comp_M2 = hatyan.analysis(data_pd_HWLW,const_list=['M2'],xTxmat_condition_max=150) #high condition value, since it should provide a phasediff also in case of only one HW+LW
+    M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd)%360
+    stat_addtime = M2phasediff_deg/360*M2_period_timedelta #TODO: this is new, better is to derive with HWLWno of moonculminations
+    
+    data_pd_HWLW = hatyan.calc_HWLWnumbering(data_pd_HWLW)
+    
     data_pd_HWLW.index.name = 'times' #index is called 'Tijdstip' if retrieved from DDL.
     data_pd_HWLW = data_pd_HWLW.reset_index() # needed since we need numbered HWLW, HW is a value and LW is value+1
     
     #add duur getijperiode
     HW_bool = data_pd_HWLW['HWLWcode']==1
     data_pd_HWLW['getijperiod'] = (data_pd_HWLW.loc[HW_bool,'times'].iloc[1:].values - data_pd_HWLW.loc[HW_bool,'times'].iloc[:-1])
-    
+
     ##### CULMINATIEBEREKENING/HAVENGETALLEN
     print('select culminations corresponding to each HW/LW')
     data_pd_HWLW['culm_time'] = pd.NaT
@@ -696,7 +733,7 @@ for current_station in []:#'DENHDR']:#['HARVT10','VLISSGN']:#stat_list:
         if HWLWrow['HWLWcode']!=1: #skip non-HW rows
             continue
         #select culmination for this HW
-        timediff_withculm = (HWLWrow['times']-(data_pd_moonculm['datetime']+culm_addtime)).abs()
+        timediff_withculm = (HWLWrow['times']-(data_pd_moonculm['datetime']+culm_addtime+stat_addtime)).abs()
         if timediff_withculm.min() > dt.timedelta(hours=8):
             raise Exception(f'ERROR: no culmination found within 8 hours of high water at {HWLWrow["times"]} +culm_addtime(={culm_addtime.total_seconds()/3600:.1f}hr), range culm: \n{data_pd_moonculm["datetime"].iloc[[0,-1]]}')#%s)'%(culm_time, culm_addtime.total_seconds()/3600, data_pd_HWLW.loc[[data_pd_HWLW.index.min(),data_pd_HWLW.index.max()],'times']))
             print(data_pd_moonculm["datetime"].head(30))
@@ -704,10 +741,9 @@ for current_station in []:#'DENHDR']:#['HARVT10','VLISSGN']:#stat_list:
         #compute duur daling for this HW
         if iHWLW<data_pd_HWLW.index[-1]:
             data_pd_HWLW.loc[iHWLW,'duurdaling'] = data_pd_HWLW.loc[iHWLW+1,'times']-data_pd_HWLW.loc[iHWLW,'times']
-    
     #compute the rest for all extremes at once
     data_pd_HWLW['culm_hr'] = (data_pd_HWLW['culm_time'].round('h').dt.hour)%12
-    data_pd_HWLW['HWLW_delay'] = (data_pd_HWLW['times']-(data_pd_HWLW['culm_time']+culm_addtime))
+    data_pd_HWLW['HWLW_delay'] = (data_pd_HWLW['times']-(data_pd_HWLW['culm_time']+culm_addtime+stat_addtime))
     
     print('calculate medians per hour group for LW and HW (instead of 1991 method: average of subgroups with removal of outliers)')
     data_pd_HW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1]
@@ -720,7 +756,7 @@ for current_station in []:#'DENHDR']:#['HARVT10','VLISSGN']:#stat_list:
     HWLW_culmhr_summary['getijperiod_mean'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['getijperiod'].mean()
     HWLW_culmhr_summary['duurdaling_median'] = HWLW_culmhr_summary['LW_delay_median']-HWLW_culmhr_summary['HW_delay_median'] #data_pd_HW.groupby(data_pd_HW['culm_hr'])['duurdaling'].mean() gives very different result for spring/mean HARVT10
     
-    print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE') #TODO: DENHDR en andere stations hebben invalid grafiek, dit nog oplossen
+    print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE')
     fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(18,8), sharex=True)
     ax1.set_title('HW values %s'%(current_station))
     ax1.plot(data_pd_HW['culm_hr'],data_pd_HW['values'],'.')
@@ -790,13 +826,14 @@ for current_station in []:#'DENHDR']:#['HARVT10','VLISSGN']:#stat_list:
         if HWLW_culmhr_summary_out[colname].dtype == 'timedelta64[ns]':
             HWLW_culmhr_summary_out[colname] = HWLW_culmhr_summary_out[colname].round('S')
     HWLW_culmhr_summary_out.to_csv(file_outname+'.csv',float_format='%.3f')
+    
 
 
-
-
-
+#TODO IMPORTANT: uncertainty about length of analysis period
+#TODO IMPORTANT: uncertainty about aggers (correlates with havengetallen, maybe drop scaling of time or drop scaling of aggerstations like 1991.0 in general?)
+#TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 ##### gemiddelde getijkrommen
-for current_station in stat_list:#['HOEKVHLD','HARVT10']:
+for current_station in []:#stat_list:#['HOEKVHLD','HARVT10']:
     """
     
     """
@@ -990,7 +1027,7 @@ for current_station in stat_list:#['HOEKVHLD','HARVT10']:
     """
     #TODO, below is different than provided list, these shallow ones are extra: ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
     #shallow relations, derive 'zuivere harmonischen van M2 en S2' (this means averaging over eenmaaldaagse componenten, but why is that chosen?)
-    #adding above extra components or oneday freqs, gives a modulation and therefore there is no repetative signal
+    #adding above extra components or oneday freqs, gives a modulation and therefore there is no repetative signal anymore. Apperantly all components in this list have an integer number of periods in one springneap cycle?
     dummy,shallowrel,dummy = hatyan.get_foreman_shallowrelations()
     bool_M2S2only = shallowrel[1].isin([1,2]) & shallowrel[3].isin(['M2','S2']) & shallowrel[5].isin(['M2','S2',np.nan]) & shallowrel.index.isin(const_list_year)
     shallowdeps_M2S2 = shallowrel.loc[bool_M2S2only,:5]
@@ -1011,20 +1048,10 @@ for current_station in stat_list:#['HOEKVHLD','HARVT10']:
             prediction_sn_ext = prediction_sn_ext.loc[(prediction_sn_ext['HWLWcode']==1) | (prediction_sn_ext['HWLWcode']==2) | (prediction_sn_ext['HWLWcode']==LWaggercode)]
     
     #selecteer getijslag met minimale tidalrange en maximale tidalrange (werd geselecteerd adhv havengetallen in 1991.0 doc)
-    #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complexer. hoe wordt het bij havengetallen gedaan? #NOTE: in 1991.0 worden stations met aggers niet geschaald?
+    #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complexer. hoe wordt het bij havengetallen gedaan?
+    #NOTE: in 1991.0 worden stations met aggers niet geschaald?
     #TODO: issue with aggers might vanish if we do not scale timeDown/timeUp (although with havengetallen it is still an issue)
-    #try:
-    hatyan.analysis(prediction_sn_ext,const_list=['M2'],xTxmat_condition_max=20)
-    prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext)#,station=current_station)
-    breakit
-    # except:
-    #     raise Exception('WARNING: calc_HWLWnumbering failed') #TODO: check if it fails and maybe fix numbering algorithm
-    #     time_HWfirst = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1].index[0]
-    #     bool_HW = (prediction_sn_ext['HWLWcode']==1) & (prediction_sn_ext.index>=time_HWfirst)
-    #     bool_LW = (prediction_sn_ext['HWLWcode']!=1) & (prediction_sn_ext.index>=time_HWfirst)
-    #     prediction_sn_ext.loc[bool_HW,'HWLWno'] = range(bool_HW.sum())
-    #     prediction_sn_ext.loc[bool_LW,'HWLWno'] = range(bool_LW.sum())
-    
+    prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext)
     prediction_sn_ext['times_backup'] = prediction_sn_ext.index
     prediction_sn_ext_idxHWLWno = prediction_sn_ext.set_index('HWLWno',drop=False)
     prediction_sn_ext_idxHWLWno['tidalrange'] = prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==1,'values'] - prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']!=1,'values']  #!=1 means HWLWcode==2 or HWLWcode==LWaggercode (=3)
@@ -1093,6 +1120,7 @@ for current_station in stat_list:#['HOEKVHLD','HARVT10']:
     prediction_np_corrBOI_one_roundtime = prediction_np_corrBOI_one.resample(f'{freq_sec}S').nearest()
     prediction_np_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'doodtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
     prediction_np_corrBOI_repn_roundtime = repeat_signal(prediction_np_corrBOI_one_roundtime, nb=0, na=10)
+    
     
     cmap = plt.get_cmap("tab10")
         
@@ -1331,7 +1359,6 @@ for current_station in []:#stat_list:#[]:#stat_list:
                                         keys=None, color_map=color_map, legend_loc='lower right',
                                         xlabel='Frequentie [1/jaar]', ylabel='Hoogwater [m+NAP]')
     ax.set_ylim(0,5.5)
-    continue #TODO: skips rest of function
     fig.savefig(os.path.join(dir_overschrijding, f'Exceedance_lines_{current_station}.png')) #.svg
     plt.close(fig)
     """
