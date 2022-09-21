@@ -1014,7 +1014,9 @@ for current_station in stat_list:#['HOEKVHLD','HARVT10']:
     #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complexer. hoe wordt het bij havengetallen gedaan? #NOTE: in 1991.0 worden stations met aggers niet geschaald?
     #TODO: issue with aggers might vanish if we do not scale timeDown/timeUp (although with havengetallen it is still an issue)
     #try:
+    hatyan.analysis(prediction_sn_ext,const_list=['M2'],xTxmat_condition_max=20)
     prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext)#,station=current_station)
+    breakit
     # except:
     #     raise Exception('WARNING: calc_HWLWnumbering failed') #TODO: check if it fails and maybe fix numbering algorithm
     #     time_HWfirst = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1].index[0]
@@ -1022,7 +1024,7 @@ for current_station in stat_list:#['HOEKVHLD','HARVT10']:
     #     bool_LW = (prediction_sn_ext['HWLWcode']!=1) & (prediction_sn_ext.index>=time_HWfirst)
     #     prediction_sn_ext.loc[bool_HW,'HWLWno'] = range(bool_HW.sum())
     #     prediction_sn_ext.loc[bool_LW,'HWLWno'] = range(bool_LW.sum())
-    continue
+    
     prediction_sn_ext['times_backup'] = prediction_sn_ext.index
     prediction_sn_ext_idxHWLWno = prediction_sn_ext.set_index('HWLWno',drop=False)
     prediction_sn_ext_idxHWLWno['tidalrange'] = prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==1,'values'] - prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']!=1,'values']  #!=1 means HWLWcode==2 or HWLWcode==LWaggercode (=3)
