@@ -142,6 +142,8 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     #parse meta_dict to query_metadata dict
     query_metadata = {}
     for metakeypoint in meta_dict:
+        if not '.' in metakeypoint:
+            raise Exception('ERROR: metakey should contain point, like "Grootheid.Code"')
         metakeymain = metakeypoint.split('.')[0]
         metakeysub = metakeypoint.split('.')[1]
         query_metadata[metakeymain] = {metakeysub:meta_dict[metakeypoint]}
