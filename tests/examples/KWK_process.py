@@ -865,12 +865,6 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     file_vali_doodtijkromme = os.path.join(dir_vali_krommen,f'doodtijkromme_{current_station}_havengetallen{year_slotgem}.csv')
     file_vali_gemtijkromme = os.path.join(dir_vali_krommen,f'gemGetijkromme_{current_station}_havengetallen{year_slotgem}.csv')
     file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_havengetallen{year_slotgem}.csv')        
-    if not os.path.exists(file_vali_doodtijkromme):
-        file_vali_doodtijkromme = None
-    if not os.path.exists(file_vali_gemtijkromme):
-        file_vali_gemtijkromme = None
-    if not os.path.exists(file_vali_springtijkromme):
-        file_vali_springtijkromme = None
     
     #TODO: add correctie havengetallen HW/LW av/sp/np met slotgemiddelde uit PLSS/modelfit (HW/LW av).
     LWaggercode = 3 # TODO: also defined elsewehere, move to top of script
@@ -1021,7 +1015,7 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     shallowdeps_M2S2 = shallowrel.loc[bool_M2S2only,:5]
     print(shallowdeps_M2S2)
     """
-    components_sn = ['A0','SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12'] 
+    components_sn = ['A0','SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12'] #+ ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
     
     
     #make prediction with springneap components with nodalfactors=False (alternative for choosing a year with a neutral nodal factor) #TODO: we might want to have 1yr instead of 1month to derive min/max tidalrange
@@ -1074,7 +1068,7 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     
     
     print('reshape_signal GEMGETIJ')
-    prediction_av_one_trefHW = ts_to_trefHW(prediction_av_one,HWreftime=ia1) # repeating one is not necessary for av, but easier to do the same everywhere
+    prediction_av_one_trefHW = ts_to_trefHW(prediction_av_one,HWreftime=ia1) # repeating one is not necessary for av, but easier to do the same for av/sp/np
     prediction_av_corr_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tD_goal=tD_av, tP_goal=None)
     prediction_av_corr_rep5 = repeat_signal(prediction_av_corr_one, nb=2, na=2)
     prediction_av_corr_rep5_trefHW = ts_to_trefHW(prediction_av_corr_rep5,HWreftime=ia1)
@@ -1092,7 +1086,7 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     prediction_np_corr_rep5_trefHW = ts_to_trefHW(prediction_np_corr_rep5,HWreftime=in1)
     
     
-    #12u25m timeseries for BOI computations (no relation between HW and moon, HW has to come at same time for av/sp/np tide, HW time does differ between stations)
+    #12u25m timeseries for BOI computations (no relation between HW and moon, HW has to come at same time for av/sp/np tide, HW timing does differ between stations)
     #TODO BOI csv: crop to tstart/tstop (currently not enough data). maybe write to bcfile instead, interpolate tsteps to round minute values, make ts relative to global reference (to make sure there is timedifference between HW HOEKVHLD and HARVT10)
     print('reshape_signal BOI GEMGETIJ and write to csv')
     prediction_av_corrBOI_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tD_goal=tD_av, tP_goal=pd.Timedelta(hours=12,minutes=25))
@@ -1109,6 +1103,7 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     prediction_np_corrBOI_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tD_goal=tD_np, tP_goal=pd.Timedelta(hours=12,minutes=25))
     prediction_np_corrBOI_repn = repeat_signal(prediction_np_corrBOI_one, nb=0, na=100)
     prediction_np_corrBOI_repn.index = prediction_np_corrBOI_repn.index - prediction_np_corrBOI_repn.index[0] + prediction_av_corrBOI_repn.index[0] #shift times to first HW from gemgetij
+    
     prediction_np_corrBOI_repn.to_csv(os.path.join(dir_gemgetij,f'doodtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
     
     
@@ -1135,17 +1130,17 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     ax1_boi.set_title(f'getijkromme BOI {current_station}')
     #gemtij
     ax1_boi.plot(prediction_av_corrBOI_repn['values'],color=cmap(0),label='prediction gemtij')
-    if file_vali_gemtijkromme is not None:
+    if os.path.exists(file_vali_gemtijkromme):
         data_vali_gemtij = pd.read_csv(file_vali_gemtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_gemtij['Water Level [m]'],'--',color=cmap(0),linewidth=0.7,label='validation KW2020 gemtij')
     #springtij
     ax1_boi.plot(prediction_sp_corrBOI_repn['values'],color=cmap(1),label='prediction springtij')
-    if file_vali_springtijkromme is not None:
+    if os.path.exists(file_vali_springtijkromme):
         data_vali_springtij = pd.read_csv(file_vali_springtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_springtij['Water Level [m]'],'--',color=cmap(1),linewidth=0.7,label='validation KW2020 springtij')
     #doodtij
     ax1_boi.plot(prediction_np_corrBOI_repn['values'],color=cmap(2),label='prediction doodtij')
-    if file_vali_doodtijkromme is not None:
+    if os.path.exists(file_vali_doodtijkromme):
         data_vali_doodtij = pd.read_csv(file_vali_doodtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_doodtij['Water Level [m]'],'--',color=cmap(2),linewidth=0.7, label='validation KW2020 doodtij')
     ax1_boi.grid()
