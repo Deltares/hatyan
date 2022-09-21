@@ -663,21 +663,7 @@ data_pd_HWLWcode = pd.DataFrame({'values':data_pd_moonculm_timeidx['type'],'HWLW
 test = hatyan.calc_HWLWnumbering(data_pd_HWLWcode,doHWLWcheck=False)
 test['times_backup'] = test.index
 test = test.set_index('HWLWno')
-"""
-hatyan.analysis(data_pd_type-data_pd_type.mean(),const_list=['M2'],nodalfactors=False, xTxmat_condition_max=50)
-hatyan.analysis(data_pd_parallax-data_pd_parallax.mean(),const_list=['M2'],nodalfactors=False, xTxmat_condition_max=50)
-hatyan.analysis(data_pd_declination-data_pd_declination.mean(),const_list=['M2'],nodalfactors=False, xTxmat_condition_max=50)
-phi_type = 118.8#88.8
-phi_parallax = 117.38#89.4
-phi_declination = 298.94#270
-phi_M2_cadzd = 48
 
-hr_type = phi_type/360*M2_period_timedelta #+ dt.timedelta(hours=2,minutes=20)
-
-phi_parallax/360*M2_period_timedelta #+ dt.timedelta(hours=2,minutes=20)
-phi_declination/360*M2_period_timedelta #+ dt.timedelta(hours=2,minutes=20)
-phi_M2_cadzd/360*M2_period_timedelta
-"""
 for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     plt.close('all')
     print(f'havengetallen for {current_station}')
