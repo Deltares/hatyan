@@ -813,50 +813,7 @@ for current_station in []:#['HARVT10', 'VLISSGN']:#stat_list:
 ##### gemiddelde getijkrommen
 for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     """
-    uit: gemiddelde getijkrommen 1991.0
-        
-    Voor meetpunten in het onbeinvloed gebied is per getijfase eerst een "ruwe kromme" berekend met de resultaten van de harmonische analyse, 
-    welke daarna een weinig is bijgesteld aan de hand van de volgende slotgemiddelden:
-    gemiddeld hoog- en laagwater, duur daling. Deze bijstelling bestaat uit een eenvoudige vermenigvuldiging.
     
-    Voor de ruwe krommen voor springtij en doodtij is het getij voorspeld voor een jaar met gemiddelde helling maansbaan 
-    met uitsluitend zuivere combinaties van de componenten M2 en S2:
-    tabel: Gebruikte componenten voor de spring- en doodtijkromme
-    SM, 3MS2, mu2, M2, S2, 2SM2, 3MS4, M4, MS4, 
-    4MS6, M6, 2MS6, M8, 3MS8, M10, 4MS10, M12, 5MS12
-    
-    In het aldus gemodelleerde getij is de vorm van iedere getijslag, gegeven de getijfase, identiek. 
-    Vervolgens is aan de hand van de havengetallen een springtij- en een doodtijkromme geselecteerd.
-    
-    Voor de ruwe krommen voor gemiddeld tij zijn uitsluitend zuivere harmonischen van M2 gebruikt: M2, M4, M6, M8, M10, M12, 
-    waarbij de amplituden per component zijn vervangen door de wortel uit de kwadraatsom van de amplituden 
-    van alle componenten in de betreffende band, voor zover voorkomend in de standaardset van 94 componenten. 
-    Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk.
-    tabel: Verhouding tussen amplitude en oorspronkelijke amplitude
-    M2 (tweemaaldaagse band) 1,06
-    M4 1,28
-    M6 1,65
-    M8 2,18
-    M10 2,86
-    M12 3,46
-    
-    In het aldus gemodelleerde getij is de vorm van iedere getijslag identiek, met een getijduur van 12 h 25 min.
-    Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; 
-    dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differen-tiele getijduur, 
-    en daarmee de duur rijzing, afgeleid uit de ruwe krommen.
-    
-    De aanpassing aan de slotgemiddelden kwam bij springtij en gemiddeld tij steeds op zeer geringe wijzigingen neer, 
-    bij doodtij echter werd het tijverschil door de ruwe krommen ca. 10% onderschat. 
-    Het verschil tussen spring- en gemiddeld tij enerzijds en doodtij anderzijds is vermoedelijk 
-    toe te schrijven aan enkele algemene eigenschappen van harmonische componenten.
-    
-    Voor wat betreft de juistheid van de vorm van de krommen kan slechts worden afgegaan op de ervaring, 
-    aangezien geen der vroegere bepalingen consis-tente en reproduceerbare resultaten opleverde.
-    
-    De boven omschreven methode voor gemiddeld tij biedt de mogelijkheid op geheel analoge wijze krommen te berekenen, 
-    zodra maar enkele componenten (eventueel alleen M2, M4 en M6) bekend zijn. 
-    Te denken valt aan: buitenlandse meetpunten; gedurende korte tijd bemeten locaties; 
-    modelresultaten; hypothetische hydrologische omstandigheden.
     """
     plt.close('all')
     print(f'gem getijkrommen for {current_station}')
@@ -866,7 +823,7 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     file_vali_gemtijkromme = os.path.join(dir_vali_krommen,f'gemGetijkromme_{current_station}_havengetallen{year_slotgem}.csv')
     file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_havengetallen{year_slotgem}.csv')        
     
-    #TODO: add correctie havengetallen HW/LW av/sp/np met slotgemiddelde uit PLSS/modelfit (HW/LW av).
+    #TODO: add correctie havengetallen HW/LW av/sp/np met slotgemiddelde uit PLSS/modelfit (HW/LW av)
     LWaggercode = 3 # TODO: also defined elsewehere, move to top of script
     file_havget = os.path.join(dir_havget,f'aardappelgrafiek_2011_{current_station}_aggercode{LWaggercode}.csv')
     if not os.path.exists(file_havget):
@@ -960,14 +917,13 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     # =============================================================================
     # Hatyan analyse voor 10 jaar (alle componenten voor gemiddelde getijcyclus) #TODO: maybe use original 4y period instead?
     # =============================================================================
-    
     const_list = hatyan.get_const_list_hatyan('year') #this should not be changed, since higher harmonics are necessary
     hatyan_settings_ana = hatyan.HatyanSettings(nodalfactors=True,
                                                 fu_alltimes=False, # False is RWS-default
-                                                xfac=True, #wordt niet besproken, moet die wel aan?
+                                                xfac=True, # True is RWS-default
                                                 analysis_perperiod='Y',
-                                                xTxmat_condition_max=15, #TODO: for some reason this is necessary for HOEKVHLD 2006 (default=10), also strong difference in springneap ts when using smaller component set, what is happening?
-                                                return_allyears=True)
+                                                xTxmat_condition_max=15, #TODO: for some reason this is necessary for HOEKVHLD 2006 (default=10)
+                                                return_allperiods=True)
     comp_frommeasurements_avg, comp_frommeasurements_allyears = hatyan.get_components_from_ts(ts_meas_pd, const_list=const_list, hatyan_settings=hatyan_settings_ana)
     
     #check if all years are available
@@ -979,6 +935,30 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     # =============================================================================
     # gemiddelde getijkromme
     # =============================================================================
+    """
+    uit: gemiddelde getijkrommen 1991.0
+    Voor meetpunten in het onbeinvloed gebied is per getijfase eerst een "ruwe kromme" berekend met de resultaten van de harmonische analyse, 
+    welke daarna een weinig is bijgesteld aan de hand van de volgende slotgemiddelden:
+    gemiddeld hoog- en laagwater, duur daling. Deze bijstelling bestaat uit een eenvoudige vermenigvuldiging.    
+    
+    Voor de ruwe krommen voor gemiddeld tij zijn uitsluitend zuivere harmonischen van M2 gebruikt: M2, M4, M6, M8, M10, M12, 
+    waarbij de amplituden per component zijn vervangen door de wortel uit de kwadraatsom van de amplituden 
+    van alle componenten in de betreffende band, voor zover voorkomend in de standaardset van 94 componenten. 
+    Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk.
+    tabel: Verhouding tussen amplitude en oorspronkelijke amplitude
+    M2 (tweemaaldaagse band) 1,06
+    M4 1,28
+    M6 1,65
+    M8 2,18
+    M10 2,86
+    M12 3,46
+    
+    In het aldus gemodelleerde getij is de vorm van iedere getijslag identiek, met een getijduur van 12 h 25 min.
+    Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; 
+    dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differen-tiele getijduur, 
+    en daarmee de duur rijzing, afgeleid uit de ruwe krommen.
+    
+    """
     #kwadraatsommen voor M2 tot M12
     components_av = ['M2','M4','M6','M8','M10','M12']
     comp_av = comp_frommeasurements_avg.loc[components_av]
@@ -990,10 +970,10 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
         comp_av.loc[comp_higherharmonics,'A'] = np.sqrt((comp_iM['A']**2).sum()) #kwadraatsom
     
     print('verhouding tussen originele en kwadratensom componenten:')
-    print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data
+    print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data. Statement "Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk." seems to be not true. Could also differ because of 10 instead of 4 analysis years?
     
     comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
-    freq_sec = 10 #TODO: frequency decides accuracy of tU/tD and other timings
+    freq_sec = 10 #TODO: frequency decides accuracy of tU/tD and other timings (and is writing freq of BOI timeseries)
     times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year, 1, 1, 0, 0)-dt.timedelta(hours=12), end=dt.datetime(tstop_dt.year, 2, 1, 0, 0), freq=f'{freq_sec} S') #start 12 hours in advance, to assure also corrected values on desired tstart
     prediction_av = hatyan.prediction(comp_av, times_pred_all=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to guarantee repetative signal
     prediction_av_ext = hatyan.calc_HWLW(ts=prediction_av, calc_HWLW345=False)
@@ -1008,6 +988,18 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     # =============================================================================
     # Hatyan predictie voor 1 jaar met gemiddelde helling maansbaan (voor afleiden spring-doodtijcyclus) >> predictie zonder nodalfactors instead
     # =============================================================================
+    """
+    uit: gemiddelde getijkrommen 1991.0
+    Voor de ruwe krommen voor springtij en doodtij is het getij voorspeld voor een jaar met gemiddelde helling maansbaan 
+    met uitsluitend zuivere combinaties van de componenten M2 en S2:
+    tabel: Gebruikte componenten voor de spring- en doodtijkromme
+    SM, 3MS2, mu2, M2, S2, 2SM2, 3MS4, M4, MS4, 
+    4MS6, M6, 2MS6, M8, 3MS8, M10, 4MS10, M12, 5MS12
+    
+    In het aldus gemodelleerde getij is de vorm van iedere getijslag, gegeven de getijfase, identiek. 
+    Vervolgens is aan de hand van de havengetallen een springtij- en een doodtijkromme geselecteerd.
+
+    """
     """ #TODO, this is different than provided list, these shallow ones are extra: ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
     #shallow relations, derive 'zuivere harmonischen van M2 en S2'
     dummy,shallowrel,dummy = hatyan.get_foreman_shallowrelations()
@@ -1017,27 +1009,27 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     """
     components_sn = ['A0','SM','3MS2','MU2','M2','S2','2SM2','3MS4','M4','MS4','4MS6','M6','2MS6','M8','3MS8','M10','4MS10','M12','5MS12'] #+ ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
     
-    
-    #make prediction with springneap components with nodalfactors=False (alternative for choosing a year with a neutral nodal factor) #TODO: we might want to have 1yr instead of 1month to derive min/max tidalrange
+    #make prediction with springneap components with nodalfactors=False (alternative for choosing a year with a neutral nodal factor). Using 1yr instead of 1month does not make a difference in min/max tidal range and shape, also because of nodalfactors=False. (when using more components, there is a slight difference)
     comp_frommeasurements_avg_sncomp = comp_frommeasurements_avg.loc[components_sn]
     prediction_sn = hatyan.prediction(comp_frommeasurements_avg_sncomp, times_pred_all=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to make independent on chosen year
     
-    #TODO KW-RMM2020: "In het geval van aggers is het eerste laagwater gebruikt." >> TODO: in 1991.0 worden stations met aggers niet geschaald?
     prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=True) # we need aggers since scaling timedown is also derived with firstLW (dominance alternates, so would be unsafe to do with dominant LW)
-    if len(prediction_sn_ext['HWLWcode'].unique()) > 2: #results in dataframe with HW and LW/aggercode alternating, so one HW every two values. This is impotant because is1/is2/in1/in2 assume a HW every on other extreme
-        #select first LW's (LWaggercode=3) as LW (replace with 
+    if len(prediction_sn_ext['HWLWcode'].unique()) > 2: 
+        #select first LW's (LWaggercode=3) as LW (code 4 and 5 are dropped in this case). This results in a dataframe with HW and LW/aggercode alternating, so one HW every two values. This is impotant because is1/is2/in1/in2 assume a HW every on other extreme
         prediction_sn_ext = prediction_sn_ext.loc[(prediction_sn_ext['HWLWcode']==1) | (prediction_sn_ext['HWLWcode']==2) | (prediction_sn_ext['HWLWcode']==LWaggercode)]
     
-    #selecteer getijslag met minimale tidalrange en maximale tidalrange (#TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complex. hoe wordt het bij havengetallen gedaan?)
-    #try:
-    prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext,station=current_station)
-    # except:
-    #     print('WARNING: calc_HWLWnumbering failed') #TODO: check if it fails and maybe fix numbering algorithm
-    #     time_HWfirst = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1].index[0]
-    #     bool_HW = (prediction_sn_ext['HWLWcode']==1) & (prediction_sn_ext.index>=time_HWfirst)
-    #     bool_LW = (prediction_sn_ext['HWLWcode']!=1) & (prediction_sn_ext.index>=time_HWfirst)
-    #     prediction_sn_ext.loc[bool_HW,'HWLWno'] = range(bool_HW.sum())
-    #     prediction_sn_ext.loc[bool_LW,'HWLWno'] = range(bool_LW.sum())
+    #selecteer getijslag met minimale tidalrange en maximale tidalrange
+    #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complex. hoe wordt het bij havengetallen gedaan? #NOTE: in 1991.0 worden stations met aggers niet geschaald?
+    #TODO: origineel zijn de krommes adhv havengetallen geselecteerd
+    try:
+        prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext,station=current_station)
+    except:
+        raise Exception('WARNING: calc_HWLWnumbering failed') #TODO: check if it fails and maybe fix numbering algorithm
+        time_HWfirst = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1].index[0]
+        bool_HW = (prediction_sn_ext['HWLWcode']==1) & (prediction_sn_ext.index>=time_HWfirst)
+        bool_LW = (prediction_sn_ext['HWLWcode']!=1) & (prediction_sn_ext.index>=time_HWfirst)
+        prediction_sn_ext.loc[bool_HW,'HWLWno'] = range(bool_HW.sum())
+        prediction_sn_ext.loc[bool_LW,'HWLWno'] = range(bool_LW.sum())
     prediction_sn_ext['times_backup'] = prediction_sn_ext.index
     prediction_sn_ext_idxHWLWno = prediction_sn_ext.set_index('HWLWno',drop=False)
     prediction_sn_ext_idxHWLWno['tidalrange'] = prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==1,'values'] - prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']!=1,'values']  #!=1 means HWLWcode==2 or HWLWcode==LWaggercode (=3)
@@ -1061,7 +1053,7 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=prediction_sn,ts_ext=prediction_sn_ext)
     ax1.plot(prediction_sp_one['values'],'r')
     ax1.plot(prediction_np_one['values'],'r')
-    ax1.legend(labels=['ruwe kromme','0m+NAP','gemiddelde waterstand','hoogwater','laagwater','kromme spring','kromme neap'],loc=4)
+    ax1.legend(labels=ax1.get_legend_handles_labels()[1]+['kromme spring','kromme neap'],loc=4)
     ax1.set_ylabel('waterstand [m]')
     ax1.set_title(f'spring- en doodtijkromme {current_station}')
     fig.savefig(os.path.join(dir_gemgetij,f'springdoodtijkromme_{current_station}_slotgem{year_slotgem}.png'))
@@ -1087,25 +1079,25 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     
     
     #12u25m timeseries for BOI computations (no relation between HW and moon, HW has to come at same time for av/sp/np tide, HW timing does differ between stations)
-    #TODO BOI csv: crop to tstart/tstop (currently not enough data). maybe write to bcfile instead, interpolate tsteps to round minute values, make ts relative to global reference (to make sure there is timedifference between HW HOEKVHLD and HARVT10)
     print('reshape_signal BOI GEMGETIJ and write to csv')
     prediction_av_corrBOI_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tD_goal=tD_av, tP_goal=pd.Timedelta(hours=12,minutes=25))
-    prediction_av_corrBOI_repn = repeat_signal(prediction_av_corrBOI_one, nb=0, na=100)
-    prediction_av_corrBOI_repn.to_csv(os.path.join(dir_gemgetij,f'gemGetijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
+    prediction_av_corrBOI_one_roundtime = prediction_av_corrBOI_one.resample(f'{freq_sec}S').nearest()
+    prediction_av_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'gemGetijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
+    prediction_av_corrBOI_repn_roundtime = repeat_signal(prediction_av_corrBOI_one_roundtime, nb=0, na=10)
     
     print('reshape_signal BOI SPRINGTIJ and write to csv')
     prediction_sp_corrBOI_one = reshape_signal(prediction_sp_one, prediction_sp_ext_one, HW_goal=HW_sp, LW_goal=LW_sp, tD_goal=tD_sp, tP_goal=pd.Timedelta(hours=12,minutes=25))
-    prediction_sp_corrBOI_repn = repeat_signal(prediction_sp_corrBOI_one, nb=0, na=100)
-    prediction_sp_corrBOI_repn.index = prediction_sp_corrBOI_repn.index - prediction_sp_corrBOI_repn.index[0] + prediction_av_corrBOI_repn.index[0] #shift times to first HW from gemgetij
-    prediction_sp_corrBOI_repn.to_csv(os.path.join(dir_gemgetij,f'springtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
+    prediction_sp_corrBOI_one.index = prediction_sp_corrBOI_one.index - prediction_sp_corrBOI_one.index[0] + prediction_av_corrBOI_one.index[0] #shift times to first HW from gemgetij
+    prediction_sp_corrBOI_one_roundtime = prediction_sp_corrBOI_one.resample(f'{freq_sec}S').nearest()
+    prediction_sp_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'springtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
+    prediction_sp_corrBOI_repn_roundtime = repeat_signal(prediction_sp_corrBOI_one_roundtime, nb=0, na=10)
 
     print('reshape_signal BOI DOODTIJ and write to csv')
     prediction_np_corrBOI_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tD_goal=tD_np, tP_goal=pd.Timedelta(hours=12,minutes=25))
-    prediction_np_corrBOI_repn = repeat_signal(prediction_np_corrBOI_one, nb=0, na=100)
-    prediction_np_corrBOI_repn.index = prediction_np_corrBOI_repn.index - prediction_np_corrBOI_repn.index[0] + prediction_av_corrBOI_repn.index[0] #shift times to first HW from gemgetij
-    
-    prediction_np_corrBOI_repn.to_csv(os.path.join(dir_gemgetij,f'doodtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
-    
+    prediction_np_corrBOI_one.index = prediction_np_corrBOI_one.index - prediction_np_corrBOI_one.index[0] + prediction_av_corrBOI_one.index[0] #shift times to first HW from gemgetij
+    prediction_np_corrBOI_one_roundtime = prediction_np_corrBOI_one.resample(f'{freq_sec}S').nearest()
+    prediction_np_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'doodtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
+    prediction_np_corrBOI_repn_roundtime = repeat_signal(prediction_np_corrBOI_one_roundtime, nb=0, na=10)
     
     cmap = plt.get_cmap("tab10")
         
@@ -1129,17 +1121,17 @@ for current_station in ['HOEKVHLD']:#stat_list: # ['HOEKVHLD','HARVT10']:#
     fig_boi,ax1_boi = plt.subplots(figsize=(14,7))
     ax1_boi.set_title(f'getijkromme BOI {current_station}')
     #gemtij
-    ax1_boi.plot(prediction_av_corrBOI_repn['values'],color=cmap(0),label='prediction gemtij')
+    ax1_boi.plot(prediction_av_corrBOI_repn_roundtime['values'],color=cmap(0),label='prediction gemtij')
     if os.path.exists(file_vali_gemtijkromme):
         data_vali_gemtij = pd.read_csv(file_vali_gemtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_gemtij['Water Level [m]'],'--',color=cmap(0),linewidth=0.7,label='validation KW2020 gemtij')
     #springtij
-    ax1_boi.plot(prediction_sp_corrBOI_repn['values'],color=cmap(1),label='prediction springtij')
+    ax1_boi.plot(prediction_sp_corrBOI_repn_roundtime['values'],color=cmap(1),label='prediction springtij')
     if os.path.exists(file_vali_springtijkromme):
         data_vali_springtij = pd.read_csv(file_vali_springtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_springtij['Water Level [m]'],'--',color=cmap(1),linewidth=0.7,label='validation KW2020 springtij')
     #doodtij
-    ax1_boi.plot(prediction_np_corrBOI_repn['values'],color=cmap(2),label='prediction doodtij')
+    ax1_boi.plot(prediction_np_corrBOI_repn_roundtime['values'],color=cmap(2),label='prediction doodtij')
     if os.path.exists(file_vali_doodtijkromme):
         data_vali_doodtij = pd.read_csv(file_vali_doodtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_doodtij['Water Level [m]'],'--',color=cmap(2),linewidth=0.7, label='validation KW2020 doodtij')
