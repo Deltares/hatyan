@@ -115,7 +115,7 @@ for stat_name in stat_name_list:
 if dataTKdia:
     stat_list = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE'] #all stations from TK
     stat_list = ['BAALHK','BATH','BERGSDSWT','BRESKVHVN','CADZD','DELFZL','DENHDR','DENOVBTN','EEMSHVN','GATVBSLE','HANSWT','HARLGN','HARVT10','HOEKVHLD','IJMDBTHVN','KATSBTN','KORNWDZBTN','KRAMMSZWT','LAUWOG','OUDSD','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','STAVNSE','STELLDBTN','TERNZN','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN'] #all files with valid data for 2010 to 2021
-    #stat_list = stat_list[stat_list.index('ROOMPBNN'):]
+    #stat_list = stat_list[stat_list.index('STELLDBTN'):]
 M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
 
 
@@ -654,7 +654,7 @@ moonculm_idxHWLWno['times'] = moonculm_idxHWLWno.index
 moonculm_idxHWLWno['HWLWno_offset'] = moonculm_idxHWLWno['HWLWno']+4 #TODO: check this offset in relation to culm_addtime
 moonculm_idxHWLWno = moonculm_idxHWLWno.set_index('HWLWno_offset')
 
-for current_station in stat_list:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     plt.close('all')
     print(f'havengetallen for {current_station}')
     
@@ -686,15 +686,30 @@ for current_station in stat_list:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDB
             data_pd_HWLW = data_pd_HWLW_all.copy()
     else:
         data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
-
-    if current_station in ['KATSBTN']:
-        #TODO: this removes extreme values that are 1/5/28 min from each other, they should not be present
-        timediff = data_pd_HWLW.index[1:]-data_pd_HWLW.index[:-1]
-        data_pd_HWLW['timediff'] = pd.TimedeltaIndex([pd.NaT]).append(timediff)
-        bool_tooclose = data_pd_HWLW['timediff']<dt.timedelta(hours=1)
-        print(data_pd_HWLW.loc[bool_tooclose,'timediff'].unique()/1e9)
-        data_pd_HWLW = data_pd_HWLW.loc[~bool_tooclose]
-        
+    
+    if current_station in ['KATSBTN','GATVBSLE','HANSWT']:
+        #TODO: this removes extreme values that are 1/5/28 min from each other, but they should not be present
+        if 1:
+            timediff = data_pd_HWLW.index[1:]-data_pd_HWLW.index[:-1]
+            data_pd_HWLW['timediff'] = pd.TimedeltaIndex([pd.NaT]).append(timediff)
+            bool_tooclose = data_pd_HWLW['timediff']<dt.timedelta(minutes=30)
+            print('unique small timestep_min:',data_pd_HWLW.loc[bool_tooclose,'timediff'].unique()/1e9/60)
+            data_pd_HWLW = data_pd_HWLW.loc[~bool_tooclose]
+        else: #this does not always work
+            data_pd_HWLW = hatyan.calc_HWLW(data_pd_HWLW,buffer_hr=0)
+    if current_station in ['STELLDBTN']: #TODO: manual removal of invalid HW value from STELLDBTN (is flat line in wl timeseries)
+        if 0:
+            file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
+            data_pd_wl_all = pd.read_pickle(file_wl_pkl)        
+            data_pd_wl_all.index = data_pd_wl_all.index.tz_localize(None)
+            data_pd_wl_all = hatyan.crop_timeseries(data_pd_wl_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
+            data_pd_wl_all_ext = hatyan.calc_HWLW(data_pd_wl_all)
+            fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_HWLW)
+            fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_wl_all_ext)
+        drop_time_STELLDBTN = '2012-02-09 09:36:00'
+        if drop_time_STELLDBTN in data_pd_HWLW.index:
+            data_pd_HWLW = data_pd_HWLW.drop(drop_time_STELLDBTN)
+    
     data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW)
     data_pd_HWLW_idxHWLWno['times'] = data_pd_HWLW_idxHWLWno.index
     data_pd_HWLW_idxHWLWno = data_pd_HWLW_idxHWLWno.set_index('HWLWno',drop=False)
@@ -796,7 +811,7 @@ for current_station in stat_list:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDB
 #TODO IMPORTANT: uncertainty about aggers (correlates with havengetallen, maybe drop scaling of time or drop scaling of aggerstations like 1991.0 in general?)
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 ##### gemiddelde getijkrommen
-for current_station in []:#stat_list:#['HOEKVHLD','HARVT10']:
+for current_station in stat_list[stat_list.index('HARLGN'):]:#['HOEKVHLD','HARVT10']:
     """
     
     """
@@ -854,11 +869,12 @@ for current_station in []:#stat_list:#['HOEKVHLD','HARVT10']:
             tU_goal = tP_goal-tD_goal #equal to tP_val-tD_goal if tP_goal is None
             
             tD_val = timesLW[i]-timesHW[i]
-            print(f'tidalrange factor: {TR_goal/TR1_val:.2f}')
-            print(f'timeDown factor: {tD_goal/tD_val:.2f}')
+            print(f'tidalrange factor: {TR_goal/TR1_val:.3f}')
+            print(f'timeDown factor: {tD_goal/tD_val:.3f}')
             factors = np.array([TR_goal/TR1_val,tD_goal/tD_val])
-            if (factors>1.1).any() or (factors<0.9).any():
-                raise Exception('more than 10% decrease or increase')
+            allowed_perc = 12
+            if (factors>(1+allowed_perc/100)).any() or (factors<(1-allowed_perc/100)).any():
+                raise Exception(f'more than {allowed_perc}% decrease or increase')
             
             tide_HWtoLW = ts_corr.loc[timesHW[i]:timesLW[i]]
             tide_LWtoHW = ts_corr.loc[timesLW[i]:timesHW[i+1]]

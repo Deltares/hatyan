@@ -311,11 +311,14 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
     HW_tdiff_cadzd = HW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr
     HW_tdiff_div, HW_tdiff_mod_searchwindow = np.divmod(HW_tdiff_cadzd.values, M2_period_hr)
     HW_tdiff_mod = HW_tdiff_mod_searchwindow - searchwindow_hr
+    ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
     if not all(np.diff(HW_tdiff_div) > 0):
+        idx_toosmall = np.where((np.diff(HW_tdiff_div) <= 0))[0]
+        print(idx_toosmall)
+        print(ts_ext.loc[HW_bool,['values','HWLWcode','HWLWno']].iloc[idx_toosmall[0]:])
         raise Exception('tidal wave numbering: HW numbers not always increasing')
     if not all(np.abs(HW_tdiff_mod)<searchwindow_hr):
         raise Exception('tidal wave numbering: not all HW fall into hardcoded search window')
-    ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
     
     for LWcode_2345 in [2,3,4,5]:
         LW_bool = ts_ext['HWLWcode']==LWcode_2345
