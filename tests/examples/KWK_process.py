@@ -640,8 +640,7 @@ for current_station in []:#stat_list:
 
 
 
-
-#TODO IMPORTANT: match HWLWno station and moonculminations
+#TODO IMPORTANT: check culm_addtime and HWLWno+4 offsets
 ### HAVENGETALLEN
 culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # link with moonculmination (or M2) two days before, 24h rotates entire graph. # furthermore: 2u20min correction, this shifts the x-axis: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET)
 data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt)#,tzone='UTC+01:00')
@@ -649,24 +648,13 @@ if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_p
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
 
-#TODO: maybe match HWLWno of moonculm with that of station, to compute time difference. Maybe with offset for HWLWno of 5 or so
-#TODO: does that fix scheveningen issue?
-data_pd_moonculm_timeidx = data_pd_moonculm.set_index('datetime')
-#data_pd_moonculm_timeidx.index = data_pd_moonculm_timeidx.index + dt.timedelta(hours=1)
-#fig,(ax1,ax2,ax3) = plt.subplots(3,1)
-#ax1.plot(data_pd_moonculm_timeidx['type'])
-#ax2.plot(data_pd_moonculm_timeidx['declination'])
-#ax3.plot(data_pd_moonculm_timeidx['parallax'])
-#data_pd_parallax = pd.DataFrame({'values':data_pd_moonculm_timeidx['parallax']})
-#data_pd_declination = pd.DataFrame({'values':data_pd_moonculm_timeidx['declination']})
-#data_pd_type = pd.DataFrame({'values':data_pd_moonculm_timeidx['type']})
-data_pd_HWLWcode = pd.DataFrame({'values':data_pd_moonculm_timeidx['type'],'HWLWcode':1+0*data_pd_moonculm_timeidx['type']})
-moonculm_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLWcode,doHWLWcheck=False)
+data_pd_HWLWcode = pd.DataFrame({'values':data_pd_moonculm['type'].values,'HWLWcode':1+0*data_pd_moonculm['type'].values},index=data_pd_moonculm['datetime'])
+moonculm_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLWcode,doHWLWcheck=False) #TODO: currently w.r.t. cadzd, is that an issue?
 moonculm_idxHWLWno['times'] = moonculm_idxHWLWno.index
-moonculm_idxHWLWno['HWLWno_offset'] = moonculm_idxHWLWno['HWLWno']+4
+moonculm_idxHWLWno['HWLWno_offset'] = moonculm_idxHWLWno['HWLWno']+4 #TODO: check this offset in relation to culm_addtime
 moonculm_idxHWLWno = moonculm_idxHWLWno.set_index('HWLWno_offset')
 
-for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in stat_list:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     plt.close('all')
     print(f'havengetallen for {current_station}')
     
@@ -698,8 +686,16 @@ for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJM
             data_pd_HWLW = data_pd_HWLW_all.copy()
     else:
         data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
-    
-    data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW) #currently w.r.t. cadzd, is that an issue?
+
+    if current_station in ['KATSBTN']:
+        #TODO: this removes extreme values that are 1/5/28 min from each other, they should not be present
+        timediff = data_pd_HWLW.index[1:]-data_pd_HWLW.index[:-1]
+        data_pd_HWLW['timediff'] = pd.TimedeltaIndex([pd.NaT]).append(timediff)
+        bool_tooclose = data_pd_HWLW['timediff']<dt.timedelta(hours=1)
+        print(data_pd_HWLW.loc[bool_tooclose,'timediff'].unique()/1e9)
+        data_pd_HWLW = data_pd_HWLW.loc[~bool_tooclose]
+        
+    data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW)
     data_pd_HWLW_idxHWLWno['times'] = data_pd_HWLW_idxHWLWno.index
     data_pd_HWLW_idxHWLWno = data_pd_HWLW_idxHWLWno.set_index('HWLWno',drop=False)
     
