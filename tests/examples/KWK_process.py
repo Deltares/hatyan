@@ -702,40 +702,6 @@ for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJM
     data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW) #currently w.r.t. cadzd, is that an issue?
     data_pd_HWLW_idxHWLWno['times'] = data_pd_HWLW_idxHWLWno.index
     data_pd_HWLW_idxHWLWno = data_pd_HWLW_idxHWLWno.set_index('HWLWno',drop=False)
-
-    """
-    #derive stat_addtime based on M2 phase difference with CADZD
-    M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
-    comp_M2 = hatyan.analysis(data_pd_HWLW,const_list=['M2'],xTxmat_condition_max=150) #high condition value, since it should provide a phasediff also in case of only one HW+LW
-    M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd)%360
-    stat_addtime = M2phasediff_deg/360*M2_period_timedelta #TODO: this is new, better is to derive with HWLWno of moonculminations
-    
-    data_pd_HWLW.index.name = 'times' #index is called 'Tijdstip' if retrieved from DDL.
-    data_pd_HWLW = data_pd_HWLW.reset_index() # needed since we need numbered HWLW, HW is a value and LW is value+1
-    
-    #TODO: add duur getijperiode
-    HW_bool = data_pd_HWLW['HWLWcode']==1
-    data_pd_HWLW['getijperiod'] = (data_pd_HWLW.loc[HW_bool,'times'].iloc[1:].values - data_pd_HWLW.loc[HW_bool,'times'].iloc[:-1])
-
-    ##### CULMINATIEBEREKENING/HAVENGETALLEN
-    print('select culminations corresponding to each HW/LW')
-    data_pd_HWLW['culm_time'] = pd.NaT
-    for iHWLW,HWLWrow in data_pd_HWLW.iterrows():
-        if HWLWrow['HWLWcode']!=1: #skip non-HW rows
-            continue
-        #select culmination for this HW
-        timediff_withculm = (HWLWrow['times']-(data_pd_moonculm['datetime']+culm_addtime+stat_addtime)).abs()
-        if timediff_withculm.min() > dt.timedelta(hours=8):
-            raise Exception(f'ERROR: no culmination found within 8 hours of high water at {HWLWrow["times"]} +culm_addtime(={culm_addtime.total_seconds()/3600:.1f}hr), range culm: \n{data_pd_moonculm["datetime"].iloc[[0,-1]]}')#%s)'%(culm_time, culm_addtime.total_seconds()/3600, data_pd_HWLW.loc[[data_pd_HWLW.index.min(),data_pd_HWLW.index.max()],'times']))
-            print(data_pd_moonculm["datetime"].head(30))
-        data_pd_HWLW.loc[iHWLW:iHWLW+1,'culm_time'] = data_pd_moonculm.loc[timediff_withculm.idxmin(),'datetime']
-        #compute duur daling for this HW
-        if iHWLW<data_pd_HWLW.index[-1]:
-            data_pd_HWLW.loc[iHWLW,'duurdaling'] = data_pd_HWLW.loc[iHWLW+1,'times']-data_pd_HWLW.loc[iHWLW,'times']
-    #compute the rest for all extremes at once
-    data_pd_HWLW['culm_hr'] = (data_pd_HWLW['culm_time'].round('h').dt.hour)%12
-    data_pd_HWLW['HWLW_delay'] = (data_pd_HWLW['times']-(data_pd_HWLW['culm_time']+culm_addtime+stat_addtime))
-    """
     
     #data_pd_HWLW_idxHWLWno['tidalrange'] = data_pd_HWLW_idxHWLWno.loc[data_pd_HWLW_idxHWLWno['HWLWcode']==1,'values'] - data_pd_HWLW_idxHWLWno.loc[data_pd_HWLW_idxHWLWno['HWLWcode']!=1,'values']
     HW_bool = data_pd_HWLW_idxHWLWno['HWLWcode']==1
