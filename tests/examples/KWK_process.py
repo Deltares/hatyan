@@ -657,13 +657,14 @@ data_pd_moonculm_timeidx = data_pd_moonculm.set_index('datetime')
 #ax1.plot(data_pd_moonculm_timeidx['type'])
 #ax2.plot(data_pd_moonculm_timeidx['declination'])
 #ax3.plot(data_pd_moonculm_timeidx['parallax'])
-data_pd_parallax = pd.DataFrame({'values':data_pd_moonculm_timeidx['parallax']})
-data_pd_declination = pd.DataFrame({'values':data_pd_moonculm_timeidx['declination']})
-data_pd_type = pd.DataFrame({'values':data_pd_moonculm_timeidx['type']})
+#data_pd_parallax = pd.DataFrame({'values':data_pd_moonculm_timeidx['parallax']})
+#data_pd_declination = pd.DataFrame({'values':data_pd_moonculm_timeidx['declination']})
+#data_pd_type = pd.DataFrame({'values':data_pd_moonculm_timeidx['type']})
 data_pd_HWLWcode = pd.DataFrame({'values':data_pd_moonculm_timeidx['type'],'HWLWcode':1+0*data_pd_moonculm_timeidx['type']})
-test = hatyan.calc_HWLWnumbering(data_pd_HWLWcode,doHWLWcheck=False)
-test['times_backup'] = test.index
-test = test.set_index('HWLWno')
+moonculm_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLWcode,doHWLWcheck=False)
+moonculm_idxHWLWno['times'] = moonculm_idxHWLWno.index
+moonculm_idxHWLWno['HWLWno_offset'] = moonculm_idxHWLWno['HWLWno']+4
+moonculm_idxHWLWno = moonculm_idxHWLWno.set_index('HWLWno_offset')
 
 for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     plt.close('all')
@@ -698,18 +699,21 @@ for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJM
     else:
         data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
     
+    data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW) #currently w.r.t. cadzd, is that an issue?
+    data_pd_HWLW_idxHWLWno['times'] = data_pd_HWLW_idxHWLWno.index
+    data_pd_HWLW_idxHWLWno = data_pd_HWLW_idxHWLWno.set_index('HWLWno',drop=False)
+
+    """
     #derive stat_addtime based on M2 phase difference with CADZD
     M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
     comp_M2 = hatyan.analysis(data_pd_HWLW,const_list=['M2'],xTxmat_condition_max=150) #high condition value, since it should provide a phasediff also in case of only one HW+LW
     M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd)%360
     stat_addtime = M2phasediff_deg/360*M2_period_timedelta #TODO: this is new, better is to derive with HWLWno of moonculminations
     
-    data_pd_HWLW = hatyan.calc_HWLWnumbering(data_pd_HWLW)
-    
     data_pd_HWLW.index.name = 'times' #index is called 'Tijdstip' if retrieved from DDL.
     data_pd_HWLW = data_pd_HWLW.reset_index() # needed since we need numbered HWLW, HW is a value and LW is value+1
     
-    #add duur getijperiode
+    #TODO: add duur getijperiode
     HW_bool = data_pd_HWLW['HWLWcode']==1
     data_pd_HWLW['getijperiod'] = (data_pd_HWLW.loc[HW_bool,'times'].iloc[1:].values - data_pd_HWLW.loc[HW_bool,'times'].iloc[:-1])
 
@@ -731,7 +735,17 @@ for current_station in ['VLISSGN']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJM
     #compute the rest for all extremes at once
     data_pd_HWLW['culm_hr'] = (data_pd_HWLW['culm_time'].round('h').dt.hour)%12
     data_pd_HWLW['HWLW_delay'] = (data_pd_HWLW['times']-(data_pd_HWLW['culm_time']+culm_addtime+stat_addtime))
+    """
     
+    #data_pd_HWLW_idxHWLWno['tidalrange'] = data_pd_HWLW_idxHWLWno.loc[data_pd_HWLW_idxHWLWno['HWLWcode']==1,'values'] - data_pd_HWLW_idxHWLWno.loc[data_pd_HWLW_idxHWLWno['HWLWcode']!=1,'values']
+    HW_bool = data_pd_HWLW_idxHWLWno['HWLWcode']==1
+    data_pd_HWLW_idxHWLWno.loc[HW_bool,'getijperiod'] = data_pd_HWLW_idxHWLWno.loc[HW_bool,'times'].iloc[1:].values - data_pd_HWLW_idxHWLWno.loc[HW_bool,'times'].iloc[:-1]
+    data_pd_HWLW_idxHWLWno.loc[HW_bool,'duurdaling'] = data_pd_HWLW_idxHWLWno.loc[~HW_bool,'times'] - data_pd_HWLW_idxHWLWno.loc[HW_bool,'times']
+    data_pd_HWLW_idxHWLWno['culm_time'] = moonculm_idxHWLWno['times'] #couple HWLW to moonculminations two days earlier
+    data_pd_HWLW_idxHWLWno['culm_hr'] = (data_pd_HWLW_idxHWLWno['culm_time'].round('h').dt.hour)%12
+    data_pd_HWLW_idxHWLWno['HWLW_delay'] = (data_pd_HWLW_idxHWLWno['times']-(data_pd_HWLW_idxHWLWno['culm_time']+culm_addtime))
+    data_pd_HWLW = data_pd_HWLW_idxHWLWno.set_index('times')
+        
     print('calculate medians per hour group for LW and HW (instead of 1991 method: average of subgroups with removal of outliers)')
     data_pd_HW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1]
     data_pd_LW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']!=1] #HWLWcode==2 or HWLWcode==LWaggercode (=3)
@@ -880,6 +894,9 @@ for current_station in []:#stat_list:#['HOEKVHLD','HARVT10']:
             tD_val = timesLW[i]-timesHW[i]
             print(f'tidalrange factor: {TR_goal/TR1_val:.2f}')
             print(f'timeDown factor: {tD_goal/tD_val:.2f}')
+            factors = np.array([TR_goal/TR1_val,tD_goal/tD_val])
+            if (factors>1.1).any() or (factors<0.9).any():
+                raise Exception('more than 10% decrease or increase')
             
             tide_HWtoLW = ts_corr.loc[timesHW[i]:timesLW[i]]
             tide_LWtoHW = ts_corr.loc[timesLW[i]:timesHW[i+1]]
