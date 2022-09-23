@@ -50,12 +50,12 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
    
     dict_HWLWtidalindicators = {'HW_mean':data_pd_HW['values'].mean(), #GHW 
                                 'LW_mean':data_pd_LW['values'].mean(), #GLW 
-                                'HW_mean_peryear':HW_mean_peryear, #GHW peryear
-                                'LW_mean_peryear':LW_mean_peryear, #GLW peryear
+                                'HW_mean_peryear':HW_mean_peryear['values'], #GHW peryear
+                                'LW_mean_peryear':LW_mean_peryear['values'], #GLW peryear
                                 'HW_monthmax_mean':HW_max_permonth['values'].mean(), #GHHW/GHWS
                                 'LW_monthmin_mean':LW_min_permonth['values'].mean(), #GLLW/GLWS
-                                'HW_monthmax_mean_peryear':HW_monthmax_peryear, #GHHW/GHWS peryear
-                                'LW_monthmin_mean_peryear':LW_monthmin_peryear, #GLLW/GLWS peryear
+                                'HW_monthmax_mean_peryear':HW_monthmax_peryear['values'], #GHHW/GHWS peryear
+                                'LW_monthmin_mean_peryear':LW_monthmin_peryear['values'], #GLLW/GLWS peryear
                                 }
     for key in dict_HWLWtidalindicators.keys():
         if not hasattr(dict_HWLWtidalindicators[key],'index'):
