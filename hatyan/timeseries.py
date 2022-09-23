@@ -289,7 +289,8 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
             from hatyan.analysis_prediction import analysis #TODO: local import since Importerror: cannot import name 'analysis' from partially initialized module 'hatyan.analysis_prediction' (most likely due to a circular import) 
             M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
             comp_M2 = analysis(ts_ext,const_list=['M2'],xTxmat_condition_max=250) ##TODO: high condition value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW. However, maybe HWtimediff mode is more robust
-            M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd)%360
+            print(comp_M2.loc['M2','phi_deg'],M2phase_cadzd)
+            M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd+90)%360-90
         elif mode=='HWtimediff': #TODO: in principle this code is not necesary anymore
             HW_tdiff_cadzdraw_M2remainders = (HW_tdiff_cadzdraw)%M2_period_hr
             if HW_tdiff_cadzdraw_M2remainders.std()>3: #arbitrary value, but at least catches if all values are around 11/12/0/1 (rather have it around -2/-1/0/1)

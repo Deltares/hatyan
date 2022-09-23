@@ -26,7 +26,7 @@ dataTKdia = True
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
-tstart_dt = dt.datetime(2001,1,1)
+tstart_dt = dt.datetime(2000,1,1)
 tstop_dt = dt.datetime(2011,1,1)
 NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
@@ -640,21 +640,22 @@ for current_station in []:#stat_list:
 
 
 
+#TODO IMPORTANT: provide feedback on incorrect values in extreme timeseries
 #TODO IMPORTANT: check culm_addtime and HWLWno+4 offsets
 ### HAVENGETALLEN
-culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # link with moonculmination (or M2) two days before, 24h rotates entire graph. # furthermore: 2u20min correction, this shifts the x-axis: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET)
-data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt)#,tzone='UTC+01:00')
+culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # 2d and 2u20min correction, this shifts the x-axis of aardappelgrafiek: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET)
+data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt)#,tzone='UTC+01:00') #timezone rotates entire aardappelgrafiek, so decides what is neap and springtide
 if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_pd_HWLW['culm_hr']=range(12) hourvalues should be in UTC since that relates to the relation dateline/sun
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
+data_pd_moonculm = data_pd_moonculm.set_index('datetime',drop=False)
+data_pd_moonculm['values'] = data_pd_moonculm['type'] #dummy values for TA in hatyan.calc_HWLWnumbering()
+data_pd_moonculm['HWLWcode'] = 1 #all HW values since one every ~12h25m
+data_pd_moonculm = hatyan.calc_HWLWnumbering(data_pd_moonculm,doHWLWcheck=False) #TODO: currently w.r.t. cadzd, is that an issue?
+data_pd_moonculm['HWLWno_offset'] = data_pd_moonculm['HWLWno']+4 #correlate HWLW to moonculmination 2 days before. TODO: check this offset in relation to culm_addtime. With +4 there are negative time delays for HOEKVHLD. Probably because calc_HWLWnumbering() does not give same HWLWno to corresponding tidalwaves for some reason
+moonculm_idxHWLWno = data_pd_moonculm.set_index('HWLWno_offset')
 
-data_pd_HWLWcode = pd.DataFrame({'values':data_pd_moonculm['type'].values,'HWLWcode':1+0*data_pd_moonculm['type'].values},index=data_pd_moonculm['datetime'])
-moonculm_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLWcode,doHWLWcheck=False) #TODO: currently w.r.t. cadzd, is that an issue?
-moonculm_idxHWLWno['times'] = moonculm_idxHWLWno.index
-moonculm_idxHWLWno['HWLWno_offset'] = moonculm_idxHWLWno['HWLWno']+4 #TODO: check this offset in relation to culm_addtime
-moonculm_idxHWLWno = moonculm_idxHWLWno.set_index('HWLWno_offset')
-
-for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in ['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     plt.close('all')
     print(f'havengetallen for {current_station}')
     
@@ -662,33 +663,30 @@ for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','
     file_ext_pkl = os.path.join(dir_meas,f"{current_station}_measext.pkl")
     if not os.path.exists(file_ext_pkl):
         continue
-    data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
-    data_pd_HWLW_all = data_pd_HWLW_all[['values','QC','HWLWcode']] #saves memory (only a bit, unless WaardeBepalingsmethode is included)
+    data_pd_HWLW = pd.read_pickle(file_ext_pkl)
+    data_pd_HWLW = data_pd_HWLW[['values','QC','HWLWcode']] #saves memory (only a bit, unless WaardeBepalingsmethode is included)
     
     #remove timezone-awareness, crop timeseries and apply NAP correction
-    data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
-    data_pd_HWLW_all = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
+    data_pd_HWLW.index = data_pd_HWLW.index.tz_localize(None)
+    data_pd_HWLW = hatyan.crop_timeseries(data_pd_HWLW, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
     if NAP2005correction:
-        data_pd_HWLW_all = nap2005_correction(data_pd_HWLW_all,current_station=current_station)
+        data_pd_HWLW = nap2005_correction(data_pd_HWLW,current_station=current_station)
     
     #check if amount of HWs is enough
-    numdays = (tstop_dt-tstart_dt).total_seconds()/3600/24
-    numHWs_expected = numdays*24*3600/M2_period_timedelta.total_seconds()
-    numHWs = len(data_pd_HWLW_all[data_pd_HWLW_all['HWLWcode']==1])
+    numHWs_expected = (tstop_dt-tstart_dt).total_seconds()/M2_period_timedelta.total_seconds()
+    numHWs = (data_pd_HWLW['HWLWcode']==1).sum()
     if numHWs < 0.95*numHWs_expected:
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
     print('SELECT/CALC HWLW VALUES')
     if LWaggercode == 2: #use time+value of lowest LW, 2 is actually not aggercode, but lowest of 345 LWs are converted to 2.
         if len(data_pd_HWLW_all['HWLWcode'].unique()) > 2:
-            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
-        else:
-            data_pd_HWLW = data_pd_HWLW_all.copy()
+            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
     else:
-        data_pd_HWLW = data_pd_HWLW_all.loc[(data_pd_HWLW_all['HWLWcode']==1) | (data_pd_HWLW_all['HWLWcode']==2) | (data_pd_HWLW_all['HWLWcode']==LWaggercode)]
+        data_pd_HWLW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode'].isin([1,2,LWaggercode])]
     
     if current_station in ['KATSBTN','GATVBSLE','HANSWT']:
-        #TODO: this removes extreme values that are 1/5/28 min from each other, but they should not be present
+        #TODO: this removes extreme values that are 1/5/28 min from each other, but they should not be present to begin with
         if 1:
             timediff = data_pd_HWLW.index[1:]-data_pd_HWLW.index[:-1]
             data_pd_HWLW['timediff'] = pd.TimedeltaIndex([pd.NaT]).append(timediff)
@@ -698,14 +696,15 @@ for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','
         else: #this does not always work
             data_pd_HWLW = hatyan.calc_HWLW(data_pd_HWLW,buffer_hr=0)
     if current_station in ['STELLDBTN']: #TODO: manual removal of invalid HW value from STELLDBTN (is flat line in wl timeseries)
-        if 0:
-            file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
-            data_pd_wl_all = pd.read_pickle(file_wl_pkl)        
-            data_pd_wl_all.index = data_pd_wl_all.index.tz_localize(None)
-            data_pd_wl_all = hatyan.crop_timeseries(data_pd_wl_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
-            data_pd_wl_all_ext = hatyan.calc_HWLW(data_pd_wl_all)
-            fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_HWLW)
-            fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_wl_all_ext)
+        """
+        file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
+        data_pd_wl_all = pd.read_pickle(file_wl_pkl)        
+        data_pd_wl_all.index = data_pd_wl_all.index.tz_localize(None)
+        data_pd_wl_all = hatyan.crop_timeseries(data_pd_wl_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
+        data_pd_wl_all_ext = hatyan.calc_HWLW(data_pd_wl_all)
+        fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_HWLW)
+        fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_wl_all_ext)
+        """
         drop_time_STELLDBTN = '2012-02-09 09:36:00'
         if drop_time_STELLDBTN in data_pd_HWLW.index:
             data_pd_HWLW = data_pd_HWLW.drop(drop_time_STELLDBTN)
@@ -718,10 +717,13 @@ for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','
     HW_bool = data_pd_HWLW_idxHWLWno['HWLWcode']==1
     data_pd_HWLW_idxHWLWno.loc[HW_bool,'getijperiod'] = data_pd_HWLW_idxHWLWno.loc[HW_bool,'times'].iloc[1:].values - data_pd_HWLW_idxHWLWno.loc[HW_bool,'times'].iloc[:-1]
     data_pd_HWLW_idxHWLWno.loc[HW_bool,'duurdaling'] = data_pd_HWLW_idxHWLWno.loc[~HW_bool,'times'] - data_pd_HWLW_idxHWLWno.loc[HW_bool,'times']
-    data_pd_HWLW_idxHWLWno['culm_time'] = moonculm_idxHWLWno['times'] #couple HWLW to moonculminations two days earlier
+    data_pd_HWLW_idxHWLWno['culm_time'] = moonculm_idxHWLWno['datetime'] #couple HWLW to moonculminations two days earlier
     data_pd_HWLW_idxHWLWno['culm_hr'] = (data_pd_HWLW_idxHWLWno['culm_time'].round('h').dt.hour)%12
     data_pd_HWLW_idxHWLWno['HWLW_delay'] = (data_pd_HWLW_idxHWLWno['times']-(data_pd_HWLW_idxHWLWno['culm_time']+culm_addtime))
     data_pd_HWLW = data_pd_HWLW_idxHWLWno.set_index('times')
+    
+    print(data_pd_HWLW_idxHWLWno[['times','values','culm_hr','HWLW_delay']])
+    breakit
         
     print('calculate medians per hour group for LW and HW (instead of 1991 method: average of subgroups with removal of outliers)')
     data_pd_HW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1]
@@ -807,11 +809,11 @@ for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','
     
 
 
-#TODO IMPORTANT: uncertainty about length of analysis period
+#TODO IMPORTANT: uncertainty about length of analysis period (and SA/SM source)
 #TODO IMPORTANT: uncertainty about aggers (correlates with havengetallen, maybe drop scaling of time or drop scaling of aggerstations like 1991.0 in general?)
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 ##### gemiddelde getijkrommen
-for current_station in stat_list[stat_list.index('HARLGN'):]:#['HOEKVHLD','HARVT10']:
+for current_station in []:#stat_list:#['HOEKVHLD','HARVT10']:
     """
     
     """
@@ -872,7 +874,7 @@ for current_station in stat_list[stat_list.index('HARLGN'):]:#['HOEKVHLD','HARVT
             print(f'tidalrange factor: {TR_goal/TR1_val:.3f}')
             print(f'timeDown factor: {tD_goal/tD_val:.3f}')
             factors = np.array([TR_goal/TR1_val,tD_goal/tD_val])
-            allowed_perc = 12
+            allowed_perc = 13.5
             if (factors>(1+allowed_perc/100)).any() or (factors<(1-allowed_perc/100)).any():
                 raise Exception(f'more than {allowed_perc}% decrease or increase')
             
@@ -921,7 +923,7 @@ for current_station in stat_list[stat_list.index('HARLGN'):]:#['HOEKVHLD','HARVT
         ts_meas_pd = nap2005_correction(ts_meas_pd,current_station)
     
     # =============================================================================
-    # Hatyan analyse voor 10 jaar (alle componenten voor gemiddelde getijcyclus) #TODO: maybe use original 4y period instead?
+    # Hatyan analyse voor 10 jaar (alle componenten voor gemiddelde getijcyclus) #TODO: maybe use original 4y period instead? SA/SM should come from 19y analysis
     # =============================================================================
     const_list = hatyan.get_const_list_hatyan('year') #this should not be changed, since higher harmonics are necessary
     hatyan_settings_ana = hatyan.HatyanSettings(nodalfactors=True,
