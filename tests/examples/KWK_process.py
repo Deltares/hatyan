@@ -36,8 +36,9 @@ else:
 print(f'year_slotgem: {year_slotgem}')
 
 #LWaggercode is used in both havengetallen en gemgetijkromme loops. 3 is first LW, 5 is second HW. 2 is not an aggercode but results in the dominant LW
-#TODO: delays should also be used to scale with first LW in gemgetijkromme and this is currently done, but is not a generic approach (dominance depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen." 3 is sowieso niet generiek, evt ruwe kromme maken en daar dominantie uit bepalen?
-LWaggercode = 3 # havengetallen timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. SCHEVNGN klopt juist alleen bij aggercode=5
+#TODO: delays should also be used to scale with first LW in gemgetijkromme and this is currently done, but is not a generic approach (dominance depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen."
+#TODO important: is schaling van tijd echt nodig? Zou veel zorgen voorkomen.
+LWaggercode = 3 # havengetallen timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. SCHEVNGN klopt juist alleen bij aggercode=5,d us 3 is niet generiek (en per station kan het ook in de tijd veranderen)
 
 dir_base = r'p:\11208031-010-kenmerkende-waarden-k\work'
 if dataTKdia:
@@ -645,7 +646,7 @@ data_pd_moonculm = hatyan.calc_HWLWnumbering(data_pd_moonculm,doHWLWcheck=False)
 data_pd_moonculm['HWLWno_offset'] = data_pd_moonculm['HWLWno']+4 #correlate HWLW to moonculmination 2 days before. TODO: check this offset in relation to culm_addtime.
 moonculm_idxHWLWno = data_pd_moonculm.set_index('HWLWno_offset')
 
-for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in ['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     plt.close('all')
     print(f'havengetallen for {current_station}')
     
@@ -799,7 +800,7 @@ for current_station in []:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 #TODO IMPORTANT: scaling is now max 18.2% but this is quite a lot, check values for all stations?
 ##### gemiddelde getijkrommen
-for current_station in []:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -1191,15 +1192,15 @@ color_map = {'Ongefilterd':  'b', 'Gefilterd': 'orange', 'Trendanalyse': 'g',
              'Weibull': 'r', 'Hydra-NL': 'm', 'Hydra-NL met modelonzekerheid': 'cyan',
              'Gecombineerd': 'k'}
 
-mode = 'from_ext' #'from_wl_reproduce_old', 'from_wl' 'from_ext'
+mode = 'from_ext' #'from_wl_reproduce' 'from_ext'
     
 temp = {}
 tstarts = pd.DataFrame()
-for current_station in ['HOEKVHLD']:#stat_list:
+for current_station in []:#stat_list:
     print(f'overschrijdingsfrequenties for {current_station}')
     plt.close('all')
     
-    if mode in ['from_wl','from_wl_reproduce_old']: #deriving extremes from waterlevels
+    if mode=='from_wl_reproduce': #deriving extremes from waterlevels
         file_wl_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measwl.pkl")
         data_pd_meas = pd.read_pickle(file_wl_pkl)
         data_pd_meas.index = data_pd_meas.index.tz_localize(None)
@@ -1237,7 +1238,8 @@ for current_station in ['HOEKVHLD']:#stat_list:
         data_pd_measext = data_pd_measext[['values','QC','HWLWcode']] #fix ordering of columns, since per default first column is used (or col argument has to be supplied on all steps)
         data_pd_measext.index = data_pd_measext.index.tz_localize(None)
         
-        data_pd_measext = data_pd_measext.loc[:tstop_dt] # only include data up to year_slotgem
+        #data_pd_measext = data_pd_measext.loc[:tstop_dt] # only include data up to year_slotgem
+        data_pd_measext = data_pd_measext.loc['1887-08-01 00:40:00':'2022-01-01 00:00:00']
         
         if len(data_pd_measext['HWLWcode'].unique()) > 2:
             data_pd_measext = hatyan.calc_HWLW12345to12(data_pd_measext) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
@@ -1249,24 +1251,15 @@ for current_station in ['HOEKVHLD']:#stat_list:
         # data_pd_measext_WBM_tstop = data_pd_measext[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='last')
         # data_pd_measext_WBM_times = pd.concat([data_pd_measext_WBM_tstart,data_pd_measext_WBM_tstop]).sort_index()
         tstart_usefuldata = None
-        
+    else:
+        raise Exception(f'ERROR: invalid mode ({mode})')
     
     
     station_rule_type = 'break' #TODO: compare results to the ones withouth this break or break on different date
-    if mode=='from_wl_reproduce_old':
+    if mode=='from_wl_reproduce':
         station_break_value = dt.datetime(1998,1,1)#'01-01-1998' #station_break_dict[current_station] 
         df_alldata = data_pd_meas.resample('H').mean() #TODO: "Rekenkundig gemiddelde waarde over vorige 5 en volgende 5 minuten" >> resampling method moet .max() zijn en dan .min() voor decedance? #TODO: is this resampling method ok (probably means in hour class) or should it be 30min before/after? (tijdcomponent maakt voor fit niet uit)
-        df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,dt.datetime(2012,1,1)]) #available data HOEKVHLD was 1971-1-1 to 2011-12-31 23:50 #TODO: discuss with RWS of deze automatische tstart bepaling acceptabel is
-    elif mode=='from_wl':
-        raise Exception('this is not a relevant mode anymore')
-        #all different
-        station_break_value = datetime_first10minint
-        df_alldata = data_pd_meas.resample('H').max()
-        df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,tstop_dt]) #crop data to data that is uesful for deriving frequencies
-        #select yes/no change
-        station_break_value = dt.datetime(1998,1,1)
-        df_alldata = data_pd_meas.resample('H').mean()
-        df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,dt.datetime(2012,1,1)]) #crop data to data that is uesful for deriving frequencies
+        df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,dt.datetime(2012,1,1)]) #available data HOEKVHLD was 1971-1-1 to 2011-12-31 23:50 #TODO: discuss with RWS of deze automatische tstart bepaling acceptabel is >> beter extremen gebruiken?
     elif mode=='from_ext':
         station_break_value = dt.datetime(1998,1,1) #TODO: adjust?
     
@@ -1276,7 +1269,7 @@ for current_station in ['HOEKVHLD']:#stat_list:
     
     print('Calculate unfiltered distribution')
     
-    if mode in ['from_wl','from_wl_reproduce_old']: #deriving extremes from waterlevels
+    if mode=='from_wl_reproduce': #deriving extremes from waterlevels
         try:
             df_extrema = df.loc[df.resample('12H')[['values']].idxmax().dropna()['values'].values]
         except TypeError as e: #TypeError: The DTypes <class 'numpy.dtype[float64]'> and <class 'numpy.dtype[datetime64]'> do not have a common DType. For example they cannot be stored in a single array unless the dtype is `object`.
@@ -1348,7 +1341,7 @@ for current_station in ['HOEKVHLD']:#stat_list:
     dist = {}
     
     print('Calculate unfiltered distribution')
-    if mode in ['from_wl','from_wl_reproduce_old']: #deriving extremes from waterlevels
+    if mode=='from_wl_reproduce': #deriving extremes from waterlevels
         try:
             df_extrema = df.loc[df.resample('12H')[['values']].idxmin().dropna()['values'].values]
         except TypeError as e: #TypeError: The DTypes <class 'numpy.dtype[float64]'> and <class 'numpy.dtype[datetime64]'> do not have a common DType. For example they cannot be stored in a single array unless the dtype is `object`.
@@ -1357,7 +1350,7 @@ for current_station in ['HOEKVHLD']:#stat_list:
     elif mode=='from_ext':
         df_extrema = data_pd_LW
     
-    dist['Ongefilterd'] = hatyan.distribution(df_extrema.copy(), inverse=True)
+    dist['Ongefilterd'] = hatyan.distribution(df_extrema.copy(), inverse=True) #TODO: with ext, this line is different than trendanalyse
     
     #print('Calculate filtered distribution (direct copy of unfiltered')
     #dist['Gefilterd'] = hatyan.distribution(df_extrema.copy(), inverse=True)

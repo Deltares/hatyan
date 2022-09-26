@@ -223,9 +223,11 @@ def calc_HWLW12345to12(data_HWLW_12345):
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345['HWLWcode']==1]
     #computing minimum waterlevels after each HW. Using hardcoded 12hour period instead of from one HW to next HW since then we can also assess last LW values
-    for iHW in np.arange(0,len(data_HW1)): #np.arange(0,len(data_HW1)-1):
+    for timeHW in data_HW1.index: #np.arange(0,len(data_HW1)-1):
+        if timeHW==data_HWLW_12345.index[-1]: #if last HW is last time of input dataframe
+            continue
         #tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
-        tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW]+dt.timedelta(hours=12)]
+        tide_afterHW = data_HWLW_12345.loc[timeHW:timeHW+dt.timedelta(hours=12)]
         time_minimum = tide_afterHW['values'].idxmin()
         times_LWmin.append(time_minimum)
     data_LW2 = data_HWLW_12345.loc[times_LWmin]
