@@ -26,8 +26,8 @@ dataTKdia = True
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
-tstart_dt = dt.datetime(2011,1,1)
-tstop_dt = dt.datetime(2021,1,1)
+tstart_dt = dt.datetime(2001,1,1)
+tstop_dt = dt.datetime(2011,1,1)
 NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
@@ -59,7 +59,7 @@ if not os.path.exists(dir_slotgem):
 dir_gemgetij = os.path.join(dir_base,f'out_gemgetij_{year_slotgem}')
 if not os.path.exists(dir_gemgetij):
     os.mkdir(dir_gemgetij)
-dir_overschrijding = os.path.join(dir_base,'out_overschrijding')
+dir_overschrijding = os.path.join(dir_base,f'out_overschrijding_{year_slotgem}')
 if not os.path.exists(dir_overschrijding):
     os.mkdir(dir_overschrijding)
 
@@ -1179,6 +1179,7 @@ for current_station in []:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SC
 """
 
 dir_meas_overschr = os.path.join(dir_base,'data_overschrijding')
+dir_vali_overschr = r'p:\archivedprojects\11205258-005-kpp2020_rmm-g5\C_Work\00_KenmerkendeWaarden\Onder_overschrijdingslijnen_Boyan\Tables'
 
 #station_break_dict = {'HOEKVHLD':'01-01-1998'} #TODO: possible to make generic?
 station_name_dict = {'HOEKVHLD':'Hoek_van_Holland'}
@@ -1190,82 +1191,84 @@ color_map = {'Ongefilterd':  'b', 'Gefilterd': 'orange', 'Trendanalyse': 'g',
              'Weibull': 'r', 'Hydra-NL': 'm', 'Hydra-NL met modelonzekerheid': 'cyan',
              'Gecombineerd': 'k'}
 
-reproduce_oldoverschr = False
-
+mode = 'from_ext' #'from_wl_reproduce_old', 'from_wl' 'from_ext'
+    
 temp = {}
 tstarts = pd.DataFrame()
-for current_station in []:#stat_list:
+for current_station in ['HOEKVHLD']:#stat_list:
     print(f'overschrijdingsfrequenties for {current_station}')
-
-    file_wl_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measwl.pkl")
-    data_pd_meas = pd.read_pickle(file_wl_pkl)
-    data_pd_meas.index = data_pd_meas.index.tz_localize(None)
-    if not reproduce_oldoverschr: #saves time and is not used in old method
+    plt.close('all')
+    
+    if mode in ['from_wl','from_wl_reproduce_old']: #deriving extremes from waterlevels
+        file_wl_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measwl.pkl")
+        data_pd_meas = pd.read_pickle(file_wl_pkl)
+        data_pd_meas.index = data_pd_meas.index.tz_localize(None)
+        if mode=='from_wl':
+            data_pd_meas = data_pd_meas.loc[:tstop_dt] # only include data up to year_slotgem
+        
+        #TODO: move this to data-check part (first/last occurrences of WaardeBepalingsmethode)
+        # data_pd_meas_WBM_tstart = data_pd_meas[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='first')
+        # data_pd_meas_WBM_tstop = data_pd_meas[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='last')
+        # data_pd_meas_WBM_times = pd.concat([data_pd_meas_WBM_tstart,data_pd_meas_WBM_tstop]).sort_index()
+        
+        #TODO: move this to data-check part (first/last occurrences of unique time intervals), can be use to identify where time duplicates and gaps are
+        data_pd_meas['interval'] = pd.Series(data_pd_meas.index,index=data_pd_meas.index).diff()
+        data_pd_meas_int_tstart = data_pd_meas[['interval']].drop_duplicates(keep='first')
+        data_pd_meas_int_tstop = data_pd_meas[['interval']].drop_duplicates(keep='last')
+        data_pd_meas_int_times = pd.concat([data_pd_meas_int_tstart,data_pd_meas_int_tstop]).sort_values(by='interval',ascending=False)
+        datetime_last3hrint = data_pd_meas_int_times.loc[data_pd_meas_int_times['interval']==dt.timedelta(hours=3)].index.max() #last 3hr timestep is often also the first 1hr time interval and this prevents accidental 1hr timestaps in the past to beincluded
+        datetime_first1hrint = data_pd_meas_int_times.loc[data_pd_meas_int_times['interval']==dt.timedelta(hours=1)].index.min() #first 1hr timestep, sometimes also occurs somewhere in 3hr interval period so is not always a good indicator of where 1hr-interval measurements start
+        datetime_first10minint = data_pd_meas_int_times.loc[data_pd_meas_int_times['interval']==dt.timedelta(minutes=10)].index.min() #first 10min timestep
+        
+        tstart_usefuldata = datetime_last3hrint
+        if pd.isnull(tstart_usefuldata): #if not available, revert to actual first 1hr timestep
+            tstart_usefuldata = datetime_first1hrint
+        if pd.isnull(tstart_usefuldata): #if not available, revert to actual first 10min timestep
+            tstart_usefuldata = datetime_first10minint
+        tstarts.loc[current_station,['last3hrint','first1hrint','first10minint']] = [datetime_last3hrint,datetime_first1hrint,datetime_first10minint]
+        
+        data_pd_meas = data_pd_meas[['values','QC']] # reduces the memory consumption significantly
+        data_pd_meas = data_pd_meas.loc[~(data_pd_meas['QC']==99)]
+    elif mode=='from_ext':
         file_ext_pkl = os.path.join(dir_meas_alldata,f"{current_station}_measext.pkl")
         if not os.path.exists(file_ext_pkl):
             continue
         data_pd_measext = pd.read_pickle(file_ext_pkl)
+        data_pd_measext = data_pd_measext[['values','QC','HWLWcode']] #fix ordering of columns, since per default first column is used (or col argument has to be supplied on all steps)
         data_pd_measext.index = data_pd_measext.index.tz_localize(None)
+        
+        data_pd_measext = data_pd_measext.loc[:tstop_dt] # only include data up to year_slotgem
+        
         if len(data_pd_measext['HWLWcode'].unique()) > 2:
-            data_pd_HWLW_12 = hatyan.calc_HWLW12345to12(data_pd_measext) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
-        else:
-            data_pd_HWLW_12 = data_pd_measext.copy()
-        data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
-        data_pd_LW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==2] #TODO: maybe make !=1 ?
+            data_pd_measext = hatyan.calc_HWLW12345to12(data_pd_measext) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
+        data_pd_HW = data_pd_measext.loc[data_pd_measext['HWLWcode']==1]
+        data_pd_LW = data_pd_measext.loc[data_pd_measext['HWLWcode']!=1]
         
         #TODO: move this to data-check part (first/last occurrences of WaardeBepalingsmethode)
-        data_pd_measext_WBM_tstart = data_pd_measext[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='first')
-        data_pd_measext_WBM_tstop = data_pd_measext[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='last')
-        data_pd_measext_WBM_times = pd.concat([data_pd_measext_WBM_tstart,data_pd_measext_WBM_tstop]).sort_index()
+        # data_pd_measext_WBM_tstart = data_pd_measext[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='first')
+        # data_pd_measext_WBM_tstop = data_pd_measext[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='last')
+        # data_pd_measext_WBM_times = pd.concat([data_pd_measext_WBM_tstart,data_pd_measext_WBM_tstop]).sort_index()
+        tstart_usefuldata = None
+        
     
-    #TODO: move this to data-check part (first/last occurrences of WaardeBepalingsmethode)
-    data_pd_meas_WBM_tstart = data_pd_meas[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='first')
-    data_pd_meas_WBM_tstop = data_pd_meas[['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving']].drop_duplicates(keep='last')
-    data_pd_meas_WBM_times = pd.concat([data_pd_meas_WBM_tstart,data_pd_meas_WBM_tstop]).sort_index()
     
-    #TODO: move this to data-check part (first/last occurrences of unique time intervals), can be use to identify where time duplciates and gaps are
-    data_pd_meas['interval'] = pd.Series(data_pd_meas.index,index=data_pd_meas.index).diff()
-    data_pd_meas_int_tstart = data_pd_meas[['interval']].drop_duplicates(keep='first')
-    data_pd_meas_int_tstop = data_pd_meas[['interval']].drop_duplicates(keep='last')
-    data_pd_meas_int_times = pd.concat([data_pd_meas_int_tstart,data_pd_meas_int_tstop]).sort_values(by='interval',ascending=False)
-    datetime_last3hrint = data_pd_meas_int_times.loc[data_pd_meas_int_times['interval']==dt.timedelta(hours=3)].index.max() #last 3hr timestep is often also the first 1hr time interval and this prevents accidental 1hr timestaps in the past to beincluded
-    datetime_first1hrint = data_pd_meas_int_times.loc[data_pd_meas_int_times['interval']==dt.timedelta(hours=1)].index.min() #first 1hr timestep, sometimes also occurs somewhere in 3hr interval period so is not always a good indicator of where 1hr-interval measurements start
-    datetime_first10minint = data_pd_meas_int_times.loc[data_pd_meas_int_times['interval']==dt.timedelta(minutes=10)].index.min() #first 10min timestep
-    
-    tstart_usefuldata = datetime_last3hrint
-    if pd.isnull(tstart_usefuldata): #if not available, revert to actual first 1hr timestep
-        tstart_usefuldata = datetime_first1hrint
-    if pd.isnull(tstart_usefuldata): #if not available, revert to actual first 1hr timestep
-        tstart_usefuldata = datetime_first10minint
-    tstarts.loc[current_station,['last3hrint','first1hrint','first10minint']] = [datetime_last3hrint,datetime_first1hrint,datetime_first10minint]
-    
-    data_pd_meas = data_pd_meas[['values','QC']] # reduces the memory consumption significantly
-    data_pd_meas = data_pd_meas.loc[~(data_pd_meas['QC']==99)] #TODO: maybe also drop duplicate times
-
     station_rule_type = 'break' #TODO: compare results to the ones withouth this break or break on different date
-    if reproduce_oldoverschr:
+    if mode=='from_wl_reproduce_old':
         station_break_value = dt.datetime(1998,1,1)#'01-01-1998' #station_break_dict[current_station] 
-        df_alldata = data_pd_meas.resample('H').mean() #TODO: "Rekenkundig gemiddelde waarde over vorige 5 en volgende 5 minuten" >> resampling method moet .max() zijn #TODO: is this resampling method ok (probably means in hour class) or should it be 30min before/after? (tijdcomponent maakt voor fit niet uit)
+        df_alldata = data_pd_meas.resample('H').mean() #TODO: "Rekenkundig gemiddelde waarde over vorige 5 en volgende 5 minuten" >> resampling method moet .max() zijn en dan .min() voor decedance? #TODO: is this resampling method ok (probably means in hour class) or should it be 30min before/after? (tijdcomponent maakt voor fit niet uit)
         df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,dt.datetime(2012,1,1)]) #available data HOEKVHLD was 1971-1-1 to 2011-12-31 23:50 #TODO: discuss with RWS of deze automatische tstart bepaling acceptabel is
-    else:
+    elif mode=='from_wl':
+        raise Exception('this is not a relevant mode anymore')
         #all different
         station_break_value = datetime_first10minint
         df_alldata = data_pd_meas.resample('H').max()
-        df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,dt.datetime(2021,1,1)]) #crop data to data that is uesful for deriving frequencies
+        df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,tstop_dt]) #crop data to data that is uesful for deriving frequencies
         #select yes/no change
         station_break_value = dt.datetime(1998,1,1)
         df_alldata = data_pd_meas.resample('H').mean()
         df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,dt.datetime(2012,1,1)]) #crop data to data that is uesful for deriving frequencies
-    
-    """
-    statname_overschr = station_name_dict[current_station]
-    #metadata_station = dict(metadata.loc[statname_overschr])
-    df_old_raw = pd.read_csv(os.path.join(dir_meas_overschr, 'Processed_RWS', f'{statname_overschr}.csv'),
-                             sep=';', header=[0], index_col=[0], parse_dates=True)
-    df_old = df_old_raw.resample('H').mean()
-    diff_array = (df_old/100-df[['values']]).dropna()
-    fig,(ax1,ax2) = hatyan.plot_timeseries(ts=df,ts_validation=df_old/100)
-    """
+    elif mode=='from_ext':
+        station_break_value = dt.datetime(1998,1,1) #TODO: adjust?
     
     # 1. Exceedance
     print('Exceedance')
@@ -1273,20 +1276,17 @@ for current_station in []:#stat_list:
     
     print('Calculate unfiltered distribution')
     
-    if reproduce_oldoverschr:
+    if mode in ['from_wl','from_wl_reproduce_old']: #deriving extremes from waterlevels
         try:
-            df_extrema = df.loc[df.resample('12H')[['values']].idxmax().dropna()['values'].values].copy()
+            df_extrema = df.loc[df.resample('12H')[['values']].idxmax().dropna()['values'].values]
         except TypeError as e: #TypeError: The DTypes <class 'numpy.dtype[float64]'> and <class 'numpy.dtype[datetime64]'> do not have a common DType. For example they cannot be stored in a single array unless the dtype is `object`.
             print(f'FAILED: {e}')
             continue #TODO: .idxmax() does not work with non-dropped HOEKVHLD timeseries, why? Also not with cropped HARVT10 timeseries. 
-    else:
-        df_extrema = hatyan.crop_timeseries(ts=data_pd_HW, times_ext=[tstart_usefuldata,dt.datetime(2012,1,1)],onlyfull=False) #TODO: decide on tstart/tstop with this method
-        #hatyan.plot_timeseries(ts=df_extrema, ts_ext=df_extrema)
-        if df_extrema.index.max() < station_break_value: #to catch STELLDBTN since extreme data stops after 1996
-            continue
+    elif mode=='from_ext':
+        df_extrema = data_pd_HW
     
     dist['Ongefilterd'] = hatyan.distribution(df_extrema.copy())
-
+    
     """# filtering is only applicable for stations with high river discharge influence, so disabled
     print('Calculate filtered distribution')
     df_peaks, threshold, _ = hatyan.detect_peaks(df_extrema.copy())
@@ -1297,19 +1297,19 @@ for current_station in []:#stat_list:
         df_extrema_filt = df_extrema.copy()
     dist['Gefilterd'] = hatyan.distribution(df_extrema_filt.copy())
     """
-
+    
     print('Calculate filtered distribution with trendanalysis')
     df_trend = hatyan.apply_trendanalysis(df_extrema.copy(),#df_extrema_filt.copy(), #TODO: only starttime 1998-1-1 applied to HOEKVHLD, where to find that information for all coastal stations?
                                           rule_type=station_rule_type,# metadata_station['rule_type'],
                                           rule_value=station_break_value)# metadata_station['rule_value_high'])
     dist['Trendanalyse'] = hatyan.distribution(df_trend.copy())
-
+    
     print('Fit Weibull to filtered distribution with trendanalysis')
     # Last 100 datapoints from distribution (assuming it is sorted with Tfreqs from large to small)
     dist['Weibull'] = hatyan.get_weibull(dist['Trendanalyse'].copy(),
                                          threshold=dist['Trendanalyse']['values'].iloc[-101],
                                          Tfreqs=np.logspace(-5, np.log10(dist['Trendanalyse']['values_Tfreq'].iloc[-101]), 5000))
-
+    
     if current_station in station_name_dict.keys(): #TODO: useful validation data, asked Ferdinand if and where this is also available for other kuststations
         stat_name = station_name_dict[current_station]
         print('Load Hydra-NL dstribution data')
@@ -1331,36 +1331,50 @@ for current_station in []:#stat_list:
                                         keys=None, color_map=color_map, legend_loc='lower right',
                                         xlabel='Frequentie [1/jaar]', ylabel='Hoogwater [m+NAP]')
     ax.set_ylim(0,5.5)
-    fig.savefig(os.path.join(dir_overschrijding, f'Exceedance_lines_{current_station}.png')) #.svg
-    plt.close(fig)
+    file_vali_exeed = os.path.join(dir_vali_overschr,'Exceedance_lines',f'Exceedance_lines_{station_name_dict[current_station]}.csv')
+    if os.path.exists(file_vali_exeed):
+        data_vali = pd.read_csv(file_vali_exeed,sep=';')
+        ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
+        ax.legend(loc=4)
+    
+    fig.savefig(os.path.join(dir_overschrijding, f'Exceedance_lines_{current_station}_{mode}.png')) #.svg
     """
     hatyan.interpolate_interested_Tfreqs_to_csv(dist['Gecombineerd'], Tfreqs=Tfreqs_interested, id=current_station,
                                               csv_dir=dir_overschrijding, prefix='Exceedance_lines')
     """
+    #continue #TODO: also check and reactivate deceedance part. For instance select wl/ext dataset here also
     # 2. Deceedance
     print('Deceedance')
     dist = {}
-
+    
     print('Calculate unfiltered distribution')
-    df_extrema = df.loc[df.resample('12H')[['values']].idxmin().dropna()['values'].values]
+    if mode in ['from_wl','from_wl_reproduce_old']: #deriving extremes from waterlevels
+        try:
+            df_extrema = df.loc[df.resample('12H')[['values']].idxmin().dropna()['values'].values]
+        except TypeError as e: #TypeError: The DTypes <class 'numpy.dtype[float64]'> and <class 'numpy.dtype[datetime64]'> do not have a common DType. For example they cannot be stored in a single array unless the dtype is `object`.
+            print(f'FAILED: {e}')
+            continue #TODO: .idxmin() does not work with non-dropped HOEKVHLD timeseries, why? Also not with cropped HARVT10 timeseries. 
+    elif mode=='from_ext':
+        df_extrema = data_pd_LW
+    
     dist['Ongefilterd'] = hatyan.distribution(df_extrema.copy(), inverse=True)
-
+    
     #print('Calculate filtered distribution (direct copy of unfiltered')
     #dist['Gefilterd'] = hatyan.distribution(df_extrema.copy(), inverse=True)
-
+    
     print('Calculate filtered distribution with trendanalysis')
     df_trend = hatyan.apply_trendanalysis(df_extrema.copy(),
                                           rule_type=station_rule_type,# metadata_station['rule_type'],
                                           rule_value=station_break_value)# metadata_station['rule_value_high'])
     dist['Trendanalyse'] = hatyan.distribution(df_trend.copy(), inverse=True)
-
+    
     print('Fit Weibull to filtered distribution with trendanalysis')
     # Last 100 datapoints from distribution (assuming it is sorted with Tfreqs from large to small)
     dist['Weibull'] = hatyan.get_weibull(dist['Trendanalyse'].copy(),
                                          threshold=dist['Trendanalyse']['values'].iloc[-100],
                                          Tfreqs=np.logspace(-5, np.log10(dist['Trendanalyse']['values_Tfreq'].iloc[-100]), 5000),
                                          inverse=True)
-
+    
     """
     print('Blend trend and weibull together')
     dist['Gecombineerd'] = hatyan.blend_distributions(dist['Trendanalyse'].copy(), dist['Weibull'].copy())
@@ -1369,8 +1383,12 @@ for current_station in []:#stat_list:
                                         keys=None,#['Ongefilterd', 'Trendanalyse', 'Weibull', 'Gecombineerd'],
                                         color_map=color_map, legend_loc='upper right',
                                         xlabel='Frequentie [1/jaar]', ylabel='Laagwater [m+NAP]')
-    fig.savefig(os.path.join(dir_overschrijding, f'Deceedance_lines_{current_station}.png')) #.svg
-    plt.close(fig)
+    file_vali = os.path.join(dir_vali_overschr,'Deceedance_lines',f'Deceedance_lines_{station_name_dict[current_station]}.csv')
+    if os.path.exists(file_vali):
+        data_vali = pd.read_csv(file_vali,sep=';')
+        ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
+        ax.legend(loc=4)
+    fig.savefig(os.path.join(dir_overschrijding, f'Deceedance_lines_{current_station}_{mode}.png')) #.svg
     """
     hatyan.interpolate_interested_Tfreqs_to_csv(dist['Gecombineerd'], Tfreqs=Tfreqs_interested, id=current_station,
                                                 csv_dir=dir_overschrijding, prefix='Deceedance_lines')

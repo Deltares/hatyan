@@ -310,7 +310,7 @@ def plot_distributions(dist: dict, name: str,
     ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.1)) #this was 10, but now meters instead of cm
     ax.yaxis.set_minor_formatter(ticker.NullFormatter()),
     ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.2f')) #to force 2 decimal places
-    ax.grid(b=True, which='major'), ax.grid(b=True, which='minor', ls=':')
+    ax.grid(visible=True, which='major'), ax.grid(visible=True, which='minor', ls=':')
     ax.set_axisbelow(True)
     fig.tight_layout()
     return fig,ax
