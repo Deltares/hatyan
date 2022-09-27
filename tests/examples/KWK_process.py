@@ -76,18 +76,8 @@ else:
 cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
 cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl'))
 
-#get list of stations with extremes and add K13A
-cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None, meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'}) #TODO: this was filtered for extremes, but was not possible with list AB (should be possible after DDL synchronization)
-stat_list_addnonext=['K13APFM','MAASMSMPL'] #+ stat_list_ABTC #two stations + missing from dialist ABCT (OVLVHWT is left out since HANSWT is there)
-for stat_addnonext in stat_list_addnonext:
-    if stat_addnonext in cat_locatielijst_sel['Code'].tolist():
-        continue
-    addnonext_entry = cat_locatielijst.loc[cat_locatielijst['Code']==stat_addnonext].set_index('Locatie_MessageID',drop=True) #K13APFM/MAASMSMPL/etc do not have extremes (at least not in DDL), so is manually added to the interest-list
-    if not len(addnonext_entry)==1:
-        #print(f'station name {stat_addnonext} found {len(addnonext_entry)} times, should be 1.:\n{addnonext_entry}, using last one')
-        addnonext_entry = addnonext_entry.iloc[[-1]] #TODO: stations ['A12', 'D15', 'J6', 'Q1'] are now duplicated in cat_locatielijst, using last entry which corresponds to "Platform *" instead of "* Platform", which is what is in the dia. This should be fixed.
-    cat_locatielijst_sel = pd.concat([cat_locatielijst_sel,addnonext_entry])
-
+#get list of stations with extremes #TODO: before, stations K13A, MAASMSMPL did not have extremes (many kenmerkende waarden are not possible then so skipping is fine)
+cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None, meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
 cat_locatielijst_sel['RDx'],cat_locatielijst_sel['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=int(cat_locatielijst_sel['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_sel_codeidx = cat_locatielijst_sel.reset_index(drop=False).set_index('Code',drop=False)
 
@@ -98,6 +88,7 @@ for stat_name in stat_name_list:
     bool_isstation = cat_locatielijst_sel_codeidx['Naam'].str.contains(stat_name,case=False) | cat_locatielijst_sel_codeidx['Code'].str.contains(stat_name,case=False)
     if not bool_isstation.sum()==1:
         print(f'station name {stat_name} found {bool_isstation.sum()} times, should be 1.:\n{cat_locatielijst_sel_codeidx.loc[bool_isstation,["Naam"]]}')
+        continue
     stat_list.append(cat_locatielijst_sel_codeidx.loc[bool_isstation,'Code'].iloc[0])
     #print(f'{stat_name:30s}: {bool_isstation.sum()}')
 #stat_list = ['BATH','DELFZL','DENHDR','DORDT','EEMSHVN','EURPFM','HANSWT','STELLDBTN','HARLGN','HOEKVHLD','HUIBGT','IJMDBTHVN','KORNWDZBTN','LAUWOG','ROOMPBTN','ROTTDM','SCHEVNGN','STAVNSE','TERNZN','VLISSGN','WESTTSLG'] # lijst AB vertaald naar DONAR namen
@@ -112,7 +103,8 @@ M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc[
 
 def nap2005_correction(data_pd,current_station):
     #NAP correction for dates before 1-1-2005
-    #TODO: make this flexible per station, where to get the data or is the RWS data already corrected for it? Also does it matter? for havengetallen it makes a slight difference so yes. For gemgetijkromme it only makes a difference for spring/doodtij, because A0 is in componentlist (which it should not be probably?) (now only applied at gemgetij en havengetallen)
+    #TODO: make this flexible per station, where to get the data or is the RWS data already corrected for it? Also does it matter? for havengetallen it makes a slight difference so yes. For gemgetijkromme it only makes a difference for spring/doodtij. (now only applied at gemgetij en havengetallen)
+    #nap rapport douwe dillingh: https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_113484_31&versienummer=1
     print('applying NAP2005 correction')
     data_pd_corr = data_pd.copy()
     before2005bool = data_pd_corr.index<dt.datetime(2005,1,1)
