@@ -104,7 +104,8 @@ M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc[
 def nap2005_correction(data_pd,current_station):
     #NAP correction for dates before 1-1-2005
     #TODO: make this flexible per station, where to get the data or is the RWS data already corrected for it? Also does it matter? for havengetallen it makes a slight difference so yes. For gemgetijkromme it only makes a difference for spring/doodtij. (now only applied at gemgetij en havengetallen)
-    #nap rapport douwe dillingh: https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_113484_31&versienummer=1
+    #herdefinitie van NAP (2 tot 5 mm, relevant?): https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_113484_31&versienummer=1
+    #Dit is de rapportage waar het gebruik voor PSMSL data voor het eerst beschreven is: https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_137204_31&versienummer=1
     print('applying NAP2005 correction')
     data_pd_corr = data_pd.copy()
     before2005bool = data_pd_corr.index<dt.datetime(2005,1,1)
