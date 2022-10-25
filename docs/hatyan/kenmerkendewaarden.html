@@ -37,8 +37,11 @@ Created on Thu Apr  7 17:12:42 2022
 @author: veenstra
 &#34;&#34;&#34;
 
+
+import numpy as np
+import statsmodels.api as sm
 import pandas as pd
-from hatyan.timeseries import calc_HWLW12345to21
+from hatyan.timeseries import calc_HWLW12345to12
 
 
 def calc_HWLWtidalindicators(data_pd_HWLW_all):
@@ -59,7 +62,7 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
     if hasattr(data_pd_HWLW_all.index[0],&#39;tz&#39;): #timezone present in index
         data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
     if len(data_pd_HWLW_all[&#39;HWLWcode&#39;].unique()) &gt; 2: #aggers are present
-        data_pd_HWLW_12 = calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+        data_pd_HWLW_12 = calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
     else:
         data_pd_HWLW_12 = data_pd_HWLW_all.copy()
     
@@ -79,19 +82,120 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
    
     dict_HWLWtidalindicators = {&#39;HW_mean&#39;:data_pd_HW[&#39;values&#39;].mean(), #GHW 
                                 &#39;LW_mean&#39;:data_pd_LW[&#39;values&#39;].mean(), #GLW 
-                                &#39;HW_mean_peryear&#39;:HW_mean_peryear, #GHW peryear
-                                &#39;LW_mean_peryear&#39;:LW_mean_peryear, #GLW peryear
+                                &#39;HW_mean_peryear&#39;:HW_mean_peryear[&#39;values&#39;], #GHW peryear
+                                &#39;LW_mean_peryear&#39;:LW_mean_peryear[&#39;values&#39;], #GLW peryear
                                 &#39;HW_monthmax_mean&#39;:HW_max_permonth[&#39;values&#39;].mean(), #GHHW/GHWS
                                 &#39;LW_monthmin_mean&#39;:LW_min_permonth[&#39;values&#39;].mean(), #GLLW/GLWS
-                                &#39;HW_monthmax_mean_peryear&#39;:HW_monthmax_peryear, #GHHW/GHWS peryear
-                                &#39;LW_monthmin_mean_peryear&#39;:LW_monthmin_peryear, #GLLW/GLWS peryear
+                                &#39;HW_monthmax_mean_peryear&#39;:HW_monthmax_peryear[&#39;values&#39;], #GHHW/GHWS peryear
+                                &#39;LW_monthmin_mean_peryear&#39;:LW_monthmin_peryear[&#39;values&#39;], #GLLW/GLWS peryear
                                 }
     for key in dict_HWLWtidalindicators.keys():
         if not hasattr(dict_HWLWtidalindicators[key],&#39;index&#39;):
             continue
         dict_HWLWtidalindicators[key].index = dict_HWLWtidalindicators[key].index.to_timestamp()
         
-    return dict_HWLWtidalindicators</code></pre>
+    return dict_HWLWtidalindicators
+
+
+# define the statistical model
+# copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
+def linear_acceleration_model(df):
+    &#34;&#34;&#34;define a simple linear model, with nodal tide and without wind (no acceleration)&#34;&#34;&#34;
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        (df[&#39;year&#39;] - 1970) * (df[&#39;year&#39;] - 1970),
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+
+    month = np.mod(df[&#39;year&#39;], 1) * 12.0
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;Acceleration&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    X = sm.add_constant(X)
+    model = sm.OLS(y, X, missing=&#39;drop&#39;)
+    fit = model.fit()
+
+    return fit, names, X
+
+
+# define the statistical model
+# copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
+def quadratic_model(df, with_wind=True):
+    &#34;&#34;&#34;This model computes a parabolic linear fit. This corresponds to the hypothesis that sea-level is accelerating.&#34;&#34;&#34;
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        (df[&#39;year&#39;] - 1970) * (df[&#39;year&#39;] - 1970),
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;Acceleration&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    if with_wind:
+        X = np.c_[
+            X,
+            df[&#39;u2&#39;],
+            df[&#39;v2&#39;]
+        ]
+        names.extend([&#39;Wind $u^2$&#39;, &#39;Wind $v^2$&#39;])
+    X = sm.add_constant(X)
+    model_quadratic = sm.GLSAR(y, X, rho=1, missing=&#39;drop&#39;)
+    fit = model_quadratic.iterative_fit(cov_type=&#39;HC0&#39;)
+    return fit, names, X
+
+
+# define the statistical model
+# copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
+def broken_linear_model(df, with_wind=True):
+    &#34;&#34;&#34;This model fits the sea-level rise has started to rise faster in 1993.&#34;&#34;&#34;
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        (df[&#39;year&#39;] &gt; 1993) * (df[&#39;year&#39;] - 1993),
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;+trend (1993)&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    if with_wind:
+        X = np.c_[
+            X,
+            df[&#39;u2&#39;],
+            df[&#39;v2&#39;]
+        ]
+        names.extend([&#39;Wind $u^2$&#39;, &#39;Wind $v^2$&#39;])
+    X = sm.add_constant(X)
+    model_broken_linear = sm.GLSAR(y, X, rho=1, missing=&#39;drop&#39;)
+    fit = model_broken_linear.iterative_fit(cov_type=&#39;HC0&#39;, missing=&#39;drop&#39;)
+    return fit, names, X
+
+
+# copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
+def linear_model(df, with_wind=True, with_ar=True):
+    &#34;&#34;&#34;Define the linear model with optional wind and autoregression.
+    See the latest report for a detailed description.
+    &#34;&#34;&#34;
+
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+    month = np.mod(df[&#39;year&#39;], 1) * 12.0
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    if with_wind:
+        X = np.c_[
+            X,
+            df[&#39;u2&#39;],
+            df[&#39;v2&#39;]
+        ]
+        names.extend([&#39;Wind $u^2$&#39;, &#39;Wind $v^2$&#39;])
+    X = sm.add_constant(X)
+    if with_ar:
+        model = sm.GLSAR(y, X, missing=&#39;drop&#39;, rho=1)
+    else:
+        model = sm.OLS(y, X, missing=&#39;drop&#39;)
+    fit = model.fit(cov_type=&#39;HC0&#39;)
+    return fit, names, X</code></pre>
 </details>
 </section>
 <section>
@@ -138,7 +242,7 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
     if hasattr(data_pd_HWLW_all.index[0],&#39;tz&#39;): #timezone present in index
         data_pd_HWLW_all.index = data_pd_HWLW_all.index.tz_localize(None)
     if len(data_pd_HWLW_all[&#39;HWLWcode&#39;].unique()) &gt; 2: #aggers are present
-        data_pd_HWLW_12 = calc_HWLW12345to21(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
+        data_pd_HWLW_12 = calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater) #TODO: this drops first/last value if it is a LW, should be fixed
     else:
         data_pd_HWLW_12 = data_pd_HWLW_all.copy()
     
@@ -158,12 +262,12 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
    
     dict_HWLWtidalindicators = {&#39;HW_mean&#39;:data_pd_HW[&#39;values&#39;].mean(), #GHW 
                                 &#39;LW_mean&#39;:data_pd_LW[&#39;values&#39;].mean(), #GLW 
-                                &#39;HW_mean_peryear&#39;:HW_mean_peryear, #GHW peryear
-                                &#39;LW_mean_peryear&#39;:LW_mean_peryear, #GLW peryear
+                                &#39;HW_mean_peryear&#39;:HW_mean_peryear[&#39;values&#39;], #GHW peryear
+                                &#39;LW_mean_peryear&#39;:LW_mean_peryear[&#39;values&#39;], #GLW peryear
                                 &#39;HW_monthmax_mean&#39;:HW_max_permonth[&#39;values&#39;].mean(), #GHHW/GHWS
                                 &#39;LW_monthmin_mean&#39;:LW_min_permonth[&#39;values&#39;].mean(), #GLLW/GLWS
-                                &#39;HW_monthmax_mean_peryear&#39;:HW_monthmax_peryear, #GHHW/GHWS peryear
-                                &#39;LW_monthmin_mean_peryear&#39;:LW_monthmin_peryear, #GLLW/GLWS peryear
+                                &#39;HW_monthmax_mean_peryear&#39;:HW_monthmax_peryear[&#39;values&#39;], #GHHW/GHWS peryear
+                                &#39;LW_monthmin_mean_peryear&#39;:LW_monthmin_peryear[&#39;values&#39;], #GLLW/GLWS peryear
                                 }
     for key in dict_HWLWtidalindicators.keys():
         if not hasattr(dict_HWLWtidalindicators[key],&#39;index&#39;):
@@ -171,6 +275,137 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
         dict_HWLWtidalindicators[key].index = dict_HWLWtidalindicators[key].index.to_timestamp()
         
     return dict_HWLWtidalindicators</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kenmerkendewaarden.linear_acceleration_model"><code class="name flex">
+<span>def <span class="ident">linear_acceleration_model</span></span>(<span>df)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>define a simple linear model, with nodal tide and without wind (no acceleration)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def linear_acceleration_model(df):
+    &#34;&#34;&#34;define a simple linear model, with nodal tide and without wind (no acceleration)&#34;&#34;&#34;
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        (df[&#39;year&#39;] - 1970) * (df[&#39;year&#39;] - 1970),
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+
+    month = np.mod(df[&#39;year&#39;], 1) * 12.0
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;Acceleration&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    X = sm.add_constant(X)
+    model = sm.OLS(y, X, missing=&#39;drop&#39;)
+    fit = model.fit()
+
+    return fit, names, X</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kenmerkendewaarden.quadratic_model"><code class="name flex">
+<span>def <span class="ident">quadratic_model</span></span>(<span>df, with_wind=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This model computes a parabolic linear fit. This corresponds to the hypothesis that sea-level is accelerating.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def quadratic_model(df, with_wind=True):
+    &#34;&#34;&#34;This model computes a parabolic linear fit. This corresponds to the hypothesis that sea-level is accelerating.&#34;&#34;&#34;
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        (df[&#39;year&#39;] - 1970) * (df[&#39;year&#39;] - 1970),
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;Acceleration&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    if with_wind:
+        X = np.c_[
+            X,
+            df[&#39;u2&#39;],
+            df[&#39;v2&#39;]
+        ]
+        names.extend([&#39;Wind $u^2$&#39;, &#39;Wind $v^2$&#39;])
+    X = sm.add_constant(X)
+    model_quadratic = sm.GLSAR(y, X, rho=1, missing=&#39;drop&#39;)
+    fit = model_quadratic.iterative_fit(cov_type=&#39;HC0&#39;)
+    return fit, names, X</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kenmerkendewaarden.broken_linear_model"><code class="name flex">
+<span>def <span class="ident">broken_linear_model</span></span>(<span>df, with_wind=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This model fits the sea-level rise has started to rise faster in 1993.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def broken_linear_model(df, with_wind=True):
+    &#34;&#34;&#34;This model fits the sea-level rise has started to rise faster in 1993.&#34;&#34;&#34;
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        (df[&#39;year&#39;] &gt; 1993) * (df[&#39;year&#39;] - 1993),
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;+trend (1993)&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    if with_wind:
+        X = np.c_[
+            X,
+            df[&#39;u2&#39;],
+            df[&#39;v2&#39;]
+        ]
+        names.extend([&#39;Wind $u^2$&#39;, &#39;Wind $v^2$&#39;])
+    X = sm.add_constant(X)
+    model_broken_linear = sm.GLSAR(y, X, rho=1, missing=&#39;drop&#39;)
+    fit = model_broken_linear.iterative_fit(cov_type=&#39;HC0&#39;, missing=&#39;drop&#39;)
+    return fit, names, X</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kenmerkendewaarden.linear_model"><code class="name flex">
+<span>def <span class="ident">linear_model</span></span>(<span>df, with_wind=True, with_ar=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Define the linear model with optional wind and autoregression.
+See the latest report for a detailed description.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def linear_model(df, with_wind=True, with_ar=True):
+    &#34;&#34;&#34;Define the linear model with optional wind and autoregression.
+    See the latest report for a detailed description.
+    &#34;&#34;&#34;
+
+    y = df[&#39;height&#39;]
+    X = np.c_[
+        df[&#39;year&#39;]-1970,
+        np.cos(2*np.pi*(df[&#39;year&#39;]-1970)/18.613),
+        np.sin(2*np.pi*(df[&#39;year&#39;]-1970)/18.613)
+    ]
+    month = np.mod(df[&#39;year&#39;], 1) * 12.0
+    names = [&#39;Constant&#39;, &#39;Trend&#39;, &#39;Nodal U&#39;, &#39;Nodal V&#39;]
+    if with_wind:
+        X = np.c_[
+            X,
+            df[&#39;u2&#39;],
+            df[&#39;v2&#39;]
+        ]
+        names.extend([&#39;Wind $u^2$&#39;, &#39;Wind $v^2$&#39;])
+    X = sm.add_constant(X)
+    if with_ar:
+        model = sm.GLSAR(y, X, missing=&#39;drop&#39;, rho=1)
+    else:
+        model = sm.OLS(y, X, missing=&#39;drop&#39;)
+    fit = model.fit(cov_type=&#39;HC0&#39;)
+    return fit, names, X</code></pre>
 </details>
 </dd>
 </dl>
@@ -192,6 +427,10 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="hatyan.kenmerkendewaarden.calc_HWLWtidalindicators" href="#hatyan.kenmerkendewaarden.calc_HWLWtidalindicators">calc_HWLWtidalindicators</a></code></li>
+<li><code><a title="hatyan.kenmerkendewaarden.linear_acceleration_model" href="#hatyan.kenmerkendewaarden.linear_acceleration_model">linear_acceleration_model</a></code></li>
+<li><code><a title="hatyan.kenmerkendewaarden.quadratic_model" href="#hatyan.kenmerkendewaarden.quadratic_model">quadratic_model</a></code></li>
+<li><code><a title="hatyan.kenmerkendewaarden.broken_linear_model" href="#hatyan.kenmerkendewaarden.broken_linear_model">broken_linear_model</a></code></li>
+<li><code><a title="hatyan.kenmerkendewaarden.linear_model" href="#hatyan.kenmerkendewaarden.linear_model">linear_model</a></code></li>
 </ul>
 </li>
 </ul>

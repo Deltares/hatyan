@@ -76,6 +76,17 @@ file_path = os.path.realpath(__file__)
 
 
 @functools.lru_cache()
+def get_schureman_shallowrelations():
+    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),&#39;data&#39;,&#39;data_schureman_shallowrelations.csv&#39;)
+    shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment=&#39;#&#39;,skipinitialspace=True,index_col=0,names=[&#39;shallow_eq&#39;])
+    shallow_eqs_pd[&#39;shallow_eq&#39;] = shallow_eqs_pd[&#39;shallow_eq&#39;].str.strip() #remove spaces after
+    shallow_eqs_pd[&#39;shallow_const&#39;] = shallow_eqs_pd.index
+    
+    shallow_eqs_pd.index = &#39;comp_&#39;+shallow_eqs_pd.index.str.replace(&#39;(&#39;,&#39;_&#39;,regex=False).str.replace(&#39;)&#39;,&#39;_&#39;,regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
+    return shallow_eqs_pd
+
+
+@functools.lru_cache()
 def get_schureman_table():
     &#34;&#34;&#34;
     Calculate all schureman constituents
@@ -97,14 +108,9 @@ def get_schureman_table():
     v0uf_base = v0uf_baseT.T
     #v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     
-    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),&#39;data&#39;,&#39;data_schureman_shallowrelations.csv&#39;)
-    shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment=&#39;#&#39;,skipinitialspace=True,index_col=0,names=[&#39;shallow_eq&#39;])
-    shallow_eqs_pd[&#39;shallow_eq&#39;] = shallow_eqs_pd[&#39;shallow_eq&#39;].str.strip() #remove spaces after
-    shallow_eqs_pd[&#39;shallow_const&#39;] = shallow_eqs_pd.index
-    
-    shallow_eqs_pd.index = &#39;comp_&#39;+shallow_eqs_pd.index.str.replace(&#39;(&#39;,&#39;_&#39;,regex=False).str.replace(&#39;)&#39;,&#39;_&#39;,regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
+    shallow_eqs_pd = get_schureman_shallowrelations()
     shallow_eqs_pd_str = &#39;\n&#39;.join(f&#39;{key} = {val}&#39; for key, val in shallow_eqs_pd[&#39;shallow_eq&#39;].iteritems()) 
-    
+
     #calculate shallow water components and rename back to original component name
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
     v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=True)
@@ -481,6 +487,26 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="hatyan.schureman.get_schureman_shallowrelations"><code class="name flex">
+<span>def <span class="ident">get_schureman_shallowrelations</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@functools.lru_cache()
+def get_schureman_shallowrelations():
+    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),&#39;data&#39;,&#39;data_schureman_shallowrelations.csv&#39;)
+    shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment=&#39;#&#39;,skipinitialspace=True,index_col=0,names=[&#39;shallow_eq&#39;])
+    shallow_eqs_pd[&#39;shallow_eq&#39;] = shallow_eqs_pd[&#39;shallow_eq&#39;].str.strip() #remove spaces after
+    shallow_eqs_pd[&#39;shallow_const&#39;] = shallow_eqs_pd.index
+    
+    shallow_eqs_pd.index = &#39;comp_&#39;+shallow_eqs_pd.index.str.replace(&#39;(&#39;,&#39;_&#39;,regex=False).str.replace(&#39;)&#39;,&#39;_&#39;,regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
+    return shallow_eqs_pd</code></pre>
+</details>
+</dd>
 <dt id="hatyan.schureman.get_schureman_table"><code class="name flex">
 <span>def <span class="ident">get_schureman_table</span></span>(<span>)</span>
 </code></dt>
@@ -517,14 +543,9 @@ def get_schureman_table():
     v0uf_base = v0uf_baseT.T
     #v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     
-    file_schureman_shallowrelations = os.path.join(os.path.dirname(file_path),&#39;data&#39;,&#39;data_schureman_shallowrelations.csv&#39;)
-    shallow_eqs_pd = pd.read_csv(file_schureman_shallowrelations,comment=&#39;#&#39;,skipinitialspace=True,index_col=0,names=[&#39;shallow_eq&#39;])
-    shallow_eqs_pd[&#39;shallow_eq&#39;] = shallow_eqs_pd[&#39;shallow_eq&#39;].str.strip() #remove spaces after
-    shallow_eqs_pd[&#39;shallow_const&#39;] = shallow_eqs_pd.index
-    
-    shallow_eqs_pd.index = &#39;comp_&#39;+shallow_eqs_pd.index.str.replace(&#39;(&#39;,&#39;_&#39;,regex=False).str.replace(&#39;)&#39;,&#39;_&#39;,regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
+    shallow_eqs_pd = get_schureman_shallowrelations()
     shallow_eqs_pd_str = &#39;\n&#39;.join(f&#39;{key} = {val}&#39; for key, val in shallow_eqs_pd[&#39;shallow_eq&#39;].iteritems()) 
-    
+
     #calculate shallow water components and rename back to original component name
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
     v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=True)
@@ -1047,6 +1068,7 @@ def get_schureman_table():
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="hatyan.schureman.get_schureman_shallowrelations" href="#hatyan.schureman.get_schureman_shallowrelations">get_schureman_shallowrelations</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_table" href="#hatyan.schureman.get_schureman_table">get_schureman_table</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_freqs" href="#hatyan.schureman.get_schureman_freqs">get_schureman_freqs</a></code></li>
 <li><code><a title="hatyan.schureman.get_schureman_v0" href="#hatyan.schureman.get_schureman_v0">get_schureman_v0</a></code></li>

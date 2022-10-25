@@ -25,8 +25,8 @@
 <p><a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml"><img alt="pytest-devenv" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml"><img alt="pytest-py39" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml"><img alt="sigrid-publish" src="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main"></a>
-<a href="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml"><img alt="rpm-build-core" src="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml/badge.svg?event=release"></a>
-<a href="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml"><img alt="pypi-upload" src="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml/badge.svg?event=release"></a></p>
+<a href="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml"><img alt="pypi-upload" src="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml/badge.svg?event=release"></a>
+<a href="https://sonarcloud.io/dashboard?id=Deltares_hatyan"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&amp;metric=alert_status"></a></p>
 <h1 id="hatyan">hatyan</h1>
 <p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
 Copyright (C) 2019-2021 Rijkswaterstaat.
@@ -47,14 +47,29 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 <h2 id="installation">Installation</h2>
 <p>Install hatyan OPTION 1: Install from pip/github in an existing or new environment:</p>
 <ul>
-<li>optional: download Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a></li>
-<li>open command window (or anaconda prompt)</li>
+<li>optional: download and install Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a></li>
+<li>open anaconda prompt</li>
 <li>optional: <code>conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y</code> (or higher python version)</li>
 <li>optional: <code>conda activate hatyan_env</code></li>
 <li><code>python -m pip install hatyan</code> (this installs hatyan and all required packages from PyPI, add a version like <code>==2.3.0</code> if you require a specific version. Optionally add <code>--upgrade</code>)</li>
 <li>alternatively: <code>python -m pip install git+https://github.com/Deltares/hatyan</code> (this installs hatyan and all required packages from github, add a tag like <code>@v2.3.0</code>, <code>@main</code> or <code>@development</code> if you require a specific release/branch. Optionally add <code>--upgrade</code>)</li>
 </ul>
-<p>Install hatyan OPTION 2: get and install RPM on CentOS/RHEL</p>
+<p>Install hatyan OPTION 2: create python venv in your Linux home directory and install from zipfile (no internet required for installation)</p>
+<ul>
+<li>might be necessary to activate python3: <code>module load anaconda3</code> (or any other python3 installation)</li>
+<li><code>python -m venv ~/venv_hatyan</code></li>
+<li><code>source ~/venv_hatyan/bin/activate</code></li>
+<li>optional (requires internet): <code>python -m pip install --upgrade pip setuptools</code></li>
+<li><code>pip install ~/PyQt5-5.15.7-cp37-abi3-manylinux1_x86_64.whl</code> (download from <a href="https://pypi.org/project/PyQt5/#files">https://pypi.org/project/PyQt5/#files</a>)</li>
+<li><code>pip install ~/hatyan-2.5.64.zip</code> (download from <a href="https://github.com/Deltares/hatyan/releases/tag/v2.5.64">https://github.com/Deltares/hatyan/releases/tag/v2.5.64</a> or any other release)</li>
+<li><code>deactivate</code></li>
+<li>to test, copy example script to e.g. home directory (<a href="https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py">https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py</a>)</li>
+<li><code>source ~/venv_hatyan/bin/activate</code></li>
+<li><code>python -m venv ~/venv_hatyan</code></li>
+<li><code>python ~/validate_astro_DDL.py</code></li>
+<li><code>deactivate</code></li>
+</ul>
+<p>Install hatyan OPTION 3: get and install RPM on CentOS/RHEL</p>
 <ul>
 <li>get the latest rpm file (see developer information for building procedure)</li>
 <li>install hatyan on CentOS: <code>rpm -i hatyan_python-2.2.30-1.x86_64.rpm</code></li>
@@ -128,7 +143,7 @@ fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_valida
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.5.73&#39;
+__version__ = &#39;2.5.83&#39;
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *

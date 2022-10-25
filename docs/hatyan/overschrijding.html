@@ -161,8 +161,10 @@ def distribution(df: pd.DataFrame, col: str = None,
     else:
         df = df.sort_values(by=col)
     rank = np.array(range(len(df[col]))) + 1
-    df[&#39;{}_Tfreq&#39;.format(col)] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
-    return df.sort_values(by=&#39;{}_Tfreq&#39;.format(col), ascending=False)
+    df[f&#39;{col}_Tfreq&#39;] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
+    df_sorted = df.sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return df_sorted
 
 
 def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str = None,
@@ -173,7 +175,7 @@ def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str
     if inverse:
         values = -values
         threshold = -threshold
-    p_val_gt_threshold = df[col+&#39;_Tfreq&#39;].loc[values &gt; threshold].iloc[0]
+    p_val_gt_threshold = df[f&#39;{col}_Tfreq&#39;].loc[values &gt; threshold].iloc[0]
 
     def pfunc(x, p_val_gt_threshold, threshold, sigma, alpha):
         return p_val_gt_threshold * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
@@ -201,8 +203,9 @@ def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str
     new_values = pfunc_inverse(Tfreqs, p_val_gt_threshold, threshold, sigma, alpha)
     if inverse:
         new_values = -new_values
-    return pd.DataFrame(data={&#39;{}_Tfreq&#39;.format(col): Tfreqs,
-                              col: new_values}).sort_values(by=&#39;{}_Tfreq&#39;.format(col), ascending=False)
+    pd_return = pd.DataFrame(data={f&#39;{col}_Tfreq&#39;: Tfreqs,col: new_values}).sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return pd_return
 
 
 def filter_with_threshold(df_raw: pd.DataFrame,
@@ -340,7 +343,7 @@ def plot_distributions(dist: dict, name: str,
     ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.1)) #this was 10, but now meters instead of cm
     ax.yaxis.set_minor_formatter(ticker.NullFormatter()),
     ax.yaxis.set_major_formatter(ticker.FormatStrFormatter(&#39;%.2f&#39;)) #to force 2 decimal places
-    ax.grid(b=True, which=&#39;major&#39;), ax.grid(b=True, which=&#39;minor&#39;, ls=&#39;:&#39;)
+    ax.grid(visible=True, which=&#39;major&#39;), ax.grid(visible=True, which=&#39;minor&#39;, ls=&#39;:&#39;)
     ax.set_axisbelow(True)
     fig.tight_layout()
     return fig,ax
@@ -353,7 +356,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                                                       np.flip(df[&#39;values&#39;].values)),
                                    &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
     #prefix = os.path.basename(csv_dir)
-    df_interp.to_csv(os.path.join(csv_dir, &#39;{}_{}.csv&#39;.format(prefix, id)), index=False, sep=&#39;;&#39;)
+    df_interp.to_csv(os.path.join(csv_dir, f&#39;{prefix}_{id}.csv&#39;), index=False, sep=&#39;;&#39;)
     return df_interp</code></pre>
 </details>
 </section>
@@ -530,8 +533,10 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     else:
         df = df.sort_values(by=col)
     rank = np.array(range(len(df[col]))) + 1
-    df[&#39;{}_Tfreq&#39;.format(col)] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
-    return df.sort_values(by=&#39;{}_Tfreq&#39;.format(col), ascending=False)</code></pre>
+    df[f&#39;{col}_Tfreq&#39;] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
+    df_sorted = df.sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return df_sorted</code></pre>
 </details>
 </dd>
 <dt id="hatyan.overschrijding.get_weibull"><code class="name flex">
@@ -551,7 +556,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     if inverse:
         values = -values
         threshold = -threshold
-    p_val_gt_threshold = df[col+&#39;_Tfreq&#39;].loc[values &gt; threshold].iloc[0]
+    p_val_gt_threshold = df[f&#39;{col}_Tfreq&#39;].loc[values &gt; threshold].iloc[0]
 
     def pfunc(x, p_val_gt_threshold, threshold, sigma, alpha):
         return p_val_gt_threshold * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
@@ -579,8 +584,9 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     new_values = pfunc_inverse(Tfreqs, p_val_gt_threshold, threshold, sigma, alpha)
     if inverse:
         new_values = -new_values
-    return pd.DataFrame(data={&#39;{}_Tfreq&#39;.format(col): Tfreqs,
-                              col: new_values}).sort_values(by=&#39;{}_Tfreq&#39;.format(col), ascending=False)</code></pre>
+    pd_return = pd.DataFrame(data={f&#39;{col}_Tfreq&#39;: Tfreqs,col: new_values}).sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return pd_return</code></pre>
 </details>
 </dd>
 <dt id="hatyan.overschrijding.filter_with_threshold"><code class="name flex">
@@ -781,7 +787,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.1)) #this was 10, but now meters instead of cm
     ax.yaxis.set_minor_formatter(ticker.NullFormatter()),
     ax.yaxis.set_major_formatter(ticker.FormatStrFormatter(&#39;%.2f&#39;)) #to force 2 decimal places
-    ax.grid(b=True, which=&#39;major&#39;), ax.grid(b=True, which=&#39;minor&#39;, ls=&#39;:&#39;)
+    ax.grid(visible=True, which=&#39;major&#39;), ax.grid(visible=True, which=&#39;minor&#39;, ls=&#39;:&#39;)
     ax.set_axisbelow(True)
     fig.tight_layout()
     return fig,ax</code></pre>
@@ -803,7 +809,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                                                       np.flip(df[&#39;values&#39;].values)),
                                    &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
     #prefix = os.path.basename(csv_dir)
-    df_interp.to_csv(os.path.join(csv_dir, &#39;{}_{}.csv&#39;.format(prefix, id)), index=False, sep=&#39;;&#39;)
+    df_interp.to_csv(os.path.join(csv_dir, f&#39;{prefix}_{id}.csv&#39;), index=False, sep=&#39;;&#39;)
     return df_interp</code></pre>
 </details>
 </dd>

@@ -78,6 +78,10 @@ from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
 
 
+class MatrixConditionTooHigh(Exception):
+    pass
+
+
 class HatyanSettings:
     &#34;&#34;&#34;
     Settings class containing default hatyan settings, to be overwritten by input, initiate with:
@@ -138,9 +142,12 @@ class HatyanSettings:
             return_allperiods = return_allyears
             return_allyears = None
         
-        for var_in in [nodalfactors,fu_alltimes,xfac,return_allperiods,return_prediction]:
+        for var_in in [nodalfactors,fu_alltimes,return_allperiods,return_prediction]:
             if not isinstance(var_in,bool):
                 raise Exception(f&#39;invalid {var_in} type, should be bool&#39;)
+        
+        if not (isinstance(xfac,bool) or isinstance(xfac,dict)):
+            raise Exception(f&#39;invalid xfac={xfac} type, should be bool or dict&#39;)
         
         if not ((analysis_perperiod is False) or (analysis_perperiod in [&#39;Y&#39;,&#39;Q&#39;,&#39;M&#39;])):
             raise Exception(f&#39;invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M&#39;)
@@ -282,8 +289,8 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
                 COMP_one = analysis(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iP] = COMP_one.loc[:,&#39;A&#39;]
                 phi_i_deg_all[:,iP] = COMP_one.loc[:,&#39;phi_deg&#39;]
-            except Exception as e:
-                print(f&#39;WARNING: analysis of {period_dt} failed, error message: &#34;{e}&#34;&#39;)
+            except MatrixConditionTooHigh: # accept exception if matrix condition is too high, since some years can then be skipped
+                print(f&#39;WARNING: analysis of {period_dt} failed because MatrixConditionTooHigh, check if const_list is appropriate for timeseries lenght.&#39;)
         if np.isnan(A_i_all).all():
             raise Exception(&#39;analysis peryear or permonth failed for all years/months, check warnings above&#39;)
         
@@ -320,6 +327,8 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep=&#39;first&#39;)
     ts_pd = ts.copy() #TODO: this is not necessary
+    if not (isinstance(ts.index[0],pd.Timestamp) or isinstance(ts.index[0],dt.datetime)): #works better than isinstance(ts.index,pd.DatetimeIndex) since 1018 time indexes are Index instead of DatetimeIndex
+        raise TypeError(f&#39;ts.index is not of expected type ({type(ts.index[0])} instead of pd.Timestamp or dt.datetime)&#39;)
     if bool_ts_duplicated.any():
         raise Exception(f&#39;ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep=&#34;first&#34;)]&#39;)
     print(f&#39;#timesteps           = {len(ts)}&#39;)
@@ -370,10 +379,10 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
     v_u = v_0i_rad.values + u_i_rad.values
     
-    #check rayleigh frequency after nyquist frequency folding process
+    #check rayleigh frequency after nyquist frequency folding process.
     freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
     check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
-    
+
     #### TIMESERIES ANALYSIS
     N = len(const_list)
     m = len(ts_pd_nonan[&#39;values&#39;])
@@ -395,7 +404,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
     xTxmat_condition = np.linalg.cond(xTxmat)
     print(&#39;condition of xTx matrix: %.2f&#39;%(xTxmat_condition))
     if xTxmat_condition &gt; hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
-        raise Exception(f&#39;ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}&#39;)
+        raise MatrixConditionTooHigh(f&#39;ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}&#39;)
     xTymat = np.dot(xTmat,ts_pd_nonan[&#39;values&#39;].values)
     
     #solve matrix to get beta_roof_mat (and thus a, b)
@@ -582,12 +591,16 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
 
 
 def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwargs):
+    raise Exception(&#39;ERROR: prediction_peryear() is deprecated, use prediction_perperiod() instead&#39;)
+
+
+def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **kwargs):
     &#34;&#34;&#34;
-    Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.
+    Wrapper around prediction(), to use component set of multiple years/months to generate multi-year/month timeseries.
 
     Parameters
     ----------
-    comp_allyears : TYPE
+    comp_allperiods : TYPE
         DESCRIPTION.
     timestep_min : TYPE
         DESCRIPTION.
@@ -606,16 +619,23 @@ def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwar
     elif len(kwargs)&gt;0:
         raise Exception(&#39;both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid&#39;)
 
-    list_years = comp_allyears.columns.levels[1]
-    ts_prediction_peryear = pd.DataFrame()
-    for year in list_years:
-        print(&#39;generating prediction %d of sequence %s&#39;%(year,list(list_years)))
-        comp_oneyear = comp_allyears.loc[:,(slice(None),year)]
+    ts_periods_dt = comp_allperiods.columns.levels[1]
+    ts_periods_strlist = [str(x) for x in ts_periods_dt]
+    
+    ts_prediction_perperiod = pd.DataFrame()
+    for period_dt in ts_periods_dt:
+        print(f&#39;generating prediction {period_dt} of sequence {ts_periods_strlist}&#39;)
+        comp_oneyear = comp_allperiods.loc[:,(slice(None),period_dt)]
         comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
-        times_ext = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)-dt.timedelta(minutes=timestep_min)]
-        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
-        ts_prediction_peryear = ts_prediction_peryear.append(ts_prediction_oneyear)
-    return ts_prediction_peryear</code></pre>
+        if period_dt.freqstr in [&#39;A-DEC&#39;]: #year frequency
+            times_ext = [dt.datetime(period_dt.year,1,1),dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+        elif period_dt.freqstr in [&#39;M&#39;]: #month frequency
+            times_ext = [period_dt.to_timestamp().to_pydatetime(),period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)]
+        else:
+            raise Exception(f&#39;unknown freqstr: {period_dt.freqstr}&#39;)
+        ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
+        ts_prediction_perperiod = pd.concat([ts_prediction_perperiod,ts_prediction_oneperiod])
+    return ts_prediction_perperiod</code></pre>
 </details>
 </section>
 <section>
@@ -788,8 +808,8 @@ str: a predefined name of a component set for hatyan_core.get_const_list_hatyan(
                 COMP_one = analysis(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iP] = COMP_one.loc[:,&#39;A&#39;]
                 phi_i_deg_all[:,iP] = COMP_one.loc[:,&#39;phi_deg&#39;]
-            except Exception as e:
-                print(f&#39;WARNING: analysis of {period_dt} failed, error message: &#34;{e}&#34;&#39;)
+            except MatrixConditionTooHigh: # accept exception if matrix condition is too high, since some years can then be skipped
+                print(f&#39;WARNING: analysis of {period_dt} failed because MatrixConditionTooHigh, check if const_list is appropriate for timeseries lenght.&#39;)
         if np.isnan(A_i_all).all():
             raise Exception(&#39;analysis peryear or permonth failed for all years/months, check warnings above&#39;)
         
@@ -836,6 +856,8 @@ for details about arguments and return variables, see get_components_from_ts() d
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep=&#39;first&#39;)
     ts_pd = ts.copy() #TODO: this is not necessary
+    if not (isinstance(ts.index[0],pd.Timestamp) or isinstance(ts.index[0],dt.datetime)): #works better than isinstance(ts.index,pd.DatetimeIndex) since 1018 time indexes are Index instead of DatetimeIndex
+        raise TypeError(f&#39;ts.index is not of expected type ({type(ts.index[0])} instead of pd.Timestamp or dt.datetime)&#39;)
     if bool_ts_duplicated.any():
         raise Exception(f&#39;ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep=&#34;first&#34;)]&#39;)
     print(f&#39;#timesteps           = {len(ts)}&#39;)
@@ -886,10 +908,10 @@ for details about arguments and return variables, see get_components_from_ts() d
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
     v_u = v_0i_rad.values + u_i_rad.values
     
-    #check rayleigh frequency after nyquist frequency folding process
+    #check rayleigh frequency after nyquist frequency folding process.
     freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
     check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
-    
+
     #### TIMESERIES ANALYSIS
     N = len(const_list)
     m = len(ts_pd_nonan[&#39;values&#39;])
@@ -911,7 +933,7 @@ for details about arguments and return variables, see get_components_from_ts() d
     xTxmat_condition = np.linalg.cond(xTxmat)
     print(&#39;condition of xTx matrix: %.2f&#39;%(xTxmat_condition))
     if xTxmat_condition &gt; hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
-        raise Exception(f&#39;ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}&#39;)
+        raise MatrixConditionTooHigh(f&#39;ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}&#39;)
     xTymat = np.dot(xTmat,ts_pd_nonan[&#39;values&#39;].values)
     
     #solve matrix to get beta_roof_mat (and thus a, b)
@@ -1144,10 +1166,23 @@ The component set has the same timezone as the timeseries used to create it, the
 <span>def <span class="ident">prediction_peryear</span></span>(<span>comp_allyears, timestep_min, hatyan_settings=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.</p>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwargs):
+    raise Exception(&#39;ERROR: prediction_peryear() is deprecated, use prediction_perperiod() instead&#39;)</code></pre>
+</details>
+</dd>
+<dt id="hatyan.analysis_prediction.prediction_perperiod"><code class="name flex">
+<span>def <span class="ident">prediction_perperiod</span></span>(<span>comp_allperiods, timestep_min, hatyan_settings=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wrapper around prediction(), to use component set of multiple years/months to generate multi-year/month timeseries.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>comp_allyears</code></strong> :&ensp;<code>TYPE</code></dt>
+<dt><strong><code>comp_allperiods</code></strong> :&ensp;<code>TYPE</code></dt>
 <dd>DESCRIPTION.</dd>
 <dt><strong><code>timestep_min</code></strong> :&ensp;<code>TYPE</code></dt>
 <dd>DESCRIPTION.</dd>
@@ -1163,13 +1198,13 @@ The component set has the same timezone as the timeseries used to create it, the
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwargs):
+<pre><code class="python">def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **kwargs):
     &#34;&#34;&#34;
-    Wrapper around prediction(), to use component set of multiple years to generate multi-year timeseries.
+    Wrapper around prediction(), to use component set of multiple years/months to generate multi-year/month timeseries.
 
     Parameters
     ----------
-    comp_allyears : TYPE
+    comp_allperiods : TYPE
         DESCRIPTION.
     timestep_min : TYPE
         DESCRIPTION.
@@ -1188,16 +1223,23 @@ The component set has the same timezone as the timeseries used to create it, the
     elif len(kwargs)&gt;0:
         raise Exception(&#39;both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid&#39;)
 
-    list_years = comp_allyears.columns.levels[1]
-    ts_prediction_peryear = pd.DataFrame()
-    for year in list_years:
-        print(&#39;generating prediction %d of sequence %s&#39;%(year,list(list_years)))
-        comp_oneyear = comp_allyears.loc[:,(slice(None),year)]
+    ts_periods_dt = comp_allperiods.columns.levels[1]
+    ts_periods_strlist = [str(x) for x in ts_periods_dt]
+    
+    ts_prediction_perperiod = pd.DataFrame()
+    for period_dt in ts_periods_dt:
+        print(f&#39;generating prediction {period_dt} of sequence {ts_periods_strlist}&#39;)
+        comp_oneyear = comp_allperiods.loc[:,(slice(None),period_dt)]
         comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
-        times_ext = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)-dt.timedelta(minutes=timestep_min)]
-        ts_prediction_oneyear = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
-        ts_prediction_peryear = ts_prediction_peryear.append(ts_prediction_oneyear)
-    return ts_prediction_peryear</code></pre>
+        if period_dt.freqstr in [&#39;A-DEC&#39;]: #year frequency
+            times_ext = [dt.datetime(period_dt.year,1,1),dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+        elif period_dt.freqstr in [&#39;M&#39;]: #month frequency
+            times_ext = [period_dt.to_timestamp().to_pydatetime(),period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)]
+        else:
+            raise Exception(f&#39;unknown freqstr: {period_dt.freqstr}&#39;)
+        ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
+        ts_prediction_perperiod = pd.concat([ts_prediction_perperiod,ts_prediction_oneperiod])
+    return ts_prediction_perperiod</code></pre>
 </details>
 </dd>
 </dl>
@@ -1205,6 +1247,25 @@ The component set has the same timezone as the timeseries used to create it, the
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="hatyan.analysis_prediction.MatrixConditionTooHigh"><code class="flex name class">
+<span>class <span class="ident">MatrixConditionTooHigh</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MatrixConditionTooHigh(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
 <dt id="hatyan.analysis_prediction.HatyanSettings"><code class="flex name class">
 <span>class <span class="ident">HatyanSettings</span></span>
 <span>(</span><span>source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, CS_comps=None, analysis_perperiod=False, return_allperiods=False, analysis_peryear=None, analysis_permonth=None, return_allyears=None, return_prediction=False, xTxmat_condition_max=10)</span>
@@ -1294,9 +1355,12 @@ Whether to generate a prediction for the ts time array. The default is False.</p
             return_allperiods = return_allyears
             return_allyears = None
         
-        for var_in in [nodalfactors,fu_alltimes,xfac,return_allperiods,return_prediction]:
+        for var_in in [nodalfactors,fu_alltimes,return_allperiods,return_prediction]:
             if not isinstance(var_in,bool):
                 raise Exception(f&#39;invalid {var_in} type, should be bool&#39;)
+        
+        if not (isinstance(xfac,bool) or isinstance(xfac,dict)):
+            raise Exception(f&#39;invalid xfac={xfac} type, should be bool or dict&#39;)
         
         if not ((analysis_perperiod is False) or (analysis_perperiod in [&#39;Y&#39;,&#39;Q&#39;,&#39;M&#39;])):
             raise Exception(f&#39;invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M&#39;)
@@ -1356,10 +1420,14 @@ Whether to generate a prediction for the ts time array. The default is False.</p
 <li><code><a title="hatyan.analysis_prediction.split_components" href="#hatyan.analysis_prediction.split_components">split_components</a></code></li>
 <li><code><a title="hatyan.analysis_prediction.prediction" href="#hatyan.analysis_prediction.prediction">prediction</a></code></li>
 <li><code><a title="hatyan.analysis_prediction.prediction_peryear" href="#hatyan.analysis_prediction.prediction_peryear">prediction_peryear</a></code></li>
+<li><code><a title="hatyan.analysis_prediction.prediction_perperiod" href="#hatyan.analysis_prediction.prediction_perperiod">prediction_perperiod</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="hatyan.analysis_prediction.MatrixConditionTooHigh" href="#hatyan.analysis_prediction.MatrixConditionTooHigh">MatrixConditionTooHigh</a></code></h4>
+</li>
 <li>
 <h4><code><a title="hatyan.analysis_prediction.HatyanSettings" href="#hatyan.analysis_prediction.HatyanSettings">HatyanSettings</a></code></h4>
 </li>

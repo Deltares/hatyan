@@ -196,7 +196,7 @@ def write_components(comp, filename, metadata=None):
     
     with open(filename,&#39;w&#39;) as f:
         if metadata is None:
-            f.write(&#39;* no metadata available\n&#39;)
+            f.write(&#39;* no metadata available\n&#39;) #TODO: HATYAN40\anadea.f regel 297 schrijft format van header voor, &#39;60&#39; na start/stop datetime is tijdzone, &#39;1&#39; na eenheid is Waarnemingssoort. Beide belangrijke regels/gegevens
         else:
             for key in metadata.keys():
                 f.write(&#39;* %-20s: %s\n&#39;%(key, metadata[key]))
@@ -297,7 +297,7 @@ def read_components(filename, get_metadata=False):
     Aphi_datapd_raw_noA0 = pd.read_csv(filename, delimiter=r&#34;\s+&#34;, header=line_compstart-1, names=[&#39;COMP&#39;, &#39;hat_id&#39;, &#39;freq&#39;, &#39;A&#39;, &#39;phi&#39;, &#39;name&#39;])
     
     Aphi_datapd_A0line = pd.DataFrame({&#39;A&#39;: [A0_cm], &#39;phi&#39;: [0], &#39;name&#39;: [&#39;A0&#39;]})
-    Aphi_datapd_raw = Aphi_datapd_A0line.append(Aphi_datapd_raw_noA0,ignore_index=True)
+    Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
     COMP_pd = pd.DataFrame({&#39;A&#39;: Aphi_datapd_raw[&#39;A&#39;].values/100, &#39;phi_deg&#39;: Aphi_datapd_raw[&#39;phi&#39;].values}, index=Aphi_datapd_raw[&#39;name&#39;].values)
     if get_metadata:
         meta = {&#39;station&#39;: station_fromfile, &#39;times_ext&#39;: times_compfile_ext, &#39;times_stepmin&#39;: times_compfile_step, &#39;origin&#39;:&#39;import&#39;, &#39;vertref&#39;:file_vertref}#, &#39;usedxfac&#39;:None}
@@ -491,7 +491,7 @@ def components_timeshift(comp,hours):
     
     with open(filename,&#39;w&#39;) as f:
         if metadata is None:
-            f.write(&#39;* no metadata available\n&#39;)
+            f.write(&#39;* no metadata available\n&#39;) #TODO: HATYAN40\anadea.f regel 297 schrijft format van header voor, &#39;60&#39; na start/stop datetime is tijdzone, &#39;1&#39; na eenheid is Waarnemingssoort. Beide belangrijke regels/gegevens
         else:
             for key in metadata.keys():
                 f.write(&#39;* %-20s: %s\n&#39;%(key, metadata[key]))
@@ -646,7 +646,7 @@ def components_timeshift(comp,hours):
     Aphi_datapd_raw_noA0 = pd.read_csv(filename, delimiter=r&#34;\s+&#34;, header=line_compstart-1, names=[&#39;COMP&#39;, &#39;hat_id&#39;, &#39;freq&#39;, &#39;A&#39;, &#39;phi&#39;, &#39;name&#39;])
     
     Aphi_datapd_A0line = pd.DataFrame({&#39;A&#39;: [A0_cm], &#39;phi&#39;: [0], &#39;name&#39;: [&#39;A0&#39;]})
-    Aphi_datapd_raw = Aphi_datapd_A0line.append(Aphi_datapd_raw_noA0,ignore_index=True)
+    Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
     COMP_pd = pd.DataFrame({&#39;A&#39;: Aphi_datapd_raw[&#39;A&#39;].values/100, &#39;phi_deg&#39;: Aphi_datapd_raw[&#39;phi&#39;].values}, index=Aphi_datapd_raw[&#39;name&#39;].values)
     if get_metadata:
         meta = {&#39;station&#39;: station_fromfile, &#39;times_ext&#39;: times_compfile_ext, &#39;times_stepmin&#39;: times_compfile_step, &#39;origin&#39;:&#39;import&#39;, &#39;vertref&#39;:file_vertref}#, &#39;usedxfac&#39;:None}
