@@ -36,7 +36,20 @@ Install hatyan OPTION 1: Install from pip/github in an existing or new environme
 - ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version. Optionally add ``--upgrade``)
 - alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages from github, add a tag like ``@v2.3.0``, ``@main`` or ``@development`` if you require a specific release/branch. Optionally add ``--upgrade``)
 
-Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
+Install hatyan OPTION 2: create python venv in your Linux home directory and install from zipfile (no internet required)
+- might be necessary to activate python3: ``module load anaconda3`` (or any other python3 installation)
+- ``python -m venv ~/venv_hatyan``
+- ``source ~/venv_hatyan/bin/activate``
+- optional (requires internet): ``python -m pip install --upgrade pip setuptools``
+- ``pip install ~/PyQt5-5.15.7-cp37-abi3-manylinux1_x86_64.whl`` (download from https://pypi.org/project/PyQt5/#files)
+- ``pip install ~/hatyan-2.5.64.zip`` (download from https://github.com/Deltares/hatyan/releases/tag/v2.5.64 or any other release)
+- to test, copy example script to e.g. home directory (e.g. https://github.com/Deltares/hatyan/blob/main/tests/examples/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py)
+- ``python -m venv ~/venv_hatyan``
+- ``python ~/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py``
+- CURRENT ISSUES: testpath is not correct (include testdata in installation?)
+- CURRENT ISSUES: analysis_perperiod is not known in latest release yet (new release needed) 
+
+Install hatyan OPTION 3: get and install RPM on CentOS/RHEL
 
 - get the latest rpm file (see developer information for building procedure)
 - install hatyan on CentOS: ``rpm -i hatyan_python-2.2.30-1.x86_64.rpm``

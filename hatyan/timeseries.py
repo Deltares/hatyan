@@ -98,7 +98,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
         data_pd_HWLW.loc[LWid_all,'HWLWcode'] = 22 #all LW
         data_pd_HWLW.loc[HWid_all,'HWLWcode'] = 11 #all HW
 
-    #get HWLW (extremes per tidal period). 
+    #get HWLW (extremes per tidal period).
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
@@ -1523,7 +1523,7 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     
     print('reading file: %s'%(filename))
     noosheader = []
-    noosheader_dict = {}
+    noosheader_dict = {} #TODO: this is not returned, could be valuable to do so
     with open(filename) as f:
         for linenum, line in enumerate(f, 0):
             if '#' in line:

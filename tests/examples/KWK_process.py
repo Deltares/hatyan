@@ -1017,6 +1017,7 @@ for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list
     #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complexer. hoe wordt het bij havengetallen gedaan?
     #NOTE: in 1991.0 worden stations met aggers niet geschaald?
     #TODO: issue with aggers might vanish if we do not scale timeDown/timeUp (although with havengetallen it is still an issue)
+    #TODO: hatyan.calc_HWLW_tidalrange() creëeren (code staat hieronder), geeft column 'tidalrange' in ts_ext dataframe
     prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext)
     prediction_sn_ext['times_backup'] = prediction_sn_ext.index
     prediction_sn_ext_idxHWLWno = prediction_sn_ext.set_index('HWLWno',drop=False)
@@ -1159,6 +1160,8 @@ for current_station in ['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list
 #weibull lijn begint pas bij hogere freq want die begint pas bij n-de waarde, want die gaat niet met het staartje naar beneden. is niet van toepassing voor die hoogfrequente situaties, is ontwikkeld voor extremen. te voorspellen freqs wordt met np.logspace() opgegeven.
 #TODO: zie vragen in script
 #TODO: hoe plots beoordelen? >> rode lijn moet soort van verlengde zijn van groene, als die ineens omhoog piekt komt dat door hele extreme wardes die je dan vrmoedelijk ook al ziet in je groene lijn
+
+#TODO: overschrijdingsfreqs met extremen: neem datareeks vanaf waar geen grote gaps meer voorkomen, of maakt dat niet uit?
 
 """
 #TODO: aantekeningen gesprek Boyan
