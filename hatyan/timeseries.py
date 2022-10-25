@@ -45,8 +45,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     The prominence for local extremes is set to 0.01m, to filter out very minor dips in the timeseries.
     If there are two equal high or low water values, the first one is taken. 
     There are no main high/low waters calculated within 6 hours of the start/end of the timeseries (keyword buffer_hr), since these can be invalid.
-    This function can deal with gaps. Since scipy.signal.find_peaks() warns about nan values, those are removed first.
-    This does influence the results since find_peaks does not know about time registration. This is also tricky for input timeseries with varying time interval.
+    Since scipy.signal.find_peaks() warns about nan values, those are removed first. Nans/gaps can influence the results since find_peaks does not know about time registration. This is also tricky for input timeseries with varying time interval.
     
     Parameters
     ----------
@@ -78,12 +77,14 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
         raise Exception('ERROR: timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()') #otherwise "ValueError: 'list' argument must have no negative elements"
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
-    M2_period_min = get_schureman_freqs(['M2']).loc['M2','period [hr]']*60
-    ts_steps_min_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()/60).astype(int).values))
-    if ts_steps_min_most > 1:
-        print('WARNING: the timestep of the series for which to calculate extremes/HWLW is %i minutes, but 1 minute is recommended'%(ts_steps_min_most))
-    M2period_numsteps = M2_period_min/ts_steps_min_most
-    
+    M2_period_sec = get_schureman_freqs(['M2']).loc['M2','period [hr]']*3600
+    ts_steps_sec_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()).astype(int).values))
+    if ts_steps_sec_most > 60:
+        print(f'WARNING: the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
+    elif ts_steps_sec_most == 0:
+        raise Exception('ERROR: ts_steps_sec_most=0, check rounding issue')
+    M2period_numsteps = M2_period_sec/ts_steps_sec_most
+
     data_pd_HWLW = pd.DataFrame({'times':ts.index,'values':ts['values'],'HWLWcode':np.nan}).reset_index(drop=True)
     #create empty HWLW dataframe
     if data_pd_HWLW['values'].isnull().any():
@@ -97,7 +98,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
         data_pd_HWLW.loc[LWid_all,'HWLWcode'] = 22 #all LW
         data_pd_HWLW.loc[HWid_all,'HWLWcode'] = 11 #all HW
 
-    #get HWLW (extremes per tidal period). 
+    #get HWLW (extremes per tidal period).
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
@@ -204,35 +205,45 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
     return data_pd_HWLW
 
 
-def calc_HWLW12345to21(data_HWLW_12345): #TODO: if first/last timestep is LW, these are not returned (loops from HW to HW)
+def calc_HWLW12345to12(data_HWLW_12345):
     """
     
-
+    
     Parameters
     ----------
     data_HWLW12345 : TYPE
         DESCRIPTION.
-
+    
     Returns
     -------
     None.
-
+    
     """
     print('starting HWLW 12345 to 12 correction')
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345['HWLWcode']==1]
-    for iHW in np.arange(0,len(data_HW1)-1):
-        tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
+    #computing minimum waterlevels after each HW. Using hardcoded 12hour period instead of from one HW to next HW since then we can also assess last LW values
+    for timeHW in data_HW1.index: #np.arange(0,len(data_HW1)-1):
+        if timeHW==data_HWLW_12345.index[-1]: #if last HW is last time of input dataframe
+            continue
+        #tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
+        tide_afterHW = data_HWLW_12345.loc[timeHW:timeHW+dt.timedelta(hours=12)]
         time_minimum = tide_afterHW['values'].idxmin()
         times_LWmin.append(time_minimum)
     data_LW2 = data_HWLW_12345.loc[times_LWmin]
     data_LW2['HWLWcode'] = 2
-    data_HWLW_12 = pd.concat([data_HW1,data_LW2]).sort_index()
+    
+    #optionally also concat first value if HWLWcode=2 (this is possible since we know above code starts on first HWLWcode=1)
+    firstlast = []
+    if data_HWLW_12345.iloc[0]['HWLWcode']==2:
+        firstlast.append(data_HWLW_12345.iloc[[0]])
+    
+    data_HWLW_12 = pd.concat(firstlast+[data_HW1,data_LW2]).sort_index()
     
     return data_HWLW_12
 
 
-def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
+def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phase', doHWLWcheck=True):
     """
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
     The number of every high and low water is calculated by taking the time difference between itself and the first high water at Cadzand, correcting it with the station phase difference (M2phasediff). 
@@ -247,9 +258,9 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
         The station for which the M2 phase difference should be retrieved from data_M2phasediff_perstation.txt.
         This value is the phase difference in degrees of the occurrence of the high water generated by the same tidal wave as the first high water in 2000 at Cadzand (actually difference between M2 phases of stations).
         This value is used to correct the search window of high/low water numbering. The default is None.
+        Providing a value will result in a proper HWLWno, corresponing to CADZD. Providing None will result in a HWLWno that is a multiple of 360degrees/M2_period_hr off (positive or negative). This is only an issue when comparing different stations, not comparing e.g. measured and predicted HW values of one station.
     corr_tideperiods : integer, optional
-        Test keyword to derive HWLWnumbering with a n*360 degrees offset only, but this does not work properly. The default is None.
-
+        Test keyword to derive HWLWnumbering with a n*360 degrees offset on top of what is calculated automatically. The default is None.    
     Raises
     ------
     Exception
@@ -266,6 +277,9 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     firstHWcadz_fixed = dt.datetime(2000, 1, 1, 9, 45)
     searchwindow_hr = M2_period_hr/2
     
+    if len(ts_ext) == 0:
+        raise Exception('length of provided ts_ext is zero')
+    
     if not all((ts_ext['HWLWcode']==1) | (ts_ext['HWLWcode']==2) | (ts_ext['HWLWcode']==3) | (ts_ext['HWLWcode']==4) | (ts_ext['HWLWcode']==5)):
         raise Exception('calc_HWLWnumbering() not implemented for HWLWcode other than 1,2,3,4,5 (so no HWLWcode 11 or 22 supported), provide extreme timeseries derived with Timeseries.calc_HWLW(calc_HWLW345=False) or Timeseries.calc_HWLW(calc_HWLW345=True, calc_HWLW345_cleanup1122=True)')
     ts_ext = ts_ext.copy()
@@ -273,29 +287,41 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     HW_bool = ts_ext['HWLWcode']==1
     HW_tdiff_cadzdraw = (ts_ext.loc[HW_bool].index.to_series()-firstHWcadz_fixed).dt.total_seconds()/3600
     if station is None:
-        HW_tdiff_cadzdraw_M2remainders = (HW_tdiff_cadzdraw)%M2_period_hr
-        M2phasediff_hr = (HW_tdiff_cadzdraw_M2remainders).mean()
-        M2phasediff_deg = M2phasediff_hr/M2_period_hr*360
-        print('no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand is %.2f hours (%.2f degrees)'%(M2phasediff_hr, M2phasediff_deg))
+        if mode=='M2phase':
+            from hatyan.analysis_prediction import analysis #TODO: local import since Importerror: cannot import name 'analysis' from partially initialized module 'hatyan.analysis_prediction' (most likely due to a circular import) 
+            M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
+            comp_M2 = analysis(ts_ext,const_list=['M2'],xTxmat_condition_max=250) ##TODO: high condition value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW. However, maybe HWtimediff mode is more robust
+            print(comp_M2.loc['M2','phi_deg'],M2phase_cadzd)
+            M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd+90)%360-90
+        elif mode=='HWtimediff': #TODO: in principle this code is not necesary anymore
+            HW_tdiff_cadzdraw_M2remainders = (HW_tdiff_cadzdraw)%M2_period_hr
+            if HW_tdiff_cadzdraw_M2remainders.std()>3: #arbitrary value, but at least catches if all values are around 11/12/0/1 (rather have it around -2/-1/0/1)
+                HW_tdiff_cadzdraw_M2remainders = (HW_tdiff_cadzdraw+3)%M2_period_hr-3
+            M2phasediff_hr = (HW_tdiff_cadzdraw_M2remainders).median()
+            M2phasediff_deg = M2phasediff_hr/M2_period_hr*360
+        print(f'no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand (mode={mode}): ',end='')
         if corr_tideperiods is not None:
-            M2phasediff_deg = M2phasediff_deg+corr_tideperiods
-            M2phasediff_hr = M2phasediff_deg/360*M2_period_hr
-            print('additional tideperiod correction provided via corr_tideperiods of %.1f degrees, new correction w.r.t. Cadzand is %.2f hours (%.2f degrees)'%(corr_tideperiods, M2phasediff_hr, M2phasediff_deg))
+            M2phasediff_deg += corr_tideperiods
     else:
         file_M2phasediff = os.path.join(os.path.dirname(file_path),'data','data_M2phasediff_perstation.txt')
         stations_M2phasediff = pd.read_csv(file_M2phasediff, names=['M2phasediff'], comment='#', delim_whitespace=True)
         if station not in stations_M2phasediff.index:
             raise Exception(f'ERROR: station "{station}" not in file_M2phasediff ({file_M2phasediff})')
-        stat_M2phasediff = stations_M2phasediff.loc[station,'M2phasediff']
-        M2phasediff_hr = stat_M2phasediff/360*M2_period_hr
+        M2phasediff_deg = stations_M2phasediff.loc[station,'M2phasediff']
+        print('M2phasediff retrieved from file, correction w.r.t. Cadzand: ',end='')
+    M2phasediff_hr = M2phasediff_deg/360*M2_period_hr
+    print(f'{M2phasediff_hr:.2f} hours ({M2phasediff_deg:.2f} degrees)')
     HW_tdiff_cadzd = HW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr
     HW_tdiff_div, HW_tdiff_mod_searchwindow = np.divmod(HW_tdiff_cadzd.values, M2_period_hr)
     HW_tdiff_mod = HW_tdiff_mod_searchwindow - searchwindow_hr
+    ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
     if not all(np.diff(HW_tdiff_div) > 0):
+        idx_toosmall = np.where((np.diff(HW_tdiff_div) <= 0))[0]
+        print(idx_toosmall)
+        print(ts_ext.loc[HW_bool,['values','HWLWcode','HWLWno']].iloc[idx_toosmall[0]:])
         raise Exception('tidal wave numbering: HW numbers not always increasing')
     if not all(np.abs(HW_tdiff_mod)<searchwindow_hr):
         raise Exception('tidal wave numbering: not all HW fall into hardcoded search window')
-    ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
     
     for LWcode_2345 in [2,3,4,5]:
         LW_bool = ts_ext['HWLWcode']==LWcode_2345
@@ -311,9 +337,10 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None):
     
     #check if LW is after HW
     ts_ext_checkfirst = ts_ext[ts_ext['HWLWno']==np.min(HW_tdiff_div)]
-    tdiff_firstHWLW = (ts_ext_checkfirst.index.to_series().diff().dt.total_seconds()/3600).values[1]
-    if (tdiff_firstHWLW<0) or (tdiff_firstHWLW>M2_period_hr):
-        raise Exception('tidal wave numbering: first LW does not match first HW')
+    if doHWLWcheck:
+        tdiff_firstHWLW = (ts_ext_checkfirst.index.to_series().diff().dt.total_seconds()/3600).values[1]
+        if (tdiff_firstHWLW<0) or (tdiff_firstHWLW>M2_period_hr):
+            raise Exception('tidal wave numbering: first LW does not match first HW')
     
     ts_ext['HWLWno'] = ts_ext['HWLWno'].astype(int)
     
@@ -410,6 +437,8 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.set_title('hatyan timeseries')
     ax1.plot(ts.index, ts['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts')
     if ts_validation is not None:
+        if ts.index.duplicated().sum() + ts_validation.index.duplicated().sum() >0:
+            print(f'WARNING: duplicated timesteps in ts ({ts.index.duplicated().sum()}) or ts_validation ({ts_validation.index.duplicated().sum()}), timeseries difference computation will probably fail')
         #overlap between timeseries for difference plots
         times_id_validationinpred = np.where(ts_validation.index.isin(ts.index))[0]
         times_id_predinvalidation = np.where(ts.index.isin(ts_validation.index))[0]
@@ -444,7 +473,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
         #print HWLW statistics
         try:
             plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext_validation, create_plot=False)        
-        except:
+        except: #TODO: replace this generic except with specific ones, but first convert 'raise Exception()' in plot_HWLW_validatestats() to more specific (maybe custom) ones
             print('WARNING: plot_HWLW_validatestats() failed, probably due to missing HWLWno where autocalculation failed. Consider adding HWLWno to ts_ext and ts_ext_validation with calc_HWLWnumbering() before plotting.')
     ax1.set_ylim(figure_ylim_ts)
     ax2.set_xlabel('Time')
@@ -500,7 +529,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         try:
             ts_ext_nrs = calc_HWLWnumbering(ts_ext=ts_ext)
             ts_ext_validation_nrs = calc_HWLWnumbering(ts_ext=ts_ext_validation)
-        except:
+        except: #TODO: replace this generic except with specific ones, but first convert 'raise Exception()' in calc_HWLWnumbering() to more specific (maybe custom) ones
             raise Exception('ERROR: deriving HWLWno failed, so HWLW statistics cannot be calculated. Add HWLWno with calc_HWLWnumbering() before calling plot_HWLW_validatestats().')
     else:
         ts_ext_nrs = ts_ext.copy()
@@ -762,7 +791,7 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
     
     ts_values = ts['values']
     #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
-    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: systeemcode is nu leeg, was soms CENT igv dia en WADA igv wia als WADAR export) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
+    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                              '[W3H]', #WIE, WAT, WAAR en HOE
                              'WNS;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia dus geheel weglaten?
                              'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55. GHD in wia (PAR is daar parameter, maar betekent wat anders)
@@ -862,7 +891,7 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
     if 11 in ts_ext['HWLWcode'].values or 22 in ts_ext['HWLWcode'].values:
         raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
     
-    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok #TODO: zie IDT equidistant
+    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                              '[W3H]', #WIE, WAT, WAAR en HOE
                              'MUX;%s'%(parameterX), #Mux
                              ##IVS;NVT;Niet van toepassing
@@ -1089,6 +1118,8 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
     """
     
     t_const_freq = t_const_freq_pd.sort_values('freq')['freq'].drop('A0',errors='ignore')
+    if not len(t_const_freq)>1:
+        return #Rayleigh check is only relevant (and possible) if there more than one non-A0 component, otherwise stop.
     freq_diffs = np.diff(t_const_freq)
     ts_period_hr = (ts_pd.index.max()-ts_pd.index.min()).total_seconds()/3600
     rayleigh_tresh = 0.7 #0.99 # Koos Doekes: "Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het Rayleigh-criterium enigszins schenden, tot zo'n 0,7 van de theoretisch vereiste reekslengte. "
@@ -1232,6 +1263,8 @@ def get_diablocks_startstopstation(filename):
             elif 'LOC' in line:
                 diablocks_pd_startstopstation.loc[block_id,'station'] = line.rstrip().split(';')[1]
     diablocks_pd_startstopstation['data_ends'] = (diablocks_pd_startstopstation['block_starts']-1).tolist()[1:]+[linenum]
+    if block_id == -1:
+        raise Exception('ERROR: empty dia file')
     if diablocks_pd_startstopstation.isnull().any().any():
         raise Exception('ERROR: multiple blocks in diafile, but unequal amount of start/end/datastart/stationnames')
     
@@ -1412,7 +1445,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
         print_cols = ['block_starts', 'station', 'grootheid', 'groepering', 'tstart', 'tstop']
         print('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))
-        str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=Timeseries.get_diablocks(filename)"'
+        str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=hatyan.get_diablocks(filename)"'
         
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids=='allstation':
@@ -1455,10 +1488,10 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
                     status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
-            data_pd_allblocks = data_pd_allblocks.append(data_pd_oneblock, ignore_index=False)
+            data_pd_allblocks = pd.concat([data_pd_allblocks,data_pd_oneblock], ignore_index=False)
         
         #append to allyears dataset
-        data_pd_all = data_pd_all.append(data_pd_allblocks, ignore_index=False)
+        data_pd_all = pd.concat([data_pd_all,data_pd_allblocks], ignore_index=False)
 
     #check overlapping timesteps, sort values on time and check_ts
     if len(data_pd_all) != len(data_pd_all.index.unique()):
@@ -1490,7 +1523,7 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     
     print('reading file: %s'%(filename))
     noosheader = []
-    noosheader_dict = {}
+    noosheader_dict = {} #TODO: this is not returned, could be valuable to do so
     with open(filename) as f:
         for linenum, line in enumerate(f, 0):
             if '#' in line:

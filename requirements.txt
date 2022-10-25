@@ -7,3 +7,4 @@ pyproj>=2.2.0
 sip>=4.19.8
 packaging>=21.0
 requests
+statsmodels

@@ -142,6 +142,8 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
     #parse meta_dict to query_metadata dict
     query_metadata = {}
     for metakeypoint in meta_dict:
+        if not '.' in metakeypoint:
+            raise Exception('ERROR: metakey should contain point, like "Grootheid.Code"')
         metakeymain = metakeypoint.split('.')[0]
         metakeysub = metakeypoint.split('.')[1]
         query_metadata[metakeymain] = {metakeysub:meta_dict[metakeypoint]}
@@ -183,9 +185,9 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             result_wl0 = result_wl['WaarnemingenLijst'][result_idx]
             #get and append locatiedata and metadata
             result_wl0_locatie = pd.json_normalize(result_wl0['Locatie'])
-            result_wl0_locatie_unique = result_wl0_locatie_unique.append(result_wl0_locatie).drop_duplicates() #this will always be just one
+            result_wl0_locatie_unique = pd.concat([result_wl0_locatie_unique,result_wl0_locatie]).drop_duplicates() #this will always be just one
             result_wl0_aquometadata = pd.json_normalize(result_wl0['AquoMetadata'])
-            result_wl0_aquometadata_unique = result_wl0_aquometadata_unique.append(result_wl0_aquometadata).drop_duplicates() #this can grow longer for longer periods, if eg the 'WaardeBepalingsmethode' changes
+            result_wl0_aquometadata_unique = pd.concat([result_wl0_aquometadata_unique,result_wl0_aquometadata]).drop_duplicates() #this can grow longer for longer periods, if eg the 'WaardeBepalingsmethode' changes
             #get one block of meetdata, sort on time and make timezone aware
             result_wl0_metingenlijst = pd.json_normalize(result_wl0['MetingenLijst']) # the actual waterlevel data for this station
             if not result_wl0_metingenlijst['Tijdstip'].is_monotonic_increasing:
@@ -196,7 +198,7 @@ def get_DDL_data(station_dict,meta_dict,tstart_dt,tstop_dt,tzone='UTC+01:00',all
             #add metadata to timeseries for allow_multipleresultsfor (to be able to distinguish difference later on)
             for addcolumn in addcolumns_list:
                 result_wl0_metingenlijst[addcolumn] = result_wl0_aquometadata.loc[0,addcolumn]
-            result_wl0_metingenlijst_alldates = result_wl0_metingenlijst_alldates.append(result_wl0_metingenlijst)
+            result_wl0_metingenlijst_alldates = pd.concat([result_wl0_metingenlijst_alldates,result_wl0_metingenlijst])
         
         if allow_multipleresultsfor==[]:
             result_wl0_aquometadata_uniqueallowed = result_wl0_aquometadata_unique
@@ -271,7 +273,7 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
         bool_metaid_intranslatetable = cat_aquometadatalijst.index.isin(cat_AquoMetadataLocatieLijst_metaidx.index)
         if not bool_metaid_intranslatetable.all():
             cat_AquoMetadataLocatieLijst_missingAquoIDs = cat_aquometadatalijst.loc[~bool_metaid_intranslatetable].index
-            print('WARNING: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs:\n%s\nThese IDs will not be present in cat_locatielijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_aquometadatalijst.loc[cat_AquoMetadataLocatieLijst_missingAquoIDs,['Grootheid.Code','Grootheid.Omschrijving']]))
+            #print('WARNING: AquoMetadataLocatieLijst is missing AquoMetaData_MessageIDs:\n%s\nThese IDs will not be present in cat_locatielijst_sel. This issue can be reported to Servicedesk data via: https://www.rijkswaterstaat.nl/formulieren/contactformulier-servicedesk-data'%(cat_aquometadatalijst.loc[cat_AquoMetadataLocatieLijst_missingAquoIDs,['Grootheid.Code','Grootheid.Omschrijving']])) #TODO: this was commented since it is inconvenient and occurs always.
             cat_aquometadatalijst_containingmeta = cat_aquometadatalijst.loc[bool_aquometadatalijst_containingmeta & bool_metaid_intranslatetable]
         bool_locatielijst_containingmeta = cat_locatielijst['Code'].str.contains('THISSTRINGISNOTINCOLUMN') #first generate all false bool
         bool_locatielijst_containingmeta_idxtrue = cat_AquoMetadataLocatieLijst_metaidx.loc[cat_aquometadatalijst_containingmeta.index,'Locatie_MessageID']

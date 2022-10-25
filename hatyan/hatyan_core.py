@@ -37,7 +37,7 @@ def check_requestedconsts(const_list_tuple,source):
         const_list_allforsource = get_schureman_table().index
     elif source=='foreman':
         foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-        foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+        shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
         const_list_allforsource = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index))
     
     bool_constavailable = pd.Series(const_list_tuple).isin(const_list_allforsource)   
@@ -233,7 +233,7 @@ def get_full_const_list_withfreqs():
     freqs_pd_schu = get_schureman_freqs(const_list=v0uf_allT.index.tolist(),dood_date=dood_date)
     
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-    foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+    shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
     const_list_foreman = foreman_doodson_harmonic.index.tolist() + foreman_shallowrelations.index.tolist()
     v0_pd_for,freqs_pd_for = get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date) #TODO: this is slower than schureman, cache it instead of this definition. But then first always retrieve everything (currently foreman only retrieves requested components)
     
@@ -284,7 +284,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
     schureman_const_list_all = get_schureman_table().index.tolist()
     
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-    foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
+    shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
     foreman_const_list_all = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index)).tolist()
 
     

@@ -155,7 +155,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             RDx, RDy = hatyan.convert_coordinates(coordx_in=diablocks_pd_extra.loc[0,'x'], coordy_in=diablocks_pd_extra.loc[0,'y'], epsg_in=diablocks_pd_extra.loc[0,'epsg'], epsg_out=28992)
             pdrow['RDx'] = RDx/1000 #from m to km
             pdrow['RDy'] = RDy/1000 #from m to km
-        stats = stats.append(pdrow)
+        stats = pd.concat([stats,pdrow])
             
         #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, station=current_station, vertref=vertref, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
@@ -192,10 +192,10 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             print(ts_ext_prediction_HWLWno)
             for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
                 ax2.text(pdrow.name,pdrow['values'],pdrow['HWLWno'].astype(int), color=colors[i_stat])
-            HWLWno_focus = np.int(np.round((dt.datetime(yr_HWLWno,1,1,9,45)-dt.datetime(2000,1,1,9,45)).total_seconds()/3600/12.420601))
+            HWLWno_focus = int(np.round((dt.datetime(yr_HWLWno,1,1,9,45)-dt.datetime(2000,1,1,9,45)).total_seconds()/3600/12.420601))
             ts_firstlocalHW_fromcalc = ts_ext_prediction_HWLWno[(ts_ext_prediction_HWLWno['HWLWcode']==1) & (ts_ext_prediction_HWLWno['HWLWno']==HWLWno_focus)]
             
-            pd_firstlocalHW_list = pd_firstlocalHW_list.append(ts_firstlocalHW_fromcalc)
+            pd_firstlocalHW_list = pd.concat([pd_firstlocalHW_list,ts_firstlocalHW_fromcalc])
             
             ax2.plot(ts_prediction_HWLWno.index, ts_prediction_HWLWno['values'], label=current_station, color=colors[i_stat])
             ax2.plot([ts_firstlocalHW_fromcalc.index[0],ts_firstlocalHW_fromcalc.index[0]], [ts_firstlocalHW_fromcalc['values'].iloc[0], 2.5], '--', linewidth=1.5, color=colors[i_stat])

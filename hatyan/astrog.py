@@ -68,7 +68,7 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add s
     """
 
     # check input times (datetime or string)
-    [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
+    tFirst,tLast = convert_str2datetime(tFirst,tLast)
     
     # constants
     EHMINC       = 346.8 # increment of ephemeris hour angle of moon (deg/day)
@@ -133,7 +133,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
 
     # check input times (datetime or string)
-    [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
+    tFirst,tLast = convert_str2datetime(tFirst,tLast)
         
     # constants
     ELOINC = 12.2           # increment of ELONG ecliptic elongation of moon-sun (deg/day)
@@ -205,7 +205,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     """
 
     # check input times (datetime or string)
-    [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
+    tFirst,tLast = convert_str2datetime(tFirst,tLast)
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
     date_first = tFirst - dt.timedelta(days=1)
@@ -267,7 +267,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     """
 
     # check input times (datetime or string)
-    [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
+    tFirst,tLast = convert_str2datetime(tFirst,tLast)
 
     # constants
     from hatyan.schureman import get_schureman_freqs
@@ -337,7 +337,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
 
     # check input times (datetime or string)
-    [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
+    tFirst,tLast = convert_str2datetime(tFirst,tLast)
 
     # constants
     ANMINC = 13.06       # increment of ANM anomaly of moon (deg/day)
@@ -406,7 +406,7 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
 
     # check input times (datetime or string)
-    [tFirst,tLast] = convert_str2datetime(datetime_in_list=[tFirst,tLast])
+    tFirst,tLast = convert_str2datetime(tFirst,tLast)
 
     # estimate start of seasons (time and type)
     SEIEST = pd.date_range(start=dt.datetime(tFirst.year,int(np.ceil(tFirst.month/3)*3),1),end=tLast+dt.timedelta(days=1),freq='%iMS'%(3))+dt.timedelta(days=20)
@@ -952,13 +952,15 @@ def check_crop_dataframe(astrog_df, tFirst, tLast, tzone):
     return astrog_df
 
 
-def convert_str2datetime(datetime_in_list):
+def convert_str2datetime(tFirst,tLast):
     """
-    Tries to convert datetime_in_list (list of str or datetime.datetime) to list of datetime.datetime
+    Tries to convert tFirst/tLast to datetime.datetime
 
     Parameters
     ----------
-    datetime_in_list : list of str/dt.datetime/pd.Timestamp
+    tFirst : str/dt.datetime/pd.Timestamp
+        DESCRIPTION.
+    tLast : str/dt.datetime/pd.Timestamp
         DESCRIPTION.
 
     Raises
@@ -968,27 +970,30 @@ def convert_str2datetime(datetime_in_list):
 
     Returns
     -------
-    datetime_out_list : list of pd.Timestamp
+    tFirst : pd.Timestamp
+        DESCRIPTION.
+    tLast : pd.Timestamp
         DESCRIPTION.
 
     """
 
-    datetime_out_list = datetime_in_list
-    for iDT, datetime_in in enumerate(datetime_in_list):
-        if isinstance(datetime_in,pd._libs.tslibs.timestamps.Timestamp):
-            datetime_out = datetime_in
-        elif isinstance(datetime_in, dt.datetime):
-            datetime_out = pd.Timestamp(datetime_in)
-            if hasattr(datetime_out,'tz'):
-                if datetime_out.tz != None:
-                    raise Exception('tFirst and tLast should be timezone naive dt.datetime or "yyyymmdd" str')
-        else:
-            try:
-                datetime_out = dt.datetime.strptime(datetime_in,'%Y%m%d')
-            except:
-                raise Exception('date_input should be timezone naive dt.datetime or "yyyymmdd" str')
+    tFirst_out,tLast_out = tFirst,tLast
+    if not type(tFirst) == type(tLast):
+        raise Exception('input dates are not of equal type')
+    
+    if isinstance(tFirst,pd._libs.tslibs.timestamps.Timestamp):
+        tFirst_out,tLast_out = tFirst,tLast
+    elif isinstance(tFirst, dt.datetime):
+        tFirst_out,tLast_out = pd.Timestamp(tFirst), pd.Timestamp(tLast)
+        if hasattr(tFirst_out,'tz'):
+            if tFirst_out.tz != None:
+                raise Exception('tFirst and tLast should be timezone naive dt.datetime or "yyyymmdd" str')
+    elif isinstance(tFirst, str):
+        tFirst_out,tLast_out = dt.datetime.strptime(tFirst,'%Y%m%d'), dt.datetime.strptime(tLast,'%Y%m%d')
+    else:
+        raise TypeError('date_input should be timezone naive dt.datetime or "yyyymmdd" str')
                 
-    return datetime_out_list
+    return tFirst_out,tLast_out
 
 
 def convert2perday(dataframeIn, timeformat='%H:%M %Z'):

@@ -1,8 +1,8 @@
 [![pytest-devenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
 [![pytest-py39](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
 [![sigrid-publish](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml)
-[![rpm-build-core](https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml/badge.svg?event=release)](https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml)
 [![pypi-upload](https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml/badge.svg?event=release)](https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&metric=alert_status)](https://sonarcloud.io/dashboard?id=Deltares_hatyan)
 
 # hatyan
 
@@ -29,14 +29,29 @@ Installation
 
 Install hatyan OPTION 1: Install from pip/github in an existing or new environment:
 
-- optional: download Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section
-- open command window (or anaconda prompt)
+- optional: download and install Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section
+- open anaconda prompt
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
 - ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version. Optionally add ``--upgrade``)
 - alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages from github, add a tag like ``@v2.3.0``, ``@main`` or ``@development`` if you require a specific release/branch. Optionally add ``--upgrade``)
 
-Install hatyan OPTION 2: get and install RPM on CentOS/RHEL
+Install hatyan OPTION 2: create python venv in your Linux home directory and install from zipfile (no internet required for installation)
+
+- might be necessary to activate python3: ``module load anaconda3`` (or any other python3 installation)
+- ``python -m venv ~/venv_hatyan``
+- ``source ~/venv_hatyan/bin/activate``
+- optional (requires internet): ``python -m pip install --upgrade pip setuptools``
+- ``pip install ~/PyQt5-5.15.7-cp37-abi3-manylinux1_x86_64.whl`` (download from https://pypi.org/project/PyQt5/#files)
+- ``pip install ~/hatyan-2.5.64.zip`` (download from https://github.com/Deltares/hatyan/releases/tag/v2.5.64 or any other release)
+- ``deactivate``
+- to test, copy example script to e.g. home directory (https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py)
+- ``source ~/venv_hatyan/bin/activate``
+- ``python -m venv ~/venv_hatyan``
+- ``python ~/validate_astro_DDL.py``
+- ``deactivate``
+
+Install hatyan OPTION 3: get and install RPM on CentOS/RHEL
 
 - get the latest rpm file (see developer information for building procedure)
 - install hatyan on CentOS: ``rpm -i hatyan_python-2.2.30-1.x86_64.rpm``

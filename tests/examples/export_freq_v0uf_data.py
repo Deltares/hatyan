@@ -62,8 +62,8 @@ def get_hatyan55_values(file_hatyan55):
     
     #######################
     colnames_freq = ['RANGNR.','NAAM','HOEKSNELHEID[deg/hr]']
-    hatyan55_freq_raw = pd.read_csv(file_hatyan55, names=colnames_freq, skiprows=21, nrows=219, delim_whitespace=True, error_bad_lines=False, warn_bad_lines=False)
-    bool_droprowsbegin = np.where(hatyan55_freq_raw.iloc[:,1]=='RWS-CIV')[0] #start of this year
+    hatyan55_freq_raw = pd.read_csv(file_hatyan55, names=colnames_freq, skiprows=21, nrows=207, delim_whitespace=True, on_bad_lines='skip')
+    bool_droprowsbegin = np.where(hatyan55_freq_raw.iloc[:,0].str.startswith('+++'))[0] #start of this year
     bool_droprowsend = np.where(hatyan55_freq_raw.iloc[:,1]=='GRADEN/UUR')[0] #start of this year
     drop_idx = []
     for x,y in zip(bool_droprowsbegin,bool_droprowsend):
@@ -78,15 +78,14 @@ def get_hatyan55_values(file_hatyan55):
     hatyan55_v0u = pd.DataFrame()
     hatyan55_f = pd.DataFrame()
     colnames_v0uf = ['RANGNR.','VU-FAKTOR','F-FAKTOR']
-    hatyan55_v0uf_raw_allyears = pd.read_csv(file_hatyan55, names=colnames_v0uf, skiprows=270, delim_whitespace=True, error_bad_lines=False, warn_bad_lines=False)
+    hatyan55_v0uf_raw_allyears = pd.read_csv(file_hatyan55, names=colnames_v0uf, skiprows=270, delim_whitespace=True, on_bad_lines='skip')
     line_startyears = np.where(hatyan55_v0uf_raw_allyears.iloc[:,0]=='JAAR')[0]
     yearnos = hatyan55_v0uf_raw_allyears.iloc[line_startyears,2].astype(int).tolist()
     dood_date_hatyan55 = pd.DatetimeIndex([dt.datetime(x,7,2) for x in yearnos])
     dood_date_hatyan55_v0 = pd.DatetimeIndex([dt.datetime(x,1,1) for x in yearnos])
     for line_no, year in zip(line_startyears, yearnos):
-        hatyan55_v0uf_raw_1y = hatyan55_v0uf_raw_allyears.iloc[line_no+3:line_no+222]
-        
-        bool_droprowsbegin = hatyan55_v0uf_raw_1y[hatyan55_v0uf_raw_1y.iloc[:,1]=='RWS-CIV'].index
+        hatyan55_v0uf_raw_1y = hatyan55_v0uf_raw_allyears.iloc[line_no+3:line_no+210]#222]
+        bool_droprowsbegin = hatyan55_v0uf_raw_1y[hatyan55_v0uf_raw_1y.iloc[:,0].str.startswith('+++')].index
         bool_droprowsend = hatyan55_v0uf_raw_1y[hatyan55_v0uf_raw_1y.iloc[:,1]=='GRADEN'].index
         drop_idx = []
         for x,y in zip(bool_droprowsbegin,bool_droprowsend):
@@ -123,7 +122,7 @@ print('#### READ FOREMAN TABLE TEST ########################################')
 print('#####################################################################')
 
 foreman_doodson_harmonic, foreman_nodal_harmonic = hatyan.get_foreman_doodson_nodal_harmonic()
-foreman_shallowrelations, list_shallowdependencies = hatyan.get_foreman_shallowrelations()
+shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = hatyan.get_foreman_shallowrelations()
 
 foreman_harmonic_doodson_all_list = foreman_doodson_harmonic.index.tolist()
 foreman_harmonic_nodal_all_list = foreman_nodal_harmonic.index.unique().tolist()

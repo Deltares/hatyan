@@ -151,7 +151,7 @@ def write_components(comp, filename, metadata=None):
     
     with open(filename,'w') as f:
         if metadata is None:
-            f.write('* no metadata available\n')
+            f.write('* no metadata available\n') #TODO: HATYAN40\anadea.f regel 297 schrijft format van header voor, '60' na start/stop datetime is tijdzone, '1' na eenheid is Waarnemingssoort. Beide belangrijke regels/gegevens
         else:
             for key in metadata.keys():
                 f.write('* %-20s: %s\n'%(key, metadata[key]))
@@ -252,7 +252,7 @@ def read_components(filename, get_metadata=False):
     Aphi_datapd_raw_noA0 = pd.read_csv(filename, delimiter=r"\s+", header=line_compstart-1, names=['COMP', 'hat_id', 'freq', 'A', 'phi', 'name'])
     
     Aphi_datapd_A0line = pd.DataFrame({'A': [A0_cm], 'phi': [0], 'name': ['A0']})
-    Aphi_datapd_raw = Aphi_datapd_A0line.append(Aphi_datapd_raw_noA0,ignore_index=True)
+    Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
     COMP_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
     if get_metadata:
         meta = {'station': station_fromfile, 'times_ext': times_compfile_ext, 'times_stepmin': times_compfile_step, 'origin':'import', 'vertref':file_vertref}#, 'usedxfac':None}
