@@ -44,9 +44,12 @@ Install hatyan OPTION 2: create python venv in your Linux home directory and ins
 - optional (requires internet): ``python -m pip install --upgrade pip setuptools``
 - ``pip install ~/PyQt5-5.15.7-cp37-abi3-manylinux1_x86_64.whl`` (download from https://pypi.org/project/PyQt5/#files)
 - ``pip install ~/hatyan-2.5.64.zip`` (download from https://github.com/Deltares/hatyan/releases/tag/v2.5.64 or any other release)
+- ``deactivate``
 - to test, copy example script to e.g. home directory (https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py)
+- ``source ~/venv_hatyan/bin/activate``
 - ``python -m venv ~/venv_hatyan``
 - ``python ~/validate_astro_DDL.py``
+- ``deactivate``
 
 Install hatyan OPTION 3: get and install RPM on CentOS/RHEL
 
