@@ -1339,6 +1339,7 @@ def get_diablocks(filename):
                 datestop = dt.datetime.strptime(data_meta_mincontent[3]+data_meta_mincontent[4], "%Y%m%d%H%M")
                 if len(data_meta_mincontent)==5: #nonequidistant timeseries
                     timestep_value = None
+                    timestep_unit = None
                 elif len(data_meta_mincontent)==7: #equidistant timeseries contains also timeunit and timestep
                     timestep_unit = data_meta_mincontent[6]
                     if timestep_unit not in ['min','cs']: #minutes and 1/100 sec
