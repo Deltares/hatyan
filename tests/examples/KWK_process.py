@@ -793,7 +793,7 @@ for current_station in []:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD'
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 #TODO IMPORTANT: scaling is now max 18.2% but this is quite a lot, check values for all stations?
 ##### gemiddelde getijkrommen
-for current_station in stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in stat_list[stat_list.index('HARVT10'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -959,7 +959,7 @@ for current_station in stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_lis
         #print(comp_iM)
         comp_av.loc[comp_higherharmonics,'A'] = np.sqrt((comp_iM['A']**2).sum()) #kwadraatsom
     
-    print('verhouding tussen originele en kwadratensom componenten:')
+    print(f'verhouding tussen originele en kwadratensom componenten: {current_station}')
     print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data. Statement "Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk." seems to be not true. Could also differ because of 10 instead of 4 analysis years?
     
     comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
@@ -1048,19 +1048,19 @@ for current_station in stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_lis
     fig.savefig(os.path.join(dir_gemgetij,f'springdoodtijkromme_{current_station}_slotgem{year_slotgem}.png'))
     
     
-    print('reshape_signal GEMGETIJ')
+    print(f'reshape_signal GEMGETIJ: {current_station}')
     prediction_av_one_trefHW = ts_to_trefHW(prediction_av_one,HWreftime=ia1) # repeating one is not necessary for av, but easier to do the same for av/sp/np
     prediction_av_corr_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tD_goal=tD_av, tP_goal=None)
     prediction_av_corr_rep5 = repeat_signal(prediction_av_corr_one, nb=2, na=2)
     prediction_av_corr_rep5_trefHW = ts_to_trefHW(prediction_av_corr_rep5,HWreftime=ia1)
 
-    print('reshape_signal SPRINGTIJ')
+    print(f'reshape_signal SPRINGTIJ: {current_station}')
     prediction_sp_one_trefHW = ts_to_trefHW(prediction_sp_one,HWreftime=is1)
     prediction_sp_corr_one = reshape_signal(prediction_sp_one, prediction_sp_ext_one, HW_goal=HW_sp, LW_goal=LW_sp, tD_goal=tD_sp, tP_goal=None)
     prediction_sp_corr_rep5 = repeat_signal(prediction_sp_corr_one, nb=2, na=2)
     prediction_sp_corr_rep5_trefHW = ts_to_trefHW(prediction_sp_corr_rep5,HWreftime=is1)
     
-    print('reshape_signal DOODTIJ')
+    print(f'reshape_signal DOODTIJ: {current_station}')
     prediction_np_one_trefHW = ts_to_trefHW(prediction_np_one,HWreftime=in1)
     prediction_np_corr_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tD_goal=tD_np, tP_goal=None)
     prediction_np_corr_rep5 = repeat_signal(prediction_np_corr_one, nb=2, na=2)
@@ -1068,20 +1068,20 @@ for current_station in stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_lis
     
     
     #12u25m timeseries for BOI computations (no relation between HW and moon, HW has to come at same time for av/sp/np tide, HW timing does differ between stations)
-    print('reshape_signal BOI GEMGETIJ and write to csv')
+    print(f'reshape_signal BOI GEMGETIJ and write to csv: {current_station}')
     prediction_av_corrBOI_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tD_goal=tD_av, tP_goal=pd.Timedelta(hours=12,minutes=25))
     prediction_av_corrBOI_one_roundtime = prediction_av_corrBOI_one.resample(f'{freq_sec}S').nearest()
     prediction_av_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'gemGetijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
     prediction_av_corrBOI_repn_roundtime = repeat_signal(prediction_av_corrBOI_one_roundtime, nb=0, na=10)
     
-    print('reshape_signal BOI SPRINGTIJ and write to csv')
+    print(f'reshape_signal BOI SPRINGTIJ and write to csv: {current_station}')
     prediction_sp_corrBOI_one = reshape_signal(prediction_sp_one, prediction_sp_ext_one, HW_goal=HW_sp, LW_goal=LW_sp, tD_goal=tD_sp, tP_goal=pd.Timedelta(hours=12,minutes=25))
     prediction_sp_corrBOI_one.index = prediction_sp_corrBOI_one.index - prediction_sp_corrBOI_one.index[0] + prediction_av_corrBOI_one.index[0] #shift times to first HW from gemgetij
     prediction_sp_corrBOI_one_roundtime = prediction_sp_corrBOI_one.resample(f'{freq_sec}S').nearest()
     prediction_sp_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'springtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
     prediction_sp_corrBOI_repn_roundtime = repeat_signal(prediction_sp_corrBOI_one_roundtime, nb=0, na=10)
 
-    print('reshape_signal BOI DOODTIJ and write to csv')
+    print(f'reshape_signal BOI DOODTIJ and write to csv: {current_station}')
     prediction_np_corrBOI_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tD_goal=tD_np, tP_goal=pd.Timedelta(hours=12,minutes=25))
     prediction_np_corrBOI_one.index = prediction_np_corrBOI_one.index - prediction_np_corrBOI_one.index[0] + prediction_av_corrBOI_one.index[0] #shift times to first HW from gemgetij
     prediction_np_corrBOI_one_roundtime = prediction_np_corrBOI_one.resample(f'{freq_sec}S').nearest()
@@ -1091,7 +1091,7 @@ for current_station in stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_lis
     
     cmap = plt.get_cmap("tab10")
         
-    print('plot getijkromme trefHW')
+    print(f'plot getijkromme trefHW: {current_station}')
     fig_sum,ax_sum = plt.subplots(figsize=(14,7))
     ax_sum.set_title(f'getijkromme trefHW {current_station}')
     ax_sum.plot(prediction_av_one_trefHW['values'],'--', color=cmap(0),linewidth=0.7, label='gem kromme, one')
@@ -1107,7 +1107,7 @@ for current_station in stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_lis
     fig_sum.tight_layout()
     fig_sum.savefig(os.path.join(dir_gemgetij,f'gemgetij_trefHW_{current_station}'))
     
-    print('plot BOI figure and compare to KW2020')
+    print(f'plot BOI figure and compare to KW2020: {current_station}')
     fig_boi,ax1_boi = plt.subplots(figsize=(14,7))
     ax1_boi.set_title(f'getijkromme BOI {current_station}')
     #gemtij
