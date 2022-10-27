@@ -1027,7 +1027,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     print('cropping timeseries')
     if not times_ext[0]<times_ext[1]:
         raise Exception('ERROR: the two times times_ext should be increasing, but they are not: %s.'%(times_ext))
-    if (times_ext[0] < ts_pd_in.index[0]) or (times_ext[-1] > ts_pd_in.index[-1]):
+    if (times_ext[0] < ts_pd_in.index.min()) or (times_ext[-1] > ts_pd_in.index.max()):
         message = 'imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s'%(times_ext[0],times_ext[-1],ts_pd_in.index[0],ts_pd_in.index[-1])
         if onlyfull:
             raise Exception('ERROR: %s'%(message))

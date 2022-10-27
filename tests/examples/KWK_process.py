@@ -521,7 +521,7 @@ for current_station in []:#stat_list:
 #TODO IMPORTANT: which model to use
 #TODO IMPORTANT: comparison to havengetallen beneficial
 #### SLOTGEMIDDELDEN
-for current_station in stat_list:#
+for current_station in []:#stat_list:#
     
     plt.close('all')
     print(f'slotgemiddelden for {current_station}')
@@ -639,7 +639,7 @@ data_pd_moonculm = hatyan.calc_HWLWnumbering(data_pd_moonculm,doHWLWcheck=False)
 data_pd_moonculm['HWLWno_offset'] = data_pd_moonculm['HWLWno']+4 #correlate HWLW to moonculmination 2 days before. TODO: check this offset in relation to culm_addtime.
 moonculm_idxHWLWno = data_pd_moonculm.set_index('HWLWno_offset')
 
-for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in []:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     plt.close('all')
     print(f'havengetallen for {current_station}')
     
