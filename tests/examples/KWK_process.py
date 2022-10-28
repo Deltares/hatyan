@@ -77,7 +77,12 @@ cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',d
 cat_locatielijst.to_pickle(os.path.join(dir_meas_DDL,'catalog_lokatielijst.pkl'))
 
 #get list of stations with extremes #TODO: before, stations K13A, MAASMSMPL did not have extremes (many kenmerkende waarden are not possible then so skipping is fine)
-cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None, meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
+if dataTKdia:
+    cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None, meta_dict={'Grootheid.Code':'WATHTE$','Groepering.Code':'NVT','Hoedanigheid.Code':'NAP'})
+    bool_duplicatestatcodes = cat_locatielijst_sel['Code'].duplicated(keep='first')
+    cat_locatielijst_sel = cat_locatielijst_sel.loc[~bool_duplicatestatcodes] #drop duplicate station Codes (keep first), just to let it run but this is not desireable. Not a big issue since with TK data, only RDx and RDy are used and probably safe to assume these are equal
+else:
+    cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None, meta_dict={'Grootheid.Code':'WATHTE$','Groepering.Code':'GETETM2'})
 cat_locatielijst_sel['RDx'],cat_locatielijst_sel['RDy'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=int(cat_locatielijst_sel['Coordinatenstelsel'].iloc[0]),epsg_out=28992)
 cat_locatielijst_sel_codeidx = cat_locatielijst_sel.reset_index(drop=False).set_index('Code',drop=False)
 
@@ -86,8 +91,9 @@ stat_name_list = ['Terneuzen','Bath','HANSWT','Vlissingen','Bergse Diepsluis wes
 stat_list = []
 for stat_name in stat_name_list:
     bool_isstation = cat_locatielijst_sel_codeidx['Naam'].str.contains(stat_name,case=False) | cat_locatielijst_sel_codeidx['Code'].str.contains(stat_name,case=False)
-    if not bool_isstation.sum()==1:
+    if bool_isstation.sum()!=1:
         print(f'station name {stat_name} found {bool_isstation.sum()} times, should be 1.:\n{cat_locatielijst_sel_codeidx.loc[bool_isstation,["Naam"]]}')
+    if bool_isstation.sum()==0: #skip if none found
         continue
     stat_list.append(cat_locatielijst_sel_codeidx.loc[bool_isstation,'Code'].iloc[0])
     #print(f'{stat_name:30s}: {bool_isstation.sum()}')
@@ -322,8 +328,8 @@ for current_station in []:#stat_list:
     list_relevantmetadata = ['WaardeBepalingsmethode.Code','WaardeBepalingsmethode.Omschrijving','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code','Grootheid.Code','Groepering.Code','Typering.Code']
     list_relevantDDLdata = ['WaardeBepalingsmethode.Code','MeetApparaat.Code','MeetApparaat.Omschrijving','Hoedanigheid.Code']
     
-    station_dict = dict(cat_locatielijst_sel_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in hatyan.getonlinedata.py: get_DDL_stationmetasubset() does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
     if not dataTKdia:
+        station_dict = dict(cat_locatielijst_sel_codeidx.loc[current_station,['Naam','Code']]) #TODO: put comment in hatyan.getonlinedata.py: get_DDL_stationmetasubset() does not work if 'X','Y','Locatie_MessageID' is added, since there is no column with that name (is index) and if it is, it is an int and not a str
         cat_aquometadatalijst_temp, cat_locatielijst_temp = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=station_dict,meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'})
         for metakey in list_relevantDDLdata:
             data_summary.loc[current_station,f'DDL_{metakey}_wl'] = '|'.join(cat_aquometadatalijst_temp[metakey].unique())
@@ -628,7 +634,7 @@ for current_station in []:#stat_list:#
 #TODO IMPORTANT: decide on aggercode
 ### HAVENGETALLEN
 culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # 2d and 2u20min correction, this shifts the x-axis of aardappelgrafiek: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET) #TODO: do we really want to correct for all this now moonculm and HWLW are matched via HWLWno?
-data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt)#,tzone='UTC+01:00') #timezone rotates entire aardappelgrafiek, so decides what is neap and springtide
+data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt,dT_fortran=True) #TODO: dT_fortran since connection was forcibly closed, revert. #,tzone='UTC+01:00') #timezone rotates entire aardappelgrafiek, so decides what is neap and springtide
 if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_pd_HWLW['culm_hr']=range(12) hourvalues should be in UTC since that relates to the relation dateline/sun
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
@@ -793,7 +799,7 @@ for current_station in []:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD'
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 #TODO IMPORTANT: scaling is now max 18.2% but this is quite a lot, check values for all stations?
 ##### gemiddelde getijkrommen
-for current_station in stat_list[stat_list.index('HARVT10'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -856,7 +862,7 @@ for current_station in stat_list[stat_list.index('HARVT10'):]:#stat_list:#['HOEK
             factors = np.array([TR_goal/TR1_val,tD_goal/tD_val])
             allowed_perc = 18.2 #TODO: 14.6 necesary for 2021 DOODTIJ tidalrange factor BAALHK, 15.1 for 2021 DOODTIJ tidalrange factor BATH, 17.0 for 2021 DOODTIJ tidalrange factor HARLGN, 18.2 for 2021 DOODTIJ tidalrange factor STELLDBTN
             #if current_station=='SCHEVNGN':
-            #    allowed_perc = 40 #TODO: this is needed for scheveningen 2011 springtij timeDown factor SCHEVNGN, but with aggercode=5 it is not an issue
+            #    allowed_perc = 41 #TODO: this is needed for scheveningen 2011 springtij timeDown factor SCHEVNGN, but with aggercode=5 it is not an issue
             if (factors>(1+allowed_perc/100)).any() or (factors<(1-allowed_perc/100)).any():
                 raise Exception(f'more than {allowed_perc}% decrease or increase')
             
@@ -1112,17 +1118,17 @@ for current_station in stat_list[stat_list.index('HARVT10'):]:#stat_list:#['HOEK
     ax1_boi.set_title(f'getijkromme BOI {current_station}')
     #gemtij
     ax1_boi.plot(prediction_av_corrBOI_repn_roundtime['values'],color=cmap(0),label='prediction gemtij')
-    if os.path.exists(file_vali_gemtijkromme):
+    if 0:#os.path.exists(file_vali_gemtijkromme):#TODO: for some reason, spyder/explorer/tcmd freezes when interacting with these files/folders
         data_vali_gemtij = pd.read_csv(file_vali_gemtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_gemtij['Water Level [m]'],'--',color=cmap(0),linewidth=0.7,label='validation KW2020 gemtij')
     #springtij
     ax1_boi.plot(prediction_sp_corrBOI_repn_roundtime['values'],color=cmap(1),label='prediction springtij')
-    if os.path.exists(file_vali_springtijkromme):
+    if 0:#os.path.exists(file_vali_springtijkromme):
         data_vali_springtij = pd.read_csv(file_vali_springtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_springtij['Water Level [m]'],'--',color=cmap(1),linewidth=0.7,label='validation KW2020 springtij')
     #doodtij
     ax1_boi.plot(prediction_np_corrBOI_repn_roundtime['values'],color=cmap(2),label='prediction doodtij')
-    if os.path.exists(file_vali_doodtijkromme):
+    if 0:#os.path.exists(file_vali_doodtijkromme):
         data_vali_doodtij = pd.read_csv(file_vali_doodtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_doodtij['Water Level [m]'],'--',color=cmap(2),linewidth=0.7, label='validation KW2020 doodtij')
     ax1_boi.grid()
@@ -1163,6 +1169,7 @@ for current_station in stat_list[stat_list.index('HARVT10'):]:#stat_list:#['HOEK
 
 #TODO: overschrijdingsfreqs met extremen: neem datareeks vanaf waar geen grote gaps meer voorkomen, of maakt dat niet uit?
 
+
 """
 #TODO: aantekeningen gesprek Boyan
 ○ Je vertaalt niet x aantal datapunten naar frequentie, maar je zet de punten op volgorde en je rankt ze, daarvan maak je distributie, ranking en frequentie is niet 1 op 1
@@ -1192,7 +1199,7 @@ mode = 'from_ext' #'from_wl_reproduce' 'from_ext'
     
 temp = {}
 tstarts = pd.DataFrame()
-for current_station in stat_list:#[]:#stat_list:
+for current_station in []:#[]:#stat_list:
     print(f'overschrijdingsfrequenties for {current_station}')
     plt.close('all')
     
@@ -1276,10 +1283,10 @@ for current_station in stat_list:#[]:#stat_list:
     
     dist['Ongefilterd'] = hatyan.distribution(df_extrema.copy())
     
-    """# filtering is only applicable for stations with high river discharge influence, so disabled
+    """# filtering is only applicable for stations with high river discharge influence, so disabled #TODO: ext is geschikt voor getij, maar bij hoge afvoergolf wil je alleen het echte extreem. Er is dan een treshold per station nodig, is nodig om de rivierafvoerpiek te kunnen duiden.
     print('Calculate filtered distribution')
     df_peaks, threshold, _ = hatyan.detect_peaks(df_extrema.copy())
-    if metadata_station['apply_treshold']: 
+    if metadata_station['apply_treshold']:
         temp[metadata_station['id']] = threshold
         df_extrema_filt = hatyan.filter_with_threshold(df_extrema.copy(), df_peaks, threshold)
     else:
