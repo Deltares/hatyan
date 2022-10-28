@@ -1199,7 +1199,7 @@ mode = 'from_ext' #'from_wl_reproduce' 'from_ext'
     
 temp = {}
 tstarts = pd.DataFrame()
-for current_station in stat_list:
+for current_station in []:#stat_list:
     print(f'overschrijdingsfrequenties for {current_station}')
     plt.close('all')
     
@@ -1308,7 +1308,7 @@ for current_station in stat_list:
     
     if current_station in station_name_dict.keys(): #TODO: useful validation data, asked Ferdinand if and where this is also available for other kuststations
         stat_name = station_name_dict[current_station]
-        print('Load Hydra-NL dstribution data')
+        print('Load Hydra-NL distribution data')
         dist['Hydra-NL'] = pd.read_csv(os.path.join(dir_meas_overschr,'Processed_HydraNL','Without_model_uncertainty',f'{stat_name}.csv'), sep=';', header=[0])
         dist['Hydra-NL']['values'] /= 100 # cm to m
         dist['Hydra-NL met modelonzekerheid'] = pd.read_csv(os.path.join(dir_meas_overschr,'Processed_HydraNL','With_model_uncertainty',f'{stat_name}_with_model_uncertainty.csv'), sep=';', header=[0])
@@ -1329,7 +1329,7 @@ for current_station in stat_list:
     ax.set_ylim(0,5.5)
     if current_station in station_name_dict.keys():
         file_vali_exeed = os.path.join(dir_vali_overschr,'Exceedance_lines',f'Exceedance_lines_{stat_name}.csv')
-        if os.path.exists(file_vali_exeed):
+        if 0:#os.path.exists(file_vali_exeed):#TODO: for some reason, "OSError: [Errno 22] Invalid argument" when accessing this file
             data_vali = pd.read_csv(file_vali_exeed,sep=';')
             ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
             ax.legend(loc=4)
@@ -1382,7 +1382,7 @@ for current_station in stat_list:
                                         xlabel='Frequentie [1/jaar]', ylabel='Laagwater [m+NAP]')
     if current_station in station_name_dict.keys():
         file_vali = os.path.join(dir_vali_overschr,'Deceedance_lines',f'Deceedance_lines_{stat_name}.csv')
-        if os.path.exists(file_vali):
+        if 0:#os.path.exists(file_vali):#TODO: for some reason, "OSError: [Errno 22] Invalid argument" when accessing this file
             data_vali = pd.read_csv(file_vali,sep=';')
             ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
             ax.legend(loc=4)
