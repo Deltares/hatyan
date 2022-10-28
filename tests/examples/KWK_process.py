@@ -26,8 +26,8 @@ dataTKdia = True
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder #TODO: HOEKVHLD contains yearmeanwl data from 1864, so is not all inclusive
 tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
-tstart_dt = dt.datetime(2001,1,1)
-tstop_dt = dt.datetime(2011,1,1)
+tstart_dt = dt.datetime(2011,1,1)
+tstop_dt = dt.datetime(2021,1,1)
 NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
@@ -799,7 +799,7 @@ for current_station in []:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD'
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 #TODO IMPORTANT: scaling is now max 18.2% but this is quite a lot, check values for all stations?
 ##### gemiddelde getijkrommen
-for current_station in stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in []:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -1199,7 +1199,7 @@ mode = 'from_ext' #'from_wl_reproduce' 'from_ext'
     
 temp = {}
 tstarts = pd.DataFrame()
-for current_station in []:#[]:#stat_list:
+for current_station in stat_list:
     print(f'overschrijdingsfrequenties for {current_station}')
     plt.close('all')
     
@@ -1260,11 +1260,11 @@ for current_station in []:#[]:#stat_list:
     
     station_rule_type = 'break' #TODO: compare results to the ones withouth this break or break on different date
     if mode=='from_wl_reproduce':
-        station_break_value = dt.datetime(1998,1,1)#'01-01-1998' #station_break_dict[current_station] 
+        station_break_value = dt.datetime(1998,1,1).strftime('%Y-%m-%d')#'01-01-1998' #station_break_dict[current_station] 
         df_alldata = data_pd_meas.resample('H').mean() #TODO: "Rekenkundig gemiddelde waarde over vorige 5 en volgende 5 minuten" >> resampling method moet .max() zijn en dan .min() voor decedance? #TODO: is this resampling method ok (probably means in hour class) or should it be 30min before/after? (tijdcomponent maakt voor fit niet uit)
         df = hatyan.crop_timeseries(ts=df_alldata,times_ext=[tstart_usefuldata,dt.datetime(2012,1,1)]) #available data HOEKVHLD was 1971-1-1 to 2011-12-31 23:50 #TODO: discuss with RWS of deze automatische tstart bepaling acceptabel is >> beter extremen gebruiken?
     elif mode=='from_ext':
-        station_break_value = dt.datetime(1998,1,1) #TODO: adjust?
+        station_break_value = dt.datetime(1998,1,1).strftime('%Y-%m-%d') #TODO: adjust? 
     
     # 1. Exceedance
     print('Exceedance')
@@ -1327,11 +1327,12 @@ for current_station in []:#[]:#stat_list:
                                         keys=None, color_map=color_map, legend_loc='lower right',
                                         xlabel='Frequentie [1/jaar]', ylabel='Hoogwater [m+NAP]')
     ax.set_ylim(0,5.5)
-    file_vali_exeed = os.path.join(dir_vali_overschr,'Exceedance_lines',f'Exceedance_lines_{station_name_dict[current_station]}.csv')
-    if os.path.exists(file_vali_exeed):
-        data_vali = pd.read_csv(file_vali_exeed,sep=';')
-        ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
-        ax.legend(loc=4)
+    if current_station in station_name_dict.keys():
+        file_vali_exeed = os.path.join(dir_vali_overschr,'Exceedance_lines',f'Exceedance_lines_{stat_name}.csv')
+        if os.path.exists(file_vali_exeed):
+            data_vali = pd.read_csv(file_vali_exeed,sep=';')
+            ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
+            ax.legend(loc=4)
     
     fig.savefig(os.path.join(dir_overschrijding, f'Exceedance_lines_{current_station}_{mode}.png')) #.svg
     """
@@ -1379,11 +1380,12 @@ for current_station in []:#[]:#stat_list:
                                         keys=None,#['Ongefilterd', 'Trendanalyse', 'Weibull', 'Gecombineerd'],
                                         color_map=color_map, legend_loc='upper right',
                                         xlabel='Frequentie [1/jaar]', ylabel='Laagwater [m+NAP]')
-    file_vali = os.path.join(dir_vali_overschr,'Deceedance_lines',f'Deceedance_lines_{station_name_dict[current_station]}.csv')
-    if os.path.exists(file_vali):
-        data_vali = pd.read_csv(file_vali,sep=';')
-        ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
-        ax.legend(loc=4)
+    if current_station in station_name_dict.keys():
+        file_vali = os.path.join(dir_vali_overschr,'Deceedance_lines',f'Deceedance_lines_{stat_name}.csv')
+        if os.path.exists(file_vali):
+            data_vali = pd.read_csv(file_vali,sep=';')
+            ax.plot(data_vali['value_Tfreq'],data_vali['value']/100,'--',label='validation')
+            ax.legend(loc=4)
     fig.savefig(os.path.join(dir_overschrijding, f'Deceedance_lines_{current_station}_{mode}.png')) #.svg
     """
     hatyan.interpolate_interested_Tfreqs_to_csv(dist['Gecombineerd'], Tfreqs=Tfreqs_interested, id=current_station,

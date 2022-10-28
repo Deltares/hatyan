@@ -218,8 +218,8 @@ def apply_trendanalysis(df: pd.DataFrame, rule_type: str, rule_value: Union[floa
     #                                      that there is no linear trend at the latest time (so it works its way back
     #                                      in the past). rule_value should be entered as going forward in time
     if rule_type == 'break':
-        if not isinstance(rule_value,dt.datetime):
-            raise Exception('rule_value should be of instance dt.datetime')
+        #if not isinstance(rule_value,dt.datetime): #TODO: commented this since it did not work with strings, but indexing df did not work with dt.datetime() anymore. Fix and make more generic.
+        #    raise Exception('rule_value should be of instance dt.datetime')
         #return df[dt.datetime.strptime(rule_value, '%d-%M-%Y'):].copy()
         return df[rule_value:].copy()
     elif rule_type == 'linear':
