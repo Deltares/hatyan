@@ -84,7 +84,7 @@ for current_station in selected_stations:
             times_ext_pred = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)]
             times_step_pred = 10
        
-            ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+            #ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
             ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=1)
 
             id_minvalue = ts_prediction['values'].argmin()
