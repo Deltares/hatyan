@@ -38,6 +38,7 @@ selected_stations = ['EURPFM']#stats_all
 
 stats_noana = []
 min_vallist_allstats = pd.DataFrame()
+max_vallist_allstats = pd.DataFrame()
 
 for current_station in selected_stations:
     print(f'processing station: {current_station}')
@@ -75,6 +76,7 @@ for current_station in selected_stations:
     
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     min_vallist = pd.DataFrame()
+    max_vallist = pd.DataFrame()
     
     for year in range(2020,2039):
         times_ext_pred = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)]
@@ -85,17 +87,27 @@ for current_station in selected_stations:
 
         id_minvalue = ts_prediction['values'].argmin()
         ts_prediction_min = ts_prediction.iloc[[id_minvalue]]
+        id_maxvalue = ts_prediction['values'].argmax()
+        ts_prediction_max = ts_prediction.iloc[[id_maxvalue]]
         min_vallist = min_vallist.append(ts_prediction_min,ignore_index=True)
+        max_vallist = max_vallist.append(ts_prediction_max,ignore_index=True)
     print(min_vallist)
     min_vallist.to_csv('LAT_indication_19Y_%s.csv'%(current_station))
+    print(max_vallist)
+    max_vallist.to_csv('HAT_indication_19Y_%s.csv'%(current_station))
 
     ts_prediction_19Ymin = min_vallist['values'].min()
     min_1stat = pd.DataFrame({'station':[current_station],'values':[ts_prediction_19Ymin]})
     min_vallist_allstats = min_vallist_allstats.append(min_1stat)
+    ts_prediction_19Ymax = max_vallist['values'].max()
+    max_1stat = pd.DataFrame({'station':[current_station],'values':[ts_prediction_19Ymax]})
+    max_vallist_allstats = max_vallist_allstats.append(max_1stat)
    
 
 print(min_vallist_allstats)
 min_vallist_allstats.to_csv('LAT_indication.csv')
+print(max_vallist_allstats)
+max_vallist_allstats.to_csv('HAT_indication.csv')
         
 hatyan.exit_RWS(timer_start)
 
