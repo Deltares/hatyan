@@ -69,33 +69,29 @@ for current_station in selected_stations:
     file_data_predvali = os.path.join(dir_base,'data','%s_pre.txt'%(current_station))
     file_data_predvaliHWLW = os.path.join(dir_base,'data','%s_ext.txt'%(current_station))
     
-    continue_process=True
     if not os.path.exists(file_data_compvali):
         stats_noana.append(current_station)
-        continue_process=False
+        continue
     
-    if continue_process:
-        #component groups
-        COMP_merged = hatyan.read_components(filename=file_data_comp0)
-        min_vallist = pd.DataFrame() 
-        #prediction and validation
-       
-        for year in range(2020,2039):
-            times_ext_pred = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)]
-            times_step_pred = 10
-       
-            #ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
-            ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=1)
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
+    min_vallist = pd.DataFrame()
+    
+    for year in range(2020,2039):
+        times_ext_pred = [dt.datetime(year,1,1),dt.datetime(year+1,1,1)]
+        times_step_pred = 10
+   
+        #ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=1)
 
-            id_minvalue = ts_prediction['values'].argmin()
-            ts_prediction_min = ts_prediction.iloc[[id_minvalue]]
-            min_vallist = min_vallist.append(ts_prediction_min,ignore_index=True)
-        print(min_vallist)
-        min_vallist.to_csv('LAT_indication_19Y_%s.csv'%(current_station))
+        id_minvalue = ts_prediction['values'].argmin()
+        ts_prediction_min = ts_prediction.iloc[[id_minvalue]]
+        min_vallist = min_vallist.append(ts_prediction_min,ignore_index=True)
+    print(min_vallist)
+    min_vallist.to_csv('LAT_indication_19Y_%s.csv'%(current_station))
 
-        ts_prediction_19Ymin = min_vallist['values'].min()
-        min_1stat = pd.DataFrame({'station':[current_station],'values':[ts_prediction_19Ymin]})
-        min_vallist_allstats = min_vallist_allstats.append(min_1stat)
+    ts_prediction_19Ymin = min_vallist['values'].min()
+    min_1stat = pd.DataFrame({'station':[current_station],'values':[ts_prediction_19Ymin]})
+    min_vallist_allstats = min_vallist_allstats.append(min_1stat)
    
 
 print(min_vallist_allstats)
