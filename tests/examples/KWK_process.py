@@ -652,7 +652,6 @@ for current_station in []:#stat_list:#
 
 #TODO IMPORTANT: provide feedback on incorrect values in extreme timeseries (include in generic data edits?)
 #TODO IMPORTANT: check culm_addtime and HWLWno+4 offsets. culm_addtime could also be 2 days or 2days +1h GMT-MET correction. 20 minutes seems odd since moonculm is about tidal wave from ocean
-#TODO IMPORTANT: decide on aggercode
 ### HAVENGETALLEN
 culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # 2d and 2u20min correction, this shifts the x-axis of aardappelgrafiek: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET) #TODO: do we really want to correct for all this now moonculm and HWLW are matched via HWLWno?
 data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt,dT_fortran=True) #TODO: dT_fortran since connection was forcibly closed, revert. #,tzone='UTC+01:00') #timezone rotates entire aardappelgrafiek, so decides what is neap and springtide
@@ -688,7 +687,7 @@ for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HO
     if numHWs < 0.95*numHWs_expected:
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
-    print('SELECT/CALC HWLW VALUES') #TODO: decide on aggercode
+    print('SELECT/CALC HWLW VALUES')
     if len(data_pd_HWLW['HWLWcode'].unique()) > 2:
         data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
     
@@ -728,7 +727,7 @@ for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HO
     
     print('calculate medians per hour group for LW and HW (instead of 1991 method: average of subgroups with removal of outliers)')
     data_pd_HW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1]
-    data_pd_LW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']!=1] #HWLWcode==2 or HWLWcode==LWaggercode (=3)
+    data_pd_LW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==2]
     HWLW_culmhr_summary = pd.DataFrame()
     HWLW_culmhr_summary['HW_values_median'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['values'].median()
     HWLW_culmhr_summary['HW_delay_median'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['HWLW_delay'].median()
@@ -812,11 +811,10 @@ for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HO
 
 
 #TODO IMPORTANT: uncertainty about length of analysis period (and SA/SM origin)
-#TODO IMPORTANT: uncertainty about aggers (correlates with havengetallen, maybe drop scaling of time or drop scaling of aggerstations like 1991.0 in general?) (SCHEVNGN has invalid timedown factor for 2011)
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 #TODO IMPORTANT: scaling is now max 18.2% but this is quite a lot, check values for all stations?
 ##### gemiddelde getijkrommen
-for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -841,11 +839,12 @@ for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_
     HW_av, LW_av, tD_av = data_havget.loc[12,['HW_values_median','LW_values_median','duurdaling_median']]
         
     
-    def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tD_goal, tP_goal=None):
+    def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None):
         """
         scales tidal signal to provided HW/LW value and up/down going time
         tP_goal (tidal period time) is used to fix tidalperiod to 12h25m (for BOI timeseries)
-        tU_goal (upgoing time) is for raw series and is altered if tP_goal is provided
+        
+        time_down was scaled with havengetallen before, but not anymore to avoid issues with aggers
         """
         TR_goal = HW_goal-LW_goal
         
@@ -871,16 +870,14 @@ for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_
             tP_val = timesHW[i+1]-timesHW[i]
             if tP_goal is None:
                 tP_goal = tP_val
-            tD_goal = tD_goal/tP_val*tP_goal #no change if tP_goal is None
-            tU_goal = tP_goal-tD_goal #equal to tP_val-tD_goal if tP_goal is None
-            
             tD_val = timesLW[i]-timesHW[i]
+            tD_goal = tD_val/tP_val*tP_goal #no change if tP_goal is None
+            tU_goal = tP_goal-tD_val #equal to tP_val-tD_goal if tP_goal is None
+            
             print(f'tidalrange factor: {TR_goal/TR1_val:.3f}')
-            print(f'timeDown factor: {tD_goal/tD_val:.3f}')
+            #print(f'timeDown factor: {tD_goal/tD_val:.3f}')
             factors = np.array([TR_goal/TR1_val,tD_goal/tD_val])
             allowed_perc = 18.2 #TODO: 14.6 necesary for 2021 DOODTIJ tidalrange factor BAALHK, 15.1 for 2021 DOODTIJ tidalrange factor BATH, 17.0 for 2021 DOODTIJ tidalrange factor HARLGN, 18.2 for 2021 DOODTIJ tidalrange factor STELLDBTN
-            #if current_station=='SCHEVNGN':
-            #    allowed_perc = 41 #TODO: this is needed for scheveningen 2011 springtij timeDown factor SCHEVNGN, but with aggercode=5 it is not an issue
             if (factors>(1+allowed_perc/100)).any() or (factors<(1-allowed_perc/100)).any():
                 raise Exception(f'more than {allowed_perc}% decrease or increase')
             
@@ -1034,7 +1031,7 @@ for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_
     prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext)
     prediction_sn_ext['times_backup'] = prediction_sn_ext.index
     prediction_sn_ext_idxHWLWno = prediction_sn_ext.set_index('HWLWno',drop=False)
-    prediction_sn_ext_idxHWLWno['tidalrange'] = prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==1,'values'] - prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']!=1,'values']  #!=1 means HWLWcode==2 or HWLWcode==LWaggercode (=3)
+    prediction_sn_ext_idxHWLWno['tidalrange'] = prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==1,'values'] - prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==2,'values']
     prediction_sn_ext = prediction_sn_ext_idxHWLWno.set_index('times_backup')
     
     time_TRmax = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1,'tidalrange'].idxmax()
@@ -1063,39 +1060,39 @@ for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_
     
     print(f'reshape_signal GEMGETIJ: {current_station}')
     prediction_av_one_trefHW = ts_to_trefHW(prediction_av_one,HWreftime=ia1) # repeating one is not necessary for av, but easier to do the same for av/sp/np
-    prediction_av_corr_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tD_goal=tD_av, tP_goal=None)
+    prediction_av_corr_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tP_goal=None)
     prediction_av_corr_rep5 = repeat_signal(prediction_av_corr_one, nb=2, na=2)
     prediction_av_corr_rep5_trefHW = ts_to_trefHW(prediction_av_corr_rep5,HWreftime=ia1)
 
     print(f'reshape_signal SPRINGTIJ: {current_station}')
     prediction_sp_one_trefHW = ts_to_trefHW(prediction_sp_one,HWreftime=is1)
-    prediction_sp_corr_one = reshape_signal(prediction_sp_one, prediction_sp_ext_one, HW_goal=HW_sp, LW_goal=LW_sp, tD_goal=tD_sp, tP_goal=None)
+    prediction_sp_corr_one = reshape_signal(prediction_sp_one, prediction_sp_ext_one, HW_goal=HW_sp, LW_goal=LW_sp, tP_goal=None)
     prediction_sp_corr_rep5 = repeat_signal(prediction_sp_corr_one, nb=2, na=2)
     prediction_sp_corr_rep5_trefHW = ts_to_trefHW(prediction_sp_corr_rep5,HWreftime=is1)
     
     print(f'reshape_signal DOODTIJ: {current_station}')
     prediction_np_one_trefHW = ts_to_trefHW(prediction_np_one,HWreftime=in1)
-    prediction_np_corr_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tD_goal=tD_np, tP_goal=None)
+    prediction_np_corr_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tP_goal=None)
     prediction_np_corr_rep5 = repeat_signal(prediction_np_corr_one, nb=2, na=2)
     prediction_np_corr_rep5_trefHW = ts_to_trefHW(prediction_np_corr_rep5,HWreftime=in1)
     
     
     #12u25m timeseries for BOI computations (no relation between HW and moon, HW has to come at same time for av/sp/np tide, HW timing does differ between stations)
     print(f'reshape_signal BOI GEMGETIJ and write to csv: {current_station}')
-    prediction_av_corrBOI_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tD_goal=tD_av, tP_goal=pd.Timedelta(hours=12,minutes=25))
+    prediction_av_corrBOI_one = reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tP_goal=pd.Timedelta(hours=12,minutes=25))
     prediction_av_corrBOI_one_roundtime = prediction_av_corrBOI_one.resample(f'{freq_sec}S').nearest()
     prediction_av_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'gemGetijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
     prediction_av_corrBOI_repn_roundtime = repeat_signal(prediction_av_corrBOI_one_roundtime, nb=0, na=10)
     
     print(f'reshape_signal BOI SPRINGTIJ and write to csv: {current_station}')
-    prediction_sp_corrBOI_one = reshape_signal(prediction_sp_one, prediction_sp_ext_one, HW_goal=HW_sp, LW_goal=LW_sp, tD_goal=tD_sp, tP_goal=pd.Timedelta(hours=12,minutes=25))
+    prediction_sp_corrBOI_one = reshape_signal(prediction_sp_one, prediction_sp_ext_one, HW_goal=HW_sp, LW_goal=LW_sp, tP_goal=pd.Timedelta(hours=12,minutes=25))
     prediction_sp_corrBOI_one.index = prediction_sp_corrBOI_one.index - prediction_sp_corrBOI_one.index[0] + prediction_av_corrBOI_one.index[0] #shift times to first HW from gemgetij
     prediction_sp_corrBOI_one_roundtime = prediction_sp_corrBOI_one.resample(f'{freq_sec}S').nearest()
     prediction_sp_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'springtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
     prediction_sp_corrBOI_repn_roundtime = repeat_signal(prediction_sp_corrBOI_one_roundtime, nb=0, na=10)
 
     print(f'reshape_signal BOI DOODTIJ and write to csv: {current_station}')
-    prediction_np_corrBOI_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tD_goal=tD_np, tP_goal=pd.Timedelta(hours=12,minutes=25))
+    prediction_np_corrBOI_one = reshape_signal(prediction_np_one, prediction_np_ext_one, HW_goal=HW_np, LW_goal=LW_np, tP_goal=pd.Timedelta(hours=12,minutes=25))
     prediction_np_corrBOI_one.index = prediction_np_corrBOI_one.index - prediction_np_corrBOI_one.index[0] + prediction_av_corrBOI_one.index[0] #shift times to first HW from gemgetij
     prediction_np_corrBOI_one_roundtime = prediction_np_corrBOI_one.resample(f'{freq_sec}S').nearest()
     prediction_np_corrBOI_one_roundtime.to_csv(os.path.join(dir_gemgetij,f'doodtijkromme_BOI_{current_station}_slotgem{year_slotgem}.csv'),float_format='%.3f',date_format='%Y-%m-%d %H:%M:%S')
