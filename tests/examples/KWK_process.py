@@ -36,6 +36,11 @@ else:
     year_slotgem = 'invalid'
 print(f'year_slotgem: {year_slotgem}')
 
+#LWaggercode is used in both havengetallen en gemgetijkromme loops. 3 is first LW, 5 is second HW. 2 is not an aggercode but results in the dominant LW
+#TODO: delays should also be used to scale with first LW in gemgetijkromme and this is currently done, but is not a generic approach (dominance depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen."
+#TODO important: is schaling van tijd echt nodig? Zou veel zorgen voorkomen.
+LWaggercode = 2#3 # havengetallen timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. SCHEVNGN klopt juist alleen bij aggercode=5,d us 3 is niet generiek (en per station kan het ook in de tijd veranderen)
+
 dir_base = r'p:\11208031-010-kenmerkende-waarden-k\work'
 if dataTKdia:
     dir_meas = os.path.join(dir_base,'measurements_wl_18700101_20220101_dataTKdia')
@@ -689,8 +694,11 @@ for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HO
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
     print('SELECT/CALC HWLW VALUES') #TODO: decide on aggercode
-    if len(data_pd_HWLW['HWLWcode'].unique()) > 2:
-        data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
+    if LWaggercode == 2: #use time+value of lowest LW, 2 is actually not aggercode, but lowest of 345 LWs are converted to 2.
+        if len(data_pd_HWLW['HWLWcode'].unique()) > 2:
+            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
+    else:
+        data_pd_HWLW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode'].isin([1,2,LWaggercode])]
     
     if current_station in ['KATSBTN','GATVBSLE','HANSWT']:
         #TODO: move this to data check part
@@ -755,7 +763,7 @@ for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HO
     fig.tight_layout()
     fig.savefig(os.path.join(dir_havget,f'HWLW_pertijdsklasse_inclmedianline_{current_station}'))
     
-    file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}')
+    file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}_aggercode{LWaggercode}')
     print('AARDAPPELGRAFIEK')
     def timeTicks(x, pos):
         d = dt.timedelta(hours=np.abs(x))
@@ -830,7 +838,7 @@ for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_
     file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_havengetallen{year_slotgem}.csv')        
     
     #TODO: add correctie havengetallen HW/LW av/sp/np met slotgemiddelde uit PLSS/modelfit (HW/LW av)
-    file_havget = os.path.join(dir_havget,f'aardappelgrafiek_{year_slotgem}_{current_station}.csv')
+    file_havget = os.path.join(dir_havget,f'aardappelgrafiek_{year_slotgem}_{current_station}_aggercode{LWaggercode}.csv')
     if not os.path.exists(file_havget):
         raise Exception(f'havengetallen file does not exist: {file_havget}')
     data_havget = pd.read_csv(file_havget)
@@ -1027,7 +1035,13 @@ for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_
     comp_frommeasurements_avg_sncomp = comp_frommeasurements_avg.loc[components_sn]
     prediction_sn = hatyan.prediction(comp_frommeasurements_avg_sncomp, times_pred_all=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to make independent on chosen year
     
-    prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=False)
+    if LWaggercode == 2: #only compute dominant LW
+        prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=False)
+    else:
+        prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=True) # we need aggers since scaling timedown is also derived with firstLW (dominance alternates, so would be unsafe to do with dominant LW)
+        if len(prediction_sn_ext['HWLWcode'].unique()) > 2:
+            #select first LW's (LWaggercode=3) as LW (code 4 and 5 are dropped in this case). This results in a dataframe with HW and LW/aggercode alternating, so one HW every two values. This is impotant because is1/is2/in1/in2 assume a HW every on other extreme
+            prediction_sn_ext = prediction_sn_ext.loc[(prediction_sn_ext['HWLWcode']==1) | (prediction_sn_ext['HWLWcode']==2) | (prediction_sn_ext['HWLWcode']==LWaggercode)]
     
     #selecteer getijslag met minimale tidalrange en maximale tidalrange (werd geselecteerd adhv havengetallen in 1991.0 doc)
     #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complexer. hoe wordt het bij havengetallen gedaan?
