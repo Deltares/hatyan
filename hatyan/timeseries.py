@@ -1027,7 +1027,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     print('cropping timeseries')
     if not times_ext[0]<times_ext[1]:
         raise Exception('ERROR: the two times times_ext should be increasing, but they are not: %s.'%(times_ext))
-    if (times_ext[0] < ts_pd_in.index[0]) or (times_ext[-1] > ts_pd_in.index[-1]):
+    if (times_ext[0] < ts_pd_in.index.min()) or (times_ext[-1] > ts_pd_in.index.max()):
         message = 'imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s'%(times_ext[0],times_ext[-1],ts_pd_in.index[0],ts_pd_in.index[-1])
         if onlyfull:
             raise Exception('ERROR: %s'%(message))
@@ -1293,6 +1293,8 @@ def get_diablocks(filename):
         diablocks_pd.loc[block_id,'TYP'] = row_TYP
         if row_TYP=='TN': #bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
             mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
+            if bool_startswithmux.sum()==0:
+                raise Exception(f'ERROR: block_id={block_id} is of TYP={row_TYP} (non-equidistant, extreme waterlevels), but no MUX is available in metadata header so the file cannot be read:\n{diablocks_pd}')
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
         elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
             mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #WNS,CPM,HDH,ANA
@@ -1337,16 +1339,18 @@ def get_diablocks(filename):
                 datestop = dt.datetime.strptime(data_meta_mincontent[3]+data_meta_mincontent[4], "%Y%m%d%H%M")
                 if len(data_meta_mincontent)==5: #nonequidistant timeseries
                     timestep_value = None
+                    timestep_unit = None
                 elif len(data_meta_mincontent)==7: #equidistant timeseries contains also timeunit and timestep
                     timestep_unit = data_meta_mincontent[6]
-                    if timestep_unit != 'min':
-                        raise Exception('ERROR: time unit from TYD is in unknown format (not "min")')
+                    if timestep_unit not in ['min','cs']: #minutes and 1/100 sec
+                        raise Exception(f'ERROR: time unit from TYD is in unknown format (not "min" or "cs"): {timestep_unit}')
                     timestep_value = int(data_meta_mincontent[5]) #int(timestep_value_raw)
                 else:
                     raise Exception(f'ERROR: time metadata is not understood: {data_meta_mincontent}')
                 diablocks_pd.loc[block_id,'tstart'] = datestart
                 diablocks_pd.loc[block_id,'tstop'] = datestop
                 diablocks_pd.loc[block_id,'timestep_min'] = timestep_value
+                diablocks_pd.loc[block_id,'timestep_unit'] = timestep_unit
             elif get_content_sel in ['STA']: #Status. same in all files
                 diablocks_pd.loc[block_id,'STA'] = '!'.join(data_meta_series.loc[bool_mincontent].tolist())
     return diablocks_pd
@@ -1381,7 +1385,11 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     datestart = diablocks_pd.loc[block_id,'tstart']
     datestop = diablocks_pd.loc[block_id,'tstop']
     timestep_min = diablocks_pd.loc[block_id,'timestep_min']
-    times_fromfile = pd.date_range(start=datestart,end=datestop,freq='%dmin'%(timestep_min))
+    timestep_unit = diablocks_pd.loc[block_id,'timestep_unit']
+    if timestep_unit=='min':
+        times_fromfile = pd.date_range(start=datestart,end=datestop,freq='%dmin'%(timestep_min))
+    else:
+        times_fromfile = pd.date_range(start=datestart,end=datestop,freq=f'{timestep_min*10000000} ns')
     
     #get data for station
     data_nrows = diablocks_pd.loc[block_id,'data_ends'] - diablocks_pd.loc[block_id,'data_starts']
@@ -1392,7 +1400,7 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     data = data.split(':')
     
     if len(times_fromfile) != len(data):
-        raise Exception('ERROR: times and values ts are not of equal length\nlen(times_fromfile): %d\nlen(data): %d'%(len(times_fromfile),len(data)))
+        raise Exception(f'ERROR: times and values for block_id={block_id} are not of equal length\nlen(times_fromfile): %d\nlen(data): %d'%(len(times_fromfile),len(data)))
     data_pd = pd.DataFrame({'times':times_fromfile,'valuecm/qualitycode':data})
     
     #convert HWLW+quality code to separate columns
@@ -1408,7 +1416,7 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     return data_pd
 
 
-def readts_dia(filename, station=None, block_ids=None, get_status=False):
+def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_duplicates=False):
     """
     Reads an equidistant or non-equidistant dia file, or a list of dia files. Also works for diafiles containing multiple blocks for one station.
 
@@ -1493,6 +1501,9 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False):
         #append to allyears dataset
         data_pd_all = pd.concat([data_pd_all,data_pd_allblocks], ignore_index=False)
 
+    if allow_duplicates:
+        return data_pd_all
+    
     #check overlapping timesteps, sort values on time and check_ts
     if len(data_pd_all) != len(data_pd_all.index.unique()):
         raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')

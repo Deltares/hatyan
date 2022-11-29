@@ -64,7 +64,7 @@ def get_schureman_table():
     #v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     
     shallow_eqs_pd = get_schureman_shallowrelations()
-    shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].iteritems()) 
+    shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].items()) 
 
     #calculate shallow water components and rename back to original component name
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)

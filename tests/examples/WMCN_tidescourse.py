@@ -278,7 +278,6 @@ if 0:
     ax2.legend()
     
     
-    breakit
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas, ts_validation=None)
     #ax1.plot(ts_pred_py)
     #ax2.plot(A0_allyears_meas,label='A0_allyears_meas')

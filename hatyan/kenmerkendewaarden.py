@@ -12,7 +12,7 @@ import pandas as pd
 from hatyan.timeseries import calc_HWLW12345to12
 
 
-def calc_HWLWtidalindicators(data_pd_HWLW_all):
+def calc_HWLWtidalindicators(data_pd_HWLW_all, tresh_yearlyHWLWcount=None):
     """
     computes several tidal extreme indicators from tidal extreme dataset
 
@@ -38,25 +38,40 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
     data_pd_HW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==1]
     data_pd_LW = data_pd_HWLW_12.loc[data_pd_HWLW_12['HWLWcode']==2]
     
-    #yearmean HWLW from HWLW values
+    #count HWLW values per year/month
+    HWLW_count_peryear = data_pd_HWLW_12.groupby(pd.PeriodIndex(data_pd_HWLW_12.index, freq="y"))['values'].count()
+    HWLW_count_permonth = data_pd_HWLW_12.groupby(pd.PeriodIndex(data_pd_HWLW_12.index, freq="m"))['values'].count()
+    
+    #yearmean HWLW from HWLW values #maybe also add *_mean_permonth
     HW_mean_peryear = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="y"))[['values']].mean()
     LW_mean_peryear = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="y"))[['values']].mean()
     
+    #derive GHHW/GHWS (gemiddeld hoogwater springtij) per month
+    HW_monthmax_permonth = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="m"))[['values']].max() #proxy for HW at spring tide
+    LW_monthmin_permonth = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="m"))[['values']].min() #proxy for LW at spring tide
+    
+    #replace invalids with nan (in case of too less values per month or year)
+    if tresh_yearlyHWLWcount is not None:
+        tresh_monthlyHWLWcount = tresh_yearlyHWLWcount/12
+        HW_mean_peryear.loc[HWLW_count_peryear<tresh_yearlyHWLWcount] = np.nan
+        LW_mean_peryear.loc[HWLW_count_peryear<tresh_yearlyHWLWcount] = np.nan
+        HW_monthmax_permonth.loc[HWLW_count_permonth<tresh_monthlyHWLWcount] = np.nan
+        LW_monthmin_permonth.loc[HWLW_count_permonth<tresh_monthlyHWLWcount] = np.nan
+    
     #derive GHHW/GHWS (gemiddeld hoogwater springtij)
-    HW_max_permonth = data_pd_HW.groupby(pd.PeriodIndex(data_pd_HW.index, freq="m"))[['values']].max() #proxy for HW at spring tide
-    HW_monthmax_peryear = HW_max_permonth.groupby(pd.PeriodIndex(HW_max_permonth.index, freq="y"))[['values']].mean()
-    LW_min_permonth = data_pd_LW.groupby(pd.PeriodIndex(data_pd_LW.index, freq="m"))[['values']].min() #proxy for LW at spring tide
-    LW_monthmin_peryear = LW_min_permonth.groupby(pd.PeriodIndex(LW_min_permonth.index, freq="y"))[['values']].mean()
-   
-    dict_HWLWtidalindicators = {'HW_mean':data_pd_HW['values'].mean(), #GHW 
-                                'LW_mean':data_pd_LW['values'].mean(), #GLW 
+    HW_monthmax_peryear = HW_monthmax_permonth.groupby(pd.PeriodIndex(HW_monthmax_permonth.index, freq="y"))[['values']].mean()
+    LW_monthmin_peryear = LW_monthmin_permonth.groupby(pd.PeriodIndex(LW_monthmin_permonth.index, freq="y"))[['values']].mean()
+    
+    dict_HWLWtidalindicators = {'HW_mean':data_pd_HW['values'].mean(), #GHW
+                                'LW_mean':data_pd_LW['values'].mean(), #GLW
                                 'HW_mean_peryear':HW_mean_peryear['values'], #GHW peryear
                                 'LW_mean_peryear':LW_mean_peryear['values'], #GLW peryear
-                                'HW_monthmax_mean':HW_max_permonth['values'].mean(), #GHHW/GHWS
-                                'LW_monthmin_mean':LW_min_permonth['values'].mean(), #GLLW/GLWS
+                                'HW_monthmax_permonth':HW_monthmax_permonth['values'], #GHHW/GHWS permonth
+                                'LW_monthmin_permonth':LW_monthmin_permonth['values'], #GLLW/GLWS permonth
                                 'HW_monthmax_mean_peryear':HW_monthmax_peryear['values'], #GHHW/GHWS peryear
                                 'LW_monthmin_mean_peryear':LW_monthmin_peryear['values'], #GLLW/GLWS peryear
                                 }
+    
     for key in dict_HWLWtidalindicators.keys():
         if not hasattr(dict_HWLWtidalindicators[key],'index'):
             continue
@@ -65,64 +80,61 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all):
     return dict_HWLWtidalindicators
 
 
-# define the statistical model
+def calc_wltidalindicators(data_wl_pd, tresh_yearlywlcount=None):
+    """
+    computes monthly and yearly means from waterlevel timeseries
+
+    Parameters
+    ----------
+    data_wl_pd : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    dict_wltidalindicators : TYPE
+        DESCRIPTION.
+
+    """
+    if hasattr(data_wl_pd.index[0],'tz'): #timezone present in index
+        data_wl_pd.index = data_wl_pd.index.tz_localize(None)
+    
+    #count wl values per year/month
+    wl_count_peryear = data_wl_pd.groupby(pd.PeriodIndex(data_wl_pd.index, freq="y"))['values'].count()
+    wl_count_permonth = data_wl_pd.groupby(pd.PeriodIndex(data_wl_pd.index, freq="m"))['values'].count()
+    
+    #yearmean wl from wl values
+    wl_mean_peryear = data_wl_pd.groupby(pd.PeriodIndex(data_wl_pd.index, freq="y"))[['values']].mean()
+    wl_mean_permonth = data_wl_pd.groupby(pd.PeriodIndex(data_wl_pd.index, freq="m"))[['values']].mean()
+    
+    #replace invalids with nan (in case of too less values per month or year)
+    if tresh_yearlywlcount is not None:
+        tresh_monthlyywlcount = tresh_yearlywlcount/12
+        wl_mean_peryear.loc[wl_count_peryear<tresh_yearlywlcount] = np.nan
+        wl_mean_permonth.loc[wl_count_permonth<tresh_monthlyywlcount] = np.nan
+        
+    dict_wltidalindicators = {'wl_mean_peryear':wl_mean_peryear['values'], #yearly mean wl
+                              'wl_mean_permonth':wl_mean_permonth['values'], #monthly mean wl
+                              }
+    
+    for key in dict_wltidalindicators.keys():
+        if not hasattr(dict_wltidalindicators[key],'index'):
+            continue
+        dict_wltidalindicators[key].index = dict_wltidalindicators[key].index.to_timestamp()
+        
+    return dict_wltidalindicators
+
+
 # copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
-def linear_acceleration_model(df):
-    """define a simple linear model, with nodal tide and without wind (no acceleration)"""
-    y = df['height']
-    X = np.c_[
-        df['year']-1970,
-        (df['year'] - 1970) * (df['year'] - 1970),
-        np.cos(2*np.pi*(df['year']-1970)/18.613),
-        np.sin(2*np.pi*(df['year']-1970)/18.613)
-    ]
-
-    month = np.mod(df['year'], 1) * 12.0
-    names = ['Constant', 'Trend', 'Acceleration', 'Nodal U', 'Nodal V']
-    X = sm.add_constant(X)
-    model = sm.OLS(y, X, missing='drop')
-    fit = model.fit()
-
-    return fit, names, X
-
-
-# define the statistical model
-# copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
-def quadratic_model(df, with_wind=True):
-    """This model computes a parabolic linear fit. This corresponds to the hypothesis that sea-level is accelerating."""
-    y = df['height']
-    X = np.c_[
-        df['year']-1970,
-        (df['year'] - 1970) * (df['year'] - 1970),
-        np.cos(2*np.pi*(df['year']-1970)/18.613),
-        np.sin(2*np.pi*(df['year']-1970)/18.613)
-    ]
-    names = ['Constant', 'Trend', 'Acceleration', 'Nodal U', 'Nodal V']
-    if with_wind:
-        X = np.c_[
-            X,
-            df['u2'],
-            df['v2']
-        ]
-        names.extend(['Wind $u^2$', 'Wind $v^2$'])
-    X = sm.add_constant(X)
-    model_quadratic = sm.GLSAR(y, X, rho=1, missing='drop')
-    fit = model_quadratic.iterative_fit(cov_type='HC0')
-    return fit, names, X
-
-
-# define the statistical model
-# copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
-def broken_linear_model(df, with_wind=True):
+def broken_linear_model(df, with_wind=True, quantity='height', start_acceleration=1993):
     """This model fits the sea-level rise has started to rise faster in 1993."""
-    y = df['height']
+    y = df[quantity]
     X = np.c_[
         df['year']-1970,
-        (df['year'] > 1993) * (df['year'] - 1993),
+        (df['year'] > start_acceleration),# * (df['year'] - start_acceleration),
         np.cos(2*np.pi*(df['year']-1970)/18.613),
         np.sin(2*np.pi*(df['year']-1970)/18.613)
     ]
-    names = ['Constant', 'Trend', '+trend (1993)', 'Nodal U', 'Nodal V']
+    names = ['Constant', 'Trend', f'+trend ({start_acceleration})', 'Nodal U', 'Nodal V']
     if with_wind:
         X = np.c_[
             X,
@@ -137,19 +149,22 @@ def broken_linear_model(df, with_wind=True):
 
 
 # copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
-def linear_model(df, with_wind=True, with_ar=True):
+def linear_model(df, with_wind=True, with_ar=True, with_nodal=True, quantity='height'):
     """Define the linear model with optional wind and autoregression.
     See the latest report for a detailed description.
     """
 
-    y = df['height']
-    X = np.c_[
-        df['year']-1970,
-        np.cos(2*np.pi*(df['year']-1970)/18.613),
-        np.sin(2*np.pi*(df['year']-1970)/18.613)
-    ]
-    month = np.mod(df['year'], 1) * 12.0
-    names = ['Constant', 'Trend', 'Nodal U', 'Nodal V']
+    y = df[quantity]
+    X = np.c_[df['year']-1970,
+              ]
+    #month = np.mod(df['year'], 1) * 12.0
+    names = ['Constant', 'Trend']
+    if with_nodal:
+        X = np.c_[X,
+                  np.cos(2*np.pi*(df['year']-1970)/18.613),
+                  np.sin(2*np.pi*(df['year']-1970)/18.613)
+                  ]
+        names.extend(['Nodal U', 'Nodal V'])
     if with_wind:
         X = np.c_[
             X,
