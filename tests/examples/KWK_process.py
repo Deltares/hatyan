@@ -825,9 +825,9 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#st
     for colname in ['HW_delay_median','LW_delay_median','getijperiod_median','duurdaling_median']:
         if colname in data_havget.columns:
             data_havget[colname] = data_havget[colname].apply(lambda x: pd.Timedelta(x))
-    # HW_sp, LW_sp, tD_sp = data_havget.loc[0,['HW_values_median','LW_values_median','duurdaling_median']]
-    # HW_np, LW_np, tD_np = data_havget.loc[6,['HW_values_median','LW_values_median','duurdaling_median']]
-    # HW_av, LW_av, tD_av = data_havget.loc[12,['HW_values_median','LW_values_median','duurdaling_median']]
+    # HW_sp, LW_sp, tD_sp = data_havget.loc['spring',['HW_values_median','LW_values_median','duurdaling_median']]
+    # HW_np, LW_np, tD_np = data_havget.loc['neap',['HW_values_median','LW_values_median','duurdaling_median']]
+    # HW_av, LW_av, tD_av = data_havget.loc['mean',['HW_values_median','LW_values_median','duurdaling_median']]
     HW_sp, LW_sp = data_havget.loc['spring',['HW_values_median','LW_values_median']]
     HW_np, LW_np = data_havget.loc['neap',['HW_values_median','LW_values_median']]
     HW_av, LW_av = data_havget.loc['mean',['HW_values_median','LW_values_median']]
