@@ -19,10 +19,9 @@ import contextily as ctx #`conda install -c conda-forge contextily -y`
 #TODO: SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
 #TODO: move all parts to hatyan.kenmerkendewaarden.*, maybe also the stuff in hatyan/overschrijding.py (and include license header)
 #TODO: add LAT/HAT (AB needs this for RWS work)
-#TODO: add tidal coefficient?: The tidal coefficient is the size of the tide in relation to its mean. It usually varies between 20 and 120. The higher the tidal coefficient, the larger the tidal range – i.e. the difference in water height between high and low tide. This means that the sea level rises and falls back a long way. The mean value is 70. We talk of strong tides – called spring tides – from coefficient 95.  Conversely, weak tides are called neap tides. https://escales.ponant.com/en/high-low-tide/ en https://www.manche-toerisme.com/springtij
 get_catalog = False
 dataTKdia = True #TODO: communicate data issues to TK (wl and ext): p:\11208031-010-kenmerkende-waarden-k\work\data_vanRWS_20220805\convert_dia2pickle_dataTK.py
-closefigatstart = True
+closefigatstart = False
 
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder
 tstop_dt_DDL = dt.datetime(2022,1,1)
@@ -528,7 +527,7 @@ for current_station in []:#stat_list:
     ax1.set_xlim(dt.datetime(2000,1,1),dt.datetime(2022,1,1)) # period of interest
     fig.savefig(file_wl_png)
     plt.close(fig)
-    
+
 
 
 
@@ -653,8 +652,8 @@ for current_station in []:#stat_list:#
 
 #TODO IMPORTANT: check culm_addtime and HWLWno+4 offsets. culm_addtime could also be 2 days or 2days +1h GMT-MET correction. 20 minutes seems odd since moonculm is about tidal wave from ocean
 ### HAVENGETALLEN
-culm_addtime = 2*dt.timedelta(hours=24,minutes=50)-dt.timedelta(minutes=20)+dt.timedelta(hours=1) # 2d and 2u20min correction, this shifts the x-axis of aardappelgrafiek: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 20 minutes (0 to 5 meridian), 1 hour (GMT to MET) #TODO: do we really want to correct for all this now moonculm and HWLW are matched via HWLWno?
-data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt,dT_fortran=True) #TODO: dT_fortran since connection was forcibly closed, revert. #,tzone='UTC+01:00') #timezone rotates entire aardappelgrafiek, so decides what is neap and springtide
+culm_addtime = 4*dt.timedelta(hours=12,minutes=25)+dt.timedelta(hours=1)#-dt.timedelta(minutes=20) # 2d and 2u20min correction, this shifts the x-axis of aardappelgrafiek: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 1 hour (GMT to MET), 20 minutes (0 to 5 meridian, is commented now)
+data_pd_moonculm = hatyan.astrog_culminations(tFirst=tstart_dt-culm_addtime-dt.timedelta(hours=2*24),tLast=tstop_dt,dT_fortran=False)
 if str(data_pd_moonculm.loc[0,'datetime'].tz) != 'UTC': # important since data_pd_HWLW['culm_hr']=range(12) hourvalues should be in UTC since that relates to the relation dateline/sun
     raise Exception(f'culmination data is not in expected timezone (UTC): {data_pd_moonculm.loc[0,"datetime"].tz}')
 data_pd_moonculm['datetime'] = data_pd_moonculm['datetime'].dt.tz_localize(None)
@@ -678,7 +677,9 @@ for current_station in ['HOEKVHLD']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN
     data_pd_HWLW = clean_data(data_pd_HWLW,current_station)
     #crop timeseries
     data_pd_HWLW = hatyan.crop_timeseries(data_pd_HWLW, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
+    data_pd_HWLW_new = data_pd_HWLW.copy()
     
+    file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}')
     #check if amount of HWs is enough
     numHWs_expected = (tstop_dt-tstart_dt).total_seconds()/M2_period_timedelta.total_seconds()
     numHWs = (data_pd_HWLW['HWLWcode']==1).sum()
@@ -730,7 +731,6 @@ for current_station in ['HOEKVHLD']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN
     fig.tight_layout()
     fig.savefig(os.path.join(dir_havget,f'HWLW_pertijdsklasse_inclmedianline_{current_station}'))
     
-    file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}')
     print('AARDAPPELGRAFIEK')
     def timeTicks(x, pos):
         d = dt.timedelta(hours=np.abs(x))
@@ -775,20 +775,41 @@ for current_station in ['HOEKVHLD']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN
     fig.tight_layout()
     fig.savefig(file_outname)
     
-    #write to csv
-    HWLW_culmhr_summary_out = HWLW_culmhr_summary.copy()
-    HWLW_culmhr_summary_out.loc['mean',:] = HWLW_culmhr_summary_out.mean() #add mean row to dataframe (not convenient to add immediately due to plotting with index 0-11)
-    for colname in HWLW_culmhr_summary_out.columns: #round timedelta to make outputformat nicer
-        if HWLW_culmhr_summary_out[colname].dtype == 'timedelta64[ns]':
-            HWLW_culmhr_summary_out[colname] = HWLW_culmhr_summary_out[colname].round('S')
-    HWLW_culmhr_summary_out.to_csv(file_outname+'.csv',float_format='%.3f')
+    HWLW_culmhr_summary.loc['mean',:] = HWLW_culmhr_summary.mean() #add mean row to dataframe (not convenient to add immediately due to plotting with index 0-11)
+    HWLW_culmhr_summary = HWLW_culmhr_summary.loc[[6,'mean',0]] #select neap/mean/springtide
+    HWLW_culmhr_summary.index = ['neap','mean','spring']
     
+    
+    #TODO: use tidal coefficient instead?: The tidal coefficient is the size of the tide in relation to its mean. It usually varies between 20 and 120. The higher the tidal coefficient, the larger the tidal range – i.e. the difference in water height between high and low tide. This means that the sea level rises and falls back a long way. The mean value is 70. We talk of strong tides – called spring tides – from coefficient 95.  Conversely, weak tides are called neap tides. https://escales.ponant.com/en/high-low-tide/ en https://www.manche-toerisme.com/springtij
+    #for HOEKVHLD, sp=0 is approx tc=1.2, np=6 is approx tc=0.8, av=mean is approx tc=1.0 (for HW, for LW it is different)
+    data_pd_HWLW_new = hatyan.calc_HWLWtidalrange(data_pd_HWLW_new)
+    data_pd_HWLW_new['tidalcoeff'] = data_pd_HWLW_new['tidalrange']/data_pd_HWLW_new['tidalrange'].mean()
+    data_pd_HWLW_new['tidalcoeff_round'] = data_pd_HWLW_new['tidalcoeff'].round(1)
+    TR_groupby_median = data_pd_HWLW_new.groupby('tidalcoeff_round')['tidalrange'].median()
+    HW_groupby_median = data_pd_HWLW_new.loc[data_pd_HWLW_new['HWLWcode']==1].groupby('tidalcoeff_round')['values'].median()
+    LW_groupby_median = data_pd_HWLW_new.loc[data_pd_HWLW_new['HWLWcode']==2].groupby('tidalcoeff_round')['values'].median()
+    #HWLW_culmhr_summary.loc[[0,6,'mean']]
+    # HWLW_culmhr_summary = pd.DataFrame()
+    # HWLW_culmhr_summary['HW_values_median'] = HW_groupby_median
+    # HWLW_culmhr_summary['LW_values_median'] = LW_groupby_median
+    # HWLW_culmhr_summary['tidalrange_median'] = TR_groupby_median
+    # HWLW_culmhr_summary = HWLW_culmhr_summary.loc[[0.8,1.0,1.2]] #select neap/mean/springtide
+    # HWLW_culmhr_summary.index = ['neap','mean','spring']
+    
+    
+    #write to csv
+    for colname in HWLW_culmhr_summary.columns: #round timedelta to make outputformat nicer
+        if HWLW_culmhr_summary[colname].dtype == 'timedelta64[ns]':
+            HWLW_culmhr_summary[colname] = HWLW_culmhr_summary[colname].round('S')
+    HWLW_culmhr_summary.to_csv(file_outname+'.csv',float_format='%.3f')
+    
+
 
 
 
 #TODO IMPORTANT: see below
 ##### gemiddelde getijkrommen
-for current_station in []:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -800,12 +821,16 @@ for current_station in []:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#[
     file_havget = os.path.join(dir_havget,f'aardappelgrafiek_{year_slotgem}_{current_station}.csv')
     if not os.path.exists(file_havget):
         raise Exception(f'havengetallen file does not exist: {file_havget}')
-    data_havget = pd.read_csv(file_havget)
+    data_havget = pd.read_csv(file_havget,index_col=0)
     for colname in ['HW_delay_median','LW_delay_median','getijperiod_median','duurdaling_median']:
-        data_havget[colname] = data_havget[colname].apply(lambda x: pd.Timedelta(x))
-    HW_sp, LW_sp, tD_sp = data_havget.loc[0,['HW_values_median','LW_values_median','duurdaling_median']]
-    HW_np, LW_np, tD_np = data_havget.loc[6,['HW_values_median','LW_values_median','duurdaling_median']]
-    HW_av, LW_av, tD_av = data_havget.loc[12,['HW_values_median','LW_values_median','duurdaling_median']]
+        if colname in data_havget.columns:
+            data_havget[colname] = data_havget[colname].apply(lambda x: pd.Timedelta(x))
+    # HW_sp, LW_sp, tD_sp = data_havget.loc[0,['HW_values_median','LW_values_median','duurdaling_median']]
+    # HW_np, LW_np, tD_np = data_havget.loc[6,['HW_values_median','LW_values_median','duurdaling_median']]
+    # HW_av, LW_av, tD_av = data_havget.loc[12,['HW_values_median','LW_values_median','duurdaling_median']]
+    HW_sp, LW_sp = data_havget.loc['spring',['HW_values_median','LW_values_median']]
+    HW_np, LW_np = data_havget.loc['neap',['HW_values_median','LW_values_median']]
+    HW_av, LW_av = data_havget.loc['mean',['HW_values_median','LW_values_median']]
     
     def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None):
         """
