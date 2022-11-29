@@ -251,8 +251,8 @@ def apply_trendanalysis(df: pd.DataFrame, rule_type: str, rule_value: Union[floa
     #                                      that there is no linear trend at the latest time (so it works its way back
     #                                      in the past). rule_value should be entered as going forward in time
     if rule_type == &#39;break&#39;:
-        if not isinstance(rule_value,dt.datetime):
-            raise Exception(&#39;rule_value should be of instance dt.datetime&#39;)
+        #if not isinstance(rule_value,dt.datetime): #TODO: commented this since it did not work with strings, but indexing df did not work with dt.datetime() anymore. Fix and make more generic.
+        #    raise Exception(&#39;rule_value should be of instance dt.datetime&#39;)
         #return df[dt.datetime.strptime(rule_value, &#39;%d-%M-%Y&#39;):].copy()
         return df[rule_value:].copy()
     elif rule_type == &#39;linear&#39;:
@@ -677,8 +677,8 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     #                                      that there is no linear trend at the latest time (so it works its way back
     #                                      in the past). rule_value should be entered as going forward in time
     if rule_type == &#39;break&#39;:
-        if not isinstance(rule_value,dt.datetime):
-            raise Exception(&#39;rule_value should be of instance dt.datetime&#39;)
+        #if not isinstance(rule_value,dt.datetime): #TODO: commented this since it did not work with strings, but indexing df did not work with dt.datetime() anymore. Fix and make more generic.
+        #    raise Exception(&#39;rule_value should be of instance dt.datetime&#39;)
         #return df[dt.datetime.strptime(rule_value, &#39;%d-%M-%Y&#39;):].copy()
         return df[rule_value:].copy()
     elif rule_type == &#39;linear&#39;:
