@@ -814,13 +814,12 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#st
     HW_np, LW_np, tD_np = data_havget.loc[6,['HW_values_median','LW_values_median','duurdaling_median']]
     HW_av, LW_av, tD_av = data_havget.loc[12,['HW_values_median','LW_values_median','duurdaling_median']]
     
-    def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None,
-                       allowed_perc=20): #14.6 necesary for 2021 DOODTIJ tidalrange factor BAALHK, 15.1 for 2021 DOODTIJ tidalrange factor BATH, 17.0 for 2021 DOODTIJ tidalrange factor HARLGN, 18.2 for 2021 DOODTIJ tidalrange factor STELLDBTN
+    def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None):
         """
         scales tidal signal to provided HW/LW value and up/down going time
         tP_goal (tidal period time) is used to fix tidalperiod to 12h25m (for BOI timeseries)
         
-        time_down was scaled with havengetallen before, but not anymore to avoid issues with aggers #TODO: maybe not necessary to do up/down part separately anymore, would speed up things
+        time_down was scaled with havengetallen before, but not anymore to avoid issues with aggers
         """
         TR_goal = HW_goal-LW_goal
         
@@ -846,21 +845,12 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#st
             tP_val = timesHW[i+1]-timesHW[i]
             if tP_goal is None:
                 tP_goal = tP_val
-            tD_val = timesLW[i]-timesHW[i]
-            tD_goal = tD_val/tP_val*tP_goal #no change if tP_goal is None
-            tU_goal = tP_goal-tD_goal #equal to tP_val-tD_goal if tP_goal is None
             
-            print(f'tidalrange factor: {TR_goal/TR1_val:.3f}')
-            if (TR_goal/TR1_val)>(1+allowed_perc/100) or (TR_goal/TR1_val)<(1-allowed_perc/100):
-                raise Exception(f'more than {allowed_perc}% decrease or increase')
+            tide_HWtoHW = ts_corr.loc[timesHW[i]:timesHW[i+1]]
             
-            tide_HWtoLW = ts_corr.loc[timesHW[i]:timesLW[i]]
-            tide_LWtoHW = ts_corr.loc[timesLW[i]:timesHW[i+1]]
-            
-            ts_corr.loc[timesHW[i]:timesLW[i],'times'] = pd.date_range(start=ts_corr.loc[timesHW[i],'times'],end=ts_corr.loc[timesHW[i],'times']+tD_goal,periods=len(tide_HWtoLW))
             ts_corr.loc[timesHW[i]:timesLW[i],'values_new'] = (ts_corr.loc[timesHW[i]:timesLW[i],'values']-LW_val)/TR1_val*TR_goal+LW_goal
-            ts_corr.loc[timesLW[i]:timesHW[i+1],'times'] = pd.date_range(start=ts_corr.loc[timesLW[i],'times'],end=ts_corr.loc[timesLW[i],'times']+tU_goal,periods=len(tide_LWtoHW))
             ts_corr.loc[timesLW[i]:timesHW[i+1],'values_new'] = (ts_corr.loc[timesLW[i]:timesHW[i+1],'values']-LW_val)/TR2_val*TR_goal+LW_goal
+            ts_corr.loc[timesHW[i]:timesHW[i+1],'times'] = pd.date_range(start=ts_corr.loc[timesHW[i],'times'],end=ts_corr.loc[timesHW[i],'times']+tP_goal,periods=len(tide_HWtoHW))
 
         ts_corr = ts_corr.set_index('times',drop=True)
         ts_corr['values'] = ts_corr['values_new']
@@ -903,7 +893,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#st
                                                 fu_alltimes=False, # False is RWS-default
                                                 xfac=True, # True is RWS-default
                                                 analysis_perperiod='Y',
-                                                #xTxmat_condition_max=12, #TODO: for some reason this was necessary for HOEKVHLD 2006 (xTxmat_condition=11.5, default xTxmat_condition_max=12)
+                                                #xTxmat_condition_max=15, #this was necessary for HOEKVHLD 2006 (xTxmat_condition=11.5, new default xTxmat_condition_max=12)
                                                 return_allperiods=True)
     comp_frommeasurements_avg, comp_frommeasurements_allyears = hatyan.get_components_from_ts(ts_meas_pd, const_list=const_list, hatyan_settings=hatyan_settings_ana)
     
