@@ -21,14 +21,14 @@ import contextily as ctx #`conda install -c conda-forge contextily -y`
 #TODO: add LAT/HAT (AB needs this for RWS work)
 #TODO: add tidal coefficient?: The tidal coefficient is the size of the tide in relation to its mean. It usually varies between 20 and 120. The higher the tidal coefficient, the larger the tidal range – i.e. the difference in water height between high and low tide. This means that the sea level rises and falls back a long way. The mean value is 70. We talk of strong tides – called spring tides – from coefficient 95.  Conversely, weak tides are called neap tides. https://escales.ponant.com/en/high-low-tide/ en https://www.manche-toerisme.com/springtij
 get_catalog = False
-dataTKdia = True
+dataTKdia = True #TODO: communicate data issues to TK: p:\11208031-010-kenmerkende-waarden-k\work\data_vanRWS_20220805\convert_dia2pickle_dataTK.py
 closefigatstart = True
 
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder
 tstop_dt_DDL = dt.datetime(2022,1,1)
 tzone_DLL = 'UTC+01:00' #'UTC+00:00' for GMT and 'UTC+01:00' for MET
-tstart_dt = dt.datetime(2011,1,1)
-tstop_dt = dt.datetime(2021,1,1)
+tstart_dt = dt.datetime(2001,1,1)
+tstop_dt = dt.datetime(2011,1,1)
 NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
@@ -41,7 +41,7 @@ if dataTKdia:
     dir_meas = os.path.join(dir_base,'measurements_wl_18700101_20220101_dataTKdia')
     dir_meas_alldata = os.path.join(dir_base,'measurements_wl_18700101_20220101_dataTKdia')
 else:
-    dir_meas = os.path.join(dir_base,'measurements_wl_20000101_20220101')
+    dir_meas = os.path.join(dir_base,'measurements_wl_18700101_20220101')
     dir_meas_alldata = os.path.join(dir_base,'measurements_wl_18700101_20220101')
     
 dir_meas_DDL = os.path.join(dir_base,f"measurements_wl_{tstart_dt_DDL.strftime('%Y%m%d')}_{tstop_dt_DDL.strftime('%Y%m%d')}")
@@ -103,7 +103,7 @@ if dataTKdia:
 M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
 
 
-def clean_data(ts_meas_pd):
+def clean_data(ts_meas_pd,current_station):
     if 'HWLWcode' in ts_meas_pd.columns:
         keep_columns = ['values','QC','HWLWcode']
     else:
@@ -111,6 +111,10 @@ def clean_data(ts_meas_pd):
     ts_meas_pd = ts_meas_pd[keep_columns] # reduces the memory consumption significantly
     ts_meas_pd.index = ts_meas_pd.index.tz_localize(None)
     ts_meas_pd = ts_meas_pd.loc[~(ts_meas_pd['QC']==99)] #TODO: remove or make nans?
+    
+    #optional nap correction
+    if NAP2005correction:
+        ts_meas_pd = nap2005_correction(ts_meas_pd,current_station)
     return ts_meas_pd
 
 
@@ -391,7 +395,7 @@ for current_station in []:#stat_list:
     data_summary.loc[current_station,'#nans_2000to202102a_wl'] = ts_meas_2000to202102a['values'].isnull().sum()
     data_summary.loc[current_station,'#nans_2000to202102b_wl'] = ts_meas_2000to202102b['values'].isnull().sum()
     
-    #calculate monthly/yearly mean for meas wl data #TODO: use hatyan.calc_wltidalindicators() instead (with threshold of eg 2900 like slotgem
+    #calculate monthly/yearly mean for meas wl data #TODO: use hatyan.calc_wltidalindicators() instead (with threshold of eg 2900 like slotgem)
     mean_peryearmonth_long = ts_meas_pd.groupby(pd.PeriodIndex(ts_meas_pd.index, freq="M"))['values'].mean()
     data_summary.loc[current_station,'monthmean_mean_wl'] = mean_peryearmonth_long.mean()
     data_summary.loc[current_station,'monthmean_std_wl'] = mean_peryearmonth_long.std()
@@ -530,7 +534,7 @@ for current_station in []:#stat_list:
 
 
 
-#TODO: more data is needed for proper working of models (2011: BAALHK, BRESKVHVN, GATVBSLE, SCHAARVDND)
+#TODO: more data is needed for proper working of fitting for some stations (2011: BAALHK, BRESKVHVN, GATVBSLE, SCHAARVDND)
 #### SLOTGEMIDDELDEN
 physical_break_dict = {'DENOVBTN':1933, #laatste sluitgat afsluitdijk in 1932
                        'HARLGN':1933, #laatste sluitgat afsluitdijk in 1932
@@ -547,7 +551,7 @@ for current_station in []:#stat_list:#
     if not os.path.exists(file_wl_pkl):
         continue
     data_pd_meas = pd.read_pickle(file_wl_pkl)
-    data_pd_meas = clean_data(data_pd_meas)
+    data_pd_meas = clean_data(data_pd_meas,current_station)
     
     #calculate yearly mean
     dict_wltidalindicators = hatyan.calc_wltidalindicators(data_pd_meas)
@@ -570,7 +574,7 @@ for current_station in []:#stat_list:#
     fig,ax1 = plt.subplots(figsize=(14,7))
     
     #get validation timeseries (yearly mean wl/HW/LW)
-    station_name_dict = {'HOEKVHLD':'hoek', #TODO: request data for all stations with DONARcode in filename (is not a standard RWS procedure)
+    station_name_dict = {'HOEKVHLD':'hoek',
                          'HARVT10':'ha10'}
     if current_station in station_name_dict.keys():
         dir_meas_gemHWLWwlAB = r'p:\11208031-010-kenmerkende-waarden-k\work\data_KW-RMM'
@@ -604,7 +608,7 @@ for current_station in []:#stat_list:#
     for iM, mean_array in enumerate(mean_list):
         if current_station in physical_break_dict.keys():
             tstart_year_trend = physical_break_dict[current_station]
-            tstart_dt_trend = dt.datetime(tstart_year_trend,1,1) #TODO: instead of removing pre-break data, maybe use broken_linear_model and set some years to nan? (more complex method might not be beneficial)
+            tstart_dt_trend = dt.datetime(tstart_year_trend,1,1)
         else:
             tstart_year_trend = None
             tstart_dt_trend = None
@@ -618,16 +622,14 @@ for current_station in []:#stat_list:#
         df = pd.DataFrame({'year':mean_array_allyears.index.year, 'height':mean_array_allyears.values}) #TODO: make functions accept mean_array instead of df as argument?
         
         # below methods are copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py #TODO: install slr package as dependency or keep separate?
-        #fit, names, X = hatyan.broken_linear_model(df, with_wind=False,start_acceleration=tstart_year_trend)
+        #fit, names, X = hatyan.broken_linear_model(df, with_wind=False,start_acceleration=tstart_year_trend) #TODO: instead of removing pre-break data, maybe use broken_linear_model and set some years to nan? (more complex method might not be beneficial)
         #pred_broken_linear = fit.predict(X)
         fit, names, X = hatyan.linear_model(df, with_wind=False, with_nodal=False)
         pred_linear_nonodal = fit.predict(X)
         fit, names, X = hatyan.linear_model(df, with_wind=False)
         pred_linear_winodal = fit.predict(X)
         
-        pred_pd = pd.DataFrame({#'pred_linear_acceleration':pred_linear_acceleration,
-                                #'pred_quadratic':pred_quadratic,
-                                #'pred_broken_linear':pred_broken_linear,
+        pred_pd = pd.DataFrame({#'pred_broken_linear':pred_broken_linear,
                                 'pred_linear_nonodal':pred_linear_nonodal,
                                 'pred_linear_winodal':pred_linear_winodal},
                                 index=allyears_DTI)
@@ -664,7 +666,7 @@ data_pd_moonculm = hatyan.calc_HWLWnumbering(data_pd_moonculm,doHWLWcheck=False)
 data_pd_moonculm['HWLWno_offset'] = data_pd_moonculm['HWLWno']+4 #correlate HWLW to moonculmination 2 days before. TODO: check this offset in relation to culm_addtime.
 moonculm_idxHWLWno = data_pd_moonculm.set_index('HWLWno_offset')
 
-for current_station in ['STELLDBTN']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in []:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     if closefigatstart:
         plt.close('all')
     print(f'havengetallen for {current_station}')
@@ -674,9 +676,7 @@ for current_station in ['STELLDBTN']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSG
     if not os.path.exists(file_ext_pkl):
         continue
     data_pd_HWLW = pd.read_pickle(file_ext_pkl)
-    data_pd_HWLW = clean_data(data_pd_HWLW)
-    if NAP2005correction: # apply NAP correction #TODO: move to clean_data?
-        data_pd_HWLW = nap2005_correction(data_pd_HWLW,current_station=current_station)
+    data_pd_HWLW = clean_data(data_pd_HWLW,current_station)
     #crop timeseries
     data_pd_HWLW = hatyan.crop_timeseries(data_pd_HWLW, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
     
@@ -689,28 +689,6 @@ for current_station in ['STELLDBTN']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSG
     print('SELECT/CALC HWLW VALUES')
     if len(data_pd_HWLW['HWLWcode'].unique()) > 2:
         data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
-    
-    if current_station in ['KATSBTN','GATVBSLE','HANSWT']:
-        #TODO: move this to data check part?
-        #TODO: this removes extreme values that are 1/5/28 min from each other, but they should not be present to begin with
-        timediff = data_pd_HWLW.index[1:]-data_pd_HWLW.index[:-1]
-        data_pd_HWLW['timediff'] = pd.TimedeltaIndex([pd.NaT]).append(timediff)
-        bool_tooclose = data_pd_HWLW['timediff']<dt.timedelta(minutes=30)
-        print('unique small timestep_min:',data_pd_HWLW.loc[bool_tooclose,'timediff'].unique()/1e9/60)
-        data_pd_HWLW = data_pd_HWLW.loc[~bool_tooclose]
-    if current_station in ['STELLDBTN']: #TODO: manual removal of invalid HW value from STELLDBTN (is flat line in wl timeseries)
-        """
-        file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
-        data_pd_wl_all = pd.read_pickle(file_wl_pkl)        
-        data_pd_wl_all.index = data_pd_wl_all.index.tz_localize(None)
-        data_pd_wl_all = hatyan.crop_timeseries(data_pd_wl_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
-        data_pd_wl_all_ext = hatyan.calc_HWLW(data_pd_wl_all)
-        fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_HWLW)
-        fig,(ax1,ax2) = hatyan.plot_timeseries(ts=data_pd_wl_all, ts_ext=data_pd_wl_all_ext)
-        """
-        drop_time_STELLDBTN = '2012-02-09 09:36:00'
-        if drop_time_STELLDBTN in data_pd_HWLW.index:
-            data_pd_HWLW = data_pd_HWLW.drop(drop_time_STELLDBTN)
     
     data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW)
     data_pd_HWLW_idxHWLWno['times'] = data_pd_HWLW_idxHWLWno.index
@@ -811,9 +789,8 @@ for current_station in ['STELLDBTN']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSG
 
 #TODO IMPORTANT: uncertainty about length of analysis period (and SA/SM origin)
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
-#TODO IMPORTANT: scaling is now max 18.2% but this is quite a lot, check values for all stations?
 ##### gemiddelde getijkrommen
-for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -836,14 +813,14 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
     HW_sp, LW_sp, tD_sp = data_havget.loc[0,['HW_values_median','LW_values_median','duurdaling_median']]
     HW_np, LW_np, tD_np = data_havget.loc[6,['HW_values_median','LW_values_median','duurdaling_median']]
     HW_av, LW_av, tD_av = data_havget.loc[12,['HW_values_median','LW_values_median','duurdaling_median']]
-        
     
-    def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None):
+    def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None,
+                       allowed_perc=20): #14.6 necesary for 2021 DOODTIJ tidalrange factor BAALHK, 15.1 for 2021 DOODTIJ tidalrange factor BATH, 17.0 for 2021 DOODTIJ tidalrange factor HARLGN, 18.2 for 2021 DOODTIJ tidalrange factor STELLDBTN
         """
         scales tidal signal to provided HW/LW value and up/down going time
         tP_goal (tidal period time) is used to fix tidalperiod to 12h25m (for BOI timeseries)
         
-        time_down was scaled with havengetallen before, but not anymore to avoid issues with aggers
+        time_down was scaled with havengetallen before, but not anymore to avoid issues with aggers #TODO: maybe not necessary to do up/down part separately anymore, would speed up things
         """
         TR_goal = HW_goal-LW_goal
         
@@ -871,13 +848,10 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
                 tP_goal = tP_val
             tD_val = timesLW[i]-timesHW[i]
             tD_goal = tD_val/tP_val*tP_goal #no change if tP_goal is None
-            tU_goal = tP_goal-tD_val #equal to tP_val-tD_goal if tP_goal is None
+            tU_goal = tP_goal-tD_goal #equal to tP_val-tD_goal if tP_goal is None
             
             print(f'tidalrange factor: {TR_goal/TR1_val:.3f}')
-            #print(f'timeDown factor: {tD_goal/tD_val:.3f}')
-            factors = np.array([TR_goal/TR1_val,tD_goal/tD_val])
-            allowed_perc = 18.2 #TODO: 14.6 necesary for 2021 DOODTIJ tidalrange factor BAALHK, 15.1 for 2021 DOODTIJ tidalrange factor BATH, 17.0 for 2021 DOODTIJ tidalrange factor HARLGN, 18.2 for 2021 DOODTIJ tidalrange factor STELLDBTN
-            if (factors>(1+allowed_perc/100)).any() or (factors<(1-allowed_perc/100)).any():
+            if (TR_goal/TR1_val)>(1+allowed_perc/100) or (TR_goal/TR1_val)<(1-allowed_perc/100):
                 raise Exception(f'more than {allowed_perc}% decrease or increase')
             
             tide_HWtoLW = ts_corr.loc[timesHW[i]:timesLW[i]]
@@ -887,6 +861,7 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
             ts_corr.loc[timesHW[i]:timesLW[i],'values_new'] = (ts_corr.loc[timesHW[i]:timesLW[i],'values']-LW_val)/TR1_val*TR_goal+LW_goal
             ts_corr.loc[timesLW[i]:timesHW[i+1],'times'] = pd.date_range(start=ts_corr.loc[timesLW[i],'times'],end=ts_corr.loc[timesLW[i],'times']+tU_goal,periods=len(tide_LWtoHW))
             ts_corr.loc[timesLW[i]:timesHW[i+1],'values_new'] = (ts_corr.loc[timesLW[i]:timesHW[i+1],'values']-LW_val)/TR2_val*TR_goal+LW_goal
+
         ts_corr = ts_corr.set_index('times',drop=True)
         ts_corr['values'] = ts_corr['values_new']
         ts_corr = ts_corr.drop(['values_new'],axis=1)
@@ -917,13 +892,11 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
     #load measurement data
     file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
     ts_meas_pd = pd.read_pickle(file_wl_pkl)
-    ts_meas_pd = clean_data(ts_meas_pd)
+    ts_meas_pd = clean_data(ts_meas_pd,current_station)
     ts_meas_pd = hatyan.crop_timeseries(ts_meas_pd, times_ext=[tstart_dt,tstop_dt-dt.timedelta(minutes=10)])#,onlyfull=False)
-    if NAP2005correction:
-        ts_meas_pd = nap2005_correction(ts_meas_pd,current_station)
     
     # =============================================================================
-    # Hatyan analyse voor 10 jaar (alle componenten voor gemiddelde getijcyclus) #TODO: maybe use original 4y period instead? SA/SM should come from 19y analysis
+    # Hatyan analyse voor 10 jaar (alle componenten voor gemiddelde getijcyclus) #TODO: maybe use original 4y period/componentfile instead? SA/SM should come from 19y analysis
     # =============================================================================
     const_list = hatyan.get_const_list_hatyan('year') #this should not be changed, since higher harmonics are necessary
     hatyan_settings_ana = hatyan.HatyanSettings(nodalfactors=True,
@@ -939,7 +912,7 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
     expected_years = tstop_dt.year-tstart_dt.year
     if len(comp_years) < expected_years:
         raise Exception('ERROR: analysis result contains not all years')
-        
+    
     # =============================================================================
     # gemiddelde getijkromme
     # =============================================================================
@@ -978,7 +951,7 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
         comp_av.loc[comp_higherharmonics,'A'] = np.sqrt((comp_iM['A']**2).sum()) #kwadraatsom
     
     print(f'verhouding tussen originele en kwadratensom componenten: {current_station}')
-    print(comp_av/comp_frommeasurements_avg.loc[components_av]) #TODO: values are different than 1991.0 document, but could be because of different year so check with 1981-1991 data. Statement "Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk." seems to be not true. Could also differ because of 10 instead of 4 analysis years?
+    print(comp_av/comp_frommeasurements_avg.loc[components_av]) # values are different than 1991.0 document and differs per station while the document states "Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk"
     
     comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
     freq_sec = 10 #TODO: frequency decides accuracy of tU/tD and other timings (and is writing freq of BOI timeseries)
@@ -1009,7 +982,8 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
     """
     
     """
-    #TODO, below is different than provided list, these shallow ones are extra: ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
+    #NOTE: background on choice of components
+    #below is different than provided list, these shallow ones are extra: ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
     #shallow relations, derive 'zuivere harmonischen van M2 en S2' (this means averaging over eenmaaldaagse componenten, but why is that chosen?)
     #adding above extra components or oneday freqs, gives a modulation and therefore there is no repetative signal anymore. Apperantly all components in this list have an integer number of periods in one springneap cycle?
     dummy,shallowrel,dummy = hatyan.get_foreman_shallowrelations()
@@ -1026,12 +1000,7 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
     prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=False)
     
     #selecteer getijslag met minimale tidalrange en maximale tidalrange (werd geselecteerd adhv havengetallen in 1991.0 doc)
-    #TODO: hatyan.calc_HWLW_tidalrange() creëeren (code staat hieronder), geeft column 'tidalrange' in ts_ext dataframe
-    prediction_sn_ext = hatyan.calc_HWLWnumbering(ts_ext=prediction_sn_ext)
-    prediction_sn_ext['times_backup'] = prediction_sn_ext.index
-    prediction_sn_ext_idxHWLWno = prediction_sn_ext.set_index('HWLWno',drop=False)
-    prediction_sn_ext_idxHWLWno['tidalrange'] = prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==1,'values'] - prediction_sn_ext_idxHWLWno.loc[prediction_sn_ext_idxHWLWno['HWLWcode']==2,'values']
-    prediction_sn_ext = prediction_sn_ext_idxHWLWno.set_index('times_backup')
+    prediction_sn_ext = hatyan.calc_HWLWtidalrange(prediction_sn_ext)
     
     time_TRmax = prediction_sn_ext.loc[prediction_sn_ext['HWLWcode']==1,'tidalrange'].idxmax()
     is1 = prediction_sn_ext.loc[time_TRmax:].index[0]
@@ -1121,17 +1090,17 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
     ax1_boi.set_title(f'getijkromme BOI {current_station}')
     #gemtij
     ax1_boi.plot(prediction_av_corrBOI_repn_roundtime['values'],color=cmap(0),label='prediction gemtij')
-    if 0:#os.path.exists(file_vali_gemtijkromme):#TODO: for some reason, spyder/explorer/tcmd freezes when interacting with these files/folders
+    if os.path.exists(file_vali_gemtijkromme):
         data_vali_gemtij = pd.read_csv(file_vali_gemtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_gemtij['Water Level [m]'],'--',color=cmap(0),linewidth=0.7,label='validation KW2020 gemtij')
     #springtij
     ax1_boi.plot(prediction_sp_corrBOI_repn_roundtime['values'],color=cmap(1),label='prediction springtij')
-    if 0:#os.path.exists(file_vali_springtijkromme):
+    if os.path.exists(file_vali_springtijkromme):
         data_vali_springtij = pd.read_csv(file_vali_springtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_springtij['Water Level [m]'],'--',color=cmap(1),linewidth=0.7,label='validation KW2020 springtij')
     #doodtij
     ax1_boi.plot(prediction_np_corrBOI_repn_roundtime['values'],color=cmap(2),label='prediction doodtij')
-    if 0:#os.path.exists(file_vali_doodtijkromme):
+    if os.path.exists(file_vali_doodtijkromme):
         data_vali_doodtij = pd.read_csv(file_vali_doodtijkromme,index_col=0,parse_dates=True)
         ax1_boi.plot(data_vali_doodtij['Water Level [m]'],'--',color=cmap(2),linewidth=0.7, label='validation KW2020 doodtij')
     ax1_boi.grid()
@@ -1152,11 +1121,11 @@ for current_station in stat_list:#['SCHEVNGN']:#stat_list[stat_list.index('SCHEV
 ###OVERSCHRIJDINGSFREQUENTIES
 #TODO: discuss edits with RWS:
 #       included data up to 2021-1-1 (was 1-1-2012 for all stations) >> trekt weibull krommer omhoog en dichter bij hydraNL
-#       included data from max(last3hrint/first1hrint) (HOEKVHLD: 1970-12-31 23:00:00, was 1971-1-1, so almost the same but tiny yaxis offset)
+#       NOTRELEVANTFOREXT: included data from max(last3hrint/first1hrint) (HOEKVHLD: 1970-12-31 23:00:00, was 1971-1-1, so almost the same but tiny yaxis offset)
 #       break: included data from first10minint in trendanalyis (HOEKVHLD: 1987-01-01 00:10:00, was 1-1-1998 for almost all RMM stations, unless linear trend) >> trekt weibull lijn krommer omlaag en verder van hydraNL
-#       max ipv mean in reasampling to hours >> trekt weibull lijn omhoog en dichter bij hydraNL >> combinatie met data tot 2021 is niet per se beter
-#       OR: use extremes from RWS dataset >> this also works but there are quite some gaps at some stations (it does sove the need for resampling and mean/max decision, but different tstart/tstop/break_value should still be tested, although it makes sense to include all data and use no break_value since extremes are now independent of meas storing interval) >> then SLR trend removal is even more important
-#       OR: derive extremes instead of sampling to 12H (TODO: does hatyan.calc_HWLW work when time interval is not constant? it already crashes on WESTTSLG)
+#       NOTRELEVANTFOREXT: max ipv mean in reasampling to hours >> trekt weibull lijn omhoog en dichter bij hydraNL >> combinatie met data tot 2021 is niet per se beter
+#       OR: use extremes from RWS dataset >> this also works but there are quite some gaps at some stations (it does solve the need for resampling and mean/max decision, but different tstart/tstop/break_value should still be tested, although it makes sense to include all data and use no break_value since extremes are now independent of meas storing interval) >> then SLR trend removal is even more important
+#       NOTRELEVANTFOREXT: OR: derive extremes instead of sampling to 12H (TODO: does hatyan.calc_HWLW work when time interval is not constant? it already crashes on WESTTSLG)
 #TODO: Is het niet nodig om een correctie toe te passen voor zeespiegelstijging? >> zorgt misschien voor minder afhankelijkheid van break_value
 #       je zou zeespiegelstijging moeten verdisconteren in de (linearie) trend
 #       in rapport van HKV wordt gerefereerd naar Goederen(RWS,2003) en daar staat trend in uitgewerkt, die heeft Boyan overgenomen uit HKV rapport.
@@ -1209,7 +1178,7 @@ for current_station in []:#stat_list:
     if not os.path.exists(file_ext_pkl):
         continue
     data_pd_measext = pd.read_pickle(file_ext_pkl)
-    data_pd_measext = clean_data(data_pd_measext)
+    data_pd_measext = clean_data(data_pd_measext,current_station)
     
     data_pd_measext = data_pd_measext.loc[:tstop_dt] # only include data up to year_slotgem #TODO: add trendbreuk tstart for DENOVBTN etc
     

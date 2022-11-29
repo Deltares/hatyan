@@ -347,6 +347,19 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
     return ts_ext
 
 
+def calc_HWLWtidalrange(ts_ext):
+    """
+    creates column 'tidalrange' in ts_ext dataframe
+    """
+    ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
+    ts_ext['times_backup'] = ts_ext.index
+    ts_ext_idxHWLWno = ts_ext.set_index('HWLWno',drop=False)
+    ts_ext_idxHWLWno['tidalrange'] = ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno['HWLWcode']==1,'values'] - ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno['HWLWcode']==2,'values']
+    ts_ext = ts_ext_idxHWLWno.set_index('times_backup')
+    ts_ext.index.name = 'times'
+    return ts_ext
+
+
 def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft=True, source='schureman'):
     
     print('analyzing timeseries with fft and fftfreq')
