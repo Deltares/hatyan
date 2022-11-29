@@ -609,7 +609,7 @@ for current_station in []:#stat_list:#
             tstart_year_trend = physical_break_dict[current_station]
             tstart_dt_trend = dt.datetime(tstart_year_trend,1,1)
         else:
-            tstart_year_trend = None
+            #tstart_year_trend = None
             tstart_dt_trend = None
         tstop_dt_trend = tstop_dt-dt.timedelta(days=1)
         mean_array_todate = mean_array.loc[tstart_dt_trend:tstop_dt_trend] #remove all values after tstop_dt (is year_slotgem)
