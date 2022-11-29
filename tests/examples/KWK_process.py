@@ -22,7 +22,7 @@ import contextily as ctx #`conda install -c conda-forge contextily -y`
 #TODO: add tidal coefficient?: The tidal coefficient is the size of the tide in relation to its mean. It usually varies between 20 and 120. The higher the tidal coefficient, the larger the tidal range – i.e. the difference in water height between high and low tide. This means that the sea level rises and falls back a long way. The mean value is 70. We talk of strong tides – called spring tides – from coefficient 95.  Conversely, weak tides are called neap tides. https://escales.ponant.com/en/high-low-tide/ en https://www.manche-toerisme.com/springtij
 get_catalog = False
 dataTKdia = True
-closefigatstart = False
+closefigatstart = True
 
 tstart_dt_DDL = dt.datetime(1870,1,1) #1870,1,1 for measall folder
 tstop_dt_DDL = dt.datetime(2022,1,1)
@@ -35,11 +35,6 @@ if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_
 else:
     year_slotgem = 'invalid'
 print(f'year_slotgem: {year_slotgem}')
-
-#LWaggercode is used in both havengetallen en gemgetijkromme loops. 3 is first LW, 5 is second HW. 2 is not an aggercode but results in the dominant LW
-#TODO: delays should also be used to scale with first LW in gemgetijkromme and this is currently done, but is not a generic approach (dominance depends per station/period, how to automate?). Or simpler: getijkromme1991.0 "Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, en daarmee de duur rijzing, afgeleid uit de ruwe krommen."
-#TODO important: is schaling van tijd echt nodig? Zou veel zorgen voorkomen.
-LWaggercode = 3 # havengetallen timings LW aardappelgrafiek kloppen voor 1991.0 het best bij LWaggercode=3, misschien doordat eerste laagwater dominant is voor HvH. SCHEVNGN klopt juist alleen bij aggercode=5,d us 3 is niet generiek (en per station kan het ook in de tijd veranderen)
 
 dir_base = r'p:\11208031-010-kenmerkende-waarden-k\work'
 if dataTKdia:
@@ -542,7 +537,7 @@ physical_break_dict = {'DENOVBTN':1933, #laatste sluitgat afsluitdijk in 1932
                        'HARLGN':1933, #laatste sluitgat afsluitdijk in 1932
                        'VLIELHVN':1933, #laatste sluitgat afsluitdijk in 1932
                        } #TODO: add physical_break for STAVNSE and KATSBTN? (Oosterscheldekering)
-for current_station in ['HOEKVHLD']:#stat_list:#
+for current_station in []:#stat_list:#
     
     if closefigatstart:
         plt.close('all')
@@ -671,7 +666,7 @@ data_pd_moonculm = hatyan.calc_HWLWnumbering(data_pd_moonculm,doHWLWcheck=False)
 data_pd_moonculm['HWLWno_offset'] = data_pd_moonculm['HWLWno']+4 #correlate HWLW to moonculmination 2 days before. TODO: check this offset in relation to culm_addtime.
 moonculm_idxHWLWno = data_pd_moonculm.set_index('HWLWno_offset')
 
-for current_station in ['HOEKVHLD']:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     if closefigatstart:
         plt.close('all')
     print(f'havengetallen for {current_station}')
@@ -694,11 +689,8 @@ for current_station in ['HOEKVHLD']:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10',
         raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
     
     print('SELECT/CALC HWLW VALUES') #TODO: decide on aggercode
-    if LWaggercode == 2: #use time+value of lowest LW, 2 is actually not aggercode, but lowest of 345 LWs are converted to 2.
-        if len(data_pd_HWLW['HWLWcode'].unique()) > 2:
-            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
-    else:
-        data_pd_HWLW = data_pd_HWLW.loc[data_pd_HWLW['HWLWcode'].isin([1,2,LWaggercode])]
+    if len(data_pd_HWLW['HWLWcode'].unique()) > 2:
+        data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
     
     if current_station in ['KATSBTN','GATVBSLE','HANSWT']:
         #TODO: move this to data check part
@@ -763,7 +755,7 @@ for current_station in ['HOEKVHLD']:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10',
     fig.tight_layout()
     fig.savefig(os.path.join(dir_havget,f'HWLW_pertijdsklasse_inclmedianline_{current_station}'))
     
-    file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}_aggercode{LWaggercode}')
+    file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}')
     print('AARDAPPELGRAFIEK')
     def timeTicks(x, pos):
         d = dt.timedelta(hours=np.abs(x))
@@ -824,7 +816,7 @@ for current_station in ['HOEKVHLD']:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10',
 #TODO IMPORTANT: correct havengetallen with slotgemiddelden before using them for gemiddelde getijkromme
 #TODO IMPORTANT: scaling is now max 18.2% but this is quite a lot, check values for all stations?
 ##### gemiddelde getijkrommen
-for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
+for current_station in stat_list:#stat_list[stat_list.index('SCHEVNGN'):]:#stat_list:#['HOEKVHLD']:#['HOEKVHLD','HARVT10']: stat_list[stat_list.index('SCHEVNGN'):]
     """
     
     """
@@ -838,7 +830,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#st
     file_vali_springtijkromme = os.path.join(dir_vali_krommen,f'springtijkromme_{current_station}_havengetallen{year_slotgem}.csv')        
     
     #TODO: add correctie havengetallen HW/LW av/sp/np met slotgemiddelde uit PLSS/modelfit (HW/LW av)
-    file_havget = os.path.join(dir_havget,f'aardappelgrafiek_{year_slotgem}_{current_station}_aggercode{LWaggercode}.csv')
+    file_havget = os.path.join(dir_havget,f'aardappelgrafiek_{year_slotgem}_{current_station}.csv')
     if not os.path.exists(file_havget):
         raise Exception(f'havengetallen file does not exist: {file_havget}')
     data_havget = pd.read_csv(file_havget)
@@ -1035,13 +1027,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#st
     comp_frommeasurements_avg_sncomp = comp_frommeasurements_avg.loc[components_sn]
     prediction_sn = hatyan.prediction(comp_frommeasurements_avg_sncomp, times_pred_all=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to make independent on chosen year
     
-    if LWaggercode == 2: #only compute dominant LW
-        prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=False)
-    else:
-        prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=True) # we need aggers since scaling timedown is also derived with firstLW (dominance alternates, so would be unsafe to do with dominant LW)
-        if len(prediction_sn_ext['HWLWcode'].unique()) > 2:
-            #select first LW's (LWaggercode=3) as LW (code 4 and 5 are dropped in this case). This results in a dataframe with HW and LW/aggercode alternating, so one HW every two values. This is impotant because is1/is2/in1/in2 assume a HW every on other extreme
-            prediction_sn_ext = prediction_sn_ext.loc[(prediction_sn_ext['HWLWcode']==1) | (prediction_sn_ext['HWLWcode']==2) | (prediction_sn_ext['HWLWcode']==LWaggercode)]
+    prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=False)
     
     #selecteer getijslag met minimale tidalrange en maximale tidalrange (werd geselecteerd adhv havengetallen in 1991.0 doc)
     #TODO: wordt nu ook met eerste LW ipv dominant LW bepaald, misschien beter om dit met dominante te doen maar maakt methodiek complexer. hoe wordt het bij havengetallen gedaan?
@@ -1223,7 +1209,7 @@ mode = 'from_ext' #'from_wl_reproduce' 'from_ext'
     
 temp = {}
 tstarts = pd.DataFrame()
-for current_station in ['HOEKVHLD']:#stat_list:
+for current_station in []:#stat_list:
     print(f'overschrijdingsfrequenties for {current_station}')
     if closefigatstart:
         plt.close('all')
