@@ -531,7 +531,6 @@ for current_station in []:#stat_list:
 
 
 #TODO: more data is needed for proper working of models (2011: BAALHK, BRESKVHVN, GATVBSLE, SCHAARVDND)
-#TODO: comparison to havengetallen beneficial
 #### SLOTGEMIDDELDEN
 physical_break_dict = {'DENOVBTN':1933, #laatste sluitgat afsluitdijk in 1932
                        'HARLGN':1933, #laatste sluitgat afsluitdijk in 1932
@@ -665,7 +664,7 @@ data_pd_moonculm = hatyan.calc_HWLWnumbering(data_pd_moonculm,doHWLWcheck=False)
 data_pd_moonculm['HWLWno_offset'] = data_pd_moonculm['HWLWno']+4 #correlate HWLW to moonculmination 2 days before. TODO: check this offset in relation to culm_addtime.
 moonculm_idxHWLWno = data_pd_moonculm.set_index('HWLWno_offset')
 
-for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
+for current_station in ['STELLDBTN']:# stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HOEKVHLD','IJMDBTHVN','DENOVBTN','KATSBTN','KORNWDZBTN','OUDSD','SCHEVNGN']:#stat_list:
     if closefigatstart:
         plt.close('all')
     print(f'havengetallen for {current_station}')
@@ -692,7 +691,7 @@ for current_station in stat_list:#['HOEKVHLD']:#['CADZD','VLISSGN','HARVT10','HO
         data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
     
     if current_station in ['KATSBTN','GATVBSLE','HANSWT']:
-        #TODO: move this to data check part
+        #TODO: move this to data check part?
         #TODO: this removes extreme values that are 1/5/28 min from each other, but they should not be present to begin with
         timediff = data_pd_HWLW.index[1:]-data_pd_HWLW.index[:-1]
         data_pd_HWLW['timediff'] = pd.TimedeltaIndex([pd.NaT]).append(timediff)
@@ -1244,11 +1243,8 @@ for current_station in []:#stat_list:
             continue
         data_pd_measext = pd.read_pickle(file_ext_pkl)
         data_pd_measext = clean_data(data_pd_measext)
-        #data_pd_measext = data_pd_measext[['values','QC','HWLWcode']] #fix ordering of columns, since per default first column is used (or col argument has to be supplied on all steps)
-        #data_pd_measext.index = data_pd_measext.index.tz_localize(None)
         
-        #data_pd_measext = data_pd_measext.loc[:tstop_dt] # only include data up to year_slotgem
-        data_pd_measext = data_pd_measext.loc['1887-08-01 00:40:00':'2022-01-01 00:00:00']
+        data_pd_measext = data_pd_measext.loc[:tstop_dt] # only include data up to year_slotgem #TODO: add trendbreuk tstart for DENOVBTN etc
         
         if len(data_pd_measext['HWLWcode'].unique()) > 2:
             data_pd_measext = hatyan.calc_HWLW12345to12(data_pd_measext) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
