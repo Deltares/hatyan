@@ -903,7 +903,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#st
                                                 fu_alltimes=False, # False is RWS-default
                                                 xfac=True, # True is RWS-default
                                                 analysis_perperiod='Y',
-                                                xTxmat_condition_max=15, #TODO: for some reason this is necessary for HOEKVHLD 2006 (default=10)
+                                                #xTxmat_condition_max=12, #TODO: for some reason this was necessary for HOEKVHLD 2006 (xTxmat_condition=11.5, default xTxmat_condition_max=12)
                                                 return_allperiods=True)
     comp_frommeasurements_avg, comp_frommeasurements_allyears = hatyan.get_components_from_ts(ts_meas_pd, const_list=const_list, hatyan_settings=hatyan_settings_ana)
     
