@@ -1471,7 +1471,10 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids=='allstation':
             if station is None:
-                raise Exception('ERROR: if block_ids argument is not provided (or None) or is "allstation", station argument should be provided.')
+                if len(diablocks_pd)==1:
+                    station = diablocks_pd.loc[0,'station']
+                else:
+                    raise Exception('ERROR: if block_ids argument is not provided (or None) or is "allstation", station argument should be provided.')
             bool_station = diablocks_pd['station']==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)<1:
