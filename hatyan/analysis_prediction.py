@@ -70,7 +70,7 @@ class HatyanSettings:
                  CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
                  analysis_peryear=None, analysis_permonth=None, return_allyears=None,  #TODO: should be phased out, replaced by analysis_perperiod and return_allperiods
                  return_prediction=False,
-                 xTxmat_condition_max=10): #analysis only
+                 xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
             raise Exception('invalid source type, should be str')
         source = source.lower()

@@ -1,13 +1,22 @@
 name: hatyan_env
 dependencies:
-  - python=3.6.12
+  - python>=3.6.12
   - pip>=19.2.3
   - pip:
     - pytest>=5.0.1
     - bump2version>=0.5.11
     - pytest-cov
-    - teamcity-messages
     - pyqt5
     - pdoc3
     - pandoc
     - twine
+    - scipy>=1.5.4
+    - numpy>=1.18.4
+    - matplotlib>=3.2.1
+    - pandas>=1.1.2
+    - netCDF4>=1.5.3
+    - pyproj>=2.2.0
+    - sip>=4.19.8
+    - packaging>=21.0
+    - requests
+    - statsmodels

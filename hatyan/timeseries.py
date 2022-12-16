@@ -219,6 +219,10 @@ def calc_HWLW12345to12(data_HWLW_12345):
     None.
     
     """
+    if len(data_HWLW_12345['HWLWcode'].unique()) <= 2:
+        print('skipping HWLW 12345 to 12 correction since no 345 found, returning input df')
+        return data_HWLW_12345.copy()
+    
     print('starting HWLW 12345 to 12 correction')
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345['HWLWcode']==1]
@@ -344,6 +348,19 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
     
     ts_ext['HWLWno'] = ts_ext['HWLWno'].astype(int)
     
+    return ts_ext
+
+
+def calc_HWLWtidalrange(ts_ext):
+    """
+    creates column 'tidalrange' in ts_ext dataframe
+    """
+    ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
+    ts_ext['times_backup'] = ts_ext.index
+    ts_ext_idxHWLWno = ts_ext.set_index('HWLWno',drop=False)
+    ts_ext_idxHWLWno['tidalrange'] = ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno['HWLWcode']==1,'values'] - ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno['HWLWcode']==2,'values']
+    ts_ext = ts_ext_idxHWLWno.set_index('times_backup')
+    ts_ext.index.name = 'times'
     return ts_ext
 
 
@@ -1034,8 +1051,9 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
         else:
             print('WARNING: %s'%(message))
             
-    times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
-    ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    #times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
+    #ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    ts_pd_out = ts_pd_in.loc[times_ext[0]:times_ext[1]]
     
     return ts_pd_out
 
@@ -1458,7 +1476,10 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids=='allstation':
             if station is None:
-                raise Exception('ERROR: if block_ids argument is not provided (or None) or is "allstation", station argument should be provided.')
+                if len(diablocks_pd)==1:
+                    station = diablocks_pd.loc[0,'station']
+                else:
+                    raise Exception('ERROR: if block_ids argument is not provided (or None) or is "allstation", station argument should be provided.')
             bool_station = diablocks_pd['station']==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)<1:

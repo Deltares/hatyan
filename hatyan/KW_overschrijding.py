@@ -15,6 +15,52 @@ from typing import Union, List
 import datetime as dt
 import os
 
+#wrapper
+def compute_overschrijding(df_extrema, rule_type, rule_value, inverse=False):
+    
+    df_extrema_clean = df_extrema.copy()[['values']] #drop all info but the values (times-idx, HWLWcode etc)
+    dist = {} #TODO: replace with pandas.DataFrame?
+    
+    print('Calculate unfiltered distribution')
+    dist['Ongefilterd'] = distribution(df_extrema_clean, inverse=inverse)
+    
+    """# filtering is only applicable for stations with high river discharge influence, so disabled #TODO: ext is geschikt voor getij, maar bij hoge afvoergolf wil je alleen het echte extreem. Er is dan een treshold per station nodig, is nodig om de rivierafvoerpiek te kunnen duiden.
+    print('Calculate filtered distribution')
+    df_peaks, threshold, _ = hatyan.detect_peaks(df_extrema_clean)
+    if metadata_station['apply_treshold']:
+        temp[metadata_station['id']] = threshold
+        df_extrema_filt = hatyan.filter_with_threshold(df_extrema_clean, df_peaks, threshold)
+    else:
+        df_extrema_filt = df_extrema_clean.copy()
+    dist['Gefilterd'] = hatyan.distribution(df_extrema_filt.copy())
+    """
+    
+    print('Calculate filtered distribution with trendanalysis')
+    df_trend = apply_trendanalysis(df_extrema_clean, rule_type=rule_type, rule_value=rule_value)
+    dist['Trendanalyse'] = distribution(df_trend.copy(), inverse=inverse)
+    
+    print('Fit Weibull to filtered distribution with trendanalysis')
+    # Last 100 datapoints from distribution (assuming it is sorted with Tfreqs from large to small)
+    dist['Weibull'] = get_weibull(dist['Trendanalyse'].copy(),
+                                  threshold=dist['Trendanalyse']['values'].iloc[-101], #-100 for HW, -101 for LW, but does not matter
+                                  Tfreqs=np.logspace(-5, np.log10(dist['Trendanalyse']['values_Tfreq'].iloc[-101]), 5000),
+                                  inverse=inverse)
+    
+    print('Blend trend and weibull together') # and Hydra-NL
+    dist['Gecombineerd'] = blend_distributions(dist['Trendanalyse'].copy(),
+                                               dist['Weibull'].copy(),
+                                               #dist['Hydra-NL'].copy(), 
+                                               )#.set_index('values_Tfreq')
+
+    """
+    if row['apply_treshold']:
+        keys = list(dist.keys())
+    else:
+        keys = [x for x in list(dist.keys()) if x != 'Gefilterd']
+    """
+    
+    return dist
+
 
 def delete_values_between_peak_trough(times_to_delete, times, values):
     mask = np.in1d(times, times_to_delete)
@@ -295,12 +341,21 @@ def plot_distributions(dist: dict, name: str,
                        xlabel: str = 'Exceedance frequency [1/yrs]',
                        ylabel: str = 'Waterlevel [m]',
                        legend_loc: str = 'lower right'):
+    
+    if color_map=='default':
+        color_map = {'Ongefilterd':  'b', 'Gefilterd': 'orange', 'Trendanalyse': 'g',
+                     'Weibull': 'r', 'Hydra-NL': 'm', 'Hydra-NL met modelonzekerheid': 'cyan',
+                     'Gecombineerd': 'k'}
+
     fig, ax = plt.subplots(figsize=(8, 6))
     if keys is None:
         keys = list(dist.keys())
     for k in keys:
         c = color_map[k] if (color_map is not None) and (k in color_map.keys()) else None
-        ax.plot(dist[k]['values_Tfreq'], dist[k]['values'], label=k, c=c)
+        if k=='Gecombineerd':
+            ax.plot(dist[k]['values_Tfreq'], dist[k]['values'], '--', label=k, c=c)
+        else:
+            ax.plot(dist[k]['values_Tfreq'], dist[k]['values'], label=k, c=c)
     ax.set_title(name)
     ax.set_xlabel(xlabel), ax.set_xscale('log'), ax.set_xlim([1e-5, 1e3]), ax.invert_xaxis()
     ax.set_ylabel(ylabel)
@@ -324,4 +379,12 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                                    'values_Tfreq': Tfreqs}).sort_values(by='values_Tfreq', ascending=False)
     #prefix = os.path.basename(csv_dir)
     df_interp.to_csv(os.path.join(csv_dir, f'{prefix}_{id}.csv'), index=False, sep=';')
+    return df_interp
+
+
+def interpolate_interested_Tfreqs(df: pd.DataFrame, Tfreqs: List[float]) -> pd.DataFrame:
+    df_interp = pd.DataFrame(data={'values': np.interp(Tfreqs,
+                                                      np.flip(df['values_Tfreq'].values),
+                                                      np.flip(df['values'].values)),
+                                   'values_Tfreq': Tfreqs}).sort_values(by='values_Tfreq', ascending=False)
     return df_interp
