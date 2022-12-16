@@ -93,15 +93,15 @@ def nap2005_correction(data_pd,current_station):
 
 
 
-#physical_break_dict for slotgemiddelden and overschrijdingsfrequenties (maybe use everywhere to crop data, e.g. in clean_data?)
+#physical_break_dict for slotgemiddelden and overschrijdingsfrequenties TODO: maybe use everywhere to crop data?
 physical_break_dict = {'DENOVBTN':'1933', #laatste sluitgat afsluitdijk in 1932 
                        'HARLGN':'1933', #laatste sluitgat afsluitdijk in 1932
                        'VLIELHVN':'1933', #laatste sluitgat afsluitdijk in 1932
                        } #TODO: add physical_break for STAVNSE and KATSBTN? (Oosterscheldekering)
 
-compute_slotgem = False
-compute_havengetallen = False
-compute_gemgetij = False
+compute_slotgem = True
+compute_havengetallen = True
+compute_gemgetij = True
 compute_overschrijding = True
 
 
