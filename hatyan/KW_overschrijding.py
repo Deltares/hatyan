@@ -197,7 +197,6 @@ def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str
         return sigma * (((threshold/sigma)**alpha) - np.log(p_X_gt_x / p_val_gt_threshold))**(1/alpha)
 
     def der_pfunc(x, p_val_gt_threshold, threshold, alpha, sigma):
-        #TODO: throws "RuntimeWarning: invalid value encountered in double_scalars"
         return -p_val_gt_threshold * (alpha * x**(alpha - 1)) * (sigma**(-alpha)) * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
 
     def cost_func(params, *args):

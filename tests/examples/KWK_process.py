@@ -137,7 +137,7 @@ for current_station in ['HOEKVHLD']:#stat_list:#
         wl_mean_peryear = dict_wltidalindicators['wl_mean_peryear']
         dict_wltidalindicators_valid = hatyan.calc_wltidalindicators(data_pd_meas_all, tresh_yearlywlcount=2900) #24*365=8760 (hourly interval), 24/3*365=2920 (3-hourly interval)
         wl_mean_peryear_valid = dict_wltidalindicators_valid['wl_mean_peryear']
-    
+        
         #derive tidal indicators like yearmean HWLW from HWLW values
         if os.path.exists(file_ext_pkl):
             dict_HWLWtidalindicators = hatyan.calc_HWLWtidalindicators(data_pd_HWLW_all_12)
@@ -642,7 +642,7 @@ for current_station in ['HOEKVHLD']:#stat_list:#
             station_break_value = data_pd_measext.index.min()
     
         # 1. Exceedance
-        print('Exceedance')
+        print('Exceedance') #TODO: hatyan.get_weibull.der_pfunc() throws "RuntimeWarning: invalid value encountered in double_scalars"
         dist_exc = hatyan.compute_overschrijding(data_pd_HW, rule_type=station_rule_type, rule_value=station_break_value)
         dist_exc.update(dist_vali_exc)
         df_interp = hatyan.interpolate_interested_Tfreqs(dist_exc['Gecombineerd'], Tfreqs=Tfreqs_interested)
