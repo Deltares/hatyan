@@ -60,7 +60,7 @@ Install hatyan OPTION 2: create python venv in your Linux home directory and ins
 - ``python ~/validate_astro_DDL.py``
 - ``deactivate``
 
-Install hatyan OPTION 3: get and install RPM on CentOS/RHEL
+Install hatyan OPTION 3: get and install RPM on CentOS/RHEL (this will be deprecated soon)
 
 - get the latest rpm file (see developer information for building procedure)
 - install hatyan on CentOS: ``rpm -i hatyan_python-2.2.30-1.x86_64.rpm``
