@@ -21,11 +21,6 @@ import hatyan # available via `pip install hatyan` or at https://github.com/Delt
 dataTKdia = True #TODO: communicate data issues to TK (wl and ext): p:\11208031-010-kenmerkende-waarden-k\work\data_vanRWS_20220805\convert_dia2pickle_dataTK.py
 NAP2005correction = False #True #TODO: define for all stations
 
-compute_slotgem = False
-compute_havengetallen = False
-compute_gemgetij = True
-compute_overschrijding = False
-
 tstart_dt = dt.datetime(2001,1,1)
 tstop_dt = dt.datetime(2011,1,1)
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
@@ -104,6 +99,11 @@ physical_break_dict = {'DENOVBTN':'1933', #laatste sluitgat afsluitdijk in 1932
                        'VLIELHVN':'1933', #laatste sluitgat afsluitdijk in 1932
                        } #TODO: add physical_break for STAVNSE and KATSBTN? (Oosterscheldekering)
 
+compute_slotgem = False
+compute_havengetallen = False
+compute_gemgetij = False
+compute_overschrijding = True
+
 
 for current_station in ['HOEKVHLD']:#stat_list:#
     
@@ -119,9 +119,11 @@ for current_station in ['HOEKVHLD']:#stat_list:#
     if os.path.exists(file_ext_pkl): #for slotgemiddelden, havengetallen, overschrijding
         data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
         data_pd_HWLW_all = clean_data(data_pd_HWLW_all,current_station)
-        #crop timeseries to 10y
-        data_pd_HWLW_10y = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
-
+        if compute_slotgem or compute_havengetallen or compute_overschrijding: #TODO: make calc_HWLW12345to12() faster so this if is not necessary anymore
+            data_pd_HWLW_all_12 = hatyan.calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
+            #crop timeseries to 10y
+            data_pd_HWLW_10y_12 = hatyan.crop_timeseries(data_pd_HWLW_all_12, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
+    
     
     
     
@@ -138,10 +140,10 @@ for current_station in ['HOEKVHLD']:#stat_list:#
     
         #derive tidal indicators like yearmean HWLW from HWLW values
         if os.path.exists(file_ext_pkl):
-            dict_HWLWtidalindicators = hatyan.calc_HWLWtidalindicators(data_pd_HWLW_all)
+            dict_HWLWtidalindicators = hatyan.calc_HWLWtidalindicators(data_pd_HWLW_all_12)
             HW_mean_peryear = dict_HWLWtidalindicators['HW_mean_peryear']
             LW_mean_peryear = dict_HWLWtidalindicators['LW_mean_peryear']
-            dict_HWLWtidalindicators_valid = hatyan.calc_HWLWtidalindicators(data_pd_HWLW_all, tresh_yearlyHWLWcount=1400) #2*24*365/12.42=1410.6 (12.42 hourly extreme)
+            dict_HWLWtidalindicators_valid = hatyan.calc_HWLWtidalindicators(data_pd_HWLW_all_12, tresh_yearlyHWLWcount=1400) #2*24*365/12.42=1410.6 (12.42 hourly extreme)
             HW_mean_peryear_valid = dict_HWLWtidalindicators_valid['HW_mean_peryear']
             LW_mean_peryear_valid = dict_HWLWtidalindicators_valid['LW_mean_peryear']
         
@@ -234,22 +236,18 @@ for current_station in ['HOEKVHLD']:#stat_list:#
         data_pd_moonculm = hatyan.calc_HWLWnumbering(data_pd_moonculm,doHWLWcheck=False) #TODO: currently w.r.t. cadzd, is that an issue? With DELFZL the matched culmination is incorrect (since far away), but that might not be a big issue
         data_pd_moonculm['HWLWno_offset'] = data_pd_moonculm['HWLWno']+4 #correlate HWLW to moonculmination 2 days before. TODO: check this offset in relation to culm_addtime.
         moonculm_idxHWLWno = data_pd_moonculm.set_index('HWLWno_offset')
-    
+        
         print(f'havengetallen for {current_station}')
         
         file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}')
         #check if amount of HWs is enough
         M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
         numHWs_expected = (tstop_dt-tstart_dt).total_seconds()/M2_period_timedelta.total_seconds()
-        numHWs = (data_pd_HWLW_10y['HWLWcode']==1).sum()
+        numHWs = (data_pd_HWLW_10y_12['HWLWcode']==1).sum()
         if numHWs < 0.95*numHWs_expected:
             raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
         
-        print('SELECT/CALC HWLW VALUES')
-        if len(data_pd_HWLW_10y['HWLWcode'].unique()) > 2:
-            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW_10y) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
-        
-        data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW)
+        data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW_10y_12)
         data_pd_HWLW_idxHWLWno['times'] = data_pd_HWLW_idxHWLWno.index
         data_pd_HWLW_idxHWLWno = data_pd_HWLW_idxHWLWno.set_index('HWLWno',drop=False)
         
@@ -271,7 +269,7 @@ for current_station in ['HOEKVHLD']:#stat_list:#
         HWLW_culmhr_summary['LW_delay_median'] = data_pd_LW.groupby(data_pd_LW['culm_hr'])['HWLW_delay'].median()
         HWLW_culmhr_summary['getijperiod_median'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['getijperiod'].median()
         HWLW_culmhr_summary['duurdaling_median'] = data_pd_HW.groupby(data_pd_HW['culm_hr'])['duurdaling'].median()
-            
+        
         print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE')
         fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(18,8), sharex=True)
         ax1.set_title('HW values %s'%(current_station))
@@ -303,7 +301,7 @@ for current_station in ['HOEKVHLD']:#stat_list:#
         
         # #TODO: use tidal coefficient instead?: The tidal coefficient is the size of the tide in relation to its mean. It usually varies between 20 and 120. The higher the tidal coefficient, the larger the tidal range – i.e. the difference in water height between high and low tide. This means that the sea level rises and falls back a long way. The mean value is 70. We talk of strong tides – called spring tides – from coefficient 95.  Conversely, weak tides are called neap tides. https://escales.ponant.com/en/high-low-tide/ en https://www.manche-toerisme.com/springtij
         # #for HOEKVHLD, sp=0 is approx tc=1.2, np=6 is approx tc=0.8, av=mean is approx tc=1.0 (for HW, for LW it is different)
-        # data_pd_HWLW_new = data_pd_HWLW_10y.copy()
+        # data_pd_HWLW_new = data_pd_HWLW_10y_12.copy()
         # data_pd_HWLW_new = hatyan.calc_HWLWtidalrange(data_pd_HWLW_new)
         # data_pd_HWLW_new['tidalcoeff'] = data_pd_HWLW_new['tidalrange']/data_pd_HWLW_new['tidalrange'].mean()
         # data_pd_HWLW_new['tidalcoeff_round'] = data_pd_HWLW_new['tidalcoeff'].round(1)
@@ -610,10 +608,8 @@ for current_station in ['HOEKVHLD']:#stat_list:#
         print(f'overschrijdingsfrequenties for {current_station}')
         
         #clip data #TODO: do at top?
-        data_pd_measext = data_pd_HWLW_all.loc[:tstop_dt] # only include data up to year_slotgem
+        data_pd_measext = data_pd_HWLW_all_12.loc[:tstop_dt] # only include data up to year_slotgem
         
-        if len(data_pd_measext['HWLWcode'].unique()) > 2:
-            data_pd_measext = hatyan.calc_HWLW12345to12(data_pd_measext) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
         data_pd_HW = data_pd_measext.loc[data_pd_measext['HWLWcode']==1]
         data_pd_LW = data_pd_measext.loc[data_pd_measext['HWLWcode']!=1]
         

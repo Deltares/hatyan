@@ -219,6 +219,10 @@ def calc_HWLW12345to12(data_HWLW_12345):
     None.
     
     """
+    if len(data_HWLW_12345['HWLWcode'].unique()) <= 2:
+        print('skipping HWLW 12345 to 12 correction since no 345 found, returning input df')
+        return data_HWLW_12345.copy()
+    
     print('starting HWLW 12345 to 12 correction')
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345['HWLWcode']==1]
