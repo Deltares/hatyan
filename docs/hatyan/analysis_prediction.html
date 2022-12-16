@@ -115,7 +115,7 @@ class HatyanSettings:
                  CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
                  analysis_peryear=None, analysis_permonth=None, return_allyears=None,  #TODO: should be phased out, replaced by analysis_perperiod and return_allperiods
                  return_prediction=False,
-                 xTxmat_condition_max=10): #analysis only
+                 xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
             raise Exception(&#39;invalid source type, should be str&#39;)
         source = source.lower()
@@ -1268,7 +1268,7 @@ The component set has the same timezone as the timeseries used to create it, the
 </dd>
 <dt id="hatyan.analysis_prediction.HatyanSettings"><code class="flex name class">
 <span>class <span class="ident">HatyanSettings</span></span>
-<span>(</span><span>source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, CS_comps=None, analysis_perperiod=False, return_allperiods=False, analysis_peryear=None, analysis_permonth=None, return_allyears=None, return_prediction=False, xTxmat_condition_max=10)</span>
+<span>(</span><span>source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, CS_comps=None, analysis_perperiod=False, return_allperiods=False, analysis_peryear=None, analysis_permonth=None, return_allyears=None, return_prediction=False, xTxmat_condition_max=12)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Settings class containing default hatyan settings, to be overwritten by input, initiate with:
@@ -1328,7 +1328,7 @@ Whether to generate a prediction for the ts time array. The default is False.</p
                  CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
                  analysis_peryear=None, analysis_permonth=None, return_allyears=None,  #TODO: should be phased out, replaced by analysis_perperiod and return_allperiods
                  return_prediction=False,
-                 xTxmat_condition_max=10): #analysis only
+                 xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
             raise Exception(&#39;invalid source type, should be str&#39;)
         source = source.lower()

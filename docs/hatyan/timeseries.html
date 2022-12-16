@@ -264,6 +264,10 @@ def calc_HWLW12345to12(data_HWLW_12345):
     None.
     
     &#34;&#34;&#34;
+    if len(data_HWLW_12345[&#39;HWLWcode&#39;].unique()) &lt;= 2:
+        print(&#39;skipping HWLW 12345 to 12 correction since no 345 found, returning input df&#39;)
+        return data_HWLW_12345.copy()
+    
     print(&#39;starting HWLW 12345 to 12 correction&#39;)
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345[&#39;HWLWcode&#39;]==1]
@@ -389,6 +393,19 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode=&#39;M2
     
     ts_ext[&#39;HWLWno&#39;] = ts_ext[&#39;HWLWno&#39;].astype(int)
     
+    return ts_ext
+
+
+def calc_HWLWtidalrange(ts_ext):
+    &#34;&#34;&#34;
+    creates column &#39;tidalrange&#39; in ts_ext dataframe
+    &#34;&#34;&#34;
+    ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
+    ts_ext[&#39;times_backup&#39;] = ts_ext.index
+    ts_ext_idxHWLWno = ts_ext.set_index(&#39;HWLWno&#39;,drop=False)
+    ts_ext_idxHWLWno[&#39;tidalrange&#39;] = ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno[&#39;HWLWcode&#39;]==1,&#39;values&#39;] - ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno[&#39;HWLWcode&#39;]==2,&#39;values&#39;]
+    ts_ext = ts_ext_idxHWLWno.set_index(&#39;times_backup&#39;)
+    ts_ext.index.name = &#39;times&#39;
     return ts_ext
 
 
@@ -1079,8 +1096,9 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
         else:
             print(&#39;WARNING: %s&#39;%(message))
             
-    times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
-    ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    #times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
+    #ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    ts_pd_out = ts_pd_in.loc[times_ext[0]:times_ext[1]]
     
     return ts_pd_out
 
@@ -1503,7 +1521,10 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids==&#39;allstation&#39;:
             if station is None:
-                raise Exception(&#39;ERROR: if block_ids argument is not provided (or None) or is &#34;allstation&#34;, station argument should be provided.&#39;)
+                if len(diablocks_pd)==1:
+                    station = diablocks_pd.loc[0,&#39;station&#39;]
+                else:
+                    raise Exception(&#39;ERROR: if block_ids argument is not provided (or None) or is &#34;allstation&#34;, station argument should be provided.&#39;)
             bool_station = diablocks_pd[&#39;station&#39;]==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)&lt;1:
@@ -1872,6 +1893,10 @@ When first/second low waters and aggers are calculated, the local extremes aroun
     None.
     
     &#34;&#34;&#34;
+    if len(data_HWLW_12345[&#39;HWLWcode&#39;].unique()) &lt;= 2:
+        print(&#39;skipping HWLW 12345 to 12 correction since no 345 found, returning input df&#39;)
+        return data_HWLW_12345.copy()
+    
     print(&#39;starting HWLW 12345 to 12 correction&#39;)
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345[&#39;HWLWcode&#39;]==1]
@@ -2031,6 +2056,28 @@ Providing a value will result in a proper HWLWno, corresponing to CADZD. Providi
     
     ts_ext[&#39;HWLWno&#39;] = ts_ext[&#39;HWLWno&#39;].astype(int)
     
+    return ts_ext</code></pre>
+</details>
+</dd>
+<dt id="hatyan.timeseries.calc_HWLWtidalrange"><code class="name flex">
+<span>def <span class="ident">calc_HWLWtidalrange</span></span>(<span>ts_ext)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>creates column 'tidalrange' in ts_ext dataframe</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calc_HWLWtidalrange(ts_ext):
+    &#34;&#34;&#34;
+    creates column &#39;tidalrange&#39; in ts_ext dataframe
+    &#34;&#34;&#34;
+    ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
+    ts_ext[&#39;times_backup&#39;] = ts_ext.index
+    ts_ext_idxHWLWno = ts_ext.set_index(&#39;HWLWno&#39;,drop=False)
+    ts_ext_idxHWLWno[&#39;tidalrange&#39;] = ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno[&#39;HWLWcode&#39;]==1,&#39;values&#39;] - ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno[&#39;HWLWcode&#39;]==2,&#39;values&#39;]
+    ts_ext = ts_ext_idxHWLWno.set_index(&#39;times_backup&#39;)
+    ts_ext.index.name = &#39;times&#39;
     return ts_ext</code></pre>
 </details>
 </dd>
@@ -2909,8 +2956,9 @@ Warning: the calculated extreme numbers in this definition are not corrected for
         else:
             print(&#39;WARNING: %s&#39;%(message))
             
-    times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
-    ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    #times_selected_bool = (ts_pd_in.index &gt;= times_ext[0]) &amp; (ts_pd_in.index &lt;= times_ext[-1])
+    #ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    ts_pd_out = ts_pd_in.loc[times_ext[0]:times_ext[1]]
     
     return ts_pd_out</code></pre>
 </details>
@@ -3420,7 +3468,10 @@ This comes down to: ts_period / period_difference &gt; R</p>
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids==&#39;allstation&#39;:
             if station is None:
-                raise Exception(&#39;ERROR: if block_ids argument is not provided (or None) or is &#34;allstation&#34;, station argument should be provided.&#39;)
+                if len(diablocks_pd)==1:
+                    station = diablocks_pd.loc[0,&#39;station&#39;]
+                else:
+                    raise Exception(&#39;ERROR: if block_ids argument is not provided (or None) or is &#34;allstation&#34;, station argument should be provided.&#39;)
             bool_station = diablocks_pd[&#39;station&#39;]==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)&lt;1:
@@ -3635,6 +3686,7 @@ This comes down to: ts_period / period_difference &gt; R</p>
 <li><code><a title="hatyan.timeseries.calc_HWLWlocalto345" href="#hatyan.timeseries.calc_HWLWlocalto345">calc_HWLWlocalto345</a></code></li>
 <li><code><a title="hatyan.timeseries.calc_HWLW12345to12" href="#hatyan.timeseries.calc_HWLW12345to12">calc_HWLW12345to12</a></code></li>
 <li><code><a title="hatyan.timeseries.calc_HWLWnumbering" href="#hatyan.timeseries.calc_HWLWnumbering">calc_HWLWnumbering</a></code></li>
+<li><code><a title="hatyan.timeseries.calc_HWLWtidalrange" href="#hatyan.timeseries.calc_HWLWtidalrange">calc_HWLWtidalrange</a></code></li>
 <li><code><a title="hatyan.timeseries.timeseries_fft" href="#hatyan.timeseries.timeseries_fft">timeseries_fft</a></code></li>
 <li><code><a title="hatyan.timeseries.plot_timeseries" href="#hatyan.timeseries.plot_timeseries">plot_timeseries</a></code></li>
 <li><code><a title="hatyan.timeseries.plot_HWLW_validatestats" href="#hatyan.timeseries.plot_HWLW_validatestats">plot_HWLW_validatestats</a></code></li>

@@ -181,7 +181,7 @@ def get_doodson_eqvals(dood_date, mode=None):
         dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
         dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
         dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
-    
+        #from SLS table 4.2: pd.DataFrame(dict(const=[218.32,280.47,83.35,125.04,282.94],T=[481267.88,36000.77,4069.01,-1934.14,1.72]),index=[&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;])#/180*np.pi
     doodson_pd = pd.DataFrame(np.stack([dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad]),
                               index=[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;])
     return doodson_pd
@@ -676,7 +676,7 @@ def check_requestedconsts(const_list_tuple,source):
         dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
         dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
         dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
-    
+        #from SLS table 4.2: pd.DataFrame(dict(const=[218.32,280.47,83.35,125.04,282.94],T=[481267.88,36000.77,4069.01,-1934.14,1.72]),index=[&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;])#/180*np.pi
     doodson_pd = pd.DataFrame(np.stack([dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad]),
                               index=[&#39;T&#39;,&#39;S&#39;,&#39;H&#39;,&#39;P&#39;,&#39;N&#39;,&#39;P1&#39;])
     return doodson_pd</code></pre>
