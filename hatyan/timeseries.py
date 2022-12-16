@@ -1047,8 +1047,9 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
         else:
             print('WARNING: %s'%(message))
             
-    times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
-    ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    #times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
+    #ts_pd_out = ts_pd_in.loc[times_selected_bool]
+    ts_pd_out = ts_pd_in.loc[times_ext[0]:times_ext[1]]
     
     return ts_pd_out
 
