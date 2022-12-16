@@ -6,7 +6,6 @@ Created on Thu Apr  7 14:17:13 2022
 """
 
 import os
-import sys
 import pandas as pd
 import datetime as dt
 import numpy as np
@@ -16,13 +15,19 @@ import hatyan # available via `pip install hatyan` or at https://github.com/Delt
 
 #TODO: convert to netcdf instead of pkl, think of convenient netcdf format
 #TODO: SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
-#TODO: move all parts to hatyan.kenmerkendewaarden.*, maybe also the stuff in hatyan/overschrijding.py (and include license header)
+#TODO: move all parts to hatyan.KW_*.* (and include license header)
 #TODO: add LAT/HAT (AB needs this for RWS work)
+#TODO: check TODO in hatyan.KW_* scripts
 dataTKdia = True #TODO: communicate data issues to TK (wl and ext): p:\11208031-010-kenmerkende-waarden-k\work\data_vanRWS_20220805\convert_dia2pickle_dataTK.py
+NAP2005correction = False #True #TODO: define for all stations
+
+compute_slotgem = False
+compute_havengetallen = False
+compute_gemgetij = True
+compute_overschrijding = False
 
 tstart_dt = dt.datetime(2001,1,1)
 tstop_dt = dt.datetime(2011,1,1)
-NAP2005correction = False #True #TODO: define for all stations
 if ((tstop_dt.year-tstart_dt.year)==10) & (tstop_dt.month==tstop_dt.day==tstart_dt.month==tstart_dt.day==1):
     year_slotgem = tstop_dt.year
 else:
@@ -53,7 +58,8 @@ if dataTKdia:
     stat_list = ['A12','AWGPFM','BAALHK','BATH','BERGSDSWT','BROUWHVSGT02','BROUWHVSGT08','GATVBSLE','BRESKVHVN','CADZD','D15','DELFZL','DENHDR','EEMSHVN','EURPFM','F16','F3PFM','HARVT10','HANSWT','HARLGN','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','J6','K13APFM','K14PFM','KATSBTN','KORNWDZBTN','KRAMMSZWT','L9PFM','LAUWOG','LICHTELGRE','MARLGT','NES','NIEUWSTZL','NORTHCMRT','DENOVBTN','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','Q1','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SINTANLHVSGR','STAVNSE','STELLDBTN','TERNZN','TERSLNZE','TEXNZE','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN','YERSKE'] #all stations from TK
     stat_list = ['BAALHK','BATH','BERGSDSWT','BRESKVHVN','CADZD','DELFZL','DENHDR','DENOVBTN','EEMSHVN','GATVBSLE','HANSWT','HARLGN','HARVT10','HOEKVHLD','IJMDBTHVN','KATSBTN','KORNWDZBTN','KRAMMSZWT','LAUWOG','OUDSD','ROOMPBNN','ROOMPBTN','SCHAARVDND','SCHEVNGN','SCHIERMNOG','STAVNSE','STELLDBTN','TERNZN','VLAKTVDRN','VLIELHVN','VLISSGN','WALSODN','WESTKPLE','WESTTSLG','WIERMGDN'] #all files with valid data for 2010 to 2021
     #stat_list = stat_list[stat_list.index('STELLDBTN'):]
-M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
+else:
+    stat_list = None #TODO: get from DDL catalog (check KWK_download script)
 
 
 def clean_data(ts_meas_pd,current_station):
@@ -73,7 +79,7 @@ def clean_data(ts_meas_pd,current_station):
 
 def nap2005_correction(data_pd,current_station):
     #NAP correction for dates before 1-1-2005
-    #TODO: make this flexible per station, where to get the data or is the RWS data already corrected for it? Also does it matter? for havengetallen it makes a slight difference so yes. For gemgetijkromme it only makes a difference for spring/doodtij. (now only applied at gemgetij en havengetallen)
+    #TODO: check if ths make a difference (for havengetallen it makes a slight difference so yes. For gemgetijkromme it only makes a difference for spring/doodtij. (now only applied at gemgetij en havengetallen)). If so, make this flexible per station, where to get the data or is the RWS data already corrected for it?
     #herdefinitie van NAP (2 tot 5 mm, relevant?): https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_113484_31&versienummer=1
     #Dit is de rapportage waar het gebruik voor PSMSL data voor het eerst beschreven is: https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_137204_31&versienummer=1
     print('applying NAP2005 correction')
@@ -91,12 +97,8 @@ def nap2005_correction(data_pd,current_station):
     return data_pd_corr
 
 
-compute_slotgem = True
-compute_havengetallen = False
-compute_gemgetij = False
-compute_overschrijding = False
 
-#physical_break_dict for slotgemiddelden and overschrijdingsfrequenties (maybe use everywhere, e.g. in clean_data?)
+#physical_break_dict for slotgemiddelden and overschrijdingsfrequenties (maybe use everywhere to crop data, e.g. in clean_data?)
 physical_break_dict = {'DENOVBTN':'1933', #laatste sluitgat afsluitdijk in 1932 
                        'HARLGN':'1933', #laatste sluitgat afsluitdijk in 1932
                        'VLIELHVN':'1933', #laatste sluitgat afsluitdijk in 1932
@@ -110,21 +112,26 @@ for current_station in ['HOEKVHLD']:#stat_list:#
     if os.path.exists(file_wl_pkl): #for slotgemiddelden, gemgetijkrommen (needs slotgem+havget)
         data_pd_meas_all = pd.read_pickle(file_wl_pkl)
         data_pd_meas_all = clean_data(data_pd_meas_all,current_station)
+        #crop measurement data
+        data_pd_meas_10y = hatyan.crop_timeseries(data_pd_meas_all, times_ext=[tstart_dt,tstop_dt-dt.timedelta(minutes=10)])#,onlyfull=False)
     
     file_ext_pkl = os.path.join(dir_meas,f"{current_station}_measext.pkl")
     if os.path.exists(file_ext_pkl): #for slotgemiddelden, havengetallen, overschrijding
         data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
         data_pd_HWLW_all = clean_data(data_pd_HWLW_all,current_station)
+        #crop timeseries to 10y
+        data_pd_HWLW_10y = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
 
     
-
+    
+    
     #### SLOTGEMIDDELDEN
     #TODO: more data is needed for proper working of fitting for some stations (2011: BAALHK, BRESKVHVN, GATVBSLE, SCHAARVDND)
     if compute_slotgem and os.path.exists(file_wl_pkl):
         print(f'slotgemiddelden for {current_station}')
         
         #calculate yearly mean
-        dict_wltidalindicators = hatyan.calc_wltidalindicators(data_pd_meas_all) #TODO: indeed use all data?
+        dict_wltidalindicators = hatyan.calc_wltidalindicators(data_pd_meas_all)
         wl_mean_peryear = dict_wltidalindicators['wl_mean_peryear']
         dict_wltidalindicators_valid = hatyan.calc_wltidalindicators(data_pd_meas_all, tresh_yearlywlcount=2900) #24*365=8760 (hourly interval), 24/3*365=2920 (3-hourly interval)
         wl_mean_peryear_valid = dict_wltidalindicators_valid['wl_mean_peryear']
@@ -138,7 +145,7 @@ for current_station in ['HOEKVHLD']:#stat_list:#
             HW_mean_peryear_valid = dict_HWLWtidalindicators_valid['HW_mean_peryear']
             LW_mean_peryear_valid = dict_HWLWtidalindicators_valid['LW_mean_peryear']
         
-        #plotting (yearly averages are plotted on 1jan, would be better on 1jul)
+        #plotting (yearly averages are plotted on 1jan)
         fig,ax1 = plt.subplots(figsize=(14,7))
         
         #get validation timeseries (yearly mean wl/HW/LW)
@@ -230,20 +237,17 @@ for current_station in ['HOEKVHLD']:#stat_list:#
     
         print(f'havengetallen for {current_station}')
         
-        #crop timeseries
-        data_pd_HWLW = hatyan.crop_timeseries(data_pd_HWLW_all, times_ext=[tstart_dt,tstop_dt],onlyfull=False) #TODO: this should be done at the top (or different varname)
-        #data_pd_HWLW_new = data_pd_HWLW.copy()
-        
         file_outname = os.path.join(dir_havget, f'aardappelgrafiek_{year_slotgem}_{current_station}')
         #check if amount of HWs is enough
+        M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
         numHWs_expected = (tstop_dt-tstart_dt).total_seconds()/M2_period_timedelta.total_seconds()
-        numHWs = (data_pd_HWLW['HWLWcode']==1).sum()
+        numHWs = (data_pd_HWLW_10y['HWLWcode']==1).sum()
         if numHWs < 0.95*numHWs_expected:
             raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
         
         print('SELECT/CALC HWLW VALUES')
-        if len(data_pd_HWLW['HWLWcode'].unique()) > 2:
-            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
+        if len(data_pd_HWLW_10y['HWLWcode'].unique()) > 2:
+            data_pd_HWLW = hatyan.calc_HWLW12345to12(data_pd_HWLW_10y) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
         
         data_pd_HWLW_idxHWLWno = hatyan.calc_HWLWnumbering(data_pd_HWLW)
         data_pd_HWLW_idxHWLWno['times'] = data_pd_HWLW_idxHWLWno.index
@@ -299,6 +303,7 @@ for current_station in ['HOEKVHLD']:#stat_list:#
         
         # #TODO: use tidal coefficient instead?: The tidal coefficient is the size of the tide in relation to its mean. It usually varies between 20 and 120. The higher the tidal coefficient, the larger the tidal range – i.e. the difference in water height between high and low tide. This means that the sea level rises and falls back a long way. The mean value is 70. We talk of strong tides – called spring tides – from coefficient 95.  Conversely, weak tides are called neap tides. https://escales.ponant.com/en/high-low-tide/ en https://www.manche-toerisme.com/springtij
         # #for HOEKVHLD, sp=0 is approx tc=1.2, np=6 is approx tc=0.8, av=mean is approx tc=1.0 (for HW, for LW it is different)
+        # data_pd_HWLW_new = data_pd_HWLW_10y.copy()
         # data_pd_HWLW_new = hatyan.calc_HWLWtidalrange(data_pd_HWLW_new)
         # data_pd_HWLW_new['tidalcoeff'] = data_pd_HWLW_new['tidalrange']/data_pd_HWLW_new['tidalrange'].mean()
         # data_pd_HWLW_new['tidalcoeff_round'] = data_pd_HWLW_new['tidalcoeff'].round(1)
@@ -348,25 +353,23 @@ for current_station in ['HOEKVHLD']:#stat_list:#
         HW_av, LW_av = data_havget.loc['mean',['HW_values_median','LW_values_median']]
         
         
-        #crop measurement data #TODO: do on top?
-        ts_meas_pd = hatyan.crop_timeseries(data_pd_meas_all, times_ext=[tstart_dt,tstop_dt-dt.timedelta(minutes=10)])#,onlyfull=False)
-        
         # =============================================================================
         # Hatyan analyse voor 10 jaar (alle componenten voor gemiddelde getijcyclus) #TODO: maybe use original 4y period/componentfile instead? SA/SM should come from 19y analysis
         # =============================================================================
         const_list = hatyan.get_const_list_hatyan('year') #this should not be changed, since higher harmonics are necessary
-        hatyan_settings_ana = hatyan.HatyanSettings(nodalfactors=True,
-                                                    fu_alltimes=False, # False is RWS-default
-                                                    xfac=True, # True is RWS-default
-                                                    analysis_perperiod='Y',
+        hatyan_settings_ana = hatyan.HatyanSettings(nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod='Y', #RWS-default settings
                                                     return_allperiods=True)
-        comp_frommeasurements_avg, comp_frommeasurements_allyears = hatyan.get_components_from_ts(ts_meas_pd, const_list=const_list, hatyan_settings=hatyan_settings_ana)
+        comp_frommeasurements_avg, comp_frommeasurements_allyears = hatyan.get_components_from_ts(data_pd_meas_10y, const_list=const_list, hatyan_settings=hatyan_settings_ana)
         
-        #check if all years are available
+        #check if all years are available #TODO: this should not be necessary with proper cropping, but maybe do so anyway
         comp_years = comp_frommeasurements_allyears['A'].columns
         expected_years = tstop_dt.year-tstart_dt.year
         if len(comp_years) < expected_years:
             raise Exception('ERROR: analysis result contains not all years')
+        
+        #check if nans in analysis
+        if comp_frommeasurements_avg.isnull()['A'].any():
+            raise Exception('ERROR: analysis result contains nan values')
         
         # =============================================================================
         # gemiddelde getijkromme
