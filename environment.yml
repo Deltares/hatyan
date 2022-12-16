@@ -1,6 +1,6 @@
 name: hatyan_env
 dependencies:
-  - python=3.6.12
+  - python>=3.6.12
   - pip>=19.2.3
   - pip:
     - pytest>=5.0.1
