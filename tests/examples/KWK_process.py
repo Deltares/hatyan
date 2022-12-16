@@ -99,9 +99,9 @@ physical_break_dict = {'DENOVBTN':'1933', #laatste sluitgat afsluitdijk in 1932
                        'VLIELHVN':'1933', #laatste sluitgat afsluitdijk in 1932
                        } #TODO: add physical_break for STAVNSE and KATSBTN? (Oosterscheldekering)
 
-compute_slotgem = True
-compute_havengetallen = True
-compute_gemgetij = True
+compute_slotgem = False
+compute_havengetallen = False
+compute_gemgetij = False
 compute_overschrijding = True
 
 
