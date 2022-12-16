@@ -180,3 +180,4 @@ def linear_model(df, with_wind=True, with_ar=True, with_nodal=True, quantity='he
     fit = model.fit(cov_type='HC0')
     return fit, names, X
 
+
