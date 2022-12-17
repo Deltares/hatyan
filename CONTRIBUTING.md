@@ -16,7 +16,7 @@ Create python environment hatyan_env and install hatyan in developer mode:
 - ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL6)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
 - ``conda activate hatyan_env``
-- ``python -m pip install -e .`` (pip developer mode, also install all packages in requirements.txt containing CentOS tested libraries, linked via setup.py)
+- ``python -m pip install -e .`` (pip developer mode, also install all packages in requirements.txt containing CentOS tested libraries, linked via setup.py) >> maybe add ``test`` to install also test requirements [like this](https://stackoverflow.com/questions/15422527/best-practices-how-do-you-list-required-dependencies-in-your-setup-py)
 - ``conda deactivate``
 - to remove hatyan_env when necessary: ``conda remove -n hatyan_env --all``
 
