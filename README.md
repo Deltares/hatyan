@@ -7,22 +7,7 @@
 
 # hatyan
 
-hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://github.com/Deltares/hatyan
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat.
 
 
 Information and examples
@@ -32,6 +17,7 @@ Information and examples
 - [jupyter notebooks](https://github.com/Deltares/hatyan/blob/main/notebooks) with example code
 - [use binder](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD) to run these notebooks interactively (loading takes a while)
 - [github folder](https://github.com/Deltares/hatyan/tree/main/tests/examples) with more example scripts
+
 
 Installation
 --------
