@@ -7,22 +7,16 @@
 
 # hatyan
 
-hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://github.com/Deltares/hatyan
+A Python package for harmonic tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat. Hatyan contains the methods to derive water level extremes (high and low waters) and several other water level indicators (Kenmerkende Waarden). Furthermore, hatyan provides easier access to Rijkswaterstaat data via their data distribution layer (DataDistributieLaag, DDL).
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+Information and examples
+--------
+- [docs folder](https://github.com/Deltares/hatyan/tree/main/docs) with background information
+- [online documentation](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html) generated from docstrings (replace 'main' in the url with any tagname to view older versions)
+- [jupyter notebooks](https://github.com/Deltares/hatyan/blob/main/notebooks) with example code
+- [use binder](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD) to run these notebooks interactively (loading takes a while)
+- [github folder](https://github.com/Deltares/hatyan/tree/main/tests/examples) with more example scripts
 
 
 Information and examples
@@ -43,7 +37,7 @@ Install hatyan OPTION 1: Install from pip/github in an existing or new environme
 - optional: ``conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y`` (or higher python version)
 - optional: ``conda activate hatyan_env``
 - ``python -m pip install hatyan`` (this installs hatyan and all required packages from PyPI, add a version like ``==2.3.0`` if you require a specific version. Optionally add ``--upgrade``)
-- alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages from github, add a tag like ``@v2.3.0``, ``@main`` or ``@development`` if you require a specific release/branch. Optionally add ``--upgrade``)
+- alternatively: ``python -m pip install git+https://github.com/Deltares/hatyan`` (this installs hatyan and all required packages from github, add a tag like ``@v2.3.0`` if you require a specific release/branch.)
 
 Install hatyan OPTION 2: create python venv in your Linux home directory and install from zipfile (no internet required for installation)
 

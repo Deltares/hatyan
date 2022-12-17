@@ -16,7 +16,7 @@ import hatyan # available via `pip install hatyan` or at https://github.com/Delt
 #TODO: convert to netcdf instead of pkl, think of convenient netcdf format
 #TODO: SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
 #TODO: move all parts to hatyan.KW_*.* (and include license header)
-#TODO: add LAT/HAT (AB needs this for RWS work)
+#TODO: add LAT/HAT (AB needs this for RWS work): c:\DATA\hatyan_github\tests\examples\predictie_2022_frommergedcomp_LATindication_y1min.py
 #TODO: check TODO in hatyan.KW_* scripts
 dataTKdia = True #TODO: communicate data issues to TK (wl and ext): p:\11208031-010-kenmerkende-waarden-k\work\data_vanRWS_20220805\convert_dia2pickle_dataTK.py
 NAP2005correction = False #True #TODO: define for all stations
@@ -99,9 +99,9 @@ physical_break_dict = {'DENOVBTN':'1933', #laatste sluitgat afsluitdijk in 1932
                        'VLIELHVN':'1933', #laatste sluitgat afsluitdijk in 1932
                        } #TODO: add physical_break for STAVNSE and KATSBTN? (Oosterscheldekering)
 
-compute_slotgem = False
-compute_havengetallen = False
-compute_gemgetij = False
+compute_slotgem = True
+compute_havengetallen = True
+compute_gemgetij = True
 compute_overschrijding = True
 
 
