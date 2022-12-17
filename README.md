@@ -7,7 +7,7 @@
 
 # hatyan
 
-hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat.
+A Python package for harmonic tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat. Hatyan contains the methods to derive water level extremes (high and low waters) and several other water level indicators (Kenmerkende Waarden). Furthermore, hatyan provides easier access to Rijkswaterstaat data via their data distribution layer (DataDistributieLaag, DDL).
 
 
 Information and examples
