@@ -22,30 +22,24 @@
 <h1 class="title">Package <code>hatyan</code></h1>
 </header>
 <section id="section-intro">
-<p><a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml"><img alt="pytest-devenv" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main"></a>
+<p><a href="https://github.com/Deltares/hatyan/actions/workflows/generate-documentation.yml"><img alt="generate-documentation" src="https://github.com/Deltares/hatyan/actions/workflows/generate-documentation.yml/badge.svg"></a>
+<a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml"><img alt="pytest-devenv" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml"><img alt="pytest-py39" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml"><img alt="sigrid-publish" src="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml"><img alt="pypi-upload" src="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml/badge.svg?event=release"></a>
 <a href="https://sonarcloud.io/dashboard?id=Deltares_hatyan"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&amp;metric=alert_status"></a>
 <a href="https://mybinder.org/v2/gh/Deltares/hatyan/HEAD"><img alt="Binder" src="https://mybinder.org/badge_logo.svg"></a></p>
 <h1 id="hatyan">hatyan</h1>
-<p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
-Copyright (C) 2019-2021 Rijkswaterstaat.
-Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl).
-Source code available at: <a href="https://github.com/Deltares/hatyan">https://github.com/Deltares/hatyan</a></p>
-<p>This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.</p>
-<p>This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-See the
-GNU Lesser General Public License for more details.</p>
-<p>You should have received a copy of the GNU Lesser General Public License
-along with this program.
-If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+<p>A Python package for harmonic tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat. Hatyan contains the methods to derive water level extremes (high and low waters) and several other water level indicators (Kenmerkende Waarden). Furthermore, hatyan provides easier access to Rijkswaterstaat data via their data distribution layer (DataDistributieLaag, DDL).</p>
 <h2 id="information-and-examples">Information And Examples</h2>
+<ul>
+<li><a href="https://github.com/Deltares/hatyan/tree/main/docs">docs folder</a> with background information</li>
+<li><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html">online documentation</a> generated from docstrings (replace 'main' in the url with any tagname to view older versions)</li>
+<li><a href="https://github.com/Deltares/hatyan/blob/main/notebooks">jupyter notebooks</a> with example code</li>
+<li><a href="https://mybinder.org/v2/gh/Deltares/hatyan/HEAD">use binder</a> to run these notebooks interactively (loading takes a while)</li>
+<li><a href="https://github.com/Deltares/hatyan/tree/main/tests/examples">github folder</a> with more example scripts</li>
+</ul>
+<h2 id="information-and-examples_1">Information And Examples</h2>
 <ul>
 <li><a href="https://github.com/Deltares/hatyan/tree/main/docs">docs folder</a> with background information</li>
 <li><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html">online documentation</a> generated from docstrings (replace 'main' in the url with any tagname to view older versions)</li>
@@ -61,7 +55,7 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 <li>optional: <code>conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y</code> (or higher python version)</li>
 <li>optional: <code>conda activate hatyan_env</code></li>
 <li><code>python -m pip install hatyan</code> (this installs hatyan and all required packages from PyPI, add a version like <code>==2.3.0</code> if you require a specific version. Optionally add <code>--upgrade</code>)</li>
-<li>alternatively: <code>python -m pip install git+https://github.com/Deltares/hatyan</code> (this installs hatyan and all required packages from github, add a tag like <code>@v2.3.0</code>, <code>@main</code> or <code>@development</code> if you require a specific release/branch. Optionally add <code>--upgrade</code>)</li>
+<li>alternatively: <code>python -m pip install git+https://github.com/Deltares/hatyan</code> (this installs hatyan and all required packages from github, add a tag like <code>@v2.3.0</code> if you require a specific release/branch.)</li>
 </ul>
 <p>Install hatyan OPTION 2: create python venv in your Linux home directory and install from zipfile (no internet required for installation)</p>
 <ul>
@@ -195,6 +189,7 @@ from hatyan.KW_overschrijding import *</code></pre>
 <ul>
 <li><a href="#hatyan">hatyan</a><ul>
 <li><a href="#information-and-examples">Information and examples</a></li>
+<li><a href="#information-and-examples_1">Information and examples</a></li>
 <li><a href="#installation">Installation</a></li>
 </ul>
 </li>
