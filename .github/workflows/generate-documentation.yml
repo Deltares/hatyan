@@ -19,11 +19,13 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
+        conda update -n base -c defaults conda
         python -m pip install --upgrade pip setuptools
         conda env update --file environment.yml --name base
         #python -m pip install pdoc3 pandoc
         #pip install -r requirements.txt
-        python setup.py build test
+        python -m pip install wheel
+        python setup.py build test #WARNING: The wheel package is not available.
     - name: Generate documentation
       run: |
         pdoc --html hatyan -o docs --force --config sort_identifiers=False
