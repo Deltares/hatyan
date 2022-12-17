@@ -25,8 +25,9 @@
 <p><a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml"><img alt="pytest-devenv" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml"><img alt="pytest-py39" src="https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main"></a>
 <a href="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml"><img alt="sigrid-publish" src="https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main"></a>
-<a href="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml"><img alt="rpm-build-core" src="https://github.com/Deltares/hatyan/actions/workflows/rpm-build-core.yml/badge.svg?event=release"></a>
-<a href="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml"><img alt="pypi-upload" src="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml/badge.svg?event=release"></a></p>
+<a href="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml"><img alt="pypi-upload" src="https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml/badge.svg?event=release"></a>
+<a href="https://sonarcloud.io/dashboard?id=Deltares_hatyan"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&amp;metric=alert_status"></a>
+<a href="https://mybinder.org/v2/gh/Deltares/hatyan/HEAD"><img alt="Binder" src="https://mybinder.org/badge_logo.svg"></a></p>
 <h1 id="hatyan">hatyan</h1>
 <p>hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version.
 Copyright (C) 2019-2021 Rijkswaterstaat.
@@ -44,17 +45,40 @@ GNU Lesser General Public License for more details.</p>
 <p>You should have received a copy of the GNU Lesser General Public License
 along with this program.
 If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses/</a>.</p>
+<h2 id="information-and-examples">Information And Examples</h2>
+<ul>
+<li><a href="https://github.com/Deltares/hatyan/tree/main/docs">docs folder</a> with background information</li>
+<li><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html">online documentation</a> generated from docstrings (replace 'main' in the url with any tagname to view older versions)</li>
+<li><a href="https://github.com/Deltares/hatyan/blob/main/notebooks">jupyter notebooks</a> with example code</li>
+<li><a href="https://mybinder.org/v2/gh/Deltares/hatyan/HEAD">use binder</a> to run these notebooks interactively (loading takes a while)</li>
+<li><a href="https://github.com/Deltares/hatyan/tree/main/tests/examples">github folder</a> with more example scripts</li>
+</ul>
 <h2 id="installation">Installation</h2>
 <p>Install hatyan OPTION 1: Install from pip/github in an existing or new environment:</p>
 <ul>
-<li>optional: download Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a></li>
-<li>open command window (or anaconda prompt)</li>
+<li>optional: download and install Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a></li>
+<li>open anaconda prompt</li>
 <li>optional: <code>conda create --name hatyan_env -c conda-forge python=3.7 git spyder -y</code> (or higher python version)</li>
 <li>optional: <code>conda activate hatyan_env</code></li>
 <li><code>python -m pip install hatyan</code> (this installs hatyan and all required packages from PyPI, add a version like <code>==2.3.0</code> if you require a specific version. Optionally add <code>--upgrade</code>)</li>
 <li>alternatively: <code>python -m pip install git+https://github.com/Deltares/hatyan</code> (this installs hatyan and all required packages from github, add a tag like <code>@v2.3.0</code>, <code>@main</code> or <code>@development</code> if you require a specific release/branch. Optionally add <code>--upgrade</code>)</li>
 </ul>
-<p>Install hatyan OPTION 2: get and install RPM on CentOS/RHEL</p>
+<p>Install hatyan OPTION 2: create python venv in your Linux home directory and install from zipfile (no internet required for installation)</p>
+<ul>
+<li>might be necessary to activate python3: <code>module load anaconda3</code> (or any other python3 installation)</li>
+<li><code>python -m venv ~/venv_hatyan</code></li>
+<li><code>source ~/venv_hatyan/bin/activate</code></li>
+<li>optional (requires internet): <code>python -m pip install --upgrade pip setuptools</code></li>
+<li><code>pip install ~/PyQt5-5.15.7-cp37-abi3-manylinux1_x86_64.whl</code> (download from <a href="https://pypi.org/project/PyQt5/#files">https://pypi.org/project/PyQt5/#files</a>)</li>
+<li><code>pip install ~/hatyan-2.5.64.zip</code> (download from <a href="https://github.com/Deltares/hatyan/releases/tag/v2.5.64">https://github.com/Deltares/hatyan/releases/tag/v2.5.64</a> or any other release)</li>
+<li><code>deactivate</code></li>
+<li>to test, copy example script to e.g. home directory (<a href="https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py">https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py</a>)</li>
+<li><code>source ~/venv_hatyan/bin/activate</code></li>
+<li><code>python -m venv ~/venv_hatyan</code></li>
+<li><code>python ~/validate_astro_DDL.py</code></li>
+<li><code>deactivate</code></li>
+</ul>
+<p>Install hatyan OPTION 3: get and install RPM on CentOS/RHEL (this will be deprecated soon)</p>
 <ul>
 <li>get the latest rpm file (see developer information for building procedure)</li>
 <li>install hatyan on CentOS: <code>rpm -i hatyan_python-2.2.30-1.x86_64.rpm</code></li>
@@ -66,57 +90,6 @@ If not, see <a href="https://www.gnu.org/licenses/">https://www.gnu.org/licenses
 <li>if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.</li>
 <li>the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings &gt; Configuration &gt; X11)</li>
 </ul>
-<h2 id="getting-started">Getting Started</h2>
-<ul>
-<li><a href="https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html">HTML-documentation</a> is available on Github (replace 'main' in the url with any tagname to view older versions)</li>
-<li>background information is available in <a href="https://github.com/Deltares/hatyan/tree/main/docs">the docs folder</a>.</li>
-<li>copy the code below to your own script to get started (or run it on <a href="https://colab.research.google.com/github/Deltares/hatyan/blob/main/notebooks/getting-started.ipynb">Colab</a>).</li>
-<li>for more examples, check <a href="https://github.com/Deltares/hatyan/tree/main/tests/examples">the examples folder</a>.</li>
-</ul>
-<pre><code class="language-python">import datetime as dt
-import pandas as pd
-from netCDF4 import Dataset, num2date
-import hatyan
-hatyan.close('all')
-
-#defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
-const_list = hatyan.get_const_list_hatyan('year')
-
-#reading and editing time series, results in a pandas DataFrame a 'values' column (water level in meters) and a pd.DatetimeIndex as index (timestamps as datetime.datetime)
-file_data_meas = 'http://uhslc.soest.hawaii.edu:80/opendap/rqds/global/hourly/h825a.nc' #Cuxhaven dataset from UHSLC database #os.path.join(r'n:\\Deltabox\\Bulletin\\veenstra\\VLISSGN_waterlevel_20101201_20140101.noos')
-times_ext = [dt.datetime(2017,1,1),dt.datetime(2018,12,31)]
-timestep_min = 10
-ts_data = Dataset(file_data_meas)
-ts_data_values = ts_data['sea_level'][0,-18000:]/1000-5 #correct from mm to meters and for 5m offset
-ts_data_times = num2date(ts_data['time'][-18000:],units=ts_data['time'].units, only_use_cftime_datetimes=False)
-ts_meas = pd.DataFrame({'values':ts_data_values},index=ts_data_times)
-#ts_meas = hatyan.resample_timeseries(ts_meas, timestep_min=60) #resampling only works well when timesteps are rounded to seconds
-ts_meas = hatyan.crop_timeseries(ts=ts_meas, times_ext=times_ext)
-
-#tidal analysis and plotting of results. commented: saving figure  
-comp_frommeas, comp_allyears = hatyan.get_components_from_ts(ts=ts_meas, const_list=const_list, nodalfactors=True, return_allyears=True, fu_alltimes=True, analysis_peryear=True)
-fig,(ax1,ax2) = hatyan.plot_components(comp=comp_frommeas, comp_allyears=comp_allyears)
-#fig.savefig('components.png')
-
-#tidal prediction and plotting of results. commented: saving figure and writing to netCDF
-ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=True, fu_alltimes=True, times_ext=times_ext, timestep_min=timestep_min)
-fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas)
-ax1.legend(['prediction','measurement','difference','mean of prediction'])
-ax2.set_ylim(-0.5,0.5)
-#fig.savefig('prediction.png')
-
-#calculation of HWLW and plotting of results. commented: saving figure
-ts_ext_meas = hatyan.calc_HWLW(ts=ts_meas)
-ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
-fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_meas, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_meas)
-ax1.set_xlim([dt.datetime(2018,6,1),dt.datetime(2018,7,1)])
-ax2.set_ylim(-1,1)
-#fig.savefig('prediction_HWLW.png')
-
-fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_meas)
-#fig.savefig('prediction_HWLW_validatestats.png')
-#hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station='Cuxhaven', vertref='MSL', filename='prediction.nc')
-</code></pre>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -128,7 +101,7 @@ fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction, ts_ext_valida
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.5.67&#39;
+__version__ = &#39;2.5.93&#39;
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
@@ -140,13 +113,32 @@ from hatyan.timeseries import *
 from hatyan.wrapper_RWS import *
 from hatyan.getonlinedata import *
 from hatyan.convert import *
-from hatyan.kenmerkendewaarden import *
-from hatyan.overschrijding import *</code></pre>
+from hatyan.KW_slotgemiddelden import *
+from hatyan.KW_havengetallen import *
+from hatyan.KW_gemgetij import *
+from hatyan.KW_overschrijding import *</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="hatyan.KW_gemgetij" href="KW_gemgetij.html">hatyan.KW_gemgetij</a></code></dt>
+<dd>
+<div class="desc"><p>Created on Fri Dec 16 16:35:26 2022 …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.KW_havengetallen" href="KW_havengetallen.html">hatyan.KW_havengetallen</a></code></dt>
+<dd>
+<div class="desc"><p>Created on Fri Dec 16 14:12:54 2022 …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.KW_overschrijding" href="KW_overschrijding.html">hatyan.KW_overschrijding</a></code></dt>
+<dd>
+<div class="desc"><p>All kind of functions to support calculation of probabilities …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.KW_slotgemiddelden" href="KW_slotgemiddelden.html">hatyan.KW_slotgemiddelden</a></code></dt>
+<dd>
+<div class="desc"><p>Created on Thu Apr
+7 17:12:42 2022 …</p></div>
+</dd>
 <dt><code class="name"><a title="hatyan.analysis_prediction" href="analysis_prediction.html">hatyan.analysis_prediction</a></code></dt>
 <dd>
 <div class="desc"><p>analysis_prediction.py contains hatyan definitions related to tidal analysis and prediction …</p></div>
@@ -176,15 +168,6 @@ from hatyan.overschrijding import *</code></pre>
 <dd>
 <div class="desc"><p>hatyan_core.py contains core components that wrap around schureman/foreman definitions …</p></div>
 </dd>
-<dt><code class="name"><a title="hatyan.kenmerkendewaarden" href="kenmerkendewaarden.html">hatyan.kenmerkendewaarden</a></code></dt>
-<dd>
-<div class="desc"><p>Created on Thu Apr
-7 17:12:42 2022 …</p></div>
-</dd>
-<dt><code class="name"><a title="hatyan.overschrijding" href="overschrijding.html">hatyan.overschrijding</a></code></dt>
-<dd>
-<div class="desc"><p>All kind of functions to support calculation of probabilities …</p></div>
-</dd>
 <dt><code class="name"><a title="hatyan.schureman" href="schureman.html">hatyan.schureman</a></code></dt>
 <dd>
 <div class="desc"><p>schureman.py contains definitions with data for the schureman constituents …</p></div>
@@ -211,8 +194,8 @@ from hatyan.overschrijding import *</code></pre>
 <div class="toc">
 <ul>
 <li><a href="#hatyan">hatyan</a><ul>
+<li><a href="#information-and-examples">Information and examples</a></li>
 <li><a href="#installation">Installation</a></li>
-<li><a href="#getting-started">Getting started</a></li>
 </ul>
 </li>
 </ul>
@@ -220,6 +203,10 @@ from hatyan.overschrijding import *</code></pre>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="hatyan.KW_gemgetij" href="KW_gemgetij.html">hatyan.KW_gemgetij</a></code></li>
+<li><code><a title="hatyan.KW_havengetallen" href="KW_havengetallen.html">hatyan.KW_havengetallen</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding" href="KW_overschrijding.html">hatyan.KW_overschrijding</a></code></li>
+<li><code><a title="hatyan.KW_slotgemiddelden" href="KW_slotgemiddelden.html">hatyan.KW_slotgemiddelden</a></code></li>
 <li><code><a title="hatyan.analysis_prediction" href="analysis_prediction.html">hatyan.analysis_prediction</a></code></li>
 <li><code><a title="hatyan.astrog" href="astrog.html">hatyan.astrog</a></code></li>
 <li><code><a title="hatyan.components" href="components.html">hatyan.components</a></code></li>
@@ -227,8 +214,6 @@ from hatyan.overschrijding import *</code></pre>
 <li><code><a title="hatyan.foreman" href="foreman.html">hatyan.foreman</a></code></li>
 <li><code><a title="hatyan.getonlinedata" href="getonlinedata.html">hatyan.getonlinedata</a></code></li>
 <li><code><a title="hatyan.hatyan_core" href="hatyan_core.html">hatyan.hatyan_core</a></code></li>
-<li><code><a title="hatyan.kenmerkendewaarden" href="kenmerkendewaarden.html">hatyan.kenmerkendewaarden</a></code></li>
-<li><code><a title="hatyan.overschrijding" href="overschrijding.html">hatyan.overschrijding</a></code></li>
 <li><code><a title="hatyan.schureman" href="schureman.html">hatyan.schureman</a></code></li>
 <li><code><a title="hatyan.timeseries" href="timeseries.html">hatyan.timeseries</a></code></li>
 <li><code><a title="hatyan.wrapper_RWS" href="wrapper_RWS.html">hatyan.wrapper_RWS</a></code></li>

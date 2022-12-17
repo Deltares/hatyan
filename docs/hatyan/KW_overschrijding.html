@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>hatyan.overschrijding API documentation</title>
+<title>hatyan.KW_overschrijding API documentation</title>
 <meta name="description" content="All kind of functions to support calculation of probabilities …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>hatyan.overschrijding</code></h1>
+<h1 class="title">Module <code>hatyan.KW_overschrijding</code></h1>
 </header>
 <section id="section-intro">
 <p>All kind of functions to support calculation of probabilities</p>
@@ -47,6 +47,52 @@ from scipy import optimize, signal
 from typing import Union, List
 import datetime as dt
 import os
+
+#wrapper
+def compute_overschrijding(df_extrema, rule_type, rule_value, inverse=False):
+    
+    df_extrema_clean = df_extrema.copy()[[&#39;values&#39;]] #drop all info but the values (times-idx, HWLWcode etc)
+    dist = {} #TODO: replace with pandas.DataFrame?
+    
+    print(&#39;Calculate unfiltered distribution&#39;)
+    dist[&#39;Ongefilterd&#39;] = distribution(df_extrema_clean, inverse=inverse)
+    
+    &#34;&#34;&#34;# filtering is only applicable for stations with high river discharge influence, so disabled #TODO: ext is geschikt voor getij, maar bij hoge afvoergolf wil je alleen het echte extreem. Er is dan een treshold per station nodig, is nodig om de rivierafvoerpiek te kunnen duiden.
+    print(&#39;Calculate filtered distribution&#39;)
+    df_peaks, threshold, _ = hatyan.detect_peaks(df_extrema_clean)
+    if metadata_station[&#39;apply_treshold&#39;]:
+        temp[metadata_station[&#39;id&#39;]] = threshold
+        df_extrema_filt = hatyan.filter_with_threshold(df_extrema_clean, df_peaks, threshold)
+    else:
+        df_extrema_filt = df_extrema_clean.copy()
+    dist[&#39;Gefilterd&#39;] = hatyan.distribution(df_extrema_filt.copy())
+    &#34;&#34;&#34;
+    
+    print(&#39;Calculate filtered distribution with trendanalysis&#39;)
+    df_trend = apply_trendanalysis(df_extrema_clean, rule_type=rule_type, rule_value=rule_value)
+    dist[&#39;Trendanalyse&#39;] = distribution(df_trend.copy(), inverse=inverse)
+    
+    print(&#39;Fit Weibull to filtered distribution with trendanalysis&#39;)
+    # Last 100 datapoints from distribution (assuming it is sorted with Tfreqs from large to small)
+    dist[&#39;Weibull&#39;] = get_weibull(dist[&#39;Trendanalyse&#39;].copy(),
+                                  threshold=dist[&#39;Trendanalyse&#39;][&#39;values&#39;].iloc[-101], #-100 for HW, -101 for LW, but does not matter
+                                  Tfreqs=np.logspace(-5, np.log10(dist[&#39;Trendanalyse&#39;][&#39;values_Tfreq&#39;].iloc[-101]), 5000),
+                                  inverse=inverse)
+    
+    print(&#39;Blend trend and weibull together&#39;) # and Hydra-NL
+    dist[&#39;Gecombineerd&#39;] = blend_distributions(dist[&#39;Trendanalyse&#39;].copy(),
+                                               dist[&#39;Weibull&#39;].copy(),
+                                               #dist[&#39;Hydra-NL&#39;].copy(), 
+                                               )#.set_index(&#39;values_Tfreq&#39;)
+
+    &#34;&#34;&#34;
+    if row[&#39;apply_treshold&#39;]:
+        keys = list(dist.keys())
+    else:
+        keys = [x for x in list(dist.keys()) if x != &#39;Gefilterd&#39;]
+    &#34;&#34;&#34;
+    
+    return dist
 
 
 def delete_values_between_peak_trough(times_to_delete, times, values):
@@ -328,12 +374,21 @@ def plot_distributions(dist: dict, name: str,
                        xlabel: str = &#39;Exceedance frequency [1/yrs]&#39;,
                        ylabel: str = &#39;Waterlevel [m]&#39;,
                        legend_loc: str = &#39;lower right&#39;):
+    
+    if color_map==&#39;default&#39;:
+        color_map = {&#39;Ongefilterd&#39;:  &#39;b&#39;, &#39;Gefilterd&#39;: &#39;orange&#39;, &#39;Trendanalyse&#39;: &#39;g&#39;,
+                     &#39;Weibull&#39;: &#39;r&#39;, &#39;Hydra-NL&#39;: &#39;m&#39;, &#39;Hydra-NL met modelonzekerheid&#39;: &#39;cyan&#39;,
+                     &#39;Gecombineerd&#39;: &#39;k&#39;}
+
     fig, ax = plt.subplots(figsize=(8, 6))
     if keys is None:
         keys = list(dist.keys())
     for k in keys:
         c = color_map[k] if (color_map is not None) and (k in color_map.keys()) else None
-        ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], label=k, c=c)
+        if k==&#39;Gecombineerd&#39;:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], &#39;--&#39;, label=k, c=c)
+        else:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], label=k, c=c)
     ax.set_title(name)
     ax.set_xlabel(xlabel), ax.set_xscale(&#39;log&#39;), ax.set_xlim([1e-5, 1e3]), ax.invert_xaxis()
     ax.set_ylabel(ylabel)
@@ -357,6 +412,14 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                                    &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
     #prefix = os.path.basename(csv_dir)
     df_interp.to_csv(os.path.join(csv_dir, f&#39;{prefix}_{id}.csv&#39;), index=False, sep=&#39;;&#39;)
+    return df_interp
+
+
+def interpolate_interested_Tfreqs(df: pd.DataFrame, Tfreqs: List[float]) -&gt; pd.DataFrame:
+    df_interp = pd.DataFrame(data={&#39;values&#39;: np.interp(Tfreqs,
+                                                      np.flip(df[&#39;values_Tfreq&#39;].values),
+                                                      np.flip(df[&#39;values&#39;].values)),
+                                   &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
     return df_interp</code></pre>
 </details>
 </section>
@@ -367,7 +430,62 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="hatyan.overschrijding.delete_values_between_peak_trough"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.compute_overschrijding"><code class="name flex">
+<span>def <span class="ident">compute_overschrijding</span></span>(<span>df_extrema, rule_type, rule_value, inverse=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_overschrijding(df_extrema, rule_type, rule_value, inverse=False):
+    
+    df_extrema_clean = df_extrema.copy()[[&#39;values&#39;]] #drop all info but the values (times-idx, HWLWcode etc)
+    dist = {} #TODO: replace with pandas.DataFrame?
+    
+    print(&#39;Calculate unfiltered distribution&#39;)
+    dist[&#39;Ongefilterd&#39;] = distribution(df_extrema_clean, inverse=inverse)
+    
+    &#34;&#34;&#34;# filtering is only applicable for stations with high river discharge influence, so disabled #TODO: ext is geschikt voor getij, maar bij hoge afvoergolf wil je alleen het echte extreem. Er is dan een treshold per station nodig, is nodig om de rivierafvoerpiek te kunnen duiden.
+    print(&#39;Calculate filtered distribution&#39;)
+    df_peaks, threshold, _ = hatyan.detect_peaks(df_extrema_clean)
+    if metadata_station[&#39;apply_treshold&#39;]:
+        temp[metadata_station[&#39;id&#39;]] = threshold
+        df_extrema_filt = hatyan.filter_with_threshold(df_extrema_clean, df_peaks, threshold)
+    else:
+        df_extrema_filt = df_extrema_clean.copy()
+    dist[&#39;Gefilterd&#39;] = hatyan.distribution(df_extrema_filt.copy())
+    &#34;&#34;&#34;
+    
+    print(&#39;Calculate filtered distribution with trendanalysis&#39;)
+    df_trend = apply_trendanalysis(df_extrema_clean, rule_type=rule_type, rule_value=rule_value)
+    dist[&#39;Trendanalyse&#39;] = distribution(df_trend.copy(), inverse=inverse)
+    
+    print(&#39;Fit Weibull to filtered distribution with trendanalysis&#39;)
+    # Last 100 datapoints from distribution (assuming it is sorted with Tfreqs from large to small)
+    dist[&#39;Weibull&#39;] = get_weibull(dist[&#39;Trendanalyse&#39;].copy(),
+                                  threshold=dist[&#39;Trendanalyse&#39;][&#39;values&#39;].iloc[-101], #-100 for HW, -101 for LW, but does not matter
+                                  Tfreqs=np.logspace(-5, np.log10(dist[&#39;Trendanalyse&#39;][&#39;values_Tfreq&#39;].iloc[-101]), 5000),
+                                  inverse=inverse)
+    
+    print(&#39;Blend trend and weibull together&#39;) # and Hydra-NL
+    dist[&#39;Gecombineerd&#39;] = blend_distributions(dist[&#39;Trendanalyse&#39;].copy(),
+                                               dist[&#39;Weibull&#39;].copy(),
+                                               #dist[&#39;Hydra-NL&#39;].copy(), 
+                                               )#.set_index(&#39;values_Tfreq&#39;)
+
+    &#34;&#34;&#34;
+    if row[&#39;apply_treshold&#39;]:
+        keys = list(dist.keys())
+    else:
+        keys = [x for x in list(dist.keys()) if x != &#39;Gefilterd&#39;]
+    &#34;&#34;&#34;
+    
+    return dist</code></pre>
+</details>
+</dd>
+<dt id="hatyan.KW_overschrijding.delete_values_between_peak_trough"><code class="name flex">
 <span>def <span class="ident">delete_values_between_peak_trough</span></span>(<span>times_to_delete, times, values)</span>
 </code></dt>
 <dd>
@@ -381,7 +499,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return times[~mask], values[~mask]</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.go_through_peak"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.go_through_peak"><code class="name flex">
 <span>def <span class="ident">go_through_peak</span></span>(<span>values, _i, _i_extra, multiplier)</span>
 </code></dt>
 <dd>
@@ -396,7 +514,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return _i_extra</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.filter_identified_peaks"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.filter_identified_peaks"><code class="name flex">
 <span>def <span class="ident">filter_identified_peaks</span></span>(<span>values, times, times_to_delete)</span>
 </code></dt>
 <dd>
@@ -411,7 +529,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return _values</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.check_peakside"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.check_peakside"><code class="name flex">
 <span>def <span class="ident">check_peakside</span></span>(<span>values, _i, multiplier, window, threshold)</span>
 </code></dt>
 <dd>
@@ -442,7 +560,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return _i_extra</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.detect_peaks_hkv"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.detect_peaks_hkv"><code class="name flex">
 <span>def <span class="ident">detect_peaks_hkv</span></span>(<span>df: pandas.core.frame.DataFrame, window: int, inverse: bool = False, threshold: float = None) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
@@ -515,7 +633,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return df_peaks</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.distribution"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.distribution"><code class="name flex">
 <span>def <span class="ident">distribution</span></span>(<span>df: pandas.core.frame.DataFrame, col: str = None, c: float = -0.3, d: float = 0.4, inverse: bool = False) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
@@ -539,7 +657,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return df_sorted</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.get_weibull"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.get_weibull"><code class="name flex">
 <span>def <span class="ident">get_weibull</span></span>(<span>df: pandas.core.frame.DataFrame, threshold: float, Tfreqs: numpy.ndarray, col: str = None, inverse: bool = False) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
@@ -589,7 +707,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return pd_return</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.filter_with_threshold"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.filter_with_threshold"><code class="name flex">
 <span>def <span class="ident">filter_with_threshold</span></span>(<span>df_raw: pandas.core.frame.DataFrame, df_filtered: pandas.core.frame.DataFrame, threshold: float, inverse: bool = False) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
@@ -610,7 +728,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                           df_filtered[df_filtered[&#39;values&#39;] &gt; threshold]], axis=0).sort_index()</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.detect_peaks"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.detect_peaks"><code class="name flex">
 <span>def <span class="ident">detect_peaks</span></span>(<span>df: pandas.core.frame.DataFrame, prominence: int = 10, inverse: bool = False)</span>
 </code></dt>
 <dd>
@@ -630,7 +748,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return df_peaks, threshold, peak_indices</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.determine_threshold"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.determine_threshold"><code class="name flex">
 <span>def <span class="ident">determine_threshold</span></span>(<span>values: numpy.ndarray, peak_indices: numpy.ndarray) ‑> float</span>
 </code></dt>
 <dd>
@@ -649,7 +767,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return threshold</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.get_total_years"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.get_total_years"><code class="name flex">
 <span>def <span class="ident">get_total_years</span></span>(<span>df: pandas.core.frame.DataFrame) ‑> float</span>
 </code></dt>
 <dd>
@@ -662,7 +780,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return (df.index[-1] - df.index[0]).total_seconds() / (3600 * 24 * 365)</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.apply_trendanalysis"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.apply_trendanalysis"><code class="name flex">
 <span>def <span class="ident">apply_trendanalysis</span></span>(<span>df: pandas.core.frame.DataFrame, rule_type: str, rule_value: Union[float, datetime.datetime])</span>
 </code></dt>
 <dd>
@@ -697,7 +815,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
         raise ValueError(&#39;Incorrect rule_type passed to function. Only break or linear are supported&#39;)</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.blend_distributions"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.blend_distributions"><code class="name flex">
 <span>def <span class="ident">blend_distributions</span></span>(<span>df_trend: pandas.core.frame.DataFrame, df_weibull: pandas.core.frame.DataFrame, df_hydra: pandas.core.frame.DataFrame = None) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
@@ -757,7 +875,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return df_blended</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.plot_distributions"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.plot_distributions"><code class="name flex">
 <span>def <span class="ident">plot_distributions</span></span>(<span>dist: dict, name: str, keys: List[str] = None, color_map: dict = None, xlabel: str = 'Exceedance frequency [1/yrs]', ylabel: str = 'Waterlevel [m]', legend_loc: str = 'lower right')</span>
 </code></dt>
 <dd>
@@ -772,12 +890,21 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                        xlabel: str = &#39;Exceedance frequency [1/yrs]&#39;,
                        ylabel: str = &#39;Waterlevel [m]&#39;,
                        legend_loc: str = &#39;lower right&#39;):
+    
+    if color_map==&#39;default&#39;:
+        color_map = {&#39;Ongefilterd&#39;:  &#39;b&#39;, &#39;Gefilterd&#39;: &#39;orange&#39;, &#39;Trendanalyse&#39;: &#39;g&#39;,
+                     &#39;Weibull&#39;: &#39;r&#39;, &#39;Hydra-NL&#39;: &#39;m&#39;, &#39;Hydra-NL met modelonzekerheid&#39;: &#39;cyan&#39;,
+                     &#39;Gecombineerd&#39;: &#39;k&#39;}
+
     fig, ax = plt.subplots(figsize=(8, 6))
     if keys is None:
         keys = list(dist.keys())
     for k in keys:
         c = color_map[k] if (color_map is not None) and (k in color_map.keys()) else None
-        ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], label=k, c=c)
+        if k==&#39;Gecombineerd&#39;:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], &#39;--&#39;, label=k, c=c)
+        else:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], label=k, c=c)
     ax.set_title(name)
     ax.set_xlabel(xlabel), ax.set_xscale(&#39;log&#39;), ax.set_xlim([1e-5, 1e3]), ax.invert_xaxis()
     ax.set_ylabel(ylabel)
@@ -793,7 +920,7 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
     return fig,ax</code></pre>
 </details>
 </dd>
-<dt id="hatyan.overschrijding.interpolate_interested_Tfreqs_to_csv"><code class="name flex">
+<dt id="hatyan.KW_overschrijding.interpolate_interested_Tfreqs_to_csv"><code class="name flex">
 <span>def <span class="ident">interpolate_interested_Tfreqs_to_csv</span></span>(<span>df: pandas.core.frame.DataFrame, Tfreqs: List[float], id: str, csv_dir: os.PathLike, prefix: str) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
 <dd>
@@ -810,6 +937,23 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
                                    &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
     #prefix = os.path.basename(csv_dir)
     df_interp.to_csv(os.path.join(csv_dir, f&#39;{prefix}_{id}.csv&#39;), index=False, sep=&#39;;&#39;)
+    return df_interp</code></pre>
+</details>
+</dd>
+<dt id="hatyan.KW_overschrijding.interpolate_interested_Tfreqs"><code class="name flex">
+<span>def <span class="ident">interpolate_interested_Tfreqs</span></span>(<span>df: pandas.core.frame.DataFrame, Tfreqs: List[float]) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def interpolate_interested_Tfreqs(df: pd.DataFrame, Tfreqs: List[float]) -&gt; pd.DataFrame:
+    df_interp = pd.DataFrame(data={&#39;values&#39;: np.interp(Tfreqs,
+                                                      np.flip(df[&#39;values_Tfreq&#39;].values),
+                                                      np.flip(df[&#39;values&#39;].values)),
+                                   &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
     return df_interp</code></pre>
 </details>
 </dd>
@@ -831,21 +975,23 @@ def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="hatyan.overschrijding.delete_values_between_peak_trough" href="#hatyan.overschrijding.delete_values_between_peak_trough">delete_values_between_peak_trough</a></code></li>
-<li><code><a title="hatyan.overschrijding.go_through_peak" href="#hatyan.overschrijding.go_through_peak">go_through_peak</a></code></li>
-<li><code><a title="hatyan.overschrijding.filter_identified_peaks" href="#hatyan.overschrijding.filter_identified_peaks">filter_identified_peaks</a></code></li>
-<li><code><a title="hatyan.overschrijding.check_peakside" href="#hatyan.overschrijding.check_peakside">check_peakside</a></code></li>
-<li><code><a title="hatyan.overschrijding.detect_peaks_hkv" href="#hatyan.overschrijding.detect_peaks_hkv">detect_peaks_hkv</a></code></li>
-<li><code><a title="hatyan.overschrijding.distribution" href="#hatyan.overschrijding.distribution">distribution</a></code></li>
-<li><code><a title="hatyan.overschrijding.get_weibull" href="#hatyan.overschrijding.get_weibull">get_weibull</a></code></li>
-<li><code><a title="hatyan.overschrijding.filter_with_threshold" href="#hatyan.overschrijding.filter_with_threshold">filter_with_threshold</a></code></li>
-<li><code><a title="hatyan.overschrijding.detect_peaks" href="#hatyan.overschrijding.detect_peaks">detect_peaks</a></code></li>
-<li><code><a title="hatyan.overschrijding.determine_threshold" href="#hatyan.overschrijding.determine_threshold">determine_threshold</a></code></li>
-<li><code><a title="hatyan.overschrijding.get_total_years" href="#hatyan.overschrijding.get_total_years">get_total_years</a></code></li>
-<li><code><a title="hatyan.overschrijding.apply_trendanalysis" href="#hatyan.overschrijding.apply_trendanalysis">apply_trendanalysis</a></code></li>
-<li><code><a title="hatyan.overschrijding.blend_distributions" href="#hatyan.overschrijding.blend_distributions">blend_distributions</a></code></li>
-<li><code><a title="hatyan.overschrijding.plot_distributions" href="#hatyan.overschrijding.plot_distributions">plot_distributions</a></code></li>
-<li><code><a title="hatyan.overschrijding.interpolate_interested_Tfreqs_to_csv" href="#hatyan.overschrijding.interpolate_interested_Tfreqs_to_csv">interpolate_interested_Tfreqs_to_csv</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.compute_overschrijding" href="#hatyan.KW_overschrijding.compute_overschrijding">compute_overschrijding</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.delete_values_between_peak_trough" href="#hatyan.KW_overschrijding.delete_values_between_peak_trough">delete_values_between_peak_trough</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.go_through_peak" href="#hatyan.KW_overschrijding.go_through_peak">go_through_peak</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.filter_identified_peaks" href="#hatyan.KW_overschrijding.filter_identified_peaks">filter_identified_peaks</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.check_peakside" href="#hatyan.KW_overschrijding.check_peakside">check_peakside</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.detect_peaks_hkv" href="#hatyan.KW_overschrijding.detect_peaks_hkv">detect_peaks_hkv</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.distribution" href="#hatyan.KW_overschrijding.distribution">distribution</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.get_weibull" href="#hatyan.KW_overschrijding.get_weibull">get_weibull</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.filter_with_threshold" href="#hatyan.KW_overschrijding.filter_with_threshold">filter_with_threshold</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.detect_peaks" href="#hatyan.KW_overschrijding.detect_peaks">detect_peaks</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.determine_threshold" href="#hatyan.KW_overschrijding.determine_threshold">determine_threshold</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.get_total_years" href="#hatyan.KW_overschrijding.get_total_years">get_total_years</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.apply_trendanalysis" href="#hatyan.KW_overschrijding.apply_trendanalysis">apply_trendanalysis</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.blend_distributions" href="#hatyan.KW_overschrijding.blend_distributions">blend_distributions</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.plot_distributions" href="#hatyan.KW_overschrijding.plot_distributions">plot_distributions</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.interpolate_interested_Tfreqs_to_csv" href="#hatyan.KW_overschrijding.interpolate_interested_Tfreqs_to_csv">interpolate_interested_Tfreqs_to_csv</a></code></li>
+<li><code><a title="hatyan.KW_overschrijding.interpolate_interested_Tfreqs" href="#hatyan.KW_overschrijding.interpolate_interested_Tfreqs">interpolate_interested_Tfreqs</a></code></li>
 </ul>
 </li>
 </ul>

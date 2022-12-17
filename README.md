@@ -19,6 +19,14 @@ Information and examples
 - [github folder](https://github.com/Deltares/hatyan/tree/main/tests/examples) with more example scripts
 
 
+Information and examples
+--------
+- [docs folder](https://github.com/Deltares/hatyan/tree/main/docs) with background information
+- [online documentation](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html) generated from docstrings (replace 'main' in the url with any tagname to view older versions)
+- [jupyter notebooks](https://github.com/Deltares/hatyan/blob/main/notebooks) with example code
+- [use binder](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD) to run these notebooks interactively (loading takes a while)
+- [github folder](https://github.com/Deltares/hatyan/tree/main/tests/examples) with more example scripts
+
 Installation
 --------
 
