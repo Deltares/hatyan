@@ -52,7 +52,7 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all, tresh_yearlyHWLWcount=None):
     
     #replace invalids with nan (in case of too less values per month or year)
     if tresh_yearlyHWLWcount is not None:
-        tresh_monthlyHWLWcount = tresh_yearlyHWLWcount/12
+        tresh_monthlyHWLWcount = tresh_yearlyHWLWcount/13 #not 13 but 12, to also make the threshold valid in short months
         HW_mean_peryear.loc[HWLW_count_peryear<tresh_yearlyHWLWcount] = np.nan
         LW_mean_peryear.loc[HWLW_count_peryear<tresh_yearlyHWLWcount] = np.nan
         HW_monthmax_permonth.loc[HWLW_count_permonth<tresh_monthlyHWLWcount] = np.nan
