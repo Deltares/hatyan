@@ -6,6 +6,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&metric=alert_status)](https://sonarcloud.io/dashboard?id=Deltares_hatyan)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD)
 
+
 # hatyan
 
 A Python package for harmonic tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat. Hatyan contains the methods to derive water level extremes (high and low waters) and several other water level indicators (Kenmerkende Waarden). Furthermore, hatyan provides easier access to Rijkswaterstaat data via their data distribution layer (DataDistributieLaag, DDL).
@@ -19,14 +20,6 @@ Information and examples
 - [use binder](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD) to run these notebooks interactively (loading takes a while)
 - [github folder](https://github.com/Deltares/hatyan/tree/main/tests/examples) with more example scripts
 
-
-Information and examples
---------
-- [docs folder](https://github.com/Deltares/hatyan/tree/main/docs) with background information
-- [online documentation](https://htmlpreview.github.io/?https://github.com/Deltares/hatyan/blob/main/docs/hatyan/index.html) generated from docstrings (replace 'main' in the url with any tagname to view older versions)
-- [jupyter notebooks](https://github.com/Deltares/hatyan/blob/main/notebooks) with example code
-- [use binder](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD) to run these notebooks interactively (loading takes a while)
-- [github folder](https://github.com/Deltares/hatyan/tree/main/tests/examples) with more example scripts
 
 Installation
 --------
