@@ -99,7 +99,7 @@ compute_gemgetij = True
 compute_overschrijding = True
 
 
-for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
+for current_station in stat_list: #stat_list[stat_list.index('SCHEVNGN'):]: #['HOEKVHLD','DENOVBTN']:#
     plt.close('all')
     
     print(f'loading data for {current_station}')
@@ -224,7 +224,7 @@ for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list[stat_list.index('SCHEV
         culm_addtime = 4*dt.timedelta(hours=12,minutes=25)+dt.timedelta(hours=1)-dt.timedelta(minutes=20) # 2d and 2u20min correction, this shifts the x-axis of aardappelgrafiek: HW is 2 days after culmination (so 4x25min difference between length of avg moonculm and length of 2 days), 1 hour (GMT to MET), 20 minutes (0 to 5 meridian, is commented now)
         #TODO: check culm_addtime and HWLWno+4 offsets. culm_addtime could also be 2 days or 2days +1h GMT-MET correction. 20 minutes seems odd since moonculm is about tidal wave from ocean
         data_pd_HWLW = hatyan.calc_HWLW_moonculm_combi(data_pd_HWLW_12=data_pd_HWLW_10y_12, culm_addtime=culm_addtime) #culm_addtime=None provides the same gemgetijkromme now delay is not used for scaling anymore
-        HWLW_culmhr_summary = hatyan.calc_HWLW_culmhr_summary(data_pd_HWLW)
+        HWLW_culmhr_summary = hatyan.calc_HWLW_culmhr_summary(data_pd_HWLW) #TODO: maybe add tijverschil
         
         print('HWLW FIGUREN PER TIJDSKLASSE, INCLUSIEF MEDIAN LINE')
         fig, axs = hatyan.plot_HWLW_pertimeclass(data_pd_HWLW, HWLW_culmhr_summary)
