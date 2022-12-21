@@ -11,7 +11,8 @@ import statsmodels.api as sm
 import pandas as pd
 import datetime as dt
 from hatyan.timeseries import calc_HWLW12345to12
-from hatyan.analysis_prediction import HatyanSettings, prediction
+from hatyan.analysis_prediction import HatyanSettings, prediction #PydanticConfig
+#from pydantic import validate_arguments #TODO: enable validator (first add pydantic as dependency, plus how to validate comp df (columns A/phi, then maybe classed should be used instead)
 
 
 def calc_HWLWtidalindicators(data_pd_HWLW_all, tresh_yearlyHWLWcount=None):
@@ -125,8 +126,8 @@ def calc_wltidalindicators(data_wl_pd, tresh_yearlywlcount=None):
         
     return dict_wltidalindicators
 
-
-def calc_LAT_HAT_fromcomponents(comp : pd.DataFrame, hatyan_settings=None) -> tuple:
+#@validate_arguments(config=PydanticConfig)
+def calc_LAT_HAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSettings = None) -> tuple:
     """
     Derive lowest and highest astronomical tide (LAT/HAT) from a component set.
     The component set is used to make a tidal prediction for an arbitrary period of 19 years with a 1 minute interval. The min/max values of the predictions of all years are the LAT/HAT values.
