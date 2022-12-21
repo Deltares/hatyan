@@ -1,17 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-#Opm Anneke
-15mrt21
-de predictie_2022_frommergedcomp_all_1min.py is omgezet naar een predictie file om de LAT over een willekeurige 19 jaar te berekenen. Door Jelmer Veenstra is hiervoor in zijn predictiefiles een aanpassing gedaan. Deze heb ik omgezet in mijn predictiefile.
+Gebruik van componentenfile om LAT/HAT te berekenen.
 
-soort disclaimer van Jelmer:
-Deze file maakt per station voor 19 jaar een astro predictie (per jaar, met knoopfactor in het midden van ieder jaar), op basis van een componentenset afgeleid over meestal 4 jaar (SA/SM van meestal 19 jaar).
-Van deze predictie wordt per station en per jaar de minimum waterstand (en bijbehorende tijdstip) verzameld in de tabel min_vallist.
-Van deze tabel wordt de minimumwaarde (en bijbehorende stationsnaam) aan de tabel min_vallist_allstats toegevoegd. Deze tabel wordt geprint naar LAT_indication.csv
-Deze waardes geven een ruwe indicatie van LAT, maar kan niet zonder meer als 'de waarheid' worden beschouwd.
-De (lengte van) de geanalyseerde periode is hierbij zeer bepalend (nu veelal 4 jaar maar dit verschilt per station, 19 jaar zou misschien beter zijn), SA/SM komen van een andere periode. Ook is de predictietijdstap (times_step_pred) bepalend voor de precisie.
- 
 """
 
 import os, sys
@@ -48,26 +39,19 @@ for current_station in selected_stations:
         xfac=False
     else:
         xfac=True
+    hatyan_settings = hatyan.HatyanSettings(nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=True)
 
     file_data_comp0 = os.path.join(dir_base,'%s_ana.txt'%(current_station))
     if not os.path.exists(file_data_comp0):
         stats_noana.append(current_station)
         continue
     
-    COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    vallist_allyears = pd.DataFrame()
-    for year in range(2020,2039):
-        times_pred_all = pd.date_range(start=dt.datetime(year,1,1), end=dt.datetime(year+1,1,1), freq='1min')
-        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_pred_all=times_pred_all)
-        
-        vallist_allyears.loc[year,'min'] = ts_prediction['values'].min()
-        vallist_allyears.loc[year,'max'] = ts_prediction['values'].max()
-    #vallist_allyears.plot()
-    #print(vallist_allyears)
-    #vallist_allyears.to_csv('LAT_HAT_indication_19Y_%s.csv'%(current_station))
+    COMP_merged = hatyan.read_components(filename=file_data_comp0) # make sure A0 is replaced by the slotgemiddelde (or do it afterwards)
     
-    vallist_allstats.loc[current_station,'LAT'] = vallist_allyears['min'].min()
-    vallist_allstats.loc[current_station,'HAT'] = vallist_allyears['max'].max()
+    LAT, HAT = hatyan.calc_LAT_HAT_fromcomponents(comp=COMP_merged,hatyan_settings=hatyan_settings)
+    
+    vallist_allstats.loc[current_station,'LAT'] = LAT
+    vallist_allstats.loc[current_station,'HAT'] = HAT
 
 
 print(vallist_allstats)

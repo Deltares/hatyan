@@ -9,7 +9,9 @@ Created on Thu Apr  7 17:12:42 2022
 import numpy as np
 import statsmodels.api as sm
 import pandas as pd
+import datetime as dt
 from hatyan.timeseries import calc_HWLW12345to12
+from hatyan.analysis_prediction import HatyanSettings, prediction
 
 
 def calc_HWLWtidalindicators(data_pd_HWLW_all, tresh_yearlyHWLWcount=None):
@@ -122,6 +124,43 @@ def calc_wltidalindicators(data_wl_pd, tresh_yearlywlcount=None):
         dict_wltidalindicators[key].index = dict_wltidalindicators[key].index.to_timestamp()
         
     return dict_wltidalindicators
+
+
+def calc_LAT_HAT_fromcomponents(comp : pd.DataFrame, hatyan_settings=None) -> tuple:
+    """
+    Derive lowest and highest astronomical tide (LAT/HAT) from a component set.
+    The component set is used to make a tidal prediction for an arbitrary period of 19 years with a 1 minute interval. The min/max values of the predictions of all years are the LAT/HAT values.
+    The LAT/HAT is very dependent on the A0 of the component set. Therefore, the LAT/HAT values are relevant for the same year as the slotgemiddelde that is used to replace A0 in the component set. For instance, if the slotgemiddelde is valid for 2021.0, LAT and HAT are also relevant for that year.
+    The LAT/HAT values are also very dependent on the hatyan_settings used, in general it is important to use the same settings as used to derive the tidal components.
+    
+    Parameters
+    ----------
+    comp : pd.DataFrame
+        DESCRIPTION.
+    hatyan_settings : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    tuple
+        DESCRIPTION.
+
+    """
+    
+    min_vallist_allyears = pd.Series()
+    max_vallist_allyears = pd.Series()
+    for year in range(2020,2039): # 19 arbitrary consequtive years to capture entire nodal cycle
+        times_pred_all = pd.date_range(start=dt.datetime(year,1,1), end=dt.datetime(year+1,1,1), freq='1min')
+        ts_prediction = prediction(comp=comp, hatyan_settings=hatyan_settings, times_pred_all=times_pred_all)
+        
+        min_vallist_allyears.loc[year] = ts_prediction['values'].min()
+        max_vallist_allyears.loc[year] = ts_prediction['values'].max()
+    #vallist_allyears.plot()
+    #print(vallist_allyears)
+    #vallist_allyears.to_csv('LAT_HAT_indication_19Y_%s.csv'%(current_station))
+    LAT = min_vallist_allyears.min()
+    HAT = max_vallist_allyears.max()
+    return LAT, HAT
 
 
 # copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
