@@ -58,7 +58,7 @@ def clean_data(ts_meas_pd,current_station):
         keep_columns = ['values','QC']
     ts_meas_pd = ts_meas_pd[keep_columns] # reduces the memory consumption significantly in case of DDL data with a lot of metadata
     ts_meas_pd.index = ts_meas_pd.index.tz_localize(None)
-    ts_meas_pd = ts_meas_pd.loc[~(ts_meas_pd['QC']==99)] #TODO: remove or make nans?
+    ts_meas_pd = ts_meas_pd.loc[~(ts_meas_pd['QC']==99)] #remove invalid data
     
     #optional nap correction
     if NAP2005correction:
@@ -96,10 +96,10 @@ physical_break_dict = {'DENOVBTN':'1933', #laatste sluitgat afsluitdijk in 1932
 compute_slotgem = True
 compute_havengetallen = True
 compute_gemgetij = True
-compute_overschrijding = False
+compute_overschrijding = True
 
 
-for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
+for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
     plt.close('all')
     
     print(f'loading data for {current_station}')
@@ -125,13 +125,13 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
             numHWs = (data_pd_HWLW_10y_12['HWLWcode']==1).sum()
             if numHWs < 0.95*numHWs_expected:
                 raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
-        
-    #hatyan.plot_timeseries(ts=data_pd_meas_all,ts_ext=data_pd_HWLW_10y_12)
+    
     
     
     
     
     #### SLOTGEMIDDELDEN
+    #TODO: nodal cycle is not in same phase for all stations, this is not physically correct.
     #TODO: more data is needed for proper working of fitting for some stations (2011: BAALHK, BRESKVHVN, GATVBSLE, SCHAARVDND)
     if compute_slotgem and os.path.exists(file_wl_pkl):
         print(f'slotgemiddelden for {current_station}')
@@ -152,7 +152,7 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
             LW_mean_peryear_valid = dict_HWLWtidalindicators_valid['LW_mean_peryear']
         
         #plotting (yearly averages are plotted on 1jan)
-        fig,ax1 = plt.subplots(figsize=(14,7))
+        fig,ax1 = plt.subplots(figsize=(12,6))
         
         #get and plot validation timeseries (yearly mean wl/HW/LW)
         station_name_dict = {'HOEKVHLD':'hoek',
@@ -167,7 +167,7 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
             yearmeanwl = pd.read_csv(file_yearmeanwl, delim_whitespace=True, skiprows=1, names=['datetime','values'], parse_dates=['datetime'], na_values=-999.9, index_col='datetime')/100
             ax1.plot(yearmeanHW['values'],'+g')
             ax1.plot(yearmeanLW['values'],'+g')
-            ax1.plot(yearmeanwl['values'],'+g')
+            ax1.plot(yearmeanwl['values'],'+g',label='yearmean validation')
         
         #plot values
         if os.path.exists(file_ext_pkl):
@@ -175,8 +175,8 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
             ax1.plot(LW_mean_peryear,'x',color='grey')
             ax1.plot(HW_mean_peryear_valid,'xr')
             ax1.plot(LW_mean_peryear_valid,'xr')
-        ax1.plot(wl_mean_peryear,'x',color='grey')
-        ax1.plot(wl_mean_peryear_valid,'xr')
+        ax1.plot(wl_mean_peryear,'x',color='grey',label='yearmean')
+        ax1.plot(wl_mean_peryear_valid,'xr',label='yearmean significant')
         ax1.grid()
         ax1.set_xlim(fig_alltimes_ext) # entire period
         ax1.set_ylabel('waterstand [m]')
@@ -197,6 +197,7 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         ax1.plot(pred_pd_wl.loc[tstop_dt:,'pred_linear_winodal'], ".k", label=f'pred_linear from {year_slotgem}')
         pred_slotgem = pred_pd_wl.loc[[tstop_dt],['pred_linear_winodal']]
         pred_slotgem.to_csv(os.path.join(dir_slotgem,f'slotgem_value_{current_station}.txt'))
+        ax1.legend(loc=2)
         
         if os.path.exists(file_ext_pkl):
             HW_mean_array_todate = HW_mean_peryear_valid.loc[tstart_dt_trend:tstop_dt] #remove all values after tstop_dt (is year_slotgem)
@@ -209,7 +210,6 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
             ax1.plot(pred_pd_LW, ".-", label=pred_pd_LW.columns)
             ax1.set_prop_cycle(None) #reset matplotlib colors
 
-        ax1.legend(loc=2)
         fig.savefig(os.path.join(dir_slotgem,f'yearly_values_{current_station}'))
     
     
@@ -246,14 +246,12 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
     
     
     
-
-    ##### gemiddelde getijkrommen
-    pred_freq_sec = 10 #for gemgetijkromme #TODO: frequency decides accuracy of tU/tD and other timings (and is writing freq of BOI timeseries)
+    
+    ##### GEMIDDELDE GETIJKROMMEN
     if compute_gemgetij and os.path.exists(file_wl_pkl):
-        """
         
-        """
         print(f'gem getijkrommen for {current_station}')
+        pred_freq_sec = 10 #TODO: frequency decides accuracy of tU/tD and other timings (and is writing freq of BOI timeseries)
         
         #TODO: add correctie havengetallen HW/LW av/sp/np met slotgemiddelde uit PLSS/modelfit (HW/LW av)
         file_havget = os.path.join(dir_havget,f'havengetallen_{year_slotgem}_{current_station}.csv')
@@ -277,7 +275,6 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         prediction_av_one = prediction_av.loc[ia1:ia2]
         prediction_av_ext_one = prediction_av_ext.loc[ia1:ia2]
         
-        
         # =============================================================================
         # Hatyan predictie voor 1 jaar met gemiddelde helling maansbaan (voor afleiden spring-doodtijcyclus) >> predictie zonder nodalfactors instead
         # =============================================================================
@@ -291,9 +288,7 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         
         In het aldus gemodelleerde getij is de vorm van iedere getijslag, gegeven de getijfase, identiek. 
         Vervolgens is aan de hand van de havengetallen een springtij- en een doodtijkromme geselecteerd.
-        """
         
-        """
         #NOTE: background on choice of components
         #below is different than provided list, these shallow ones are extra: ['S4','2SM6','M7','4MS4','2(MS)8','3M2S10','4M2S12']
         #shallow relations, derive 'zuivere harmonischen van M2 en S2' (this means averaging over eenmaaldaagse componenten, but why is that chosen?)
@@ -338,8 +333,9 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         fig.savefig(os.path.join(dir_gemgetij,f'springdoodtijkromme_{current_station}_slotgem{year_slotgem}.png'))
         
         
+        #timeseries for gele boekje (av/sp/np have different lengths, time is relative to HW of av and HW of sp/np are shifted there) #TODO: is this product still necessary?
         print(f'reshape_signal GEMGETIJ: {current_station}')
-        prediction_av_one_trefHW = hatyan.ts_to_trefHW(prediction_av_one,HWreftime=ia1) # repeating one is not necessary for av, but easier to do the same for av/sp/np
+        prediction_av_one_trefHW = hatyan.ts_to_trefHW(prediction_av_one) # repeating one is not necessary for av, but easier to do the same for av/sp/np
         prediction_av_corr_one = hatyan.reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tP_goal=None)
         prediction_av_corr_rep5 = hatyan.repeat_signal(prediction_av_corr_one, nb=2, na=2)
         prediction_av_corr_rep5_trefHW = hatyan.ts_to_trefHW(prediction_av_corr_rep5,HWreftime=ia1)
@@ -384,11 +380,11 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         print(f'plot getijkromme trefHW: {current_station}')
         fig_sum,ax_sum = plt.subplots(figsize=(14,7))
         ax_sum.set_title(f'getijkromme trefHW {current_station}')
-        ax_sum.plot(prediction_av_one_trefHW['values'],'--', color=cmap(0),linewidth=0.7, label='gem kromme, one')
+        ax_sum.plot(prediction_av_one_trefHW['values'],'--', color=cmap(0), linewidth=0.7, label='gem kromme, one')
         ax_sum.plot(prediction_av_corr_rep5_trefHW['values'], color=cmap(0), label='gem kromme, corr')
-        ax_sum.plot(prediction_sp_one_trefHW['values'],'--', color=cmap(1),linewidth=0.7, label='sp kromme, one')
+        ax_sum.plot(prediction_sp_one_trefHW['values'],'--', color=cmap(1), linewidth=0.7, label='sp kromme, one')
         ax_sum.plot(prediction_sp_corr_rep5_trefHW['values'], color=cmap(1), label='sp kromme, corr')
-        ax_sum.plot(prediction_np_one_trefHW['values'],'--', color=cmap(2),linewidth=0.7, label='np kromme, one')
+        ax_sum.plot(prediction_np_one_trefHW['values'],'--', color=cmap(2), linewidth=0.7, label='np kromme, one')
         ax_sum.plot(prediction_np_corr_rep5_trefHW['values'], color=cmap(2), label='np kromme, corr')
         ax_sum.legend(loc=4)
         ax_sum.grid()
@@ -427,10 +423,10 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         ax1_boi.set_xlim(tstop_dt-dt.timedelta(hours=2),tstop_dt+dt.timedelta(hours=48))
         fig_boi.tight_layout()
         fig_boi.savefig(os.path.join(dir_gemgetij,f'gemspringdoodtijkromme_BOI_{current_station}_slotgem{year_slotgem}.png'))
-        
-        
     
-
+    
+    
+    
     
     ###OVERSCHRIJDINGSFREQUENTIES
     #TODO: SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
@@ -473,7 +469,7 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         #set station rules
         station_rule_type = 'break'
         if current_station in physical_break_dict.keys(): 
-            station_break_value = pd.Timestamp(physical_break_dict[current_station]) #TODO: maybe better to just not select the data by doing data_pd_measext.loc[station_break_value:tstop] instead of data_pd_measext.loc[:tstop]
+            station_break_value = physical_break_dict[current_station] #TODO: maybe better to just not select the data by doing data_pd_measext.loc[station_break_value:tstop] instead of data_pd_measext.loc[:tstop]
         else:
             station_break_value = data_pd_measext.index.min()
     
@@ -497,8 +493,6 @@ for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         
         fig, ax = hatyan.plot_distributions(dist_dec, name=current_station, color_map='default')
         fig.savefig(os.path.join(dir_overschrijding, f'Deceedance_lines_{current_station}.png'))
-    
-
 
 
 
