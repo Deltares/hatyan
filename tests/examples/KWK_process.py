@@ -114,7 +114,7 @@ for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list[stat_list.index('SCHEV
     if os.path.exists(file_ext_pkl): #for slotgemiddelden, havengetallen, overschrijding
         data_pd_HWLW_all = pd.read_pickle(file_ext_pkl)
         data_pd_HWLW_all = clean_data(data_pd_HWLW_all,current_station)
-        if compute_slotgem or compute_havengetallen or compute_overschrijding: #TODO: make calc_HWLW12345to12() faster so this if is not necessary anymore
+        if compute_slotgem or compute_havengetallen or compute_overschrijding: #TODO: make calc_HWLW12345to12() faster
             data_pd_HWLW_all_12 = hatyan.calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
             #crop timeseries to 10y
             data_pd_HWLW_10y_12 = hatyan.crop_timeseries(data_pd_HWLW_all_12, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
