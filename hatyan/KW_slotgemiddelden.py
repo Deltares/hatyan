@@ -126,6 +126,7 @@ def calc_wltidalindicators(data_wl_pd, tresh_yearlywlcount=None):
         
     return dict_wltidalindicators
 
+
 #@validate_arguments(config=PydanticConfig)
 def calc_LAT_HAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSettings = None) -> tuple:
     """
@@ -162,6 +163,41 @@ def calc_LAT_HAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSetti
     LAT = min_vallist_allyears.min()
     HAT = max_vallist_allyears.max()
     return LAT, HAT
+
+
+def fit_models(mean_array_todate: pd.Series) -> pd.DataFrame:
+    """
+    Fit linear model over yearly means in mean_array_todate, including five years in the future.
+
+    Parameters
+    ----------
+    mean_array_todate : pd.Series
+        DESCRIPTION.
+
+    Returns
+    -------
+    pred_pd : TYPE
+        DESCRIPTION.
+
+    """
+    
+    
+    # We'll just use the years. This assumes that annual waterlevels are used that are stored left-padded, the mean waterlevel for 2020 is stored as 2020-1-1. This is not logical, but common practice.
+    allyears_DTI = pd.date_range(mean_array_todate.index.min(),mean_array_todate.index.max()+dt.timedelta(days=5*360),freq='AS')
+    mean_array_allyears = pd.Series(mean_array_todate,index=allyears_DTI)
+    
+    df = pd.DataFrame({'year':mean_array_allyears.index.year, 'height':mean_array_allyears.values}) #TODO: make functions accept mean_array instead of df as argument?
+    
+    # below methods are copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py #TODO: install slr package as dependency or keep separate?
+    fit, names, X = linear_model(df, with_wind=False, with_nodal=False)
+    pred_linear_nonodal = fit.predict(X)
+    fit, names, X = linear_model(df, with_wind=False)
+    pred_linear_winodal = fit.predict(X)
+    
+    pred_pd = pd.DataFrame({'pred_linear_nonodal':pred_linear_nonodal,
+                            'pred_linear_winodal':pred_linear_winodal},
+                            index=allyears_DTI)
+    return pred_pd
 
 
 # copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py

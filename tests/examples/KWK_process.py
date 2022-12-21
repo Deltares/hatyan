@@ -12,10 +12,6 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan (pip will not work since not all KWK functions are already in release)
 
-#TODO: convert to netcdf instead of pkl, think of convenient netcdf format
-#TODO: SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
-#TODO: add LAT/HAT (AB needs this for RWS work): c:\DATA\hatyan_github\tests\examples\predictie_2022_frommergedcomp_LATindication_y1min.py
-
 dataTKdia = True #TODO: communicate data issues to TK (wl and ext): p:\11208031-010-kenmerkende-waarden-k\work\data_vanRWS_20220805\convert_dia2pickle_dataTK.py
 NAP2005correction = False #True #TODO: define for all stations
 
@@ -73,7 +69,7 @@ def clean_data(ts_meas_pd,current_station):
 def nap2005_correction(data_pd,current_station):
     #NAP correction for dates before 1-1-2005
     #TODO: check if ths make a difference (for havengetallen it makes a slight difference so yes. For gemgetijkromme it only makes a difference for spring/doodtij. (now only applied at gemgetij en havengetallen)). If so, make this flexible per station, where to get the data or is the RWS data already corrected for it?
-    #herdefinitie van NAP (2 tot 5 mm, relevant?): https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_113484_31&versienummer=1
+    #herdefinitie van NAP (~20mm voor HvH in fig2, relevant?): https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_113484_31&versienummer=1
     #Dit is de rapportage waar het gebruik voor PSMSL data voor het eerst beschreven is: https://puc.overheid.nl/PUC/Handlers/DownloadDocument.ashx?identifier=PUC_137204_31&versienummer=1
     print('applying NAP2005 correction')
     data_pd_corr = data_pd.copy()
@@ -100,10 +96,10 @@ physical_break_dict = {'DENOVBTN':'1933', #laatste sluitgat afsluitdijk in 1932
 compute_slotgem = True
 compute_havengetallen = True
 compute_gemgetij = True
-compute_overschrijding = True
+compute_overschrijding = False
 
 
-for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
+for current_station in ['DENOVBTN']:#stat_list[stat_list.index('SCHEVNGN'):]:#
     plt.close('all')
     
     print(f'loading data for {current_station}')
@@ -130,7 +126,9 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
             if numHWs < 0.95*numHWs_expected:
                 raise Exception(f'ERROR: not enough high waters present in period, {numHWs} instead of >=0.95*{int(numHWs_expected):d}')
         
-    hatyan.plot_timeseries(ts=data_pd_meas_all,ts_ext=data_pd_HWLW_10y_12)
+    #hatyan.plot_timeseries(ts=data_pd_meas_all,ts_ext=data_pd_HWLW_10y_12)
+    
+    
     
     
     #### SLOTGEMIDDELDEN
@@ -156,7 +154,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         #plotting (yearly averages are plotted on 1jan)
         fig,ax1 = plt.subplots(figsize=(14,7))
         
-        #get validation timeseries (yearly mean wl/HW/LW)
+        #get and plot validation timeseries (yearly mean wl/HW/LW)
         station_name_dict = {'HOEKVHLD':'hoek',
                              'HARVT10':'ha10'}
         if current_station in station_name_dict.keys():
@@ -171,6 +169,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
             ax1.plot(yearmeanLW['values'],'+g')
             ax1.plot(yearmeanwl['values'],'+g')
         
+        #plot values
         if os.path.exists(file_ext_pkl):
             ax1.plot(HW_mean_peryear,'x',color='grey')
             ax1.plot(LW_mean_peryear,'x',color='grey')
@@ -184,43 +183,32 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         ax1.set_title(f'yearly mean HW/wl/LW {current_station}')
         fig.tight_layout()
         
-        if os.path.exists(file_ext_pkl):
-            mean_list = [wl_mean_peryear_valid,HW_mean_peryear_valid,LW_mean_peryear_valid]
+        if current_station in physical_break_dict.keys():
+            tstart_dt_trend = physical_break_dict[current_station]
         else:
-            mean_list = [wl_mean_peryear]
-        for iM, mean_array in enumerate(mean_list):
-            if current_station in physical_break_dict.keys():
-                tstart_dt_trend = pd.Timestamp(physical_break_dict[current_station])
-            else:
-                tstart_dt_trend = None
-            tstop_dt_trend = tstop_dt-dt.timedelta(minutes=10) #all values after year_slotgem and remove 1jan value
-            mean_array_todate = mean_array.loc[tstart_dt_trend:tstop_dt_trend] #remove all values after tstop_dt (is year_slotgem)
-            
-            # We'll just use the years. This assumes that annual waterlevels are used that are stored left-padded, the mean waterlevel for 2020 is stored as 2020-1-1. This is not logical, but common practice.
-            allyears_DTI = pd.date_range(mean_array_todate.index.min(),mean_array_todate.index.max()+dt.timedelta(days=5*360),freq='AS')
-            mean_array_allyears = pd.Series(mean_array_todate,index=allyears_DTI)
-            
-            df = pd.DataFrame({'year':mean_array_allyears.index.year, 'height':mean_array_allyears.values}) #TODO: make functions accept mean_array instead of df as argument?
-            
-            # below methods are copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py #TODO: install slr package as dependency or keep separate?
-            fit, names, X = hatyan.linear_model(df, with_wind=False, with_nodal=False)
-            pred_linear_nonodal = fit.predict(X)
-            fit, names, X = hatyan.linear_model(df, with_wind=False)
-            pred_linear_winodal = fit.predict(X)
-            
-            pred_pd = pd.DataFrame({'pred_linear_nonodal':pred_linear_nonodal,
-                                    'pred_linear_winodal':pred_linear_winodal},
-                                    index=allyears_DTI)
-            ax1.plot(pred_pd, ".-", label=pred_pd.columns)
+            tstart_dt_trend = None
+        
+        #fit linear models over yearly mean values
+        wl_mean_array_todate = wl_mean_peryear_valid.loc[tstart_dt_trend:tstop_dt] #remove all values after tstop_dt (is year_slotgem)
+        pred_pd_wl = hatyan.fit_models(wl_mean_array_todate)
+        ax1.plot(pred_pd_wl, ".-", label=pred_pd_wl.columns)
+        ax1.set_prop_cycle(None) #reset matplotlib colors
+        #2021.0 value (and future)
+        ax1.plot(pred_pd_wl.loc[tstop_dt:,'pred_linear_winodal'], ".k", label=f'pred_linear from {year_slotgem}')
+        pred_slotgem = pred_pd_wl.loc[[tstop_dt],['pred_linear_winodal']]
+        pred_slotgem.to_csv(os.path.join(dir_slotgem,f'slotgem_value_{current_station}.txt'))
+        
+        if os.path.exists(file_ext_pkl):
+            HW_mean_array_todate = HW_mean_peryear_valid.loc[tstart_dt_trend:tstop_dt] #remove all values after tstop_dt (is year_slotgem)
+            pred_pd_HW = hatyan.fit_models(HW_mean_array_todate)
+            ax1.plot(pred_pd_HW, ".-", label=pred_pd_HW.columns)
             ax1.set_prop_cycle(None) #reset matplotlib colors
             
-            #2021.0 value
-            if iM==0: #only for mean wl?
-                pred_slotgem = pred_pd.loc[[tstop_dt],['pred_linear_winodal']]
-                pred_slotgem.to_csv(os.path.join(dir_slotgem,f'slotgem_value_{current_station}.txt'))
-            pred_future = pred_pd.loc[tstop_dt:,'pred_linear_winodal']
-            ax1.plot(pred_future, ".k", label=f'pred_linear from {year_slotgem}')
-            
+            LW_mean_array_todate = LW_mean_peryear_valid.loc[tstart_dt_trend:tstop_dt] #remove all values after tstop_dt (is year_slotgem)
+            pred_pd_LW = hatyan.fit_models(LW_mean_array_todate)
+            ax1.plot(pred_pd_LW, ".-", label=pred_pd_LW.columns)
+            ax1.set_prop_cycle(None) #reset matplotlib colors
+
         ax1.legend(loc=2)
         fig.savefig(os.path.join(dir_slotgem,f'yearly_values_{current_station}'))
     
@@ -255,9 +243,9 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         HWLW_culmhr_summary_exp.index = ['neap','mean','spring']
         HWLW_culmhr_summary_exp.to_csv(os.path.join(dir_havget, f'havengetallen_{year_slotgem}_{current_station}.csv'),float_format='%.3f')
     
-
-
-
+    
+    
+    
 
     ##### gemiddelde getijkrommen
     pred_freq_sec = 10 #for gemgetijkromme #TODO: frequency decides accuracy of tU/tD and other timings (and is writing freq of BOI timeseries)
@@ -351,7 +339,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
         
         
         print(f'reshape_signal GEMGETIJ: {current_station}')
-        prediction_av_one_trefHW = hatyan.ts_to_trefHW(prediction_av_one) # repeating one is not necessary for av, but easier to do the same for av/sp/np
+        prediction_av_one_trefHW = hatyan.ts_to_trefHW(prediction_av_one,HWreftime=ia1) # repeating one is not necessary for av, but easier to do the same for av/sp/np
         prediction_av_corr_one = hatyan.reshape_signal(prediction_av_one, prediction_av_ext_one, HW_goal=HW_av, LW_goal=LW_av, tP_goal=None)
         prediction_av_corr_rep5 = hatyan.repeat_signal(prediction_av_corr_one, nb=2, na=2)
         prediction_av_corr_rep5_trefHW = hatyan.ts_to_trefHW(prediction_av_corr_rep5,HWreftime=ia1)
@@ -445,6 +433,7 @@ for current_station in ['HOEKVHLD']:#stat_list[stat_list.index('SCHEVNGN'):]:#
 
     
     ###OVERSCHRIJDINGSFREQUENTIES
+    #TODO: SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
     #plots beoordelen: rode lijn moet ongeveer verlengde zijn van groene, als die ineens omhoog piekt komt dat door hele extreme waardes die je dan vermoedelijk ook al ziet in je groene lijn
     
     Tfreqs_interested = [5, 2, 1, 1/2, 1/5, 1/10, 1/20, 1/50, 1/100, 1/200, #overschrijdingsfreqs
