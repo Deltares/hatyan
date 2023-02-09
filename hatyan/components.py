@@ -59,10 +59,10 @@ def plot_components(comp, comp_allyears=None, comp_validation=None, sort_freqs=T
     COMP = comp.copy()
     if comp_allyears is not None:
         comp_allyears = comp_allyears.copy()
-        if (version.parse(pd.__version__) >= version.parse('1.2.0')): # rough indicator for python 3.7 or higher. With py=3.7, matplotlib==3.4.2 and pandas==1.3.4 it is possible to provide a list of legend labels at once.
-            comp_legend_labels = comp_allyears['A'].columns
-        else: #with python=3.6.12, matplotlib==3.3.4 and pandas==1.1.5 this results in the list for each legend entry so providing a single string is better #TODO: check if this is fixed when using python=3.7 as minimum requirement.
-            comp_legend_labels = 'separate years'
+        #if (version.parse(pd.__version__) >= version.parse('1.2.0')): # rough indicator for python 3.7 or higher. With py=3.7, matplotlib==3.4.2 and pandas==1.3.4 it is possible to provide a list of legend labels at once.
+        comp_legend_labels = comp_allyears['A'].columns
+        #else: #with python=3.6.12, matplotlib==3.3.4 and pandas==1.1.5 this results in the list for each legend entry so providing a single string is better #TODO: check if this is fixed when using python=3.7 as minimum requirement.
+        #    comp_legend_labels = 'separate years'
     if comp_validation is not None:
         COMPval = comp_validation.rename(columns={"A": "A_validation", "phi_deg": "phi_deg_validation"})
         COMP = pd.concat([COMP,COMPval],axis=1)
