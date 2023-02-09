@@ -1,4 +1,6 @@
-#relevant/minimal hmc python libs on 17-08-2022 (full list raises errors)
+#relevant/minimal hmc python libs on 17-08-2022 (full list raises numpy errors)
+#python>=3.8 or pip>=22.0 does not solve errors, releasing all == for other packages does make installation possible
+#issue: https://github.com/Deltares/hatyan/issues/71
 #statsmodels is not yet available at HMC (for KWK)
 name: hatyan_hmcenv
 dependencies:
