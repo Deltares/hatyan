@@ -26,7 +26,6 @@ import pandas as pd
 import datetime as dt
 import warnings
 warnings.filterwarnings(action='always', category=DeprecationWarning)
-from packaging import version
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
@@ -499,7 +498,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     if not len(times_pred_all) > 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
     
-    if isinstance(times_pred_all, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(times_pred_all, pd.core.indexes.base.Index):
+    if isinstance(times_pred_all, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(times_pred_all, pd.core.indexes.base.Index): #TODO: this is probably not necessary, maybe only in case of Index (year 1600 compatibility)
         times_pred_all_pdDTI = times_pred_all
     else:
         times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
@@ -532,7 +531,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
 
     print('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    if ~isinstance(times_pred_all_pdDTI,pd.DatetimeIndex) & (version.parse(pd.__version__) >= version.parse('1.2.0')): #fix for non-backwards compatible change in pandas, pandas version 1.1.2 is used for RWS version. TODO: remove this fix once pandas>=1.2.0 can be used (probably py3.7 required)
+    if not isinstance(times_pred_all_pdDTI,pd.DatetimeIndex): #support for years<1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start).total_seconds().values
     else:
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start[0]).total_seconds().values

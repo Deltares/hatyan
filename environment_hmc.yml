@@ -1,0 +1,23 @@
+#relevant hmc python libs on 17-08-2022 #statsmodels is not yet available (for KWK)
+name: hatyan_devenv
+dependencies:
+  - python==3.8.11
+  - pip>=19.2.3
+  - pip:
+    - matplotlib==3.5.2
+    - netCDF4==1.6.0
+    - numpy==1.23.0
+    - pandas==1.4.3
+    - pyproj==3.3.1
+    - pytest==7.1.2
+    - pytest-cov==3.0.0
+    - qtconsole==5.1.1
+    - requests==2.28.1
+    - scipy==1.3.1
+    - seaborn==0.11.2
+    - sip==6.6.2
+    - six==1.16.0
+    - spyder==5.1.5
+    - spyder-kernels==2.1.3
+    - xarray==2022.10.0
+    - statsmodels
