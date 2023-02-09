@@ -5,7 +5,7 @@
 
 __author__ = """Jelmer Veenstra"""
 __email__ = 'jelmer.veenstra@deltares.nl'
-__version__ = '2.5.93'
+__version__ = '2.5.100'
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
@@ -17,7 +17,7 @@ from hatyan.timeseries import *
 from hatyan.wrapper_RWS import *
 from hatyan.getonlinedata import *
 from hatyan.convert import *
-from hatyan.KW_slotgemiddelden import *
-from hatyan.KW_havengetallen import *
-from hatyan.KW_gemgetij import *
-from hatyan.KW_overschrijding import *
+from hatyan.kw_slotgemiddelden import *
+from hatyan.kw_havengetallen import *
+from hatyan.kw_gemgetij import *
+from hatyan.kw_overschrijding import *

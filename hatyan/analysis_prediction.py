@@ -33,6 +33,11 @@ from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
 
 
+class PydanticConfig:
+    #https://docs.pydantic.dev/usage/model_config/
+    arbitrary_types_allowed = True #necessary to allow for pd.DataFrame etc
+
+
 class MatrixConditionTooHigh(Exception):
     pass
 

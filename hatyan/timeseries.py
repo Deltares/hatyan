@@ -232,6 +232,9 @@ def calc_HWLW12345to12(data_HWLW_12345):
             continue
         #tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
         tide_afterHW = data_HWLW_12345.loc[timeHW:timeHW+dt.timedelta(hours=12)]
+        tide_afterHW = tide_afterHW.iloc[1:] #remove first HW to avoid issues if LW is higher than HW due to surge
+        if len(tide_afterHW)==0: #this happens if there is no LW defined between two HWs, for instance after SCHEVNGN HW at '1948-04-30 19:50:00'
+            continue
         time_minimum = tide_afterHW['values'].idxmin()
         times_LWmin.append(time_minimum)
     data_LW2 = data_HWLW_12345.loc[times_LWmin]

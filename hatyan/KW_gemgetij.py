@@ -7,6 +7,71 @@ Created on Fri Dec 16 16:35:26 2022
 
 import numpy as np
 import pandas as pd
+from hatyan.hatyan_core import get_const_list_hatyan
+from hatyan.analysis_prediction import get_components_from_ts
+from hatyan import HatyanSettings
+
+def get_gemgetij_components(data_pd_meas):
+    # =============================================================================
+    # Hatyan analyse voor 10 jaar (alle componenten voor gemiddelde getijcyclus) #TODO: maybe use original 4y period/componentfile instead? SA/SM should come from 19y analysis
+    # =============================================================================
+    const_list = get_const_list_hatyan('year') #components should not be reduced, since higher harmonics are necessary
+    hatyan_settings_ana = HatyanSettings(nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod='Y', return_allperiods=True) #RWS-default settings
+    comp_frommeasurements_avg, comp_frommeasurements_allyears = get_components_from_ts(data_pd_meas, const_list=const_list, hatyan_settings=hatyan_settings_ana)
+    
+    # #check if all years are available
+    # comp_years = comp_frommeasurements_allyears['A'].columns
+    # expected_years = tstop_dt.year-tstart_dt.year
+    # if len(comp_years) < expected_years:
+    #     raise Exception('ERROR: analysis result contains not all years')
+    
+    #check if nans in analysis
+    if comp_frommeasurements_avg.isnull()['A'].any():
+        raise Exception('ERROR: analysis result contains nan values')
+    
+    # =============================================================================
+    # gemiddelde getijkromme
+    # =============================================================================
+    """
+    uit: gemiddelde getijkrommen 1991.0
+    Voor meetpunten in het onbeinvloed gebied is per getijfase eerst een "ruwe kromme" berekend met de resultaten van de harmonische analyse, 
+    welke daarna een weinig is bijgesteld aan de hand van de volgende slotgemiddelden:
+    gemiddeld hoog- en laagwater, duur daling. Deze bijstelling bestaat uit een eenvoudige vermenigvuldiging.    
+    
+    Voor de ruwe krommen voor gemiddeld tij zijn uitsluitend zuivere harmonischen van M2 gebruikt: M2, M4, M6, M8, M10, M12, 
+    waarbij de amplituden per component zijn vervangen door de wortel uit de kwadraatsom van de amplituden 
+    van alle componenten in de betreffende band, voor zover voorkomend in de standaardset van 94 componenten. 
+    Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk.
+    tabel: Verhouding tussen amplitude en oorspronkelijke amplitude
+    M2 (tweemaaldaagse band) 1,06
+    M4 1,28
+    M6 1,65
+    M8 2,18
+    M10 2,86
+    M12 3,46
+    
+    In het aldus gemodelleerde getij is de vorm van iedere getijslag identiek, met een getijduur van 12 h 25 min.
+    Bij meetpunten waar zich aggers voordoen, is, afgezien van de dominantie, de vorm bepaald door de ruwe krommen; 
+    dit in tegenstelling tot vroegere bepalingen. Bij spring- en doodtij is bovendien de differentiele getijduur, 
+    en daarmee de duur rijzing, afgeleid uit de ruwe krommen.
+    
+    """
+    #kwadraatsommen voor M2 tot M12
+    components_av = ['M2','M4','M6','M8','M10','M12']
+    comp_av = comp_frommeasurements_avg.loc[components_av]
+    for comp_higherharmonics in components_av:
+        iM = int(comp_higherharmonics[1:])
+        bool_endswithiM = comp_frommeasurements_avg.index.str.endswith(str(iM)) & comp_frommeasurements_avg.index.str.replace(str(iM),'').str[-1].str.isalpha()
+        comp_iM = comp_frommeasurements_avg.loc[bool_endswithiM]
+        comp_av.loc[comp_higherharmonics,'A'] = np.sqrt((comp_iM['A']**2).sum()) #kwadraatsom
+    
+    comp_av.loc['A0'] = comp_frommeasurements_avg.loc['A0']
+    
+    print('verhouding tussen originele en kwadratensom componenten')
+    print(comp_av/comp_frommeasurements_avg.loc[components_av]) # values are different than 1991.0 document and differs per station while the document states "Zoals te verwachten is de verhouding per component tussen deze wortel en de oorspronkelijke amplitude voor alle plaatsen gelijk"
+
+    return comp_frommeasurements_avg, comp_av
+
 
 def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None):
     """
@@ -41,7 +106,7 @@ def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None):
         
         temp1 = (ts_corr.loc[timesHW[i]:timesLW[i],'values']-LW_val)/TR1_val*TR_goal+LW_goal
         temp2 = (ts_corr.loc[timesLW[i]:timesHW[i+1],'values']-LW_val)/TR2_val*TR_goal+LW_goal
-        temp = pd.concat([temp1,temp2]).drop_duplicates() #drop_duplicates since timesLW[i] is in both timeseries (values are equal)
+        temp = pd.concat([temp1,temp2.iloc[1:]]) #.iloc[1:] since timesLW[i] is in both timeseries (values are equal)
         ts_corr['values_new'] = temp
         
         tide_HWtoHW = ts_corr.loc[timesHW[i]:timesHW[i+1]]
@@ -53,13 +118,16 @@ def reshape_signal(ts, ts_ext, HW_goal, LW_goal, tP_goal=None):
     return ts_corr
 
 
-def ts_to_trefHW(ts,HWreftime):
+def ts_to_trefHW(ts,HWreftime=None):
     """
     converts to hours relative to HWreftime, to plot av/sp/np tidal signals in one plot
     """
     ts.index.name = 'times' #just to be sure
     ts_trefHW = ts.reset_index()
-    ts_trefHW.index = (ts_trefHW['times']-HWreftime).dt.total_seconds()/3600
+    if HWreftime is None:
+        ts_trefHW.index = (ts_trefHW['times']-ts_trefHW['times'].iloc[0]).dt.total_seconds()/3600
+    else:
+        ts_trefHW.index = (ts_trefHW['times']-HWreftime).dt.total_seconds()/3600
     return ts_trefHW
 
 

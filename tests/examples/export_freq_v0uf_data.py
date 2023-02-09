@@ -24,7 +24,7 @@ const_list_hatyan195_orig = hatyan.get_const_list_hatyan('all_schureman_original
 times_doodsonplot = pd.date_range(start=dt.datetime(2018,12,1),end=dt.datetime(2025,1,1),freq='60min')
 
 const_list_freqv0uf = ['A0','SA','SSA','MSM','MM','MSF','MF','2Q1','Q1','O1','TAU1','M1C','CHI1','PI1','P1','S1','K1','PSI1','J1','OO1','2N2','MU2','N2','NU2','M2','LABDA2','L2','T2','S2','R2','K2','ETA2','M3']
-#const_list_freqv0uf = hatyan.get_const_list_hatyan('year')
+const_list_freqv0uf = hatyan.get_const_list_hatyan('year')
 #const_list_freqv0uf = hatyan.get_const_list_hatyan('springneap')
 #const_list_freqv0uf = ['MU2','N2','NU2','M2','2MN2','S2','M4','MS4','M6','2MS6','M8','3MS8'] #xfac list, should also entail constituents for which f==1
 #const_list_freqv0uf = ['M2','K1','S2','2MN2'] 
@@ -37,7 +37,7 @@ const_list_freqv0uf_hat55 = const_list_freqv0uf[:]
 if 'A0' in const_list_freqv0uf_hat55:
     const_list_freqv0uf_hat55.remove('A0')
 
-dood_date_fu = pd.date_range(start=dt.datetime(1980,1,1), end=dt.datetime(2020,1,1), freq='60D')
+dood_date_fu = pd.date_range(start=dt.datetime(1980,1,1), end=dt.datetime(2030,1,1), freq='60D')
 
 treshold_freq = 1e-6
 treshold_v0uf = 1e-4

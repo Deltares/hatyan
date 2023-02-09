@@ -9,7 +9,10 @@ Created on Thu Apr  7 17:12:42 2022
 import numpy as np
 import statsmodels.api as sm
 import pandas as pd
+import datetime as dt
 from hatyan.timeseries import calc_HWLW12345to12
+from hatyan.analysis_prediction import HatyanSettings, prediction #PydanticConfig
+#from pydantic import validate_arguments #TODO: enable validator (first add pydantic as dependency, plus how to validate comp df (columns A/phi, then maybe classed should be used instead)
 
 
 def calc_HWLWtidalindicators(data_pd_HWLW_all, tresh_yearlyHWLWcount=None):
@@ -52,7 +55,7 @@ def calc_HWLWtidalindicators(data_pd_HWLW_all, tresh_yearlyHWLWcount=None):
     
     #replace invalids with nan (in case of too less values per month or year)
     if tresh_yearlyHWLWcount is not None:
-        tresh_monthlyHWLWcount = tresh_yearlyHWLWcount/12
+        tresh_monthlyHWLWcount = tresh_yearlyHWLWcount/13 #not 13 but 12, to also make the threshold valid in short months
         HW_mean_peryear.loc[HWLW_count_peryear<tresh_yearlyHWLWcount] = np.nan
         LW_mean_peryear.loc[HWLW_count_peryear<tresh_yearlyHWLWcount] = np.nan
         HW_monthmax_permonth.loc[HWLW_count_permonth<tresh_monthlyHWLWcount] = np.nan
@@ -122,6 +125,79 @@ def calc_wltidalindicators(data_wl_pd, tresh_yearlywlcount=None):
         dict_wltidalindicators[key].index = dict_wltidalindicators[key].index.to_timestamp()
         
     return dict_wltidalindicators
+
+
+#@validate_arguments(config=PydanticConfig)
+def calc_LAT_HAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSettings = None) -> tuple:
+    """
+    Derive lowest and highest astronomical tide (LAT/HAT) from a component set.
+    The component set is used to make a tidal prediction for an arbitrary period of 19 years with a 1 minute interval. The min/max values of the predictions of all years are the LAT/HAT values.
+    The LAT/HAT is very dependent on the A0 of the component set. Therefore, the LAT/HAT values are relevant for the same year as the slotgemiddelde that is used to replace A0 in the component set. For instance, if the slotgemiddelde is valid for 2021.0, LAT and HAT are also relevant for that year.
+    The LAT/HAT values are also very dependent on the hatyan_settings used, in general it is important to use the same settings as used to derive the tidal components.
+    
+    Parameters
+    ----------
+    comp : pd.DataFrame
+        DESCRIPTION.
+    hatyan_settings : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    tuple
+        DESCRIPTION.
+
+    """
+    
+    min_vallist_allyears = pd.Series(dtype=float)
+    max_vallist_allyears = pd.Series(dtype=float)
+    for year in range(2020,2039): # 19 arbitrary consequtive years to capture entire nodal cycle
+        times_pred_all = pd.date_range(start=dt.datetime(year,1,1), end=dt.datetime(year+1,1,1), freq='1min')
+        ts_prediction = prediction(comp=comp, hatyan_settings=hatyan_settings, times_pred_all=times_pred_all)
+        
+        min_vallist_allyears.loc[year] = ts_prediction['values'].min()
+        max_vallist_allyears.loc[year] = ts_prediction['values'].max()
+    #vallist_allyears.plot()
+    #print(vallist_allyears)
+    #vallist_allyears.to_csv('LAT_HAT_indication_19Y_%s.csv'%(current_station))
+    LAT = min_vallist_allyears.min()
+    HAT = max_vallist_allyears.max()
+    return LAT, HAT
+
+
+def fit_models(mean_array_todate: pd.Series) -> pd.DataFrame:
+    """
+    Fit linear model over yearly means in mean_array_todate, including five years in the future.
+
+    Parameters
+    ----------
+    mean_array_todate : pd.Series
+        DESCRIPTION.
+
+    Returns
+    -------
+    pred_pd : TYPE
+        DESCRIPTION.
+
+    """
+    
+    
+    # We'll just use the years. This assumes that annual waterlevels are used that are stored left-padded, the mean waterlevel for 2020 is stored as 2020-1-1. This is not logical, but common practice.
+    allyears_DTI = pd.date_range(mean_array_todate.index.min(),mean_array_todate.index.max()+dt.timedelta(days=5*360),freq='AS')
+    mean_array_allyears = pd.Series(mean_array_todate,index=allyears_DTI)
+    
+    df = pd.DataFrame({'year':mean_array_allyears.index.year, 'height':mean_array_allyears.values}) #TODO: make functions accept mean_array instead of df as argument?
+    
+    # below methods are copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py #TODO: install slr package as dependency or keep separate?
+    fit, names, X = linear_model(df, with_wind=False, with_nodal=False)
+    pred_linear_nonodal = fit.predict(X)
+    fit, names, X = linear_model(df, with_wind=False)
+    pred_linear_winodal = fit.predict(X)
+    
+    pred_pd = pd.DataFrame({'pred_linear_nonodal':pred_linear_nonodal,
+                            'pred_linear_winodal':pred_linear_winodal},
+                            index=allyears_DTI)
+    return pred_pd
 
 
 # copied from https://github.com/openearth/sealevel/blob/master/slr/slr/models.py
