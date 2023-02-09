@@ -40,7 +40,6 @@
 <li><a href="https://github.com/Deltares/hatyan/tree/main/tests/examples">github folder</a> with more example scripts</li>
 </ul>
 <h2 id="installation">Installation</h2>
-<p>Install hatyan OPTION 1: Install from pip/github in an existing or new environment:</p>
 <ul>
 <li>optional: download and install Anaconda 64 bit Python 3.7 (or higher) from <a href="https://www.anaconda.com/distribution/#download-section">https://www.anaconda.com/distribution/#download-section</a></li>
 <li>open anaconda prompt</li>
@@ -48,33 +47,6 @@
 <li>optional: <code>conda activate hatyan_env</code></li>
 <li><code>python -m pip install hatyan</code> (this installs hatyan and all required packages from PyPI, add a version like <code>==2.3.0</code> if you require a specific version. Optionally add <code>--upgrade</code>)</li>
 <li>alternatively: <code>python -m pip install git+https://github.com/Deltares/hatyan</code> (this installs hatyan and all required packages from github, add a tag like <code>@v2.3.0</code> if you require a specific release/branch.)</li>
-</ul>
-<p>Install hatyan OPTION 2: create python venv in your Linux home directory and install from zipfile (no internet required for installation)</p>
-<ul>
-<li>might be necessary to activate python3: <code>module load anaconda3</code> (or any other python3 installation)</li>
-<li><code>python -m venv ~/venv_hatyan</code></li>
-<li><code>source ~/venv_hatyan/bin/activate</code></li>
-<li>optional (requires internet): <code>python -m pip install --upgrade pip setuptools</code></li>
-<li><code>pip install ~/PyQt5-5.15.7-cp37-abi3-manylinux1_x86_64.whl</code> (download from <a href="https://pypi.org/project/PyQt5/#files">https://pypi.org/project/PyQt5/#files</a>)</li>
-<li><code>pip install ~/hatyan-2.5.64.zip</code> (download from <a href="https://github.com/Deltares/hatyan/releases/tag/v2.5.64">https://github.com/Deltares/hatyan/releases/tag/v2.5.64</a> or any other release)</li>
-<li><code>deactivate</code></li>
-<li>to test, copy example script to e.g. home directory (<a href="https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py">https://github.com/Deltares/hatyan/blob/main/tests/examples/validate_astro_DDL.py</a>)</li>
-<li><code>source ~/venv_hatyan/bin/activate</code></li>
-<li><code>python -m venv ~/venv_hatyan</code></li>
-<li><code>python ~/validate_astro_DDL.py</code></li>
-<li><code>deactivate</code></li>
-</ul>
-<p>Install hatyan OPTION 3: get and install RPM on CentOS/RHEL (this will be deprecated soon)</p>
-<ul>
-<li>get the latest rpm file (see developer information for building procedure)</li>
-<li>install hatyan on CentOS: <code>rpm -i hatyan_python-2.2.30-1.x86_64.rpm</code></li>
-<li>upgrade hatyan on CentOS: <code>rpm -U hatyan_python-2.2.31-1.x86_64.rpm</code></li>
-<li>installing the RPM results in a hatyan command in linux, this activates a Python virtual environment and sets necessary Qt environment variables. It creates a folder with a python environment hatyan_env, doc en tests (/opt/hatyan_python/hatyan_env/) and a file that provides the hatyan command (/usr/bin/hatyan)</li>
-<li>check version: <code>hatyan --version</code></li>
-<li>test installation: <code>hatyan /opt/hatyan_python/tests/examples/predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py</code> (or use the <code>hatyan --test</code> shortcut)</li>
-<li>this should result in several interactive figures popping up, described in chapter 5 (Quick start guide) of the hatyan user manual (gebruikershandleiding).</li>
-<li>if you see the message "RuntimeError: Invalid DISPLAY variable", restart the MobaXterm connection and try again.</li>
-<li>the followning warning can be ignored: "QXcbConnection: XCB error: 145 (Unknown), sequence: 171, resource id: 0, major code: 139 (Unknown), minor code: 20". To avoid it, disable the extension RANDR in Mobaxterm settings (Settings &gt; Configuration &gt; X11)</li>
 </ul>
 <details class="source">
 <summary>
@@ -87,7 +59,7 @@
 
 __author__ = &#34;&#34;&#34;Jelmer Veenstra&#34;&#34;&#34;
 __email__ = &#39;jelmer.veenstra@deltares.nl&#39;
-__version__ = &#39;2.5.93&#39;
+__version__ = &#39;2.5.101&#39;
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
@@ -99,32 +71,15 @@ from hatyan.timeseries import *
 from hatyan.wrapper_RWS import *
 from hatyan.getonlinedata import *
 from hatyan.convert import *
-from hatyan.KW_slotgemiddelden import *
-from hatyan.KW_havengetallen import *
-from hatyan.KW_gemgetij import *
-from hatyan.KW_overschrijding import *</code></pre>
+from hatyan.kw_slotgemiddelden import *
+from hatyan.kw_havengetallen import *
+from hatyan.kw_gemgetij import *
+from hatyan.kw_overschrijding import *</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="hatyan.KW_gemgetij" href="KW_gemgetij.html">hatyan.KW_gemgetij</a></code></dt>
-<dd>
-<div class="desc"><p>Created on Fri Dec 16 16:35:26 2022 …</p></div>
-</dd>
-<dt><code class="name"><a title="hatyan.KW_havengetallen" href="KW_havengetallen.html">hatyan.KW_havengetallen</a></code></dt>
-<dd>
-<div class="desc"><p>Created on Fri Dec 16 14:12:54 2022 …</p></div>
-</dd>
-<dt><code class="name"><a title="hatyan.KW_overschrijding" href="KW_overschrijding.html">hatyan.KW_overschrijding</a></code></dt>
-<dd>
-<div class="desc"><p>All kind of functions to support calculation of probabilities …</p></div>
-</dd>
-<dt><code class="name"><a title="hatyan.KW_slotgemiddelden" href="KW_slotgemiddelden.html">hatyan.KW_slotgemiddelden</a></code></dt>
-<dd>
-<div class="desc"><p>Created on Thu Apr
-7 17:12:42 2022 …</p></div>
-</dd>
 <dt><code class="name"><a title="hatyan.analysis_prediction" href="analysis_prediction.html">hatyan.analysis_prediction</a></code></dt>
 <dd>
 <div class="desc"><p>analysis_prediction.py contains hatyan definitions related to tidal analysis and prediction …</p></div>
@@ -153,6 +108,23 @@ from hatyan.KW_overschrijding import *</code></pre>
 <dt><code class="name"><a title="hatyan.hatyan_core" href="hatyan_core.html">hatyan.hatyan_core</a></code></dt>
 <dd>
 <div class="desc"><p>hatyan_core.py contains core components that wrap around schureman/foreman definitions …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.kw_gemgetij" href="kw_gemgetij.html">hatyan.kw_gemgetij</a></code></dt>
+<dd>
+<div class="desc"><p>Created on Fri Dec 16 16:35:26 2022 …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.kw_havengetallen" href="kw_havengetallen.html">hatyan.kw_havengetallen</a></code></dt>
+<dd>
+<div class="desc"><p>Created on Fri Dec 16 14:12:54 2022 …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.kw_overschrijding" href="kw_overschrijding.html">hatyan.kw_overschrijding</a></code></dt>
+<dd>
+<div class="desc"><p>All kind of functions to support calculation of probabilities …</p></div>
+</dd>
+<dt><code class="name"><a title="hatyan.kw_slotgemiddelden" href="kw_slotgemiddelden.html">hatyan.kw_slotgemiddelden</a></code></dt>
+<dd>
+<div class="desc"><p>Created on Thu Apr
+7 17:12:42 2022 …</p></div>
 </dd>
 <dt><code class="name"><a title="hatyan.schureman" href="schureman.html">hatyan.schureman</a></code></dt>
 <dd>
@@ -189,10 +161,6 @@ from hatyan.KW_overschrijding import *</code></pre>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="hatyan.KW_gemgetij" href="KW_gemgetij.html">hatyan.KW_gemgetij</a></code></li>
-<li><code><a title="hatyan.KW_havengetallen" href="KW_havengetallen.html">hatyan.KW_havengetallen</a></code></li>
-<li><code><a title="hatyan.KW_overschrijding" href="KW_overschrijding.html">hatyan.KW_overschrijding</a></code></li>
-<li><code><a title="hatyan.KW_slotgemiddelden" href="KW_slotgemiddelden.html">hatyan.KW_slotgemiddelden</a></code></li>
 <li><code><a title="hatyan.analysis_prediction" href="analysis_prediction.html">hatyan.analysis_prediction</a></code></li>
 <li><code><a title="hatyan.astrog" href="astrog.html">hatyan.astrog</a></code></li>
 <li><code><a title="hatyan.components" href="components.html">hatyan.components</a></code></li>
@@ -200,6 +168,10 @@ from hatyan.KW_overschrijding import *</code></pre>
 <li><code><a title="hatyan.foreman" href="foreman.html">hatyan.foreman</a></code></li>
 <li><code><a title="hatyan.getonlinedata" href="getonlinedata.html">hatyan.getonlinedata</a></code></li>
 <li><code><a title="hatyan.hatyan_core" href="hatyan_core.html">hatyan.hatyan_core</a></code></li>
+<li><code><a title="hatyan.kw_gemgetij" href="kw_gemgetij.html">hatyan.kw_gemgetij</a></code></li>
+<li><code><a title="hatyan.kw_havengetallen" href="kw_havengetallen.html">hatyan.kw_havengetallen</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding" href="kw_overschrijding.html">hatyan.kw_overschrijding</a></code></li>
+<li><code><a title="hatyan.kw_slotgemiddelden" href="kw_slotgemiddelden.html">hatyan.kw_slotgemiddelden</a></code></li>
 <li><code><a title="hatyan.schureman" href="schureman.html">hatyan.schureman</a></code></li>
 <li><code><a title="hatyan.timeseries" href="timeseries.html">hatyan.timeseries</a></code></li>
 <li><code><a title="hatyan.wrapper_RWS" href="wrapper_RWS.html">hatyan.wrapper_RWS</a></code></li>
