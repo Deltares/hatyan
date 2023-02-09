@@ -190,6 +190,6 @@ dependencies:
     - Werkzeug==2.1.2
     - wrapt==1.12.1
     - wurlitzer==3.0.2
-    - xarray 2022.10.0
+    - xarray==2022.10.0
     - yapf==0.32.0
     - zipp==3.8.0
