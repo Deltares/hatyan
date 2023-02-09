@@ -1,5 +1,5 @@
 #relevant/minimal hmc python libs on 17-08-2022 (full list raises errors)
-#statsmodels is not yet available (for KWK)
+#statsmodels is not yet available at HMC (for KWK)
 name: hatyan_hmcenv
 dependencies:
   - python==3.8.11
