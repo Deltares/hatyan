@@ -192,7 +192,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     comp_sec_list_sel = [comp for iC,comp in enumerate(COMP_merged.index) if comp in comp_sec_list]
     if comp_sec_list_sel != []:
         COMP_merged = COMP_merged.drop(comp_sec_list_sel)
-    COMP_merged = comp_sec.loc[comp_sec_list].append(COMP_merged)
+    COMP_merged = pd.concat([comp_sec.loc[comp_sec_list],COMP_merged])
 
     t_const_freq = get_schureman_freqs(COMP_merged.index.tolist())
     COMP_merged['freq'] = t_const_freq['freq']

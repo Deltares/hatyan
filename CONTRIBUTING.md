@@ -3,7 +3,7 @@ Information for developers
 
 Create python environment hatyan_env and install hatyan in developer mode:
 
-- download and install Anaconda 64 bit Python 3.7 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
+- download and install Anaconda 64 bit Python 3.8 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
 - download git from https://git-scm.com/download/win, install with default settings
 - create a branch called work_yourname on https://github.com/Deltares/hatyan
 - open git bash window where you want to clone the hatyan github repository (e.g. C:\\DATA\\)
