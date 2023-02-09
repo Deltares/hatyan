@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>hatyan.kw_overschrijding API documentation</title>
+<meta name="description" content="All kind of functions to support calculation of probabilities …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hatyan.kw_overschrijding</code></h1>
+</header>
+<section id="section-intro">
+<p>All kind of functions to support calculation of probabilities</p>
+<p>Author:
+Boyan Domhof (Deltares)
+Last update:
+17/12/2020</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+All kind of functions to support calculation of probabilities
+
+Author:         Boyan Domhof (Deltares)
+Last update:    17/12/2020
+&#34;&#34;&#34;
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import ticker
+from scipy import optimize, signal
+from typing import Union, List
+import datetime as dt
+import os
+
+#wrapper
+def compute_overschrijding(df_extrema, rule_type, rule_value, inverse=False):
+    
+    df_extrema_clean = df_extrema.copy()[[&#39;values&#39;]] #drop all info but the values (times-idx, HWLWcode etc)
+    dist = {} #TODO: replace with pandas.DataFrame?
+    
+    print(&#39;Calculate unfiltered distribution&#39;)
+    dist[&#39;Ongefilterd&#39;] = distribution(df_extrema_clean, inverse=inverse)
+    
+    &#34;&#34;&#34;# filtering is only applicable for stations with high river discharge influence, so disabled #TODO: ext is geschikt voor getij, maar bij hoge afvoergolf wil je alleen het echte extreem. Er is dan een treshold per station nodig, is nodig om de rivierafvoerpiek te kunnen duiden.
+    print(&#39;Calculate filtered distribution&#39;)
+    df_peaks, threshold, _ = hatyan.detect_peaks(df_extrema_clean)
+    if metadata_station[&#39;apply_treshold&#39;]:
+        temp[metadata_station[&#39;id&#39;]] = threshold
+        df_extrema_filt = hatyan.filter_with_threshold(df_extrema_clean, df_peaks, threshold)
+    else:
+        df_extrema_filt = df_extrema_clean.copy()
+    dist[&#39;Gefilterd&#39;] = hatyan.distribution(df_extrema_filt.copy())
+    &#34;&#34;&#34;
+    
+    print(&#39;Calculate filtered distribution with trendanalysis&#39;)
+    df_trend = apply_trendanalysis(df_extrema_clean, rule_type=rule_type, rule_value=rule_value)
+    dist[&#39;Trendanalyse&#39;] = distribution(df_trend.copy(), inverse=inverse)
+    
+    print(&#39;Fit Weibull to filtered distribution with trendanalysis&#39;)
+    # Last 100 datapoints from distribution (assuming it is sorted with Tfreqs from large to small)
+    dist[&#39;Weibull&#39;] = get_weibull(dist[&#39;Trendanalyse&#39;].copy(),
+                                  threshold=dist[&#39;Trendanalyse&#39;][&#39;values&#39;].iloc[-101], #-100 for HW, -101 for LW, but does not matter
+                                  Tfreqs=np.logspace(-5, np.log10(dist[&#39;Trendanalyse&#39;][&#39;values_Tfreq&#39;].iloc[-101]), 5000),
+                                  inverse=inverse)
+    
+    print(&#39;Blend trend and weibull together&#39;) # and Hydra-NL
+    dist[&#39;Gecombineerd&#39;] = blend_distributions(dist[&#39;Trendanalyse&#39;].copy(),
+                                               dist[&#39;Weibull&#39;].copy(),
+                                               #dist[&#39;Hydra-NL&#39;].copy(), 
+                                               )#.set_index(&#39;values_Tfreq&#39;)
+
+    &#34;&#34;&#34;
+    if row[&#39;apply_treshold&#39;]:
+        keys = list(dist.keys())
+    else:
+        keys = [x for x in list(dist.keys()) if x != &#39;Gefilterd&#39;]
+    &#34;&#34;&#34;
+    
+    return dist
+
+
+def delete_values_between_peak_trough(times_to_delete, times, values):
+    mask = np.in1d(times, times_to_delete)
+    return times[~mask], values[~mask]
+
+
+def go_through_peak(values, _i, _i_extra, multiplier):
+    while values[_i + _i_extra + multiplier] &lt; values[_i + _i_extra]:
+        _i_extra += multiplier
+    return _i_extra
+
+
+def filter_identified_peaks(values, times, times_to_delete):
+    _values = values.copy()
+    _values[~np.in1d(times, times_to_delete)] = -9999.0
+    return _values
+
+
+def check_peakside(values, _i, multiplier, window, threshold):
+    _i_extra = 0
+    check = True
+    while check:
+        try:
+            while (values[_i + _i_extra + multiplier] &lt;= values[_i + _i_extra]) and (values[_i + _i_extra + multiplier] != -9999.0):
+                _i_extra += multiplier
+        except IndexError:
+            pass
+        try:
+            _i1, _i2 = (_i + _i_extra + (multiplier * window)), (_i + _i_extra)
+            if any(values[np.min([_i1, _i2]):np.max([_i1, _i2])] &gt; threshold):
+                new_peak = values[np.min([_i1, _i2]):np.max([_i1, _i2])].max()
+                while values[_i + _i_extra] != new_peak:
+                    _i_extra += multiplier
+            else:
+                check = False
+        except IndexError:
+            pass
+    return _i_extra
+
+
+def detect_peaks_hkv(df: pd.DataFrame, window: int, inverse: bool = False, threshold: float = None) -&gt; pd.DataFrame:
+    _df = df.copy()
+    if inverse:
+        _df[&#39;values&#39;] = -_df[&#39;values&#39;]
+    times, values = _df.index.values, _df[&#39;values&#39;].values
+    indices = np.arange(len(times))
+
+    __df = _df.sort_values(by=[&#39;values&#39;], axis=0, ascending=False)
+    times_sorted, values_sorted = __df.index.values, __df[&#39;values&#39;].values
+
+    if threshold is None:
+        threshold = df[&#39;values&#39;].mean() + 2*df[&#39;values&#39;].std()
+    else:
+        if inverse:
+            threshold = -threshold
+
+    peaks = np.ones(len(values)) * np.nan
+    t_peaks, dt_left_peaks, dt_right_peaks = peaks.copy(), peaks.copy(), peaks.copy()
+
+    if inverse:
+        print(&#39;Determining peaks (inverse)&#39;)
+    else:
+        print(&#39;Determining peaks&#39;)
+    peak_count = 0
+    while len(values_sorted) != 0:
+        _t, _p = times_sorted[0], values_sorted[0]
+        t_peaks[peak_count], peaks[peak_count] = _t, _p
+
+        _i = indices[_t == times][0]
+
+        # first left peak
+        _i_extra = check_peakside(filter_identified_peaks(values, times, times_sorted),
+                                  _i, -1, window, threshold)
+        dt_left_peaks[peak_count] = (times[_i] - times[_i + _i_extra]) / np.timedelta64(1, &#39;s&#39;)
+        times_sorted, values_sorted = delete_values_between_peak_trough(times[(_i + _i_extra):(_i+1)],
+                                                                        times_sorted, values_sorted)
+
+        # right peak
+        _i_extra = check_peakside(filter_identified_peaks(values, times, times_sorted),
+                                  _i, 1, window, threshold)
+        dt_right_peaks[peak_count] = (times[_i + _i_extra] - times[_i]) / np.timedelta64(1, &#39;s&#39;)
+        times_sorted, values_sorted = delete_values_between_peak_trough(times[(_i-1):(_i + _i_extra)],
+                                                                        times_sorted, values_sorted)
+
+        peak_count += 1
+
+    t_peaks = t_peaks[~np.isnan(t_peaks)]
+    peaks = peaks[~np.isnan(peaks)]
+    dt_left_peaks = dt_left_peaks[~np.isnan(dt_left_peaks)]
+    dt_right_peaks = dt_right_peaks[~np.isnan(dt_right_peaks)]
+
+    dt_total_peaks = dt_left_peaks + dt_right_peaks
+
+    df_peaks = pd.DataFrame(index=pd.to_datetime(t_peaks),
+                            data={&#39;values&#39;: peaks, &#39;dt_left&#39;: dt_left_peaks,
+                                  &#39;dt_right&#39;: dt_right_peaks, &#39;dt_total&#39;: dt_total_peaks})
+    df_peaks = df_peaks.loc[df_peaks[&#39;dt_total&#39;] &gt; 0]
+
+    if inverse:
+        df_peaks[&#39;values&#39;] = -df_peaks[&#39;values&#39;]
+
+    return df_peaks
+
+
+def distribution(df: pd.DataFrame, col: str = None,
+                 c: float = -0.3, d: float = 0.4, inverse: bool = False) -&gt; pd.DataFrame:
+    col = df.columns[0] if col is None else col
+    years = get_total_years(df)
+    if inverse:
+        df = df.sort_values(by=col, ascending=False)
+    else:
+        df = df.sort_values(by=col)
+    rank = np.array(range(len(df[col]))) + 1
+    df[f&#39;{col}_Tfreq&#39;] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
+    df_sorted = df.sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return df_sorted
+
+
+def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str = None,
+                inverse: bool = False) -&gt; pd.DataFrame:
+    col = df.columns[0] if col is None else col
+
+    values = df[col].values
+    if inverse:
+        values = -values
+        threshold = -threshold
+    p_val_gt_threshold = df[f&#39;{col}_Tfreq&#39;].loc[values &gt; threshold].iloc[0]
+
+    def pfunc(x, p_val_gt_threshold, threshold, sigma, alpha):
+        return p_val_gt_threshold * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
+
+    def pfunc_inverse(p_X_gt_x, p_val_gt_threshold, threshold, sigma, alpha):
+        return sigma * (((threshold/sigma)**alpha) - np.log(p_X_gt_x / p_val_gt_threshold))**(1/alpha)
+
+    def der_pfunc(x, p_val_gt_threshold, threshold, alpha, sigma):
+        return -p_val_gt_threshold * (alpha * x**(alpha - 1)) * (sigma**(-alpha)) * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
+
+    def cost_func(params, *args):
+        return -np.sum([np.log(-der_pfunc(x, args[0], args[1], params[0], params[1])) for x in args[2]])
+
+    initial_guess = np.array([1, abs(threshold)])
+    result = optimize.minimize(cost_func,
+                               x0=initial_guess,
+                               args=(p_val_gt_threshold, threshold, values[values &gt; threshold]),
+                               method=&#39;Nelder-Mead&#39;,
+                               options={&#39;maxiter&#39;: 1e4})
+    if result.success:
+        alpha, sigma = result.x[0], result.x[1]
+    else:
+        raise ValueError(result.message)
+
+    new_values = pfunc_inverse(Tfreqs, p_val_gt_threshold, threshold, sigma, alpha)
+    if inverse:
+        new_values = -new_values
+    pd_return = pd.DataFrame(data={f&#39;{col}_Tfreq&#39;: Tfreqs,col: new_values}).sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return pd_return
+
+
+def filter_with_threshold(df_raw: pd.DataFrame,
+                          df_filtered: pd.DataFrame,
+                          threshold: float,
+                          inverse: bool = False) -&gt; pd.DataFrame:
+    if inverse:
+        return pd.concat([df_raw[df_raw[&#39;values&#39;] &gt;= threshold],
+                          df_filtered[df_filtered[&#39;values&#39;] &lt; threshold]], axis=0).sort_index()
+    else:
+        return pd.concat([df_raw[df_raw[&#39;values&#39;] &lt;= threshold],
+                          df_filtered[df_filtered[&#39;values&#39;] &gt; threshold]], axis=0).sort_index()
+
+
+def detect_peaks(df: pd.DataFrame,   prominence: int = 10, inverse: bool = False):
+    df = df.copy()
+    if inverse:
+        df[&#39;values&#39;] = -1*df[&#39;values&#39;]
+    peak_indices = signal.find_peaks(df[&#39;values&#39;].values, prominence=prominence)[0]
+    df_peaks = pd.DataFrame(data={&#39;values&#39;: df[&#39;values&#39;].iloc[peak_indices]},
+                            index=df.iloc[peak_indices].index.values)
+    threshold = determine_threshold(values=df[&#39;values&#39;].values, peak_indices=peak_indices)
+    return df_peaks, threshold, peak_indices
+
+
+def determine_threshold(values: np.ndarray, peak_indices: np.ndarray) -&gt; float:
+    w = signal.peak_widths(values, peak_indices)[0]
+    for threshold in reversed(range(int(np.floor(values.min())),
+                                    int(np.ceil(values.max())))):
+        _t = w[values[peak_indices] &gt; threshold]
+        if len(_t[_t &lt;= 3]) &gt; (0.1*len(_t)):  # min of 3 tidal periods and at least more than 10%
+            break
+    return threshold
+
+
+def get_total_years(df: pd.DataFrame) -&gt; float:
+    return (df.index[-1] - df.index[0]).total_seconds() / (3600 * 24 * 365)
+
+
+def apply_trendanalysis(df: pd.DataFrame, rule_type: str, rule_value: Union[float, dt.datetime]):
+    # There are 2 rule types:  - break -&gt; Values before break are removed
+    #                          - linear -&gt; Values are increased/lowered based on value in value/year. It is assumes
+    #                                      that there is no linear trend at the latest time (so it works its way back
+    #                                      in the past). rule_value should be entered as going forward in time
+    if rule_type == &#39;break&#39;:
+        #if not isinstance(rule_value,dt.datetime): #TODO: commented this since it did not work with strings, but indexing df did not work with dt.datetime() anymore. Fix and make more generic.
+        #    raise Exception(&#39;rule_value should be of instance dt.datetime&#39;)
+        #return df[dt.datetime.strptime(rule_value, &#39;%d-%M-%Y&#39;):].copy()
+        return df[rule_value:].copy()
+    elif rule_type == &#39;linear&#39;:
+        df, rule_value = df.copy(), float(rule_value)
+        dx = np.array([rule_value*x.total_seconds()/(365*24*3600) for x in (df.index[-1] - df.index)])
+        df[&#39;values&#39;] = df[&#39;values&#39;] + dx
+        return df
+    elif (rule_type == &#39;&#39;) or (rule_type is None):
+        return df.copy()
+    elif isinstance(rule_type, np.float):
+        if np.isnan(rule_type):
+            return df.copy()
+        else:
+            raise ValueError(&#39;Incorrect rule_type passed to function. Only break or linear are supported&#39;)
+    else:
+        raise ValueError(&#39;Incorrect rule_type passed to function. Only break or linear are supported&#39;)
+
+
+def blend_distributions(df_trend: pd.DataFrame, df_weibull: pd.DataFrame, df_hydra: pd.DataFrame = None) -&gt; pd.DataFrame:
+    df_trend = df_trend.sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    df_weibull = df_weibull.sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+
+    # Trend to weibull
+    df_blended1 = df_trend.iloc[:-100].copy()
+    df_weibull = df_weibull.loc[df_weibull[&#39;values_Tfreq&#39;] &lt; df_blended1[&#39;values_Tfreq&#39;].iloc[-1]].copy()
+
+    # Weibull to Hydra
+    if df_hydra is not None:
+        df_hydra = df_hydra.sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+
+        Tfreqs_combined = np.unique(np.concatenate((df_weibull[&#39;values_Tfreq&#39;].values, df_hydra[&#39;values_Tfreq&#39;].values)))
+        vals_weibull = np.interp(Tfreqs_combined,
+                                 np.flip(df_weibull[&#39;values_Tfreq&#39;].values),
+                                 np.flip(df_weibull[&#39;values&#39;].values))
+        vals_hydra = np.interp(Tfreqs_combined,
+                               np.flip(df_hydra[&#39;values_Tfreq&#39;].values),
+                               np.flip(df_hydra[&#39;values&#39;].values))
+
+        Tfreq0, TfreqN = df_hydra[&#39;values_Tfreq&#39;].values[0], 1/50
+        Tfreqs = np.logspace(np.log10(TfreqN), np.log10(Tfreq0), int(1e5))
+        vals_weibull = np.interp(np.log10(Tfreqs),
+                                 np.log10(np.flip(df_weibull[&#39;values_Tfreq&#39;].values)),
+                                 np.flip(df_weibull[&#39;values&#39;].values))
+        vals_hydra = np.interp(np.log10(Tfreqs),
+                               np.log10(np.flip(df_hydra[&#39;values_Tfreq&#39;].values)),
+                               np.flip(df_hydra[&#39;values&#39;].values))
+        indices = np.arange(len(Tfreqs))
+        grads = np.flip(np.arange(len(indices))) / len(indices) * np.pi
+
+        vals_blend = 0.5*(np.cos(grads)+1)*vals_weibull[indices] + (1-0.5*(np.cos(grads)+1))*vals_hydra[indices]
+
+        df_blended2 = pd.DataFrame(data={&#39;values&#39;: vals_blend,
+                                         &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+
+        df_blended = pd.concat([df_blended1,
+                                df_weibull.loc[(df_weibull[&#39;values_Tfreq&#39;] &gt; df_blended2[&#39;values_Tfreq&#39;].iloc[0]) &amp;
+                                               (df_weibull[&#39;values_Tfreq&#39;] &lt; df_blended1[&#39;values_Tfreq&#39;].iloc[-1])],
+                                df_blended2,
+                                df_hydra.loc[df_hydra[&#39;values_Tfreq&#39;] &lt; df_blended2[&#39;values_Tfreq&#39;].iloc[-1]]], axis=0)
+        df_blended = df_blended.drop_duplicates(subset=&#39;values_Tfreq&#39;).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    else:
+        df_blended = pd.concat([df_blended1,
+                                df_weibull.loc[(df_weibull[&#39;values_Tfreq&#39;] &lt; df_blended1[&#39;values_Tfreq&#39;].iloc[-1])]],
+                               axis=0).drop_duplicates(subset=&#39;values_Tfreq&#39;).sort_values(by=&#39;values_Tfreq&#39;,
+                                                                                         ascending=False)
+
+    return df_blended
+
+
+def plot_distributions(dist: dict, name: str,
+                       keys: List[str] = None,
+                       color_map: dict = None,
+                       xlabel: str = &#39;Exceedance frequency [1/yrs]&#39;,
+                       ylabel: str = &#39;Waterlevel [m]&#39;,
+                       legend_loc: str = &#39;lower right&#39;):
+    
+    if color_map==&#39;default&#39;:
+        color_map = {&#39;Ongefilterd&#39;:  &#39;b&#39;, &#39;Gefilterd&#39;: &#39;orange&#39;, &#39;Trendanalyse&#39;: &#39;g&#39;,
+                     &#39;Weibull&#39;: &#39;r&#39;, &#39;Hydra-NL&#39;: &#39;m&#39;, &#39;Hydra-NL met modelonzekerheid&#39;: &#39;cyan&#39;,
+                     &#39;Gecombineerd&#39;: &#39;k&#39;}
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    if keys is None:
+        keys = list(dist.keys())
+    for k in keys:
+        c = color_map[k] if (color_map is not None) and (k in color_map.keys()) else None
+        if k==&#39;Gecombineerd&#39;:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], &#39;--&#39;, label=k, c=c)
+        else:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], label=k, c=c)
+    ax.set_title(name)
+    ax.set_xlabel(xlabel), ax.set_xscale(&#39;log&#39;), ax.set_xlim([1e-5, 1e3]), ax.invert_xaxis()
+    ax.set_ylabel(ylabel)
+    ax.legend(fontsize=&#39;medium&#39;, loc=legend_loc)
+    ax.xaxis.set_minor_locator(ticker.LogLocator(base=10.0, subs=tuple(i / 10 for i in range(1, 10)), numticks=12))
+    ax.xaxis.set_minor_formatter(ticker.NullFormatter()),
+    ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.1)) #this was 10, but now meters instead of cm
+    ax.yaxis.set_minor_formatter(ticker.NullFormatter()),
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter(&#39;%.2f&#39;)) #to force 2 decimal places
+    ax.grid(visible=True, which=&#39;major&#39;), ax.grid(visible=True, which=&#39;minor&#39;, ls=&#39;:&#39;)
+    ax.set_axisbelow(True)
+    fig.tight_layout()
+    return fig,ax
+
+
+def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
+                                         id: str, csv_dir: os.PathLike, prefix: str,) -&gt; pd.DataFrame:
+    df_interp = pd.DataFrame(data={&#39;values&#39;: np.interp(Tfreqs,
+                                                      np.flip(df[&#39;values_Tfreq&#39;].values),
+                                                      np.flip(df[&#39;values&#39;].values)),
+                                   &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    #prefix = os.path.basename(csv_dir)
+    df_interp.to_csv(os.path.join(csv_dir, f&#39;{prefix}_{id}.csv&#39;), index=False, sep=&#39;;&#39;)
+    return df_interp
+
+
+def interpolate_interested_Tfreqs(df: pd.DataFrame, Tfreqs: List[float]) -&gt; pd.DataFrame:
+    df_interp = pd.DataFrame(data={&#39;values&#39;: np.interp(Tfreqs,
+                                                      np.flip(df[&#39;values_Tfreq&#39;].values),
+                                                      np.flip(df[&#39;values&#39;].values)),
+                                   &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    return df_interp</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hatyan.kw_overschrijding.compute_overschrijding"><code class="name flex">
+<span>def <span class="ident">compute_overschrijding</span></span>(<span>df_extrema, rule_type, rule_value, inverse=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_overschrijding(df_extrema, rule_type, rule_value, inverse=False):
+    
+    df_extrema_clean = df_extrema.copy()[[&#39;values&#39;]] #drop all info but the values (times-idx, HWLWcode etc)
+    dist = {} #TODO: replace with pandas.DataFrame?
+    
+    print(&#39;Calculate unfiltered distribution&#39;)
+    dist[&#39;Ongefilterd&#39;] = distribution(df_extrema_clean, inverse=inverse)
+    
+    &#34;&#34;&#34;# filtering is only applicable for stations with high river discharge influence, so disabled #TODO: ext is geschikt voor getij, maar bij hoge afvoergolf wil je alleen het echte extreem. Er is dan een treshold per station nodig, is nodig om de rivierafvoerpiek te kunnen duiden.
+    print(&#39;Calculate filtered distribution&#39;)
+    df_peaks, threshold, _ = hatyan.detect_peaks(df_extrema_clean)
+    if metadata_station[&#39;apply_treshold&#39;]:
+        temp[metadata_station[&#39;id&#39;]] = threshold
+        df_extrema_filt = hatyan.filter_with_threshold(df_extrema_clean, df_peaks, threshold)
+    else:
+        df_extrema_filt = df_extrema_clean.copy()
+    dist[&#39;Gefilterd&#39;] = hatyan.distribution(df_extrema_filt.copy())
+    &#34;&#34;&#34;
+    
+    print(&#39;Calculate filtered distribution with trendanalysis&#39;)
+    df_trend = apply_trendanalysis(df_extrema_clean, rule_type=rule_type, rule_value=rule_value)
+    dist[&#39;Trendanalyse&#39;] = distribution(df_trend.copy(), inverse=inverse)
+    
+    print(&#39;Fit Weibull to filtered distribution with trendanalysis&#39;)
+    # Last 100 datapoints from distribution (assuming it is sorted with Tfreqs from large to small)
+    dist[&#39;Weibull&#39;] = get_weibull(dist[&#39;Trendanalyse&#39;].copy(),
+                                  threshold=dist[&#39;Trendanalyse&#39;][&#39;values&#39;].iloc[-101], #-100 for HW, -101 for LW, but does not matter
+                                  Tfreqs=np.logspace(-5, np.log10(dist[&#39;Trendanalyse&#39;][&#39;values_Tfreq&#39;].iloc[-101]), 5000),
+                                  inverse=inverse)
+    
+    print(&#39;Blend trend and weibull together&#39;) # and Hydra-NL
+    dist[&#39;Gecombineerd&#39;] = blend_distributions(dist[&#39;Trendanalyse&#39;].copy(),
+                                               dist[&#39;Weibull&#39;].copy(),
+                                               #dist[&#39;Hydra-NL&#39;].copy(), 
+                                               )#.set_index(&#39;values_Tfreq&#39;)
+
+    &#34;&#34;&#34;
+    if row[&#39;apply_treshold&#39;]:
+        keys = list(dist.keys())
+    else:
+        keys = [x for x in list(dist.keys()) if x != &#39;Gefilterd&#39;]
+    &#34;&#34;&#34;
+    
+    return dist</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.delete_values_between_peak_trough"><code class="name flex">
+<span>def <span class="ident">delete_values_between_peak_trough</span></span>(<span>times_to_delete, times, values)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_values_between_peak_trough(times_to_delete, times, values):
+    mask = np.in1d(times, times_to_delete)
+    return times[~mask], values[~mask]</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.go_through_peak"><code class="name flex">
+<span>def <span class="ident">go_through_peak</span></span>(<span>values, _i, _i_extra, multiplier)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def go_through_peak(values, _i, _i_extra, multiplier):
+    while values[_i + _i_extra + multiplier] &lt; values[_i + _i_extra]:
+        _i_extra += multiplier
+    return _i_extra</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.filter_identified_peaks"><code class="name flex">
+<span>def <span class="ident">filter_identified_peaks</span></span>(<span>values, times, times_to_delete)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def filter_identified_peaks(values, times, times_to_delete):
+    _values = values.copy()
+    _values[~np.in1d(times, times_to_delete)] = -9999.0
+    return _values</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.check_peakside"><code class="name flex">
+<span>def <span class="ident">check_peakside</span></span>(<span>values, _i, multiplier, window, threshold)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_peakside(values, _i, multiplier, window, threshold):
+    _i_extra = 0
+    check = True
+    while check:
+        try:
+            while (values[_i + _i_extra + multiplier] &lt;= values[_i + _i_extra]) and (values[_i + _i_extra + multiplier] != -9999.0):
+                _i_extra += multiplier
+        except IndexError:
+            pass
+        try:
+            _i1, _i2 = (_i + _i_extra + (multiplier * window)), (_i + _i_extra)
+            if any(values[np.min([_i1, _i2]):np.max([_i1, _i2])] &gt; threshold):
+                new_peak = values[np.min([_i1, _i2]):np.max([_i1, _i2])].max()
+                while values[_i + _i_extra] != new_peak:
+                    _i_extra += multiplier
+            else:
+                check = False
+        except IndexError:
+            pass
+    return _i_extra</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.detect_peaks_hkv"><code class="name flex">
+<span>def <span class="ident">detect_peaks_hkv</span></span>(<span>df: pandas.core.frame.DataFrame, window: int, inverse: bool = False, threshold: float = None) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def detect_peaks_hkv(df: pd.DataFrame, window: int, inverse: bool = False, threshold: float = None) -&gt; pd.DataFrame:
+    _df = df.copy()
+    if inverse:
+        _df[&#39;values&#39;] = -_df[&#39;values&#39;]
+    times, values = _df.index.values, _df[&#39;values&#39;].values
+    indices = np.arange(len(times))
+
+    __df = _df.sort_values(by=[&#39;values&#39;], axis=0, ascending=False)
+    times_sorted, values_sorted = __df.index.values, __df[&#39;values&#39;].values
+
+    if threshold is None:
+        threshold = df[&#39;values&#39;].mean() + 2*df[&#39;values&#39;].std()
+    else:
+        if inverse:
+            threshold = -threshold
+
+    peaks = np.ones(len(values)) * np.nan
+    t_peaks, dt_left_peaks, dt_right_peaks = peaks.copy(), peaks.copy(), peaks.copy()
+
+    if inverse:
+        print(&#39;Determining peaks (inverse)&#39;)
+    else:
+        print(&#39;Determining peaks&#39;)
+    peak_count = 0
+    while len(values_sorted) != 0:
+        _t, _p = times_sorted[0], values_sorted[0]
+        t_peaks[peak_count], peaks[peak_count] = _t, _p
+
+        _i = indices[_t == times][0]
+
+        # first left peak
+        _i_extra = check_peakside(filter_identified_peaks(values, times, times_sorted),
+                                  _i, -1, window, threshold)
+        dt_left_peaks[peak_count] = (times[_i] - times[_i + _i_extra]) / np.timedelta64(1, &#39;s&#39;)
+        times_sorted, values_sorted = delete_values_between_peak_trough(times[(_i + _i_extra):(_i+1)],
+                                                                        times_sorted, values_sorted)
+
+        # right peak
+        _i_extra = check_peakside(filter_identified_peaks(values, times, times_sorted),
+                                  _i, 1, window, threshold)
+        dt_right_peaks[peak_count] = (times[_i + _i_extra] - times[_i]) / np.timedelta64(1, &#39;s&#39;)
+        times_sorted, values_sorted = delete_values_between_peak_trough(times[(_i-1):(_i + _i_extra)],
+                                                                        times_sorted, values_sorted)
+
+        peak_count += 1
+
+    t_peaks = t_peaks[~np.isnan(t_peaks)]
+    peaks = peaks[~np.isnan(peaks)]
+    dt_left_peaks = dt_left_peaks[~np.isnan(dt_left_peaks)]
+    dt_right_peaks = dt_right_peaks[~np.isnan(dt_right_peaks)]
+
+    dt_total_peaks = dt_left_peaks + dt_right_peaks
+
+    df_peaks = pd.DataFrame(index=pd.to_datetime(t_peaks),
+                            data={&#39;values&#39;: peaks, &#39;dt_left&#39;: dt_left_peaks,
+                                  &#39;dt_right&#39;: dt_right_peaks, &#39;dt_total&#39;: dt_total_peaks})
+    df_peaks = df_peaks.loc[df_peaks[&#39;dt_total&#39;] &gt; 0]
+
+    if inverse:
+        df_peaks[&#39;values&#39;] = -df_peaks[&#39;values&#39;]
+
+    return df_peaks</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.distribution"><code class="name flex">
+<span>def <span class="ident">distribution</span></span>(<span>df: pandas.core.frame.DataFrame, col: str = None, c: float = -0.3, d: float = 0.4, inverse: bool = False) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def distribution(df: pd.DataFrame, col: str = None,
+                 c: float = -0.3, d: float = 0.4, inverse: bool = False) -&gt; pd.DataFrame:
+    col = df.columns[0] if col is None else col
+    years = get_total_years(df)
+    if inverse:
+        df = df.sort_values(by=col, ascending=False)
+    else:
+        df = df.sort_values(by=col)
+    rank = np.array(range(len(df[col]))) + 1
+    df[f&#39;{col}_Tfreq&#39;] = (1 - (rank + c) / (len(rank) + d)) * (len(rank) / years)
+    df_sorted = df.sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return df_sorted</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.get_weibull"><code class="name flex">
+<span>def <span class="ident">get_weibull</span></span>(<span>df: pandas.core.frame.DataFrame, threshold: float, Tfreqs: numpy.ndarray, col: str = None, inverse: bool = False) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_weibull(df: pd.DataFrame, threshold: float, Tfreqs: np.ndarray, col: str = None,
+                inverse: bool = False) -&gt; pd.DataFrame:
+    col = df.columns[0] if col is None else col
+
+    values = df[col].values
+    if inverse:
+        values = -values
+        threshold = -threshold
+    p_val_gt_threshold = df[f&#39;{col}_Tfreq&#39;].loc[values &gt; threshold].iloc[0]
+
+    def pfunc(x, p_val_gt_threshold, threshold, sigma, alpha):
+        return p_val_gt_threshold * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
+
+    def pfunc_inverse(p_X_gt_x, p_val_gt_threshold, threshold, sigma, alpha):
+        return sigma * (((threshold/sigma)**alpha) - np.log(p_X_gt_x / p_val_gt_threshold))**(1/alpha)
+
+    def der_pfunc(x, p_val_gt_threshold, threshold, alpha, sigma):
+        return -p_val_gt_threshold * (alpha * x**(alpha - 1)) * (sigma**(-alpha)) * np.exp(-((x/sigma)**alpha) + ((threshold/sigma)**alpha))
+
+    def cost_func(params, *args):
+        return -np.sum([np.log(-der_pfunc(x, args[0], args[1], params[0], params[1])) for x in args[2]])
+
+    initial_guess = np.array([1, abs(threshold)])
+    result = optimize.minimize(cost_func,
+                               x0=initial_guess,
+                               args=(p_val_gt_threshold, threshold, values[values &gt; threshold]),
+                               method=&#39;Nelder-Mead&#39;,
+                               options={&#39;maxiter&#39;: 1e4})
+    if result.success:
+        alpha, sigma = result.x[0], result.x[1]
+    else:
+        raise ValueError(result.message)
+
+    new_values = pfunc_inverse(Tfreqs, p_val_gt_threshold, threshold, sigma, alpha)
+    if inverse:
+        new_values = -new_values
+    pd_return = pd.DataFrame(data={f&#39;{col}_Tfreq&#39;: Tfreqs,col: new_values}).sort_values(by=f&#39;{col}_Tfreq&#39;, ascending=False)
+    
+    return pd_return</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.filter_with_threshold"><code class="name flex">
+<span>def <span class="ident">filter_with_threshold</span></span>(<span>df_raw: pandas.core.frame.DataFrame, df_filtered: pandas.core.frame.DataFrame, threshold: float, inverse: bool = False) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def filter_with_threshold(df_raw: pd.DataFrame,
+                          df_filtered: pd.DataFrame,
+                          threshold: float,
+                          inverse: bool = False) -&gt; pd.DataFrame:
+    if inverse:
+        return pd.concat([df_raw[df_raw[&#39;values&#39;] &gt;= threshold],
+                          df_filtered[df_filtered[&#39;values&#39;] &lt; threshold]], axis=0).sort_index()
+    else:
+        return pd.concat([df_raw[df_raw[&#39;values&#39;] &lt;= threshold],
+                          df_filtered[df_filtered[&#39;values&#39;] &gt; threshold]], axis=0).sort_index()</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.detect_peaks"><code class="name flex">
+<span>def <span class="ident">detect_peaks</span></span>(<span>df: pandas.core.frame.DataFrame, prominence: int = 10, inverse: bool = False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def detect_peaks(df: pd.DataFrame,   prominence: int = 10, inverse: bool = False):
+    df = df.copy()
+    if inverse:
+        df[&#39;values&#39;] = -1*df[&#39;values&#39;]
+    peak_indices = signal.find_peaks(df[&#39;values&#39;].values, prominence=prominence)[0]
+    df_peaks = pd.DataFrame(data={&#39;values&#39;: df[&#39;values&#39;].iloc[peak_indices]},
+                            index=df.iloc[peak_indices].index.values)
+    threshold = determine_threshold(values=df[&#39;values&#39;].values, peak_indices=peak_indices)
+    return df_peaks, threshold, peak_indices</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.determine_threshold"><code class="name flex">
+<span>def <span class="ident">determine_threshold</span></span>(<span>values: numpy.ndarray, peak_indices: numpy.ndarray) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def determine_threshold(values: np.ndarray, peak_indices: np.ndarray) -&gt; float:
+    w = signal.peak_widths(values, peak_indices)[0]
+    for threshold in reversed(range(int(np.floor(values.min())),
+                                    int(np.ceil(values.max())))):
+        _t = w[values[peak_indices] &gt; threshold]
+        if len(_t[_t &lt;= 3]) &gt; (0.1*len(_t)):  # min of 3 tidal periods and at least more than 10%
+            break
+    return threshold</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.get_total_years"><code class="name flex">
+<span>def <span class="ident">get_total_years</span></span>(<span>df: pandas.core.frame.DataFrame) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_total_years(df: pd.DataFrame) -&gt; float:
+    return (df.index[-1] - df.index[0]).total_seconds() / (3600 * 24 * 365)</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.apply_trendanalysis"><code class="name flex">
+<span>def <span class="ident">apply_trendanalysis</span></span>(<span>df: pandas.core.frame.DataFrame, rule_type: str, rule_value: Union[float, datetime.datetime])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def apply_trendanalysis(df: pd.DataFrame, rule_type: str, rule_value: Union[float, dt.datetime]):
+    # There are 2 rule types:  - break -&gt; Values before break are removed
+    #                          - linear -&gt; Values are increased/lowered based on value in value/year. It is assumes
+    #                                      that there is no linear trend at the latest time (so it works its way back
+    #                                      in the past). rule_value should be entered as going forward in time
+    if rule_type == &#39;break&#39;:
+        #if not isinstance(rule_value,dt.datetime): #TODO: commented this since it did not work with strings, but indexing df did not work with dt.datetime() anymore. Fix and make more generic.
+        #    raise Exception(&#39;rule_value should be of instance dt.datetime&#39;)
+        #return df[dt.datetime.strptime(rule_value, &#39;%d-%M-%Y&#39;):].copy()
+        return df[rule_value:].copy()
+    elif rule_type == &#39;linear&#39;:
+        df, rule_value = df.copy(), float(rule_value)
+        dx = np.array([rule_value*x.total_seconds()/(365*24*3600) for x in (df.index[-1] - df.index)])
+        df[&#39;values&#39;] = df[&#39;values&#39;] + dx
+        return df
+    elif (rule_type == &#39;&#39;) or (rule_type is None):
+        return df.copy()
+    elif isinstance(rule_type, np.float):
+        if np.isnan(rule_type):
+            return df.copy()
+        else:
+            raise ValueError(&#39;Incorrect rule_type passed to function. Only break or linear are supported&#39;)
+    else:
+        raise ValueError(&#39;Incorrect rule_type passed to function. Only break or linear are supported&#39;)</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.blend_distributions"><code class="name flex">
+<span>def <span class="ident">blend_distributions</span></span>(<span>df_trend: pandas.core.frame.DataFrame, df_weibull: pandas.core.frame.DataFrame, df_hydra: pandas.core.frame.DataFrame = None) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def blend_distributions(df_trend: pd.DataFrame, df_weibull: pd.DataFrame, df_hydra: pd.DataFrame = None) -&gt; pd.DataFrame:
+    df_trend = df_trend.sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    df_weibull = df_weibull.sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+
+    # Trend to weibull
+    df_blended1 = df_trend.iloc[:-100].copy()
+    df_weibull = df_weibull.loc[df_weibull[&#39;values_Tfreq&#39;] &lt; df_blended1[&#39;values_Tfreq&#39;].iloc[-1]].copy()
+
+    # Weibull to Hydra
+    if df_hydra is not None:
+        df_hydra = df_hydra.sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+
+        Tfreqs_combined = np.unique(np.concatenate((df_weibull[&#39;values_Tfreq&#39;].values, df_hydra[&#39;values_Tfreq&#39;].values)))
+        vals_weibull = np.interp(Tfreqs_combined,
+                                 np.flip(df_weibull[&#39;values_Tfreq&#39;].values),
+                                 np.flip(df_weibull[&#39;values&#39;].values))
+        vals_hydra = np.interp(Tfreqs_combined,
+                               np.flip(df_hydra[&#39;values_Tfreq&#39;].values),
+                               np.flip(df_hydra[&#39;values&#39;].values))
+
+        Tfreq0, TfreqN = df_hydra[&#39;values_Tfreq&#39;].values[0], 1/50
+        Tfreqs = np.logspace(np.log10(TfreqN), np.log10(Tfreq0), int(1e5))
+        vals_weibull = np.interp(np.log10(Tfreqs),
+                                 np.log10(np.flip(df_weibull[&#39;values_Tfreq&#39;].values)),
+                                 np.flip(df_weibull[&#39;values&#39;].values))
+        vals_hydra = np.interp(np.log10(Tfreqs),
+                               np.log10(np.flip(df_hydra[&#39;values_Tfreq&#39;].values)),
+                               np.flip(df_hydra[&#39;values&#39;].values))
+        indices = np.arange(len(Tfreqs))
+        grads = np.flip(np.arange(len(indices))) / len(indices) * np.pi
+
+        vals_blend = 0.5*(np.cos(grads)+1)*vals_weibull[indices] + (1-0.5*(np.cos(grads)+1))*vals_hydra[indices]
+
+        df_blended2 = pd.DataFrame(data={&#39;values&#39;: vals_blend,
+                                         &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+
+        df_blended = pd.concat([df_blended1,
+                                df_weibull.loc[(df_weibull[&#39;values_Tfreq&#39;] &gt; df_blended2[&#39;values_Tfreq&#39;].iloc[0]) &amp;
+                                               (df_weibull[&#39;values_Tfreq&#39;] &lt; df_blended1[&#39;values_Tfreq&#39;].iloc[-1])],
+                                df_blended2,
+                                df_hydra.loc[df_hydra[&#39;values_Tfreq&#39;] &lt; df_blended2[&#39;values_Tfreq&#39;].iloc[-1]]], axis=0)
+        df_blended = df_blended.drop_duplicates(subset=&#39;values_Tfreq&#39;).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    else:
+        df_blended = pd.concat([df_blended1,
+                                df_weibull.loc[(df_weibull[&#39;values_Tfreq&#39;] &lt; df_blended1[&#39;values_Tfreq&#39;].iloc[-1])]],
+                               axis=0).drop_duplicates(subset=&#39;values_Tfreq&#39;).sort_values(by=&#39;values_Tfreq&#39;,
+                                                                                         ascending=False)
+
+    return df_blended</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.plot_distributions"><code class="name flex">
+<span>def <span class="ident">plot_distributions</span></span>(<span>dist: dict, name: str, keys: List[str] = None, color_map: dict = None, xlabel: str = 'Exceedance frequency [1/yrs]', ylabel: str = 'Waterlevel [m]', legend_loc: str = 'lower right')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_distributions(dist: dict, name: str,
+                       keys: List[str] = None,
+                       color_map: dict = None,
+                       xlabel: str = &#39;Exceedance frequency [1/yrs]&#39;,
+                       ylabel: str = &#39;Waterlevel [m]&#39;,
+                       legend_loc: str = &#39;lower right&#39;):
+    
+    if color_map==&#39;default&#39;:
+        color_map = {&#39;Ongefilterd&#39;:  &#39;b&#39;, &#39;Gefilterd&#39;: &#39;orange&#39;, &#39;Trendanalyse&#39;: &#39;g&#39;,
+                     &#39;Weibull&#39;: &#39;r&#39;, &#39;Hydra-NL&#39;: &#39;m&#39;, &#39;Hydra-NL met modelonzekerheid&#39;: &#39;cyan&#39;,
+                     &#39;Gecombineerd&#39;: &#39;k&#39;}
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    if keys is None:
+        keys = list(dist.keys())
+    for k in keys:
+        c = color_map[k] if (color_map is not None) and (k in color_map.keys()) else None
+        if k==&#39;Gecombineerd&#39;:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], &#39;--&#39;, label=k, c=c)
+        else:
+            ax.plot(dist[k][&#39;values_Tfreq&#39;], dist[k][&#39;values&#39;], label=k, c=c)
+    ax.set_title(name)
+    ax.set_xlabel(xlabel), ax.set_xscale(&#39;log&#39;), ax.set_xlim([1e-5, 1e3]), ax.invert_xaxis()
+    ax.set_ylabel(ylabel)
+    ax.legend(fontsize=&#39;medium&#39;, loc=legend_loc)
+    ax.xaxis.set_minor_locator(ticker.LogLocator(base=10.0, subs=tuple(i / 10 for i in range(1, 10)), numticks=12))
+    ax.xaxis.set_minor_formatter(ticker.NullFormatter()),
+    ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.1)) #this was 10, but now meters instead of cm
+    ax.yaxis.set_minor_formatter(ticker.NullFormatter()),
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter(&#39;%.2f&#39;)) #to force 2 decimal places
+    ax.grid(visible=True, which=&#39;major&#39;), ax.grid(visible=True, which=&#39;minor&#39;, ls=&#39;:&#39;)
+    ax.set_axisbelow(True)
+    fig.tight_layout()
+    return fig,ax</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.interpolate_interested_Tfreqs_to_csv"><code class="name flex">
+<span>def <span class="ident">interpolate_interested_Tfreqs_to_csv</span></span>(<span>df: pandas.core.frame.DataFrame, Tfreqs: List[float], id: str, csv_dir: os.PathLike, prefix: str) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def interpolate_interested_Tfreqs_to_csv(df: pd.DataFrame, Tfreqs: List[float],
+                                         id: str, csv_dir: os.PathLike, prefix: str,) -&gt; pd.DataFrame:
+    df_interp = pd.DataFrame(data={&#39;values&#39;: np.interp(Tfreqs,
+                                                      np.flip(df[&#39;values_Tfreq&#39;].values),
+                                                      np.flip(df[&#39;values&#39;].values)),
+                                   &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    #prefix = os.path.basename(csv_dir)
+    df_interp.to_csv(os.path.join(csv_dir, f&#39;{prefix}_{id}.csv&#39;), index=False, sep=&#39;;&#39;)
+    return df_interp</code></pre>
+</details>
+</dd>
+<dt id="hatyan.kw_overschrijding.interpolate_interested_Tfreqs"><code class="name flex">
+<span>def <span class="ident">interpolate_interested_Tfreqs</span></span>(<span>df: pandas.core.frame.DataFrame, Tfreqs: List[float]) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def interpolate_interested_Tfreqs(df: pd.DataFrame, Tfreqs: List[float]) -&gt; pd.DataFrame:
+    df_interp = pd.DataFrame(data={&#39;values&#39;: np.interp(Tfreqs,
+                                                      np.flip(df[&#39;values_Tfreq&#39;].values),
+                                                      np.flip(df[&#39;values&#39;].values)),
+                                   &#39;values_Tfreq&#39;: Tfreqs}).sort_values(by=&#39;values_Tfreq&#39;, ascending=False)
+    return df_interp</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hatyan" href="index.html">hatyan</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="hatyan.kw_overschrijding.compute_overschrijding" href="#hatyan.kw_overschrijding.compute_overschrijding">compute_overschrijding</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.delete_values_between_peak_trough" href="#hatyan.kw_overschrijding.delete_values_between_peak_trough">delete_values_between_peak_trough</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.go_through_peak" href="#hatyan.kw_overschrijding.go_through_peak">go_through_peak</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.filter_identified_peaks" href="#hatyan.kw_overschrijding.filter_identified_peaks">filter_identified_peaks</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.check_peakside" href="#hatyan.kw_overschrijding.check_peakside">check_peakside</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.detect_peaks_hkv" href="#hatyan.kw_overschrijding.detect_peaks_hkv">detect_peaks_hkv</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.distribution" href="#hatyan.kw_overschrijding.distribution">distribution</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.get_weibull" href="#hatyan.kw_overschrijding.get_weibull">get_weibull</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.filter_with_threshold" href="#hatyan.kw_overschrijding.filter_with_threshold">filter_with_threshold</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.detect_peaks" href="#hatyan.kw_overschrijding.detect_peaks">detect_peaks</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.determine_threshold" href="#hatyan.kw_overschrijding.determine_threshold">determine_threshold</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.get_total_years" href="#hatyan.kw_overschrijding.get_total_years">get_total_years</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.apply_trendanalysis" href="#hatyan.kw_overschrijding.apply_trendanalysis">apply_trendanalysis</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.blend_distributions" href="#hatyan.kw_overschrijding.blend_distributions">blend_distributions</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.plot_distributions" href="#hatyan.kw_overschrijding.plot_distributions">plot_distributions</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.interpolate_interested_Tfreqs_to_csv" href="#hatyan.kw_overschrijding.interpolate_interested_Tfreqs_to_csv">interpolate_interested_Tfreqs_to_csv</a></code></li>
+<li><code><a title="hatyan.kw_overschrijding.interpolate_interested_Tfreqs" href="#hatyan.kw_overschrijding.interpolate_interested_Tfreqs">interpolate_interested_Tfreqs</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

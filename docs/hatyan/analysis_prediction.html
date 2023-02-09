@@ -71,11 +71,15 @@ import pandas as pd
 import datetime as dt
 import warnings
 warnings.filterwarnings(action=&#39;always&#39;, category=DeprecationWarning)
-from packaging import version
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
+
+
+class PydanticConfig:
+    #https://docs.pydantic.dev/usage/model_config/
+    arbitrary_types_allowed = True #necessary to allow for pd.DataFrame etc
 
 
 class MatrixConditionTooHigh(Exception):
@@ -539,7 +543,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     if not len(times_pred_all) &gt; 1:
         raise Exception(&#39;ERROR: requested prediction period is not more than one timestep_min&#39;)
     
-    if isinstance(times_pred_all, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(times_pred_all, pd.core.indexes.base.Index):
+    if isinstance(times_pred_all, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(times_pred_all, pd.core.indexes.base.Index): #TODO: this is probably not necessary, maybe only in case of Index (year 1600 compatibility)
         times_pred_all_pdDTI = times_pred_all
     else:
         times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
@@ -572,7 +576,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
 
     print(&#39;PREDICTION started&#39;)
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    if ~isinstance(times_pred_all_pdDTI,pd.DatetimeIndex) &amp; (version.parse(pd.__version__) &gt;= version.parse(&#39;1.2.0&#39;)): #fix for non-backwards compatible change in pandas, pandas version 1.1.2 is used for RWS version. TODO: remove this fix once pandas&gt;=1.2.0 can be used (probably py3.7 required)
+    if not isinstance(times_pred_all_pdDTI,pd.DatetimeIndex): #support for years&lt;1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start).total_seconds().values
     else:
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start[0]).total_seconds().values
@@ -1111,7 +1115,7 @@ The component set has the same timezone as the timeseries used to create it, the
     if not len(times_pred_all) &gt; 1:
         raise Exception(&#39;ERROR: requested prediction period is not more than one timestep_min&#39;)
     
-    if isinstance(times_pred_all, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(times_pred_all, pd.core.indexes.base.Index):
+    if isinstance(times_pred_all, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(times_pred_all, pd.core.indexes.base.Index): #TODO: this is probably not necessary, maybe only in case of Index (year 1600 compatibility)
         times_pred_all_pdDTI = times_pred_all
     else:
         times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
@@ -1144,7 +1148,7 @@ The component set has the same timezone as the timeseries used to create it, the
 
     print(&#39;PREDICTION started&#39;)
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    if ~isinstance(times_pred_all_pdDTI,pd.DatetimeIndex) &amp; (version.parse(pd.__version__) &gt;= version.parse(&#39;1.2.0&#39;)): #fix for non-backwards compatible change in pandas, pandas version 1.1.2 is used for RWS version. TODO: remove this fix once pandas&gt;=1.2.0 can be used (probably py3.7 required)
+    if not isinstance(times_pred_all_pdDTI,pd.DatetimeIndex): #support for years&lt;1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start).total_seconds().values
     else:
         times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start[0]).total_seconds().values
@@ -1247,6 +1251,27 @@ The component set has the same timezone as the timeseries used to create it, the
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="hatyan.analysis_prediction.PydanticConfig"><code class="flex name class">
+<span>class <span class="ident">PydanticConfig</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PydanticConfig:
+    #https://docs.pydantic.dev/usage/model_config/
+    arbitrary_types_allowed = True #necessary to allow for pd.DataFrame etc</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="hatyan.analysis_prediction.PydanticConfig.arbitrary_types_allowed"><code class="name">var <span class="ident">arbitrary_types_allowed</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
 <dt id="hatyan.analysis_prediction.MatrixConditionTooHigh"><code class="flex name class">
 <span>class <span class="ident">MatrixConditionTooHigh</span></span>
 <span>(</span><span>*args, **kwargs)</span>
@@ -1425,6 +1450,12 @@ Whether to generate a prediction for the ts time array. The default is False.</p
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="hatyan.analysis_prediction.PydanticConfig" href="#hatyan.analysis_prediction.PydanticConfig">PydanticConfig</a></code></h4>
+<ul class="">
+<li><code><a title="hatyan.analysis_prediction.PydanticConfig.arbitrary_types_allowed" href="#hatyan.analysis_prediction.PydanticConfig.arbitrary_types_allowed">arbitrary_types_allowed</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="hatyan.analysis_prediction.MatrixConditionTooHigh" href="#hatyan.analysis_prediction.MatrixConditionTooHigh">MatrixConditionTooHigh</a></code></h4>
 </li>
