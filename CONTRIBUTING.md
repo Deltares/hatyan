@@ -44,15 +44,6 @@ Generate documentation (automatically runs via Github Actions upon push to main)
 - ``conda activate hatyan_env``
 - ``python scripts/generate_documentation.py``
 
-Generate RPM (RHEL/CentOS installer, automatically runs via Github Actions upon release creation):
-
-- use the script in scripts/hatyan_rpmbuild.sh (for instance on the CentOS7 Deltares buildserver)
-- preparation: activate environment, run testbank and check acceptancetest output, update history.rst, git add+commit, bumpversion minor, (run testbank and) backup acceptancetest output, generate documentation, git add+commit+push, merge branch with main, create tag+release on github (e.g. v2.3.0)
-- this script uses the rpmbuild command and the specfile to generate an RPM on a CentOS/RHEL machine with the correct dependencies installed
-- rpmbuild uses the specfile scripts/hatyan_python-latest.spec as input (set the versiontag variable to the newly created github tag)
-- the dependencies for the RPM are documented in the specfile and the required Python libraries are documented in requirements.txt (pyqt5 is for interative QT5 plots)
-- to test hatyan on CentOS without installing an RPM: use the script scripts/hatyan_rpmbuild_nobinaries.sh, this creates a comparable setup in the home directory and a ~/hatyan_fromhome.sh file comparable to hatyan command. If you get an error about X11-forwarding, first try the xterm command.
-
 Publish to PyPI (automatically runs via Github Actions upon release creation):
 
 - open anaconda promptand navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
