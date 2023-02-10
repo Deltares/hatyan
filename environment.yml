@@ -13,4 +13,3 @@ dependencies:
     - requests
     - statsmodels
     - xarray
-    - pydap
