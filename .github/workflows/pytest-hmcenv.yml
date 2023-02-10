@@ -1,0 +1,33 @@
+name: pytest-hmcenv
+
+on:
+  push:
+    branches:
+    - main
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults: #Conda activation does not correctly work on sh. Please use bash.
+      run:
+        shell: bash -el {0}
+    steps:
+    - name: checkout repos
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: hatyan_hmcenv
+        environment-file: environment_hmc.yml
+        channels: conda-forge
+        #python-version: 3.8
+        auto-activate-base: false
+    - name: test conda env
+      run: |
+        conda info
+        conda list
+    - name: Test with pytest
+      run: |
+        pytest -m "not acceptance" --cov=hatyan
