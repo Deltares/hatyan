@@ -12,3 +12,4 @@ dependencies:
     - sip>=4.19.8
     - requests
     - statsmodels
+    - xarray
