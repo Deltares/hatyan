@@ -34,4 +34,4 @@ jobs:
         git config --global user.name 'veenstrajelmer'
         git add docs/hatyan/*
         git commit -a -m "Updated documentation" --no-verify
-        git push
+        git push --no-verify
