@@ -29,19 +29,10 @@ jobs:
     - name: Generate documentation
       run: |
         pdoc --html hatyan -o docs --force --config sort_identifiers=False
-    #- name: Commit updated documentation
-    #  run: |
-    #    git config --global user.name 'veenstrajelmer'
-    #    git add docs/hatyan/*
-    #    git commit -a -m "Updated documentation" --no-verify
-    #    git push
-    - uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: Updated documentation
-        # Optional. Options used by `git-commit`.
-        # See https://git-scm.com/docs/git-commit#_options
-        #commit_options: '--no-verify --signoff'
-        file_pattern: 'docs/hatyan/*'
-        #token: ${{ secrets.GITHUB_TOKEN }}
-        commit_user_name: veenstrajelmer
-        commit_user_email: jelmer.veenstra@deltares.nl
+    - name: Commit updated documentation
+      run: |
+        git config --global user.name 'veenstrajelmer'
+        git add docs/hatyan/*
+        git commit -a -m "Updated documentation" --no-verify --allow-empty
+        git push
+    
