@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        persist-credentials: false
+        persist-credentials: false #essential for pushing to protected branches: https://stackoverflow.com/questions/63733822/cant-push-to-protected-branch-in-github-action
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -34,6 +34,7 @@ jobs:
     - name: Commit updated documentation
       run: |
         git config --global user.name 'veenstrajelmer'
+        git config --global user.email jelmer.veenstra@deltares.nl
         git add docs/hatyan/*
         git commit -a -m "Updated documentation" --no-verify --allow-empty
         git push
