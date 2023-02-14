@@ -38,8 +38,8 @@ jobs:
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Updated documentation
-    # Optional. Options used by `git-commit`.
-    # See https://git-scm.com/docs/git-commit#_options
-    #commit_options: '--no-verify --signoff'
-    file_pattern: 'docs/hatyan/*'
+        # Optional. Options used by `git-commit`.
+        # See https://git-scm.com/docs/git-commit#_options
+        #commit_options: '--no-verify --signoff'
+        file_pattern: 'docs/hatyan/*'
 
