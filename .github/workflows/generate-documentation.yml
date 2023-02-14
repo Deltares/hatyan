@@ -42,4 +42,4 @@ jobs:
         # See https://git-scm.com/docs/git-commit#_options
         #commit_options: '--no-verify --signoff'
         file_pattern: 'docs/hatyan/*'
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
