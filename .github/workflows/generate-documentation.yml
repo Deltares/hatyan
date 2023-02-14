@@ -35,3 +35,4 @@ jobs:
         git add docs/hatyan/*
         git commit -a -m "Updated documentation" --no-verify --allow-empty
         git push
+#
