@@ -2,6 +2,19 @@
 History
 =======
 
+* Fri Feb 10 2023 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.5.104
+- updated dependencies (incl xarray), added environment_hmc.yml and updated pytest dev git action
+- updated (modernized) packaging files
+- moved example code from readme to notebook
+- set xTxmat_condition_max from 10 to 12, since HOEKVHLD 2006 had condition of 11.5
+- added KWK functions (incl LAT)
+- fixed pandas append deprecation warning
+- moved from analysis_peryear and analysis_permonth to analysis_perperiod
+- added xtrack and fes2014b constituent list
+- added shallow water components 2MK2, M(SK)2, M(KS)2. Added harmonic components S3, M!M, MSTM from tugo (provided by Henrique Guarneri)
+- introduced extra component OQ2_tugo
+- corrected nodal factor for MSQM based on tugo/HG
+
 * Fri Jul 22 2022 Jelmer Veenstra <jelmer.veenstra@deltares.nl> 2.5.64
 - added get_status keyword to readts_dia()
 - improved HWLWnumbering error in case of missing station from phasediff textfile
