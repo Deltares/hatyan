@@ -13,8 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        persist-credentials: false #essential for pushing to protected branches: https://stackoverflow.com/questions/63733822/cant-push-to-protected-branch-in-github-action
+      #with:
+      #  persist-credentials: false #essential for pushing to protected branches: https://stackoverflow.com/questions/63733822/cant-push-to-protected-branch-in-github-action
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
