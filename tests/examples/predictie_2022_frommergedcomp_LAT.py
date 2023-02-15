@@ -24,8 +24,8 @@ stats_xfac0 = ['A12','D15','F16','F3PFM','J6','K13APFM','K14PFM','L9PFM','NORTHC
 selected_stations = ['HOEKVHLD']
 
 stats_noana = []
-lat_vallist_allstats = pd.Series(dtype=float)
 hat_vallist_allstats = pd.Series(dtype=float)
+lat_vallist_allstats = pd.Series(dtype=float)
 
 for current_station in selected_stations:
     print(f'processing station: {current_station}')
@@ -45,15 +45,15 @@ for current_station in selected_stations:
     
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
-    LAT, HAT = hatyan.calc_LAT_HAT_fromcomponents(comp=COMP_merged, hatyan_settings=hatyan_settings)
+    HAT, LAT = hatyan.calc_HAT_LAT_fromcomponents(comp=COMP_merged, hatyan_settings=hatyan_settings)
     
-    lat_vallist_allstats.loc[current_station] = LAT
     hat_vallist_allstats.loc[current_station] = HAT
+    lat_vallist_allstats.loc[current_station] = LAT
 
 
 print(f'LAT:\n{lat_vallist_allstats}\nHAT:\n{hat_vallist_allstats}')
-lat_vallist_allstats.to_csv('LAT_indication.csv')
 hat_vallist_allstats.to_csv('HAT_indication.csv')
+lat_vallist_allstats.to_csv('LAT_indication.csv')
         
 hatyan.exit_RWS(timer_start)
 

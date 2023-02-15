@@ -128,12 +128,12 @@ def calc_wltidalindicators(data_wl_pd, tresh_yearlywlcount=None):
 
 
 #@validate_arguments(config=PydanticConfig)
-def calc_LAT_HAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSettings = None) -> tuple:
+def calc_HAT_LAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSettings = None) -> tuple:
     """
-    Derive lowest and highest astronomical tide (LAT/HAT) from a component set.
-    The component set is used to make a tidal prediction for an arbitrary period of 19 years with a 1 minute interval. The min/max values of the predictions of all years are the LAT/HAT values.
-    The LAT/HAT is very dependent on the A0 of the component set. Therefore, the LAT/HAT values are relevant for the same year as the slotgemiddelde that is used to replace A0 in the component set. For instance, if the slotgemiddelde is valid for 2021.0, LAT and HAT are also relevant for that year.
-    The LAT/HAT values are also very dependent on the hatyan_settings used, in general it is important to use the same settings as used to derive the tidal components.
+    Derive highest and lowest astronomical tide (HAT/LAT) from a component set.
+    The component set is used to make a tidal prediction for an arbitrary period of 19 years with a 1 minute interval. The max/min values of the predictions of all years are the HAT/LAT values.
+    The HAT/LAT is very dependent on the A0 of the component set. Therefore, the HAT/LAT values are relevant for the same year as the slotgemiddelde that is used to replace A0 in the component set. For instance, if the slotgemiddelde is valid for 2021.0, HAT and LAT are also relevant for that year.
+    The HAT/LAT values are also very dependent on the hatyan_settings used, in general it is important to use the same settings as used to derive the tidal components.
     
     Parameters
     ----------
@@ -160,9 +160,9 @@ def calc_LAT_HAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSetti
     #vallist_allyears.plot()
     #print(vallist_allyears)
     #vallist_allyears.to_csv('LAT_HAT_indication_19Y_%s.csv'%(current_station))
-    LAT = min_vallist_allyears.min()
     HAT = max_vallist_allyears.max()
-    return LAT, HAT
+    LAT = min_vallist_allyears.min()
+    return HAT, LAT
 
 
 def fit_models(mean_array_todate: pd.Series) -> pd.DataFrame:
