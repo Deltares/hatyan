@@ -19,12 +19,12 @@ const_list_combined = np.unique(const_list_RWSyear+const_list_FES2014)
 
 dood_date = pd.DatetimeIndex([dt.datetime(1900,1,1)]) #dummy value
 
-hat_freqs_FES2014 = hatyan.get_hatyan_freqs(const_list=const_list_FES2014,dood_date=dood_date)
-hat_freqs_RWSyear = hatyan.get_hatyan_freqs(const_list=const_list_RWSyear,dood_date=dood_date)
-hat_freqs_combined = hatyan.get_hatyan_freqs(const_list=const_list_combined,dood_date=dood_date)
-hat_v0 = hatyan.get_hatyan_v0(const_list=const_list_combined,dood_date=dood_date)
-hat_u = hatyan.get_hatyan_u(const_list=const_list_combined,dood_date=dood_date)
-hat_f = hatyan.get_hatyan_f(const_list=const_list_combined,dood_date=dood_date,xfac=False)
+hat_freqs_FES2014 = hatyan.get_schureman_freqs(const_list=const_list_FES2014,dood_date=dood_date)
+hat_freqs_RWSyear = hatyan.get_schureman_freqs(const_list=const_list_RWSyear,dood_date=dood_date)
+hat_freqs_combined = hatyan.get_schureman_freqs(const_list=const_list_combined,dood_date=dood_date)
+hat_v0 = hatyan.get_schureman_v0(const_list=const_list_combined,dood_date=dood_date)
+hat_u = hatyan.get_schureman_u(const_list=const_list_combined,dood_date=dood_date)
+hat_f = hatyan.get_schureman_f(const_list=const_list_combined,dood_date=dood_date,xfac=False)
 
 
 hat_all = pd.DataFrame()#{'freq_FES2014':[hat_freqs_FES2014['freq'].values],'freqs_RWSyear':[hat_freqs_FES2014['freq'].values]},index=hat_freqs.index).sort_values('freqs_RWSyear')
@@ -36,6 +36,6 @@ hat_all['v0'] = hat_v0
 hat_all['u'] = hat_u
 hat_all['f'] = hat_f
 hat_all = hat_all.sort_values('freq_combined').round(6)
-
+print(hat_all)
 
 
