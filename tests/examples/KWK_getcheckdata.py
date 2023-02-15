@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 from matplotlib import ticker
 import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
-import contextily as ctx #`conda install -c conda-forge contextily -y`
+#import contextily as ctx #`conda install -c conda-forge contextily -y` #commented since not part of hatyan_hmcenv
 
 #TODO: convert to netcdf instead of pkl, think of convenient netcdf format (align with GTSM and DCSM)
 
@@ -479,7 +479,7 @@ for current_station in []:#stat_list:
         ax_map.set_ylabel('RDy [km]')
         ax_map.grid(alpha=0.5)
         fig_map.tight_layout()
-        ctx.add_basemap(ax_map, source=ctx.providers.Esri.WorldImagery, crs="EPSG:28992", attribution=False)
+        #ctx.add_basemap(ax_map, source=ctx.providers.Esri.WorldImagery, crs="EPSG:28992", attribution=False)
         fig_map.savefig(os.path.join(dir_meas_alldata,'stations_map.png'))
     
     #plotting
