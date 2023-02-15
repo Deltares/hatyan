@@ -22,7 +22,6 @@ if not os.path.exists(dir_output_general):
 """ Run hatyan_main.py with test-configfiles as input """
 list_examplescripts = glob.glob(os.path.join(dir_tests,'examples','*.py'))
 list_examplescripts = [x for x in list_examplescripts if '_interactive' not in x]
-#list_examplescripts = ['predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py']
 
 
 @pytest.mark.acceptance
@@ -37,9 +36,8 @@ def test_examplescripts(file_config): #FROM DFM_TOOLS
         os.mkdir(dir_output)
     os.chdir(dir_output)
     test = os.system(f"python {file_config} > {dir_output}/STDOUT.txt")
-    #test = os.system(f"python {file_config}")
     
-    if test:
+    if test != 0:
         raise Exception('execution did not finish properly')
 
 
