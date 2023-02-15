@@ -37,7 +37,7 @@ def test_examplescripts(file_config): #FROM DFM_TOOLS
     os.chdir(dir_output)
     test = os.system(f"python {file_config} > {dir_output}/STDOUT.txt")
     
-    if test != 0:
+    if test:
         raise Exception('execution did not finish properly')
 
 
