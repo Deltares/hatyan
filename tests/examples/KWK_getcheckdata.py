@@ -15,7 +15,7 @@ from matplotlib import ticker
 import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
 import contextily as ctx #`conda install -c conda-forge contextily -y`
 
-#TODO: convert to netcdf instead of pkl, think of convenient netcdf format
+#TODO: convert to netcdf instead of pkl, think of convenient netcdf format (align with GTSM and DCSM)
 
 get_catalog = False
 dataTKdia = True #TODO: communicate data issues to TK (wl and ext): p:\11208031-010-kenmerkende-waarden-k\work\data_vanRWS_20220805\convert_dia2pickle_dataTK.py

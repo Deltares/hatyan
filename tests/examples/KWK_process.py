@@ -99,7 +99,7 @@ compute_gemgetij = True
 compute_overschrijding = True
 
 
-for current_station in stat_list: #stat_list[stat_list.index('SCHEVNGN'):]: #['HOEKVHLD','DENOVBTN']:#
+for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list: #stat_list[stat_list.index('SCHEVNGN'):]: #['HOEKVHLD','DENOVBTN']:#
     plt.close('all')
     
     print(f'loading data for {current_station}')

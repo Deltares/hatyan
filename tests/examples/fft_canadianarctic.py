@@ -18,7 +18,7 @@ source='foreman'
 hatyan_settings = hatyan.HatyanSettings(nodalfactors=True,return_prediction=True,source=source,fu_alltimes=False)
 
 #fft analysis
-peak_freq, hatyan_freqs_suggestions, hatyan_freqs_matches = hatyan.timeseries_fft(ts_pred_can, prominence=.5**1, plot_fft=True, source=source)
+hatyan_freqs_suggestions = hatyan.timeseries_fft(ts_pred_can, min_prominence=.5**1, plot_fft=True, source=source)
 const_list = hatyan_freqs_suggestions.index.unique().tolist()+['A0','SA','SSA','H1','H2']
 
 #harmonic analysis and reprediction
