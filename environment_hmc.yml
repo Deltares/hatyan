@@ -1,7 +1,7 @@
 #relevant/minimal hmc python libs on 10-02-2023 (full list raises many errors)
 #temporarily using scipy non-fixed version, since scipy==1.3.1 raises numpy library errors (https://github.com/Deltares/hatyan/issues/71)
 #statsmodels is not yet available at HMC (needed for KWK), so temporarily using non-fixed version
-#pytest, pytest-cov, jupyter, notebook, bumpversion are added for local maintenance, so using non-fixed versions
+#pytest, pytest-cov, jupyter, notebook, bumpversion, twine are added for local maintenance, so using non-fixed versions
 name: hatyan_hmcenv
 dependencies:
   - python==3.8.13
@@ -26,3 +26,4 @@ dependencies:
     - jupyter
     - notebook
     - bumpversion
+    - twine
