@@ -33,5 +33,5 @@ jobs:
         conda list
     - name: Test with pytest
       run: |
-        pytest -m "not acceptance" --cov=hatyan
+        pytest -m "not acceptance" --cov=hatyan --cov-report xml --cov-report term
     - uses: codecov/codecov-action@v1
