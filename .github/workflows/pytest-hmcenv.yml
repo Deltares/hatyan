@@ -34,3 +34,4 @@ jobs:
     - name: Test with pytest
       run: |
         pytest -m "not acceptance" --cov=hatyan
+    - uses: codecov/codecov-action@v1
