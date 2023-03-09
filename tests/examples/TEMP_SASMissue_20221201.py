@@ -28,7 +28,7 @@ def clean_data(ts_meas_pd,current_station):
     return ts_meas_pd
 
 pred_year = 2022 #2019 or 2022
-offset_19y = 1
+offset_19y = 0
 
 for current_station in ['HOEKVHLD']:#stat_list: #stat_list[stat_list.index('SCHEVNGN'):]: #['HOEKVHLD','DENOVBTN']:#
     plt.close('all')
