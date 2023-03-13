@@ -430,6 +430,7 @@ for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list: #stat_list[stat_list.
     
     ###OVERSCHRIJDINGSFREQUENTIES
     #TODO: SLR trend correctie voor overschrijdingsfrequenties en evt ook voor andere KW?
+    #TODO: resulting freqs seem to be shifted w.r.t. getijtafelboekje (mail PH 9-3-2022)
     #plots beoordelen: rode lijn moet ongeveer verlengde zijn van groene, als die ineens omhoog piekt komt dat door hele extreme waardes die je dan vermoedelijk ook al ziet in je groene lijn
     
     Tfreqs_interested = [5, 2, 1, 1/2, 1/5, 1/10, 1/20, 1/50, 1/100, 1/200, #overschrijdingsfreqs
