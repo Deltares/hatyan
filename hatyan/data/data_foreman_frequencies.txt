@@ -147,5 +147,6 @@ ST34 0.4858903367
 ST35 0.4874282766
 ########## ADDED FROM R-TABLE #########
 M1C 0.04025583333333334
-########## added from Delft3D-TIDE user manual #########
-MSQM 0.005872024722
+########## added from hatyan.get_schureman_freqs() #########
+MSQM 0.00587202
+M1 0.04026859
