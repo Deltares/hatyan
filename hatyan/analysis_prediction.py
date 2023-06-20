@@ -532,13 +532,14 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     print('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
     if not isinstance(times_pred_all_pdDTI,pd.DatetimeIndex): #support for years<1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
-        times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start).total_seconds().values
+        tdiff = pd.TimedeltaIndex(times_pred_all_pdDTI-dood_date_start) #pd.TimedeltaIndex is around it to avoid it being an Index in case of outofbounds timesteps (necessary from pandas 2.0.0)
     else:
-        times_from0allpred_s_orig = (times_pred_all_pdDTI-dood_date_start[0]).total_seconds().values
+        tdiff = pd.TimedeltaIndex(times_pred_all_pdDTI-dood_date_start[0]) #pd.TimedeltaIndex is not necessary here, but for conformity with above
+    times_from0allpred_s_orig = tdiff.total_seconds().values
     times_from0allpred_s = np.transpose(times_from0allpred_s_orig[np.newaxis])
     
     f_A = np.multiply(f_i.values,A)
-    omeg_t = np.multiply(times_from0allpred_s,omega_i_rads)#_td)
+    omeg_t = np.multiply(times_from0allpred_s,omega_i_rads)
     v_u_phi = np.subtract(np.add(v_0i_rad.values,u_i_rad.values),phi_rad)
     omeg_t_v_u_phi = np.add(omeg_t,v_u_phi)
     ht_res = np.sum(np.multiply(f_A,np.cos(omeg_t_v_u_phi)),axis=1) #not necessary to add A0, since it is already part of the component list
