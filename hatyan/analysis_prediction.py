@@ -409,7 +409,7 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     const_list_inclCS = sort_const_list(const_list=const_list_inclCS_raw)
 
     #retrieve freq and speed
-    t_const_freq_pd, CS_v_0i_rad = get_freqv0_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
+    _, CS_v_0i_rad = get_freqv0_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
     CS_u_i_rad, CS_f_i = get_uf_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_fu=dood_date_mid)
     
     comp_inclCS = pd.DataFrame(comp,index=const_list_inclCS,columns=comp.columns)
