@@ -7,6 +7,7 @@
 [![pytest-py311](https://github.com/Deltares/hatyan/actions/workflows/pytest-py311.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py311.yml)
 [![sigrid-publish](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/sigrid-publish.yml)
 [![pypi-upload](https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml/badge.svg?event=release)](https://github.com/Deltares/hatyan/actions/workflows/pypi-upload.yml)
+[![Supported versions](https://img.shields.io/pypi/pyversions/hatyan.svg)](https://pypi.org/project/hatyan)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&metric=alert_status)](https://sonarcloud.io/dashboard?id=Deltares_hatyan)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6885342.svg)](https://doi.org/10.5281/zenodo.6885342)
