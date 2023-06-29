@@ -1,0 +1,5 @@
+include README.md
+include HISTORY.rst
+include requirements.txt
+include CONTRIBUTING.md
+include hatyan/data/*
