@@ -13,10 +13,10 @@ Create python environment hatyan_env and install hatyan in developer mode:
 - ``git clone -b work_yourname https://github.com/Deltares/hatyan hatyan_github`` (repo gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the work_yourname branch)
 - update your branch if main has been updated: add+commit+push everything in branch first, ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main -m ''``, ``git push``
 - open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
-- ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL6)
+- ``conda env create -f environment_hmc.yml`` (installs environment with HMC fixed python/package versions)
 - ``conda info --envs`` (should show hatyan_env virtual environment in the list)
 - ``conda activate hatyan_env``
-- ``python -m pip install -e .`` (pip developer mode, also install all packages in requirements.txt containing CentOS tested libraries, linked via setup.py) >> maybe add ``test`` to install also test requirements [like this](https://stackoverflow.com/questions/15422527/best-practices-how-do-you-list-required-dependencies-in-your-setup-py)
+- ``python -m pip install -e .[test]`` (pip developer mode, `[test]` installs additional dependencies for developers)
 - ``conda deactivate``
 - to remove hatyan_env when necessary: ``conda remove -n hatyan_env --all``
 

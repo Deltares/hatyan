@@ -1,5 +1,4 @@
 #relevant/minimal hmc python libs on 02-03-2023 (full list raises many errors)
-#pytest, pytest-cov, jupyter, notebook, bumpversion, twine are added for local maintenance, so using non-fixed versions
 name: hatyan_hmcenv
 dependencies:
   - python==3.8.13
@@ -18,9 +17,3 @@ dependencies:
     - spyder==5.4.2
     - xarray==2022.12.0
     - statsmodels==0.13.5
-    - pytest
-    - pytest-cov
-    - jupyter
-    - notebook
-    - bumpversion
-    - twine
