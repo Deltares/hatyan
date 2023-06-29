@@ -1,24 +1,27 @@
 Information for developers
 --------
 
-Create python environment hatyan_env and install hatyan in developer mode:
+## Checkout dfm_tools git repository
 
-- download and install Anaconda 64 bit Python 3.8 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
-- download git from https://git-scm.com/download/win, install with default settings
-- create a branch called work_yourname on https://github.com/Deltares/hatyan
-- open git bash window where you want to clone the hatyan github repository (e.g. C:\\DATA\\)
+- this is just a suggestion, feel free to work with VScode or any other git-compatible workflow
+- download git from [git-scm.com](https://git-scm.com/download/win), install with default settings
+- open git bash window where you want to clone the dfm_tools github repository (e.g. ``C:\DATA\``)
+- git clone https://github.com/deltares/hatyan (creates a folder hatyan with the checked out repository)
+- ``cd hatyan``
 - optional: ``git config --global user.email [emailaddress]``
 - optional: ``git config --global user.name [username]``
-- optional: ``git remote update origin --prune`` (update local branch list)
-- ``git clone -b work_yourname https://github.com/Deltares/hatyan hatyan_github`` (repo gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the work_yourname branch)
-- update your branch if main has been updated: add+commit+push everything in branch first, ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main -m ''``, ``git push``
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
+
+## Setup local developer environment
+
+- download and install Anaconda 64 bit Python 3.9 (or higher) from [anaconda.com](https://www.anaconda.com/distribution/#download-section) (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings.
+- open anaconda prompt and navigate to hatyan checkout folder, e.g. ``C:\DATA\hatyan``
 - ``conda env create -f environment_hmc.yml`` (installs environment with HMC fixed python/package versions)
-- ``conda info --envs`` (should show hatyan_env virtual environment in the list)
 - ``conda activate hatyan_env``
-- ``python -m pip install -e .[test]`` (pip developer mode, `[test]` installs additional dependencies for developers)
+- ``python -m pip install -e .[test]`` (pip developer mode, any updates to the local folder are immediately available in your python. It also installs all requirements via pip, ``[test]`` installs also the developer requirements)
 - ``conda deactivate``
 - to remove hatyan_env when necessary: ``conda remove -n hatyan_env --all``
+
+
 
 Increase the hatyan version number:
 
