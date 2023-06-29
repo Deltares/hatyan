@@ -1,36 +1,53 @@
 Information for developers
 --------
 
-Create python environment hatyan_env and install hatyan in developer mode:
+## Checkout hatyan git repository
 
-- download and install Anaconda 64 bit Python 3.8 (or higher) from https://www.anaconda.com/distribution/#download-section (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings, but check 'add Anaconda3 to my PATH environment variable' if you want to use conda from the windows command prompt instead of anaconda prompt
-- download git from https://git-scm.com/download/win, install with default settings
-- create a branch called work_yourname on https://github.com/Deltares/hatyan
-- open git bash window where you want to clone the hatyan github repository (e.g. C:\\DATA\\)
+- this is just a suggestion, feel free to work with VScode or any other git-compatible workflow
+- download git from [git-scm.com](https://git-scm.com/download/win), install with default settings
+- open git bash window where you want to clone the hatyan github repository (e.g. ``C:\DATA\``)
+- git clone https://github.com/deltares/hatyan (creates a folder hatyan with the checked out repository)
+- ``cd hatyan``
 - optional: ``git config --global user.email [emailaddress]``
 - optional: ``git config --global user.name [username]``
-- optional: ``git remote update origin --prune`` (update local branch list)
-- ``git clone -b work_yourname https://github.com/Deltares/hatyan hatyan_github`` (repo gets cloned in C:\\DATA\\hatyan_github, this is a checkout of the work_yourname branch)
-- update your branch if main has been updated: add+commit+push everything in branch first, ``git checkout main``, ``git pull``, ``git checkout development``, ``git merge main -m ''``, ``git push``
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
-- ``conda env create -f environment.yml`` (This yml file installs Python 3.6.12 since that is the latest available Python on RHEL6)
-- ``conda info --envs`` (should show hatyan_env virtual environment in the list)
-- ``conda activate hatyan_env``
-- ``python -m pip install -e .`` (pip developer mode, also install all packages in requirements.txt containing CentOS tested libraries, linked via setup.py) >> maybe add ``test`` to install also test requirements [like this](https://stackoverflow.com/questions/15422527/best-practices-how-do-you-list-required-dependencies-in-your-setup-py)
+
+## Setup local developer environment
+
+- download and install Anaconda 64 bit Python 3.9 (or higher) from [anaconda.com](https://www.anaconda.com/distribution/#download-section) (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings.
+- open anaconda prompt and navigate to hatyan checkout folder, e.g. ``C:\DATA\hatyan``
+- ``conda create --name hatyan_hmcenv python=3.8.13 git spyder -y`` (``git`` and ``spyder``, python version should be the one at HMC)
+- ``conda activate hatyan_hmcenv``
+- ``pip install -r environment_hmc.txt`` (installs fixed python/package versions like on HMC)
+- ``python -m pip install -e .[test]`` (pip developer mode, any updates to the local folder are immediately available in your python. ``[test]`` installs also the developer requirements)
 - ``conda deactivate``
-- to remove hatyan_env when necessary: ``conda remove -n hatyan_env --all``
+- to remove hatyan_hmcenv when necessary: ``conda remove -n hatyan_hmcenv --all``
 
-Increase the hatyan version number:
+## Contributing
 
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
-- ``conda activate hatyan_env``
+- open an existing issue or create a new issue at https://github.com/Deltares/hatyan/issues
+- create a branch via ``Development`` on the right. This branch is now linked to the issue and the issue will be closed once the branch is merged with main again
+- open git bash window in local hatyan folder (e.g. ``C:\DATA\hatyan``)
+- ``git fetch origin`` followed by ``git checkout [branchname]``
+- make your local changes to the hatyan code (including docstrings and unittests for functions), after each subtask do ``git commit -am 'description of what you did'`` (``-am`` adds all changed files to the commit)
+- check if all edits were committed with ``git status``, if there are new files created also do ``git add [path-to-file]`` and commit again
+- ``git push`` to push your committed changes your branch on github
+- open a pull request at the branch on github, there you can see what you just pushed and the automated checks will show up (testbank and code quality analysis).
+- optionally make additional local changes (+commit+push) untill you are done with the issue and the automated checks have passed
+- optionally increase the hatyan version with: ``bumpversion patch``
+- request a review on the pull request
+- after review, squash+merge the branch into main
+
+## Increase the hatyan version number
+
+- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- ``conda activate hatyan_hmcenv``
 - ``bumpversion major`` or ``bumpversion minor`` or ``bumpversion patch``
 - the hatyan version number of all relevant files will be updated, as stated in setup.cfg
 
-Running the testbank:
+## Running the testbank
 
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
-- ``conda activate hatyan_env``
+- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- ``conda activate hatyan_hmcenv``
 - ``pytest`` (runs all tests)
 - ``pytest -m unittest``
 - ``pytest -m systemtest``
@@ -38,16 +55,16 @@ Running the testbank:
 - ``pytest -m "not acceptance"`` (excludes all acceptance tests)
 - the following arguments are automatically provided via pytest.ini: ``-v --tb=short``, add ``--cov=hatyan`` for a coverage summary
 
-Generate documentation (automatically runs via Github Actions upon push to main):
+## Generate documentation (automatically runs via Github Actions upon push to main)
 
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
-- ``conda activate hatyan_env``
+- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- ``conda activate hatyan_hmcenv``
 - ``python scripts/generate_documentation.py``
 
-Publish to PyPI (automatically runs via Github Actions upon release creation):
+## Publish to PyPI (automatically runs via Github Actions upon release creation)
 
-- open anaconda promptand navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan_github``
-- ``conda activate hatyan_env``
+- open anaconda promptand navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- ``conda activate hatyan_hmcenv``
 - ``python setup.py sdist bdist_wheel``
 - to check before uploading: ``twine check dist/*``
 - ``twine upload dist/*``
