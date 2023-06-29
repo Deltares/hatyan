@@ -15,12 +15,12 @@ Information for developers
 
 - download and install Anaconda 64 bit Python 3.9 (or higher) from [anaconda.com](https://www.anaconda.com/distribution/#download-section) (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings.
 - open anaconda prompt and navigate to hatyan checkout folder, e.g. ``C:\DATA\hatyan``
-- ``conda create --name hatyan_env python=3.8.13 git spyder -y`` (``git`` and ``spyder``, python version should be the one at HMC)
-- ``conda activate hatyan_env``
+- ``conda create --name hatyan_hmcenv python=3.8.13 git spyder -y`` (``git`` and ``spyder``, python version should be the one at HMC)
+- ``conda activate hatyan_hmcenv``
 - ``pip install -r environment_hmc.txt`` (installs fixed python/package versions like on HMC)
 - ``python -m pip install -e .[test]`` (pip developer mode, any updates to the local folder are immediately available in your python. ``[test]`` installs also the developer requirements)
 - ``conda deactivate``
-- to remove hatyan_env when necessary: ``conda remove -n hatyan_env --all``
+- to remove hatyan_hmcenv when necessary: ``conda remove -n hatyan_hmcenv --all``
 
 ## Contributing
 
@@ -40,14 +40,14 @@ Information for developers
 ## Increase the hatyan version number
 
 - open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
-- ``conda activate hatyan_env``
+- ``conda activate hatyan_hmcenv``
 - ``bumpversion major`` or ``bumpversion minor`` or ``bumpversion patch``
 - the hatyan version number of all relevant files will be updated, as stated in setup.cfg
 
 ## Running the testbank
 
 - open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
-- ``conda activate hatyan_env``
+- ``conda activate hatyan_hmcenv``
 - ``pytest`` (runs all tests)
 - ``pytest -m unittest``
 - ``pytest -m systemtest``
@@ -58,13 +58,13 @@ Information for developers
 ## Generate documentation (automatically runs via Github Actions upon push to main)
 
 - open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
-- ``conda activate hatyan_env``
+- ``conda activate hatyan_hmcenv``
 - ``python scripts/generate_documentation.py``
 
 ## Publish to PyPI (automatically runs via Github Actions upon release creation)
 
 - open anaconda promptand navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
-- ``conda activate hatyan_env``
+- ``conda activate hatyan_hmcenv``
 - ``python setup.py sdist bdist_wheel``
 - to check before uploading: ``twine check dist/*``
 - ``twine upload dist/*``
