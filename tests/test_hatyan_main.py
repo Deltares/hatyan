@@ -314,7 +314,9 @@ def test_frommergedcomp():
 @pytest.mark.systemtest
 def test_meas_HWLW_toomuch():
     """
-    this test will fail if the minimal prominence is set to 0.01 or lower. Then there will be an additional LW found right after the HW. With a slightly higher minimal prominence (>0.02) this is avoided.
+    this test will fail if the minimal prominence is set to 0.01 or lower.
+    Then there will be an additional LW found right after the HW. With a slightly higher minimal prominence (>0.02) this is avoided.
+    This testcase originates from an issue with a FEWS timeseries: https://github.com/Deltares/hatyan/issues/85
     """
     wl_vals = np.array([ 0.4437,  0.563 ,  0.6677,  0.7498,  0.8125,  0.8732,  0.9181,
             0.9384,  0.944 ,  0.94  ,  0.9254,  0.9033,  0.8602,  0.8258,
