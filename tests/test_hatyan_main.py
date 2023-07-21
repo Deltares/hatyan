@@ -314,7 +314,7 @@ def test_frommergedcomp():
 @pytest.mark.systemtest
 def test_meas_HWLW_toomuch():
     """
-    this test will fail if the minimal prominence is set to 0.01 or lower.
+    this test will fail if the minimal prominence is set to 0.01 or lower, or of the minimal width=None
     Then there will be an additional LW found right after the HW. With a slightly higher minimal prominence (>0.02) this is avoided.
     This testcase originates from an issue with a FEWS timeseries: https://github.com/Deltares/hatyan/issues/85
     """
