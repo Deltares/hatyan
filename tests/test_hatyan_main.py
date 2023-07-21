@@ -355,6 +355,27 @@ def test_meas_HWLW_toomuch():
 
 
 @pytest.mark.systemtest
+def test_meas_HWLW_toomuch_19y():
+    """
+    Additional testcase for https://github.com/Deltares/hatyan/issues/85
+    The min_width parameter for calc_HWLW() has to be approx 2hrs to properly compute and number almost all of the 19y timeseries
+    Stations HELLVSS/KRIMPADLK/RAKND still fail, but it seems arbitrary and sometimes computing+numbering extremes per year does work
+    """
+    current_station = 'HOEKVHLD'
+    file_dia = os.path.join(dir_testdata,f'{current_station}_obs19.txt')
+    
+    wl_pd = hatyan.readts_dia(file_dia)
+    
+    wl_pd_ext = hatyan.calc_HWLW(wl_pd)
+    
+    # For testing: plot water level timeseries with peaks identified and labeled. 
+    #hatyan.plot_timeseries(ts=wl_pd,ts_ext=wl_pd_ext)
+    
+    # RUN HATYAN: Assign numbers to the extremes
+    wl_pd_ext = hatyan.calc_HWLWnumbering(wl_pd_ext,station=current_station)
+
+
+@pytest.mark.systemtest
 def test_frommergedcomp_HWLW_toomuch():
     """
     This test produces a very short prediction for DENHDR, based on an imported component list. It then calculates extremes (HW/LW) and numbers them both.

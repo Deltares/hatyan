@@ -84,7 +84,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     elif ts_steps_sec_most == 0:
         raise Exception('ERROR: ts_steps_sec_most=0, check rounding issue')
     M2period_numsteps = M2_period_sec/ts_steps_sec_most
-    minwidth_numsteps = None#2*3600/ts_steps_sec_most
+    minwidth_numsteps = 2*3600/ts_steps_sec_most # minimal width of 2 hours makes peakfinding more robust: https://github.com/Deltares/hatyan/issues/85
 
     data_pd_HWLW = pd.DataFrame({'times':ts.index,'values':ts['values'],'HWLWcode':np.nan}).reset_index(drop=True)
     #create empty HWLW dataframe
@@ -93,10 +93,6 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
         print('WARNING: the provided ts for extreme/HWLW calculation contained NaN values. To avoid unexpected results from scipy.signal.find_peaks(), the %i NaN values were removed from the ts (%.2f%%) before calculating extremes/HWLW.'%(len(ts)-len(data_pd_HWLW), (len(ts)-len(data_pd_HWLW))/len(ts)*100))
 
     min_prominence = 0.01 #minimal prominence to exclude very minor dips/peaks from being seen as aggers.
-    #test_meas_HWLW_toomuch fails with <=0.01
-    #test_frommergedcomp_HWLW_345[HOEKVHLD] fails with 0.015/0.02/0.03 >> redefine testcase? #TODO: alternatively the distance parameter can be tightened, but that fill fail other testcases
-    #test_frommergedcomp_HWLW_345[HOEKVHLD] and test_frommergedcomp_HWLW_toolittle[LITHDP_2022] fail with 0.04
-    #test_frommergedcomp_HWLW_345[HOEKVHLD] and test_frommergedcomp_HWLW_toolittle[LITHDP_2022] and test_frommergedcomp_HWLW_toolittle[LITHDP_2018] fail with 0.05
     
     if calc_HWLW345 or calc_HWLW1122:
         #get all local extremes, including aggers and second high waters (1/2/11/22) #takes first value of two equal peaks
