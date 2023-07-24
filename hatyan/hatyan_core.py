@@ -143,7 +143,7 @@ def get_doodson_eqvals(dood_date, mode=None):
     return doodson_pd
 
 
-def robust_daterange_fromtimesextfreq(times_ext,timestep_min=None):
+def robust_daterange_fromtimesextfreq(times_ext):
     """
     Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
     For dates outside this period, a list is generated and converted to a pd.Index instead.
@@ -162,23 +162,18 @@ def robust_daterange_fromtimesextfreq(times_ext,timestep_min=None):
 
     """
     
-    def get_tstart_tstop_tstep(times_ext,timestep_min):
-        if isinstance(times_ext,list):
-            warnings.warn('times_ext: dtype list will be deprecated, provide slice(tstart,tstop,tstep_min) instead')
-            tstart = times_ext[0]
-            tstop = times_ext[-1]
-            tstep_min = timestep_min
-        elif isinstance(times_ext,slice):
-            tstart = times_ext.start
-            tstop = times_ext.stop
-            tstep_min = times_ext.step
-
-        if tstep_min is None:
-            raise TypeError('NoneType found for times_ext.step or timestep_min, provide numeric instead')
+    def get_tstart_tstop_tstep(times_ext):
+        if not isinstance(times_ext,slice):
+            raise TypeError('times_ext should be of type slice: slice(tstart, tstop, tstep_min)')
+        tstart = times_ext.start
+        tstop = times_ext.stop
+        if times_ext.step is None:
+            raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
+        tstep_min = times_ext.step
         
         return tstart, tstop, tstep_min
     
-    tstart, tstop, tstep_min = get_tstart_tstop_tstep(times_ext,timestep_min)
+    tstart, tstop, tstep_min = get_tstart_tstop_tstep(times_ext)
     
     try:
         times_pred_all = pd.date_range(start=tstart, end=tstop, freq='%imin'%(tstep_min))
@@ -187,7 +182,7 @@ def robust_daterange_fromtimesextfreq(times_ext,timestep_min=None):
         print(f'WARNING: "{e}". Falling back to less fancy (slower) datetime ranges. Fancy ones are possible between {pd.Timestamp.min} and {pd.Timestamp.max}')
         td_mins = (tstop-tstart).total_seconds()/60
         nsteps = int(td_mins/tstep_min)
-        times_pred_all = pd.Series([times_ext[0]+dt.timedelta(minutes=x*tstep_min) for x in range(nsteps+1)])
+        times_pred_all = pd.Series([tstart+dt.timedelta(minutes=x*tstep_min) for x in range(nsteps+1)])
         times_pred_all_pdDTI = pd.Index(times_pred_all)
     return times_pred_all_pdDTI
 

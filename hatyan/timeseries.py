@@ -1028,8 +1028,8 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     ----------
     ts : pandas.DataFrame
         The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries.
-    times_ext : TYPE
-        DESCRIPTION.
+    times_ext : slice
+        slice(tstart, tstop).
 
     Raises
     ------
@@ -1043,20 +1043,22 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
 
     """
     ts_pd_in = ts
+    if not isinstance(times_ext,slice):
+        raise TypeError('times_ext should be of type slice: slice(tstart, tstop)')
+    tstart = pd.Timestamp(times_ext.start)
+    tstop = pd.Timestamp(times_ext.stop)
     
     print('cropping timeseries')
-    if not times_ext[0]<times_ext[1]:
-        raise Exception('ERROR: the two times times_ext should be increasing, but they are not: %s.'%(times_ext))
-    if (times_ext[0] < ts_pd_in.index.min()) or (times_ext[-1] > ts_pd_in.index.max()):
-        message = 'imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s'%(times_ext[0],times_ext[-1],ts_pd_in.index[0],ts_pd_in.index[-1])
+    if not tstart<tstop:
+        raise ValueError(f'tstop is not larger than tstart: {times_ext}')
+    if (tstart < ts_pd_in.index.min()) or (tstart > ts_pd_in.index.max()):
+        message = 'imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s'%(tstart,tstop,ts_pd_in.index[0],ts_pd_in.index[-1])
         if onlyfull:
             raise Exception('ERROR: %s'%(message))
         else:
             print('WARNING: %s'%(message))
-            
-    #times_selected_bool = (ts_pd_in.index >= times_ext[0]) & (ts_pd_in.index <= times_ext[-1])
-    #ts_pd_out = ts_pd_in.loc[times_selected_bool]
-    ts_pd_out = ts_pd_in.loc[times_ext[0]:times_ext[1]]
+    
+    ts_pd_out = ts_pd_in.loc[tstart:tstop]
     
     return ts_pd_out
 

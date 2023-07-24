@@ -236,8 +236,10 @@ def read_components(filename, get_metadata=False):
             print('the vertical reference level in the imported file is: %s'%(file_vertref))
         elif line.startswith('PERD'):
             dateline = line.split()
-            times_compfile_ext = [dt.datetime.strptime(dateline[1]+dateline[2],'%Y%m%d%H%M'),dt.datetime.strptime(dateline[3]+dateline[4],'%Y%m%d%H%M')]
-            times_compfile_step = int(dateline[5])
+            tstart = dt.datetime.strptime(dateline[1]+dateline[2],'%Y%m%d%H%M')
+            tstop = dt.datetime.strptime(dateline[3]+dateline[4],'%Y%m%d%H%M')
+            tstep_min = int(dateline[5])
+            times_ext = slice(tstart, tstop, tstep_min)
         elif line.startswith('MIDD'):
             A0_cm = float(line.split()[1])
         elif line.startswith('COMP'):
@@ -252,7 +254,7 @@ def read_components(filename, get_metadata=False):
     Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
     COMP_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
     if get_metadata:
-        meta = {'station': station_fromfile, 'times_ext': times_compfile_ext, 'times_stepmin': times_compfile_step, 'origin':'import', 'vertref':file_vertref}#, 'usedxfac':None}
+        meta = {'station': station_fromfile, 'times_ext': times_ext, 'origin':'import', 'vertref':file_vertref}#, 'usedxfac':None}
         return COMP_pd, meta
     else:
         return COMP_pd

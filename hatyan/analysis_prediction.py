@@ -448,7 +448,7 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     return comp_inclCS
 
 
-def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hatyan_settings=None, **kwargs):
+def prediction(comp, times_pred_all=None, times_ext=None, hatyan_settings=None, **kwargs):
     """
     generates a tidal prediction from a set of components A and phi values.
     The component set has the same timezone as the timeseries used to create it, therefore the resulting prediction will also be in that original timezone.
@@ -459,10 +459,8 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
         The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
     times_pred_all : pandas.DatetimeIndex, optional
         Prediction timeseries. The default is None.
-    times_ext : list of datetime.datetime, optional
-        Prediction time extents (list of start time and stop time). The default is None.
-    timestep_min : int, optional
-        Prediction timestep in minutes. The default is None.
+    times_ext : slice, optional
+        Prediction time extents and timestep: slice(tstart, tstop, tstep). The default is None.
     hatyan_settings : hatyan.HatyanSettings()
         Contains the used settings
 
@@ -486,14 +484,13 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     print('PREDICTION initializing')
     print(hatyan_settings)
     
-    if times_pred_all is None:
-        if times_ext is None:
-            raise Exception('if argument times_pred_all is not provided, the argument times_ext is obligatory')
-        else:
-            times_pred_all = robust_daterange_fromtimesextfreq(times_ext, timestep_min)
-    else:
-        if times_ext is not None:
-            raise Exception('if argument times_pred_all is provided, the arguments times_ext is not allowed')
+    if times_pred_all is None and times_ext is None:
+        raise Exception('One of `times_pred_all` and `times_ext` should be provided')
+    if times_pred_all is not None and times_ext is not None:
+        raise Exception('Only one of `times_pred_all` and `times_ext` should be provided')
+    
+    if times_ext is not None:
+        times_pred_all = robust_daterange_fromtimesextfreq(times_ext)
     
     if not len(times_pred_all) > 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
@@ -588,11 +585,14 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
         comp_oneyear = comp_allperiods.loc[:,(slice(None),period_dt)]
         comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
         if period_dt.freqstr in ['A-DEC']: #year frequency
-            times_ext = [dt.datetime(period_dt.year,1,1),dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+            tstart = dt.datetime(period_dt.year,1,1)
+            tstop = dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)
         elif period_dt.freqstr in ['M']: #month frequency
-            times_ext = [period_dt.to_timestamp().to_pydatetime(),period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)]
+            tstart = period_dt.to_timestamp().to_pydatetime()
+            tstop = period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)
         else:
             raise Exception(f'unknown freqstr: {period_dt.freqstr}')
-        ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
+        times_ext = slice(tstart,tstop, timestep_min)
+        ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, hatyan_settings=hatyan_settings)
         ts_prediction_perperiod = pd.concat([ts_prediction_perperiod,ts_prediction_oneperiod])
     return ts_prediction_perperiod
