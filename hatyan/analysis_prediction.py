@@ -487,13 +487,13 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     print(hatyan_settings)
     
     if times_pred_all is None:
-        if times_ext is None or timestep_min is None:
-            raise Exception('if argument times_pred_all is not provided, the arguments times_ext and timestep_min are obligatory')
+        if times_ext is None:
+            raise Exception('if argument times_pred_all is not provided, the argument times_ext is obligatory')
         else:
-            times_pred_all = robust_daterange_fromtimesextfreq(times_ext,timestep_min)
+            times_pred_all = robust_daterange_fromtimesextfreq(times_ext, timestep_min)
     else:
-        if times_ext is not None or timestep_min is not None:
-            raise Exception('if argument times_pred_all is provided, the arguments times_ext and timestep_min are not allowed')
+        if times_ext is not None:
+            raise Exception('if argument times_pred_all is provided, the arguments times_ext is not allowed')
     
     if not len(times_pred_all) > 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
