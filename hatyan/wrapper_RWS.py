@@ -28,7 +28,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-def init_RWS(file_config, interactive_plots=True, silent=False):
+def init_RWS(file_config, interactive_plots=True):
     """
     Initializes the hatyan process for RWS related calculations. Besides the return variables,
     it prints a header for the print output (shows up in the hatyan diagnostics file)
@@ -85,21 +85,20 @@ def init_RWS(file_config, interactive_plots=True, silent=False):
     ##################################################################
     
     timer_start = dt.datetime.now()
-    if not silent: #necessary to suppress this in CentOS hatyan command, since print output is interpreted as dir_output variable
-        print('#'*50)
-        print('-'*50)
-        print('hatyan-%s: RWS tidal analysis and prediction'%(version_no))
-        print('-'*50)
-        print('INITIALISATION')
-        print('started at %s'%(timer_start.strftime('%Y-%m-%d %H:%M:%S')))
-        print('%-45s = %s'%('file_config',file_config))
-        print('%-45s = %s'%('dir_output',dir_output))
-        print('-'*50)
-            
-        #copy configfile to dir_output
-        print('copying configfile to dir_output\\%s'%(os.path.basename(file_config)))
-        shutil.copy(file_config,dir_output)
-        print('END OF INITIALISATION')
+    print('#'*50)
+    print('-'*50)
+    print('hatyan-%s: RWS tidal analysis and prediction'%(version_no))
+    print('-'*50)
+    print('INITIALISATION')
+    print('started at %s'%(timer_start.strftime('%Y-%m-%d %H:%M:%S')))
+    print('%-45s = %s'%('file_config',file_config))
+    print('%-45s = %s'%('dir_output',dir_output))
+    print('-'*50)
+        
+    #copy configfile to dir_output
+    print('copying configfile to dir_output\\%s'%(os.path.basename(file_config)))
+    shutil.copy(file_config,dir_output)
+    print('END OF INITIALISATION')
         
     return dir_output, timer_start
 
