@@ -28,7 +28,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False):
+def init_RWS(file_config, interactive_plots=True, silent=False):
     """
     Initializes the hatyan process for RWS related calculations. Besides the return variables,
     it prints a header for the print output (shows up in the hatyan diagnostics file)
@@ -36,8 +36,6 @@ def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False)
     Parameters
     ----------
     file_config : TYPE
-        DESCRIPTION.
-    argvlist : TYPE
         DESCRIPTION.
     interactive_plots : bool/int, optional
         sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is True.
@@ -56,12 +54,7 @@ def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False)
 
     """
     
-    if len(argvlist) == 1:
-        dir_output = get_outputfoldername(file_config)
-    elif len(argvlist) == 2: #for running from terminal with command "hatyan configfile"
-        dir_output = argvlist[1]
-    else:
-        raise Exception('ERROR: something wrong with input arguments')
+    dir_output = get_outputfoldername(file_config)
     os.chdir(dir_output)
     
     with open('__NOT_FINISHED__','w') as f:
