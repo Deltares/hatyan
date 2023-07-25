@@ -7,12 +7,12 @@ Created on Fri Feb  5 09:53:03 2021
 analyse three years and predict for forth year, compare analysis/prediction settings and schureman/foreman
 """
 
-import os, sys
+import os
 import pandas as pd
 import hatyan
 
 file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 

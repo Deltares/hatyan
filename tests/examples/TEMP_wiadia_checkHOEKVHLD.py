@@ -5,12 +5,12 @@ Created on Mon Nov 29 18:33:22 2021
 @author: veenstra
 """
 
-import os, sys
+import os
 import hatyan
 hatyan.close('all')
 
 file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
 dir_output = 'TEMP_output'
 
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'

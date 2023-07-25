@@ -5,13 +5,13 @@ Created on Tue Oct 25 13:36:22 2022
 @author: veenstra
 """
 
-import os, sys
+import os
 import datetime as dt
 #import pandas as pd
 import hatyan
 
 file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
 
 selected_stations = ['VLISSGN','HOEKVHLD']
 

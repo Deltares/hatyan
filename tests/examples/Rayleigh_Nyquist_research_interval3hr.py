@@ -5,10 +5,7 @@ Created on Fri Jul 15 11:36:14 2022
 @author: veenstra
 """
 
-
 import os
-import sys
-#import datetime as dt
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,7 +15,7 @@ import hatyan
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'..','data_unitsystemtests')
 file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
 
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
 const_list = hatyan.get_const_list_hatyan('year') #['A0','M2','S2','M4'] # 

@@ -8,7 +8,7 @@ voor alle stations indien mogelijk:
 
 """
 
-import os, sys
+import os
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt

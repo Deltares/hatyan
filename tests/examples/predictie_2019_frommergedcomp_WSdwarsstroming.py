@@ -4,7 +4,7 @@ Created on Thu Dec 24 10:33:54 2020
 
 @author: veenstra
 """
-import os, sys
+import os
 import pandas as pd
 import datetime as dt
 import matplotlib.pyplot as plt
@@ -12,7 +12,7 @@ plt.close('all')
 import hatyan
 
 file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 

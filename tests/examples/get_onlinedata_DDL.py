@@ -20,7 +20,7 @@ tstop_dt = dt.datetime(2020,1,5)
 #tstop_dt = dt.datetime(2012,12,31,23,50)
 
 #file_config = os.path.realpath(__file__)
-#dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+#dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 print('retrieving DDL catalog')

@@ -5,13 +5,13 @@ Gebruik van componentenfile om LAT/HAT te berekenen.
 
 """
 
-import os, sys
+import os
 import pandas as pd
 import hatyan
 
 file_config = os.path.realpath(__file__)
 
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=True)
+dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=True)
 
 dir_base = os.path.abspath(os.path.join(file_config,os.pardir,os.pardir,os.pardir))
 #dir_base = '/home/rikz/baak/hatyan2/'

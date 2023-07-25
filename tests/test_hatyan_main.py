@@ -16,7 +16,7 @@ import hatyan
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
-modulename_list = ['os','sys','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
+modulename_list = ['os','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
 
 
 @pytest.mark.parametrize("modulename", [pytest.param('%s'%(stat), id='%s'%(stat)) for stat in modulename_list])
