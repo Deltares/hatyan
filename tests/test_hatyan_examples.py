@@ -32,8 +32,7 @@ def test_examplescripts(file_config): #FROM DFM_TOOLS
     """
     # 1. Set up test data
     dir_output = os.path.join(dir_output_general,os.path.basename(file_config).replace('.py',''))
-    if not os.path.exists(dir_output):
-        os.mkdir(dir_output)
+    os.makedirs(dir_output,exist_ok=True)
     os.chdir(dir_output)
     test = os.system(f"python {file_config} {dir_output} > {dir_output}/STDOUT.txt") #providing dir_output, so init_RWS() does not create a unique subdirectory
     

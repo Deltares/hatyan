@@ -141,11 +141,6 @@ def get_outputfoldername(file_config):
     file_config : str or path
         path to the configuration file.
 
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
-
     Returns
     -------
     dir_output : str or path
@@ -153,17 +148,11 @@ def get_outputfoldername(file_config):
 
     """
     
-    mode = file_config.split(os.sep)[-1].split('.')[0]
+    mode = os.path.basename(file_config).split('.')[0]
     time_now = dt.datetime.now()
     dir_output = os.path.join(os.getcwd(),'output__%s__%s'%(time_now.strftime('%Y%m%d_%H%M%S'),mode))
     
-    if not os.path.isfile(file_config):
-        raise Exception('ERROR: configfile not found: %s'%(file_config))
-    
-    if not os.path.exists(dir_output):
-        os.makedirs(dir_output)
-    else:
-        raise Exception('ERROR: dir_output already exists')
+    os.makedirs(dir_output, exist_ok=False)
     
     return dir_output
 
