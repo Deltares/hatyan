@@ -1,4 +1,4 @@
-## Unreleased
+## 2.7.0 (2023-08-03)
 
 ### Feat
 - added py38/py310/py311 testbanks by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#89](https://github.com/Deltares/hatyan/pull/89)
