@@ -67,4 +67,4 @@ nav:
       - Introduction: tutorials.md
       - notebooks/getting-started.ipynb
   - API reference:
-      - API reference: api_reference.md #TODO: automate generation of this file
+      - API reference: api_reference.md # TODO: automate generation of this file
