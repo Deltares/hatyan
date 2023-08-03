@@ -44,8 +44,8 @@ plugins:
         - hatyan
   - exclude:
       glob:
-        - *.pdf
-        - *.xlsx
+        - "*.pdf"
+        - "*.xlsx"
 markdown_extensions:
   # - pymdownx.highlight
   # - pymdownx.superfence
