@@ -1,4 +1,3 @@
-[![generate-documentation](https://github.com/Deltares/hatyan/actions/workflows/generate-documentation.yml/badge.svg)](https://github.com/Deltares/hatyan/actions/workflows/generate-documentation.yml)
 [![codecov](https://img.shields.io/codecov/c/github/deltares/hatyan.svg?style=flat-square)](https://app.codecov.io/gh/deltares/hatyan)
 [![pytest-hmcenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-hmcenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
 [![pytest-py38](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml)
