@@ -37,35 +37,42 @@ Information for developers
 - request a review on the pull request
 - after review, squash+merge the branch into main
 
-## Increase the hatyan version number
-
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
-- ``conda activate hatyan_hmcenv``
-- ``bumpversion major`` or ``bumpversion minor`` or ``bumpversion patch``
-- the hatyan version number of all relevant files will be updated, as stated in setup.cfg
-
 ## Running the testbank
 
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- open anaconda prompt and navigate to hatyan local folder (e.g. ``C:\\DATA\\hatyan``)
 - ``conda activate hatyan_hmcenv``
 - ``pytest`` (runs all tests)
-- ``pytest -m unittest``
-- ``pytest -m systemtest``
+- ``pytest -m "not acceptance"``
 - ``pytest -m acceptance`` (runs the acceptance tests, which are the scripts in [the examples folder](https://github.com/Deltares/hatyan/tree/main/tests/examples))
-- ``pytest -m "not acceptance"`` (excludes all acceptance tests)
-- the following arguments are automatically provided via pytest.ini: ``-v --tb=short``, add ``--cov=hatyan`` for a coverage summary
 
 ## Generate documentation (automatically runs via Github Actions upon push to main)
 
 - open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
 - ``conda activate hatyan_hmcenv``
-- ``python scripts/generate_documentation.py``
+```
+cp README.md docs
+mkdocs build
+```
 
-## Publish to PyPI (automatically runs via Github Actions upon release creation)
+## Increase the hatyan version number
 
-- open anaconda promptand navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- commit all changes via git
+- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
 - ``conda activate hatyan_hmcenv``
-- ``python setup.py sdist bdist_wheel``
-- to check before uploading: ``twine check dist/*``
-- ``twine upload dist/*``
-- a new version should now be available on https://pypi.org/manage/project/hatyan/releases/
+- ``bumpversion major`` or ``bumpversion minor`` or ``bumpversion patch``
+- the hatyan version number of all relevant files will be updated, as stated in setup.cfg
+
+## Create release
+
+- bump the versionnumber with ``bumpversion minor``
+- update ``docs/whats-new.md`` and add a date to the current release heading
+- run local testbank
+- local check with: ``python setup.py sdist bdist_wheel`` and ``twine check dist/*``
+- make sure the remote ``main`` branch is up to date (important issues solved, all pullrequests and branches closed, commit+push all local changes)
+- copy the hatyan version from https://github.com/Deltares/hatyan/blob/main/setup.cfg (e.g. ``0.11.0``)
+- go to https://github.com/Deltares/hatyan/releases/new
+- click ``choose a tag`` and type v+versionnumber (e.g. ``v0.11.0``), click ``create new tag: v0.11.0 on publish``
+- set the release title to the tagname (e.g. ``v0.11.0``)
+- click `Generate release notes` and replace the `What's Changed` info by a tagged link to ``docs/whats-new.md``
+- if all is set, click ``Publish release``
+- a release is created and the github action publishes it on PyPI (https://pypi.org/project/hatyan/)
