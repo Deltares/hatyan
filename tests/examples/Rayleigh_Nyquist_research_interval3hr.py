@@ -14,7 +14,7 @@ import hatyan
 
 dir_testdata = 'C:\\DATA\\hatyan_github\\tests\\data_unitsystemtests'
 
-hatyan.init_RWS(interactive_plots=False)
+hatyan.init_RWS()
 
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
 const_list = hatyan.get_const_list_hatyan('year') #['A0','M2','S2','M4'] # 

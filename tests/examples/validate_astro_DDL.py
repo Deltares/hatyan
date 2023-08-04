@@ -9,7 +9,7 @@ import datetime as dt
 #import pandas as pd
 import hatyan
 
-hatyan.init_RWS(interactive_plots=False)
+hatyan.init_RWS()
 
 selected_stations = ['VLISSGN','HOEKVHLD']
 

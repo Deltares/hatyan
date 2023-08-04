@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-hatyan.init_RWS(interactive_plots=False)
+hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 

@@ -9,7 +9,7 @@ import os
 import hatyan
 hatyan.close('all')
 
-hatyan.init_RWS(interactive_plots=False)
+hatyan.init_RWS()
 
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 

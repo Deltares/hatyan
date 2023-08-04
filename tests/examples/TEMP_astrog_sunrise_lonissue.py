@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-##hatyan.init_RWS(interactive_plots=False)
+##hatyan.init_RWS()
 
 # script settings
 timeStart = dt.datetime(2022,1,20)

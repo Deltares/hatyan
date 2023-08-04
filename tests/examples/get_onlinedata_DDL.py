@@ -19,7 +19,7 @@ tstop_dt = dt.datetime(2020,1,5)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
 #tstop_dt = dt.datetime(2012,12,31,23,50)
 
-##hatyan.init_RWS(interactive_plots=False)
+##hatyan.init_RWS()
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 print('retrieving DDL catalog')

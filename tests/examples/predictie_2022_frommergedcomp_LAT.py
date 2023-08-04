@@ -10,7 +10,7 @@ import pandas as pd
 import hatyan
 
 
-hatyan.init_RWS(interactive_plots=True)
+hatyan.init_RWS()
 
 #dir_base = '/home/rikz/baak/hatyan2/'
 #dir_base = '/home/ad.rws.nl/baaka01/hatyan/'

@@ -14,7 +14,7 @@ import datetime as dt
 import pandas as pd
 import hatyan
 
-hatyan.init_RWS(interactive_plots=True)
+hatyan.init_RWS()
 
 dir_testdata = 'C:\\DATA\\hatyan_github\\tests'
 

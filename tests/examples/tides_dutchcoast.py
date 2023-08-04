@@ -12,7 +12,7 @@ plt.close('all')
 import matplotlib.dates as mdates
 import hatyan
 
-hatyan.init_RWS(interactive_plots=False) #provides header to outputfile when calling this script with python
+hatyan.init_RWS() #provides header to outputfile when calling this script with python
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
