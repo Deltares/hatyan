@@ -16,7 +16,7 @@ import hatyan
 
 hatyan.init_RWS(interactive_plots=True)
 
-dir_testdata = 'C:\\DATA\\hatyan_github\\tests\\data_unitsystemtests'
+dir_testdata = 'C:\\DATA\\hatyan_github\\tests'
 
 selected_stations = ['VLISSGN']
 
