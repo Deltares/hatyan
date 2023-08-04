@@ -55,6 +55,10 @@ def init_RWS(interactive_plots=True):
     
     file_config = os.path.realpath(argvlist[0])
     
+    if not os.path.isfile(file_config): # escape for running with F9 or unsaved script
+        print('init_RWS() silently failed, file_config not found')
+        return
+    
     if len(argvlist) == 1:
         dir_output = get_outputfoldername(file_config)
     elif len(argvlist) == 2: #for running testbank with command `python configfile.py dir_output`
