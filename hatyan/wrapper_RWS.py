@@ -68,11 +68,8 @@ def init_RWS(interactive_plots=True):
     with open('__NOT_FINISHED__','w') as f:
         f.write('CAUTION, this hatyan process has not yet properly finished, check FILE_DIAGNOSICS.txt for possible errors')
 
-    try:
-        import hatyan
-        version_no = hatyan.__version__
-    except ModuleNotFoundError:
-        version_no = None
+    import hatyan
+    hatyan_version = hatyan.__version__
     
     #set the matplotlib backend depending on the interactive_plots argument
     import matplotlib.pyplot as plt
@@ -92,7 +89,7 @@ def init_RWS(interactive_plots=True):
     sys.argv.append(timer_start) #TODO: we now add it to sysargv list, find a more suitable option
     print('#'*50)
     print('-'*50)
-    print('hatyan-%s: RWS tidal analysis and prediction'%(version_no))
+    print(f'hatyan-{hatyan_version}: RWS tidal analysis and prediction')
     print('-'*50)
     print('INITIALISATION')
     print('started at %s'%(timer_start.strftime('%Y-%m-%d %H:%M:%S')))
