@@ -22,21 +22,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import os
+import sys
 import shutil
 import datetime as dt
 import matplotlib
 import matplotlib.pyplot as plt
 
 
-def init_RWS(file_config, interactive_plots=True):
+def init_RWS(interactive_plots=True):
     """
     Initializes the hatyan process for RWS related calculations. Besides the return variables,
     it prints a header for the print output (shows up in the hatyan diagnostics file)
 
     Parameters
     ----------
-    file_config : TYPE
-        DESCRIPTION.
     interactive_plots : bool/int, optional
         sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is True.
 
@@ -54,8 +53,16 @@ def init_RWS(file_config, interactive_plots=True):
 
     """
     
-    file_config = os.path.realpath(file_config)
-    dir_output = get_outputfoldername(file_config)
+    argvlist = sys.argv
+    
+    file_config = os.path.realpath(argvlist[0])
+    
+    if len(argvlist) == 1:
+        dir_output = get_outputfoldername(file_config)
+    elif len(argvlist) == 2: #for running testbank with command `python configfile.py dir_output`
+        dir_output = argvlist[1]
+    else:
+        raise Exception('ERROR: something wrong with input arguments')
     os.chdir(dir_output)
     
     with open('__NOT_FINISHED__','w') as f:
@@ -68,6 +75,7 @@ def init_RWS(file_config, interactive_plots=True):
         version_no = None
     
     #set the storage location of interactive plots
+    #TODO: this is not necessary since cwd is already dir_output
     import matplotlib
     matplotlib.rcParams["savefig.directory"] = dir_output
     
@@ -86,6 +94,7 @@ def init_RWS(file_config, interactive_plots=True):
     ##################################################################
     
     timer_start = dt.datetime.now()
+    sys.argv.append(timer_start)
     print('#'*50)
     print('-'*50)
     print('hatyan-%s: RWS tidal analysis and prediction'%(version_no))
@@ -100,11 +109,10 @@ def init_RWS(file_config, interactive_plots=True):
     print('copying configfile to dir_output\\%s'%(os.path.basename(file_config)))
     shutil.copy(file_config,dir_output)
     print('END OF INITIALISATION')
-        
-    return dir_output, timer_start
+    
 
 
-def exit_RWS(timer_start):
+def exit_RWS():
     """
     Provides a footer to the print output (shows up in the hatyan diagnostics file)
 
@@ -123,6 +131,9 @@ def exit_RWS(timer_start):
         print('MESSAGE: interactive plots opened, close them to continue')
         plt.show()
     
+    timer_start = sys.argv[-1]
+    if not isinstance(timer_start,dt.datetime):
+        raise Exception('exit_RWS() can only be called if init_RWS() is called in the same process')
     print('-'*50)
     timer_stop = dt.datetime.now()
     print('calculation finished at %s'%(timer_stop.strftime('%Y-%m-%d %H:%M:%S')))
