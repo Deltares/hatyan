@@ -54,6 +54,7 @@ def init_RWS(file_config, interactive_plots=True):
 
     """
     
+    file_config = os.path.realpath(file_config)
     dir_output = get_outputfoldername(file_config)
     os.chdir(dir_output)
     
