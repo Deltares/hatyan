@@ -3,7 +3,7 @@
 
 """
 
-import os, sys
+import os
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,8 +11,7 @@ plt.close('all')
 from netCDF4 import Dataset, num2date
 import hatyan
 
-file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -35,8 +34,8 @@ file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
 #station_name = data_pred.var_stations.loc[0,'node_id']
 station_name = 'HOEKVHLD'
 
-file_ncout = os.path.join(dir_output,'%s_getijnummers_new.nc'%(station_name))
-file_ncout_nosidx = os.path.join(dir_output,'%s_getijnummers_nosidx.nc'%(station_name))
+file_ncout = '%s_getijnummers_new.nc'%(station_name)
+file_ncout_nosidx = '%s_getijnummers_nosidx.nc'%(station_name)
 
 if analyse_ts_bool:
     COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year')
@@ -80,4 +79,4 @@ data_ncout.variables['waterlevel_astro_HW']
 data_ncout.variables['HWLWno']
 times_all_out = num2date(data_ncout.variables['time'],units=data_ncout.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
 
-hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+hatyan.exit_RWS() #provides footer to outputfile when calling this script with python

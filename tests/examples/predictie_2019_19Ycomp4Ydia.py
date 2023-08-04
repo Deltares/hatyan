@@ -10,13 +10,12 @@ voor alle stations indien mogelijk:
 
 """
 
-import os, sys
+import os
 import datetime as dt
 import pandas as pd
 import hatyan
 
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -145,7 +144,7 @@ for current_station in selected_stations:
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_measurements_group0)
     fig.savefig('prediction_%im_%s_measurements'%(times_step_pred, current_station))
     
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()
 print('\nthese %i stations were requested for processing:\n%s'%(len(selected_stations),selected_stations))
 print('\nthese %i stations were not processed because there is no ana/comp dataset available:\n%s'%(len(stats_noana),stats_noana))
 print('\nthese %i stations were not processed because there is no 4Y or likewise data available:\n%s'%(len(stats_no4Y),stats_no4Y))

@@ -5,20 +5,16 @@ Created on Fri Jul 15 11:36:14 2022
 @author: veenstra
 """
 
-
 import os
-import sys
-#import datetime as dt
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_testdata = os.path.join(dir_tests,'..','data_unitsystemtests')
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+dir_testdata = 'C:\\DATA\\hatyan_github\\tests\\data_unitsystemtests'
+
+hatyan.init_RWS()
 
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
 const_list = hatyan.get_const_list_hatyan('year') #['A0','M2','S2','M4'] # 
@@ -80,7 +76,7 @@ if len(station_list)==0: #if no station is supplied, do analysis on artificial a
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_raw,ts_validation=ts_pred)
     ax2.set_ylim(-1,1)
 
-hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+hatyan.exit_RWS() #provides footer to outputfile when calling this script with python
 
 
 
