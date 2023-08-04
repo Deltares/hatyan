@@ -89,8 +89,9 @@ def init_RWS(interactive_plots=True):
     print(f'started at:  {timer_start_str}')
     print(f'file_config: {file_config}')
     print(f'dir_output:  {dir_output}')
-    #copy configfile to dir_output
-    shutil.copy(file_config,dir_output)
+    if os.path.exists(file_config): # escape for unsaved scripts
+        #copy configfile to dir_output
+        shutil.copy(file_config,dir_output)
     print('-'*50)
 
 
