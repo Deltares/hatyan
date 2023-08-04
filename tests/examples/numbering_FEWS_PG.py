@@ -35,8 +35,8 @@ file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
 #station_name = data_pred.var_stations.loc[0,'node_id']
 station_name = 'HOEKVHLD'
 
-file_ncout = os.path.join(dir_output,'%s_getijnummers_new.nc'%(station_name))
-file_ncout_nosidx = os.path.join(dir_output,'%s_getijnummers_nosidx.nc'%(station_name))
+file_ncout = '%s_getijnummers_new.nc'%(station_name)
+file_ncout_nosidx = '%s_getijnummers_nosidx.nc'%(station_name)
 
 if analyse_ts_bool:
     COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year')

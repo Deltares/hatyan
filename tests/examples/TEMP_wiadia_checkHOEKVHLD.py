@@ -11,7 +11,6 @@ hatyan.close('all')
 
 file_config = os.path.realpath(__file__)
 dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
-dir_output = 'TEMP_output'
 
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 

@@ -56,6 +56,6 @@ ax2.legend()
 ax1.grid()
 ax2.grid()
 fig.tight_layout()
-fig.savefig(os.path.join(dir_output,'analysis_tidalcurrent.png'))
+fig.savefig('analysis_tidalcurrent.png')
 
 hatyan.exit_RWS(timer_start)
