@@ -29,7 +29,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-def init_RWS(interactive_plots=True):
+def init_RWS(interactive_plots=None):
     """
     Initializes the hatyan process by creating a `dir_output` if it does not exist,
     setting the matplotlib backend corresponding to interactive_plots
@@ -38,7 +38,7 @@ def init_RWS(interactive_plots=True):
     Parameters
     ----------
     interactive_plots : bool, optional
-        sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is True.
+        sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is None.
 
     Raises
     ------
@@ -75,7 +75,7 @@ def init_RWS(interactive_plots=True):
             plt.switch_backend('Qt5agg')
         except:
             raise Exception('Failed to switch to Qt5agg backend, check if you have X-forwarding enabled (and mesa-libGL and possibly other libraries installed) or use argument interactive_plots=False')
-    else:
+    elif interactive_plots == False:
         plt.switch_backend('Agg')
     
     # get hatyan version and start time
