@@ -5,13 +5,11 @@ Created on Tue Oct 25 13:36:22 2022
 @author: veenstra
 """
 
-import os
 import datetime as dt
 #import pandas as pd
 import hatyan
 
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
+hatyan.init_RWS(interactive_plots=False)
 
 selected_stations = ['VLISSGN','HOEKVHLD']
 
@@ -69,6 +67,6 @@ for current_station in selected_stations:
     ax1.legend(leglabels)
     ax2.set_ylim(-0.5,0.5)
     
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()
 
 

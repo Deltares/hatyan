@@ -21,8 +21,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
+hatyan.init_RWS(interactive_plots=False)
 
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
@@ -136,4 +135,4 @@ if compare2fortran:
     fig.savefig('season_differences.png')
 
 #%%
-hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+hatyan.exit_RWS() #provides footer to outputfile when calling this script with python

@@ -94,7 +94,7 @@ def init_RWS(interactive_plots=True):
     ##################################################################
     
     timer_start = dt.datetime.now()
-    sys.argv.append(timer_start)
+    sys.argv.append(timer_start) #TODO: we now add it to sysargv list, find a more suitable option
     print('#'*50)
     print('-'*50)
     print('hatyan-%s: RWS tidal analysis and prediction'%(version_no))
@@ -115,11 +115,6 @@ def init_RWS(interactive_plots=True):
 def exit_RWS():
     """
     Provides a footer to the print output (shows up in the hatyan diagnostics file)
-
-    Parameters
-    ----------
-    timer_start : TYPE
-        The start time of the hatyan process, which is used to calculate the total time of the process.
 
     Returns
     -------

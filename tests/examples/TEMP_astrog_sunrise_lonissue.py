@@ -7,16 +7,14 @@ Jan Rolf Hendriks
 
 """
 
-import os, pytz
-import numpy as np
+import pytz
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-#file_config = os.path.realpath(__file__)
-#dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
+##hatyan.init_RWS(interactive_plots=False)
 
 # script settings
 timeStart = dt.datetime(2022,1,20)
@@ -75,4 +73,4 @@ for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntim
     except Exception as e:
         print(f'FAILED: {e}')
 #%%
-#hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+#hatyan.exit_RWS() #provides footer to outputfile when calling this script with python

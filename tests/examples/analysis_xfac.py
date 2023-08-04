@@ -9,8 +9,7 @@ import os
 import datetime as dt
 import hatyan
 
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
+hatyan.init_RWS(interactive_plots=False)
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -73,6 +72,6 @@ for fu_alltimes in [True,False]:
     #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_measurements_group0)
 
     
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()
 
 

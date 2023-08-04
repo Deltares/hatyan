@@ -11,12 +11,10 @@ voor alle stations indien mogelijk:
 import os
 import numpy as np
 import datetime as dt
-import matplotlib.pyplot as plt
 import hatyan
 import pandas as pd
 import matplotlib.pyplot as plt
 plt.close('all')
-
 
 
 # predictin M2 / S2, spring/neap cycle

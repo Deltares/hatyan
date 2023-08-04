@@ -19,8 +19,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
+hatyan.init_RWS(interactive_plots=False)
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -58,4 +57,4 @@ ax2.grid()
 fig.tight_layout()
 fig.savefig('analysis_tidalcurrent.png')
 
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()

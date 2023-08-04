@@ -9,8 +9,7 @@ import os
 import hatyan
 hatyan.close('all')
 
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, interactive_plots=False)
+hatyan.init_RWS(interactive_plots=False)
 
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -47,7 +46,7 @@ for file_dia in [file_dia_wl,file_dia_ext]:
     os.remove(file_dia_out)
     os.remove(file_wia_out)
     
-hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+hatyan.exit_RWS() #provides footer to outputfile when calling this script with python
 
 
 
