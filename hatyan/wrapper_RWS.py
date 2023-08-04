@@ -68,9 +68,6 @@ def init_RWS(interactive_plots=True):
     with open('__NOT_FINISHED__','w') as f:
         f.write('CAUTION, this hatyan process has not yet properly finished, check FILE_DIAGNOSICS.txt for possible errors')
 
-    import hatyan
-    hatyan_version = hatyan.__version__
-    
     #set the matplotlib backend depending on the interactive_plots argument
     import matplotlib.pyplot as plt
     if interactive_plots:
@@ -80,13 +77,15 @@ def init_RWS(interactive_plots=True):
             raise Exception('Failed to switch to Qt5agg backend, check if you have X-forwarding enabled (and mesa-libGL and possibly other libraries installed) or use argument interactive_plots=False')
     else:
         plt.switch_backend('Agg')
-    
-    ##################################################################
-    ##### fixed settings #############################################
-    ##################################################################
-    
+
+    # get hatyan version and start time
+    import hatyan
+    hatyan_version = hatyan.__version__
     timer_start = dt.datetime.now()
-    sys.argv.append(timer_start) #TODO: we now add it to sysargv list, find a more suitable option
+    # appending to sysargv list, environment variable would be more suitable that remains after process finishes.
+    sys.argv.append(timer_start)
+    
+    # print settings
     print('#'*50)
     print('-'*50)
     print(f'hatyan-{hatyan_version}: RWS tidal analysis and prediction')
