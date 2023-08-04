@@ -8,12 +8,11 @@ The results show that with the latter method, overlapping periods match perfectl
 
 """
 
-import os, sys
+import os
 import datetime as dt
 import hatyan
 
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -49,7 +48,7 @@ for current_station in selected_stations:
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction3, ts_validation=ts_prediction4)
     fig.savefig('prediction_%im_%s_validation_DDPTST_twoperiods'%(times_step_pred, current_station))
     
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()
     
 
 

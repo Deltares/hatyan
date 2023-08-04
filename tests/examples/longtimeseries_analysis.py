@@ -15,7 +15,7 @@ plt.close('all')
 from netCDF4 import Dataset, num2date #TODO: move to xarray
 import hatyan
 
-dir_data = r'p:\11205259-004-dcsm-fm\waterlevel_data\all\ncFiles'
+dir_data = r'p:\archivedprojects\11205259-004-dcsm-fm\waterlevel_data\all\ncFiles'
 selected_stations = ['A2','A12','AUKFPFM','AWGPFM','D15','EURPFM','F3PFM','F16','K13APFM','K14PFM','L9PFM'] #all platforms I can find
 selected_stations = ['A2','AUKFPFM','EURPFM','F3PFM','K13APFM'] #more than 17 years of data
 selected_stations = ['EURPFM']
@@ -28,7 +28,7 @@ do_analysis = True #set to false to check only timeseries length and tstart/tsto
 for current_station in selected_stations:
     print('')
     print(current_station)
-    file_nc = os.path.join(dir_data,'%s.nc'%(current_station))
+    file_nc = os.path.join(dir_data,f'{current_station}.nc')
     
     data_nc = Dataset(file_nc)
     

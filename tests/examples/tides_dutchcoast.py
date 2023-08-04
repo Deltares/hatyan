@@ -4,7 +4,7 @@ Created on Fri Apr 26 15:11:07 2019
 
 @author: veenstra
 """
-import os, sys
+import os
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
@@ -12,8 +12,7 @@ plt.close('all')
 import matplotlib.dates as mdates
 import hatyan
 
-file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False) #provides header to outputfile when calling this script with python
+hatyan.init_RWS() #provides header to outputfile when calling this script with python
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -90,6 +89,6 @@ ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b %H:%M'))
 fig.tight_layout()
 fig.savefig('tide_clock_nonpolar_copy.png', dpi=250)
 
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()
 
 

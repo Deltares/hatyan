@@ -84,6 +84,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     elif ts_steps_sec_most == 0:
         raise Exception('ERROR: ts_steps_sec_most=0, check rounding issue')
     M2period_numsteps = M2_period_sec/ts_steps_sec_most
+    minwidth_numsteps = 2*3600/ts_steps_sec_most # minimal width of 2 hours makes peakfinding more robust: https://github.com/Deltares/hatyan/issues/85
 
     data_pd_HWLW = pd.DataFrame({'times':ts.index,'values':ts['values'],'HWLWcode':np.nan}).reset_index(drop=True)
     #create empty HWLW dataframe
@@ -91,18 +92,20 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
         data_pd_HWLW = data_pd_HWLW[~data_pd_HWLW['values'].isnull()].reset_index(drop=True)
         print('WARNING: the provided ts for extreme/HWLW calculation contained NaN values. To avoid unexpected results from scipy.signal.find_peaks(), the %i NaN values were removed from the ts (%.2f%%) before calculating extremes/HWLW.'%(len(ts)-len(data_pd_HWLW), (len(ts)-len(data_pd_HWLW))/len(ts)*100))
 
+    min_prominence = 0.01 #minimal prominence to exclude very minor dips/peaks from being seen as aggers.
+    
     if calc_HWLW345 or calc_HWLW1122:
-        #get all local extremes, including aggers and second high waters (1/2/11/22) #takes first value of two equal peaks, prominence naar 0.01 om matige aggers uit te sluiten
-        LWid_all, LWid_all_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=None)
-        HWid_all, HWid_all_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=None)
+        #get all local extremes, including aggers and second high waters (1/2/11/22) #takes first value of two equal peaks
+        LWid_all, LWid_all_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(None,None), distance=None)
+        HWid_all, HWid_all_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(None,None), distance=None)
         data_pd_HWLW.loc[LWid_all,'HWLWcode'] = 22 #all LW
         data_pd_HWLW.loc[HWid_all,'HWLWcode'] = 11 #all HW
 
     #get HWLW (extremes per tidal period).
-    LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
-    HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(0.01,None), width=(None,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
+    LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(minwidth_numsteps,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
+    HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(minwidth_numsteps,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
-    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW['times']>=ts.index[0]+dt.timedelta(hours=buffer_hr)) & (data_pd_HWLW['times']<=ts.index[-1]-dt.timedelta(hours=buffer_hr))].index
+    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW['times']>=data_pd_HWLW['times'].iloc[0]+dt.timedelta(hours=buffer_hr)) & (data_pd_HWLW['times']<=data_pd_HWLW['times'].iloc[-1]-dt.timedelta(hours=buffer_hr))].index
     LWid_main = LWid_main_raw[np.in1d(LWid_main_raw,validtimes_idx)]
     HWid_main = HWid_main_raw[np.in1d(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process

@@ -5,15 +5,13 @@ Gebruik van componentenfile om LAT/HAT te berekenen.
 
 """
 
-import os, sys
+import os
 import pandas as pd
 import hatyan
 
-file_config = os.path.realpath(__file__)
 
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=True)
+hatyan.init_RWS()
 
-dir_base = os.path.abspath(os.path.join(file_config,os.pardir,os.pardir,os.pardir))
 #dir_base = '/home/rikz/baak/hatyan2/'
 #dir_base = '/home/ad.rws.nl/baaka01/hatyan/'
 dir_base = r'c:\DATA\hatyan_data_acceptancetests\predictie2019'
@@ -55,7 +53,7 @@ print(f'LAT:\n{lat_vallist_allstats}\nHAT:\n{hat_vallist_allstats}')
 hat_vallist_allstats.to_csv('HAT_indication.csv')
 lat_vallist_allstats.to_csv('LAT_indication.csv')
         
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()
 
 print('\nthese %i stations were requested for processing:\n%s'%(len(selected_stations),selected_stations))
 print('\nthese %i stations were not processed because there is no ana/comp dataset available:\n%s'%(len(stats_noana),stats_noana))

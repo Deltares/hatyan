@@ -5,7 +5,7 @@ Deze configfile kan gebruikt worden om de dataset data_M2phasediff_perstation.tx
 
 """
 
-import os, sys
+import os
 import datetime as dt
 import pandas as pd
 import numpy as np
@@ -13,8 +13,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-file_config = os.path.realpath(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -207,7 +206,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     stats_M2phasediff_out = stats.sort_values('M2phasediff_hr')['M2phasediff']
     #stats_M2phasediff_out.to_csv(r'c:\DATA\hatyan_github\hatyan\data_M2phasediff_perstation_new.txt', sep=' ', header=False, float_format='%.2f')
     
-    #hatyan.exit_RWS(timer_start)
+    #hatyan.exit_RWS()
     print(stats)    
     print('')
     print(hatyan.get_schureman_freqs(['M2']))
@@ -248,4 +247,4 @@ if create_spatialplot:
         ctx.add_basemap(fig2_ax1, source=source_list[1], crs="EPSG:28992", attribution_size=5)
     fig2.savefig('tide_numbering_phasediff.png', dpi=250)
 
-hatyan.exit_RWS(timer_start) #provides footer to outputfile when calling this script with python
+hatyan.exit_RWS() #provides footer to outputfile when calling this script with python

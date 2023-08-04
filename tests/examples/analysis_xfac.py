@@ -6,12 +6,10 @@ Created on Fri Feb  5 09:53:03 2021
 """
 
 import os
-import sys
 import datetime as dt
 import hatyan
 
-file_config = os.path.realpath(__file__)
-dir_output, timer_start = hatyan.init_RWS(file_config, sys.argv, interactive_plots=False)
+hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -60,20 +58,20 @@ for fu_alltimes in [True,False]:
     #ts_prediction1min = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=1)
     #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac0_xfac0, ts_validation=ts_prediction_xfac1_xfac1)
-    fig.savefig(os.path.join(dir_output,'fualltimes%d_anaxfac0_predxfac1.png'%(fu_alltimes)))
+    fig.savefig('fualltimes%d_anaxfac0_predxfac1.png'%(fu_alltimes))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac1_xfac1, ts_validation=ts_prediction_xfac0_xfac0)
-    fig.savefig(os.path.join(dir_output,'fualltimes%d_anaxfac1_predxfac0.png'%(fu_alltimes)))
+    fig.savefig('fualltimes%d_anaxfac1_predxfac0.png'%(fu_alltimes))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac0_xfac0, ts_validation=ts_prediction_xfac0_xfac1)
-    fig.savefig(os.path.join(dir_output,'fualltimes%d_anaxfac0_predxfacdiff.png'%(fu_alltimes)))
+    fig.savefig('fualltimes%d_anaxfac0_predxfacdiff.png'%(fu_alltimes))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac1_xfac0, ts_validation=ts_prediction_xfac1_xfac1)
-    fig.savefig(os.path.join(dir_output,'fualltimes%d_anaxfac1_predxfacdiff.png'%(fu_alltimes)))
+    fig.savefig('fualltimes%d_anaxfac1_predxfacdiff.png'%(fu_alltimes))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac0_xfac0, ts_validation=ts_prediction_xfac1_xfac0)
-    fig.savefig(os.path.join(dir_output,'fualltimes%d_anaxfacdiff_predxfac0.png'%(fu_alltimes)))
+    fig.savefig('fualltimes%d_anaxfacdiff_predxfac0.png'%(fu_alltimes))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac0_xfac1, ts_validation=ts_prediction_xfac1_xfac1)
-    fig.savefig(os.path.join(dir_output,'fualltimes%d_anaxfacdiff_predxfac1.png'%(fu_alltimes)))
+    fig.savefig('fualltimes%d_anaxfacdiff_predxfac1.png'%(fu_alltimes))
     #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_measurements_group0)
 
     
-hatyan.exit_RWS(timer_start)
+hatyan.exit_RWS()
 
 

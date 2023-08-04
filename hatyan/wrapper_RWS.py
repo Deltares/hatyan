@@ -22,132 +22,95 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import os
+import sys
+import argparse
 import shutil
 import datetime as dt
 import matplotlib
 import matplotlib.pyplot as plt
 
 
-def init_RWS(file_config, argvlist=[None], interactive_plots=True, silent=False):
+def init_RWS():
     """
-    Initializes the hatyan process for RWS related calculations. Besides the return variables,
-    it prints a header for the print output (shows up in the hatyan diagnostics file)
+    Initializes the hatyan process by creating a `dir_output` if it does not exist,
+    setting current and matplotlib savefig directory to `dir_output`,
+    setting the matplotlib backend to Qt5agg if --interactive-plots sysargv is used,
+    starting a script timer for exit_RWS(),
+    copying the input script to `dir_output`,
+    and printing the initialisation header
 
     Parameters
     ----------
-    file_config : TYPE
-        DESCRIPTION.
-    argvlist : TYPE
-        DESCRIPTION.
-    interactive_plots : bool/int, optional
-        sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is True.
+    interactive_plots : bool, optional
+        sets the correct matplotlib backend so plots are (not) displayed on both RedHat and windows. The default is None.
 
     Raises
     ------
     Exception
         DESCRIPTION.
-
-    Returns
-    -------
-    dir_output : path/str
-        the output directory for the hatyan process, the current directory is set to this folder.
-    timer_start : datetime.datetime
-        provides a start time with which exit_RWS calculates the total time of the process.
-
-    """
-    
-    if len(argvlist) == 1:
-        dir_output = get_outputfoldername(file_config)
-    elif len(argvlist) == 2: #for running from terminal with command "hatyan configfile"
-        dir_output = argvlist[1]
-    else:
-        raise Exception('ERROR: something wrong with input arguments')
-    os.chdir(dir_output)
-    
-    with open('__NOT_FINISHED__','w') as f:
-        f.write('CAUTION, this hatyan process has not yet properly finished, check FILE_DIAGNOSICS.txt for possible errors')
-
-    try:
-        import hatyan
-        version_no = hatyan.__version__
-    except ModuleNotFoundError:
-        version_no = None
-    
-    #set the storage location of interactive plots
-    import matplotlib
-    matplotlib.rcParams["savefig.directory"] = dir_output
-    
-    #set the matplotlib backend depending on the interactive_plots argument
-    import matplotlib.pyplot as plt
-    if interactive_plots:
-        try:
-            plt.switch_backend('Qt5agg')
-        except:
-            raise Exception('Failed to switch to Qt5agg backend, check if you have X-forwarding enabled (and mesa-libGL and possibly other libraries installed) or use argument interactive_plots=False')
-    else:
-        plt.switch_backend('Agg')
-    
-    ##################################################################
-    ##### fixed settings #############################################
-    ##################################################################
-    
-    timer_start = dt.datetime.now()
-    if not silent: #necessary to suppress this in CentOS hatyan command, since print output is interpreted as dir_output variable
-        print('#'*50)
-        print('-'*50)
-        print('hatyan-%s: RWS tidal analysis and prediction'%(version_no))
-        print('-'*50)
-        print('INITIALISATION')
-        print('started at %s'%(timer_start.strftime('%Y-%m-%d %H:%M:%S')))
-        print('%-45s = %s'%('file_config',file_config))
-        print('%-45s = %s'%('dir_output',dir_output))
-        print('-'*50)
-            
-        #copy configfile to dir_output
-        print('copying configfile to dir_output\\%s'%(os.path.basename(file_config)))
-        shutil.copy(file_config,dir_output)
-        print('END OF INITIALISATION')
-        
-    return dir_output, timer_start
-
-
-def exit_RWS(timer_start):
-    """
-    Provides a footer to the print output (shows up in the hatyan diagnostics file)
-
-    Parameters
-    ----------
-    timer_start : TYPE
-        The start time of the hatyan process, which is used to calculate the total time of the process.
 
     Returns
     -------
     None.
 
     """
-
-    if matplotlib.get_backend() == 'Qt5Agg':
-        print('MESSAGE: interactive plots opened, close them to continue')
-        plt.show()
     
-    print('-'*50)
-    timer_stop = dt.datetime.now()
-    print('calculation finished at %s'%(timer_stop.strftime('%Y-%m-%d %H:%M:%S')))
-    timer_elapsed = (timer_stop - timer_start).total_seconds()/60
-    print('elapsed time: %.2f minutes (%.2f seconds)'%(timer_elapsed,timer_elapsed*60))
-    print('-'*50)
+    #parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-D', '--dir-output') # option that takes a value, default is None
+    parser.add_argument('-I', '--interactive-plots', action='store_true') # on/off flag, default is False
+    args = parser.parse_args()
     
-    os.remove('__NOT_FINISHED__')
+    file_config = os.path.realpath(sys.argv[0])
+    
+    if not os.path.isfile(file_config): # escape for running with F9 or unsaved script
+        print('init_RWS() silently failed, file_config not found')
+        return
+    
+    if args.dir_output is None:
+        foldername = os.path.basename(file_config).split('.')[0]
+        time_now = dt.datetime.now()
+        dir_output = 'output__%s__%s'%(time_now.strftime('%Y%m%d_%H%M%S'),foldername)
+        os.makedirs(dir_output, exist_ok=False)
+    else: # for running testbank with command `python configfile.py dir_output`
+        dir_output = args.dir_output
+    os.chdir(dir_output)
+    
+    #set the storage location of interactive plots
+    import matplotlib
+    matplotlib.rcParams["savefig.directory"] = dir_output
+
+    #set the matplotlib backend depending on the interactive_plots argument
+    import matplotlib.pyplot as plt
+    if args.interactive_plots:
+        try:
+            plt.switch_backend('Qt5agg')
+        except:
+            raise Exception('Failed to switch to Qt5agg backend, check if you have X-forwarding enabled (and mesa-libGL and possibly other libraries installed) or use argument interactive_plots=False')
+    
+    # get hatyan version and start time
+    import hatyan
+    hatyan_version = hatyan.__version__
+    timer_start = dt.datetime.now()
+    timer_start_str = timer_start.strftime('%Y-%m-%d %H:%M:%S')
+    # appending to sysargv list, environment variable would be more suitable that remains after process finishes.
+    sys.argv.append(timer_start)
+    
+    # print initialization
+    print('############### HATYAN INITALIZING ###############')
+    print('-'*50)
+    print(f'hatyan-{hatyan_version}: RWS tidal analysis and prediction')
+    print(f'started at:  {timer_start_str}')
+    print(f'file_config: {file_config}')
+    print(f'dir_output:  {dir_output}')
+    #copy configfile to dir_output
+    shutil.copy(file_config,dir_output)
+    print('-'*50)
 
 
-def get_outputfoldername(file_config):
+def exit_RWS():
     """
-    Creates an output folder based on the start time of the filename of the configfile and the current time. 
-
-    Parameters
-    ----------
-    file_config : str or path
-        path to the configuration file.
+    Provides a finishing footer to the print output
 
     Raises
     ------
@@ -156,24 +119,30 @@ def get_outputfoldername(file_config):
 
     Returns
     -------
-    dir_output : str or path
-        path to the output directory.
+    None.
 
     """
     
-    mode = file_config.split(os.sep)[-1].split('.')[0]
-    time_now = dt.datetime.now()
-    dir_output = os.path.join(os.getcwd(),'output__%s__%s'%(time_now.strftime('%Y%m%d_%H%M%S'),mode))
+    timer_start = sys.argv[-1]
+    if not isinstance(timer_start,dt.datetime):
+        raise Exception('exit_RWS() can only be called if init_RWS() is called in the same process')
+
+    timer_stop = dt.datetime.now()
+    timer_stop_str = timer_stop.strftime('%Y-%m-%d %H:%M:%S')
+    timer_elapsed = (timer_stop - timer_start).total_seconds()/60
+
+    # print de-initialization
+    print('-'*50)
+    if matplotlib.get_backend() == 'Qt5Agg':
+        print('WARNING: close open plots to continue')
+        plt.show()
+    print(f'finished at: {timer_stop_str}')
+    print(f'elapsed time: {timer_elapsed:.2f} minutes {timer_elapsed*60:.2f} seconds')
+    print('-'*50)
+    print('################# HATYAN FINISHED ################')
     
-    if not os.path.isfile(file_config):
-        raise Exception('ERROR: configfile not found: %s'%(file_config))
-    
-    if not os.path.exists(dir_output):
-        os.makedirs(dir_output)
-    else:
-        raise Exception('ERROR: dir_output already exists')
-    
-    return dir_output
+    with open('FINISHED.txt','w') as f:
+        f.write('The presence of this file means the run finished succesfully. In a later stage some logging will be printed in this file.')
 
 
 def close(fig=None):
