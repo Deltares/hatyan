@@ -33,7 +33,7 @@ def test_examplescripts(file_config): #FROM DFM_TOOLS
     dir_output = os.path.join(dir_output_general,os.path.basename(file_config).replace('.py',''))
     os.makedirs(dir_output,exist_ok=True)
     os.chdir(dir_output)
-    test = os.system(f"python {file_config} {dir_output} > {dir_output}/STDOUT.txt") #providing dir_output, so init_RWS() does not create a unique subdirectory
+    test = os.system(f"python {file_config} -D {dir_output} > {dir_output}/STDOUT.txt") #providing dir_output, so init_RWS() does not create a unique subdirectory
     
     if test:
         raise Exception('execution did not finish properly')

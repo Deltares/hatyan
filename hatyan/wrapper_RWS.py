@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
 import sys
+import argparse
 import shutil
 import datetime as dt
 import matplotlib
@@ -51,25 +52,22 @@ def init_RWS():
 
     """
     
-    argvlist = sys.argv
-    if '--interactive-plots' in argvlist:
-        argvlist.pop('--interactive-plots')
-        interactive_plots = True
-    else:
-        interactive_plots = False
+    #parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-D', '--dir-output') # option that takes a value, default is None
+    parser.add_argument('-I', '--interactive-plots', action='store_true') # on/off flag, default is False
+    args = parser.parse_args()
     
-    file_config = os.path.realpath(argvlist[0])
+    file_config = os.path.realpath(sys.argv[0])
     
     if not os.path.isfile(file_config): # escape for running with F9 or unsaved script
         print('init_RWS() silently failed, file_config not found')
         return
     
-    if len(argvlist) == 1:
+    if args.dir_output is None:
         dir_output = get_outputfoldername(file_config)
-    elif len(argvlist) == 2: #for running testbank with command `python configfile.py dir_output`
-        dir_output = argvlist[1]
-    else:
-        raise Exception('ERROR: something wrong with input arguments')
+    else: # for running testbank with command `python configfile.py dir_output`
+        dir_output = args.dir_output
     os.chdir(dir_output)
     
     #set the storage location of interactive plots
@@ -78,7 +76,7 @@ def init_RWS():
 
     #set the matplotlib backend depending on the interactive_plots argument
     import matplotlib.pyplot as plt
-    if interactive_plots:
+    if args.interactive_plots:
         try:
             plt.switch_backend('Qt5agg')
         except:
