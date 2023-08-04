@@ -65,7 +65,10 @@ def init_RWS():
         return
     
     if args.dir_output is None:
-        dir_output = get_outputfoldername(file_config)
+        foldername = os.path.basename(file_config).split('.')[0]
+        time_now = dt.datetime.now()
+        dir_output = 'output__%s__%s'%(time_now.strftime('%Y%m%d_%H%M%S'),foldername)
+        os.makedirs(dir_output, exist_ok=False)
     else: # for running testbank with command `python configfile.py dir_output`
         dir_output = args.dir_output
     os.chdir(dir_output)
@@ -137,31 +140,6 @@ def exit_RWS():
     
     with open('FINISHED.txt','w') as f:
         f.write('The presence of this file means the run finished succesfully. In a later stage some logging will be printed in this file.')
-
-
-def get_outputfoldername(file_config):
-    """
-    Creates an output folder based on the start time of the filename of the configfile and the current time. 
-
-    Parameters
-    ----------
-    file_config : str or path
-        path to the configuration file.
-
-    Returns
-    -------
-    dir_output : str or path
-        path to the output directory.
-
-    """
-    
-    mode = os.path.basename(file_config).split('.')[0]
-    time_now = dt.datetime.now()
-    dir_output = os.path.join(os.getcwd(),'output__%s__%s'%(time_now.strftime('%Y%m%d_%H%M%S'),mode))
-    
-    os.makedirs(dir_output, exist_ok=False)
-    
-    return dir_output
 
 
 def close(fig=None):
