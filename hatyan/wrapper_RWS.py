@@ -33,7 +33,10 @@ import matplotlib.pyplot as plt
 def init_RWS():
     """
     Initializes the hatyan process by creating a `dir_output` if it does not exist,
-    setting the matplotlib backend corresponding to interactive_plots
+    setting current and matplotlib savefig directory to `dir_output`,
+    setting the matplotlib backend to Qt5agg if --interactive-plots sysargv is used,
+    starting a script timer for exit_RWS(),
+    copying the input script to `dir_output`,
     and printing the initialisation header
 
     Parameters
