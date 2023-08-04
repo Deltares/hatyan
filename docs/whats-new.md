@@ -1,3 +1,9 @@
+## Unreleased
+
+### Feat
+- removed input/return parameters from `init_RWS()` and `exit_RWS()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#108](https://github.com/Deltares/hatyan/pull/108)
+
+
 ## 2.7.0 (2023-08-03)
 
 ### Feat
