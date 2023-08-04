@@ -20,4 +20,4 @@ A Python package for harmonic tidal analysis and prediction, based on the FORTRA
 - install with ``pip install hatyan -U``
 - [online documentation](https://deltares.github.io/hatyan) with contributing guide, tutorials/examples, API reference and a convenient search box.
 - [docs folder](https://github.com/Deltares/hatyan/tree/main/docs) with background information
-- Bug or feature request? Create a [GitHub issue](https://github.com/Deltares/dfm_tools/issues)
+- Bug or feature request? Create a [GitHub issue](https://github.com/Deltares/hatyan/issues)
