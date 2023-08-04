@@ -29,7 +29,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-def init_RWS(interactive_plots=None):
+def init_RWS():
     """
     Initializes the hatyan process by creating a `dir_output` if it does not exist,
     setting the matplotlib backend corresponding to interactive_plots
@@ -52,6 +52,11 @@ def init_RWS(interactive_plots=None):
     """
     
     argvlist = sys.argv
+    if '--interactive-plots' in argvlist:
+        argvlist.pop('--interactive-plots')
+        interactive_plots = True
+    else:
+        interactive_plots = False
     
     file_config = os.path.realpath(argvlist[0])
     
@@ -67,16 +72,17 @@ def init_RWS(interactive_plots=None):
         raise Exception('ERROR: something wrong with input arguments')
     os.chdir(dir_output)
     
+    #set the storage location of interactive plots
+    import matplotlib
+    matplotlib.rcParams["savefig.directory"] = dir_output
+
     #set the matplotlib backend depending on the interactive_plots argument
-    # in console, the default backend is QtAgg (not one of the below)
     import matplotlib.pyplot as plt
     if interactive_plots:
         try:
             plt.switch_backend('Qt5agg')
         except:
             raise Exception('Failed to switch to Qt5agg backend, check if you have X-forwarding enabled (and mesa-libGL and possibly other libraries installed) or use argument interactive_plots=False')
-    elif interactive_plots == False:
-        plt.switch_backend('Agg')
     
     # get hatyan version and start time
     import hatyan

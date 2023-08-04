@@ -21,7 +21,6 @@ if not os.path.exists(dir_output_general):
 # for the testers to verify (in Teamcity) whether the runs generate the expected files or not.
 """ Run hatyan_main.py with test-configfiles as input """
 list_examplescripts = glob.glob(os.path.join(dir_tests,'examples','*.py'))
-list_examplescripts = [x for x in list_examplescripts if '_interactive' not in x]
 
 
 @pytest.mark.acceptance
