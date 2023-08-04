@@ -74,11 +74,6 @@ def init_RWS(interactive_plots=True):
     except ModuleNotFoundError:
         version_no = None
     
-    #set the storage location of interactive plots
-    #TODO: this is not necessary since cwd is already dir_output
-    import matplotlib
-    matplotlib.rcParams["savefig.directory"] = dir_output
-    
     #set the matplotlib backend depending on the interactive_plots argument
     import matplotlib.pyplot as plt
     if interactive_plots:
