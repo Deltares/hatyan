@@ -1,7 +1,7 @@
 ## Unreleased
 
 ### Feat
-- enabled callable module via `python -m hatyan script.py` (deprecates `init_RWS()` and `exit_RWS()`) by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#113](https://github.com/Deltares/hatyan/pull/113)
+- made hatyan callable via `python -m hatyan script.py` (deprecates `init_RWS()` and `exit_RWS()`) by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#113](https://github.com/Deltares/hatyan/pull/113)
 
 
 ## 2.7.0 (2023-08-03)
