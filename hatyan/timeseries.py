@@ -505,7 +505,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.grid()
     if ts_validation is not None:
         ax2.plot(ts.index[times_id_predinvalidation], ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference')
-        ax2.legend(loc='lower right')
+        ax2.legend(loc='lower right') # create legend only if diff is plotted
     ax2.plot(times_predval_ext,[0,0],'-k',linewidth=size_line_ts)
     ax2.set_ylim(figure_ylim_tsdiff)
     rmse = np.nan
