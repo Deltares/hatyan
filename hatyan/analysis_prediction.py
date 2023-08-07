@@ -476,7 +476,7 @@ def prediction(comp, times_pred_all=None, times_ext=None, hatyan_settings=None, 
     """
     
     if "timestep_min" in kwargs:
-        raise DeprecationWarning("'timestep_min' argument for deprecated, use times_ext=slice(start,stop,step) instead")
+        raise DeprecationWarning("'timestep_min' argument for deprecated, pass via times_ext=slice(start,stop,step) instead")
         kwargs.pop("timestep_min")
     
     if hatyan_settings is None:

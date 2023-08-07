@@ -169,18 +169,24 @@ def robust_daterange_fromtimesextfreq(times_ext):
         tstop = times_ext.stop
         if times_ext.step is None:
             raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
-        tstep_min = times_ext.step
         
-        return tstart, tstop, tstep_min
+        if isinstance(times_ext.step,int):
+            # assuming minutes
+            tstep = pd.offsets.Minute(times_ext.step)
+        else:
+            tstep = times_ext.step
+        
+        return tstart, tstop, tstep
     
-    tstart, tstop, tstep_min = get_tstart_tstop_tstep(times_ext)
+    tstart, tstop, tstep = get_tstart_tstop_tstep(times_ext)
     
     try:
-        times_pred_all = pd.date_range(start=tstart, end=tstop, freq='%imin'%(tstep_min))
+        times_pred_all = pd.date_range(start=tstart, end=tstop, freq=tstep)
         times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
     except pd._libs.tslibs.np_datetime.OutOfBoundsDatetime as e: #OutOfBoundsDatetime: Out of bounds nanosecond timestamp
         print(f'WARNING: "{e}". Falling back to less fancy (slower) datetime ranges. Fancy ones are possible between {pd.Timestamp.min} and {pd.Timestamp.max}')
         td_mins = (tstop-tstart).total_seconds()/60
+        tstep_min = tstep.delta.total_seconds()/60
         nsteps = int(td_mins/tstep_min)
         times_pred_all = pd.Series([tstart+dt.timedelta(minutes=x*tstep_min) for x in range(nsteps+1)])
         times_pred_all_pdDTI = pd.Index(times_pred_all)
