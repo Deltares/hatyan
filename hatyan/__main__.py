@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import hatyan
 
 
-
 # get start time
 timer_start = dt.datetime.now()
 timer_start_str = timer_start.strftime('%Y-%m-%d %H:%M:%S')
@@ -87,14 +86,11 @@ print("--------------------------------------------------")
 with open(file_config) as f:
     exec(f.read())
 
-# # timer_start = sys.argv[-1]
-# if not isinstance(timer_start,dt.datetime):
-#     raise Exception('exit_RWS() can only be called if init_RWS() is called in the same process')
 
+# get stop time
 timer_stop = dt.datetime.now()
 timer_stop_str = timer_stop.strftime('%Y-%m-%d %H:%M:%S')
 timer_elapsed = (timer_stop - timer_start).total_seconds()/60
-
 
 # print de-initialization
 print("--------------------------------------------------")
