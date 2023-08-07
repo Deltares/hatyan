@@ -64,7 +64,7 @@ matplotlib.rcParams["savefig.directory"] = dir_output
 if args.redirect_stdout:
     sys.stdout = open('STDOUT.txt', 'w')
 
-# print initialization
+# initialization print
 print("############### HATYAN INITALIZING ###############")
 print("--------------------------------------------------")
 print(f"hatyan-{hatyan.__version__}: RWS tidal analysis and prediction")
@@ -83,7 +83,7 @@ with open(file_config) as f:
 timer_stop = dt.datetime.now()
 timer_elapsed = (timer_stop - timer_start).total_seconds()/60
 
-# print de-initialization
+# de-initialization print
 print("--------------------------------------------------")
 print(f"finished at: {timer_stop.strftime('%Y-%m-%d %H:%M:%S')}")
 print(f"elapsed time: {timer_elapsed:.2f} minutes {timer_elapsed*60:.2f} seconds")
