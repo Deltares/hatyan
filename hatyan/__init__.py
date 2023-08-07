@@ -14,7 +14,6 @@ from hatyan.hatyan_core import *
 from hatyan.foreman import *
 from hatyan.schureman import *
 from hatyan.timeseries import *
-from hatyan.wrapper_RWS import *
 from hatyan.getonlinedata import *
 from hatyan.convert import *
 from hatyan.kw_slotgemiddelden import *
