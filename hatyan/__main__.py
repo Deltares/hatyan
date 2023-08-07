@@ -30,11 +30,11 @@ hatyan_description = (
 parser = argparse.ArgumentParser(prog='hatyan', description=hatyan_description)
 parser.add_argument('filename',
                     help='Python script to run, will be copied to `dir_output`') # positional argument
-parser.add_argument('-U', '--unique-outputdir', action='store_true',
+parser.add_argument('-u', '--unique-outputdir', action='store_true',
                     help='add timestamp to `dir_output` so output is never overwritten')  # on/off flag, default is False
-parser.add_argument('-I', '--interactive-plots', action='store_true',
+parser.add_argument('-i', '--interactive-plots', action='store_true',
                     help='manually setting the matplotlib backend to Qt5agg') # on/off flag, default is False
-parser.add_argument('-R', '--redirect-stdout', action='store_true',
+parser.add_argument('-r', '--redirect-stdout', action='store_true',
                     help='redirecting stdout to dir_output/STDOUT.txt, warnings/errors are still printed to console') # on/off flag, default is False
 parser.add_argument('--version', action='version', version=f'%(prog)s {hatyan_version}')
 args = parser.parse_args()
