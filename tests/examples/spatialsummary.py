@@ -12,7 +12,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import hatyan
 
-hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -108,8 +107,3 @@ for case in case_list:
         ax.set_aspect('equal', adjustable='box')
     fig.tight_layout()
     fig.savefig('summary_%s.png'%(case))
-
-    
-hatyan.exit_RWS()
-    
-    

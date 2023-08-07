@@ -13,7 +13,6 @@ plt.close('all')
 import pandas as pd
 import hatyan
 
-hatyan.init_RWS() #provides header to outputfile when calling this script with python
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -401,5 +400,3 @@ for iC,const in enumerate(const_list_freqv0uf):
         fig.tight_layout()
         fig.savefig(os.path.join(dir_output_v0uplots,'v0u_%03d_%s.png'%(iC_hat,const)))
 print('...done')
-
-hatyan.exit_RWS()

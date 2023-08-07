@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -52,6 +51,3 @@ for current_station in stat_list:
     hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_345, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_agger345.dia'%(times_step_pred, current_station))
     
     #ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
-
-hatyan.exit_RWS()
-

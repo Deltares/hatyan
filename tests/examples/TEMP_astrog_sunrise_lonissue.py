@@ -14,8 +14,6 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-##hatyan.init_RWS()
-
 # script settings
 timeStart = dt.datetime(2022,1,20)
 timeEnd   = dt.datetime(2022,1,27)
@@ -72,5 +70,3 @@ for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntim
         print(astrabOutput['ALTMOO'])
     except Exception as e:
         print(f'FAILED: {e}')
-#%%
-#hatyan.exit_RWS() #provides footer to outputfile when calling this script with python

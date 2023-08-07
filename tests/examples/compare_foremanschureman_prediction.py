@@ -11,7 +11,6 @@ import os
 import pandas as pd
 import hatyan
 
-hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -43,7 +42,3 @@ for current_station in selected_stations:
         ax2.set_ylim(-0.02,0.02)
         ax1.legend(['schureman','foreman','difference'],loc=4)
         fig.savefig(f'compare_foreman_schureman_{current_station}_fualltimes={fu_alltimes}')
-
-hatyan.exit_RWS()
-
-
