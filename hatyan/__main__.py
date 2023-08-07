@@ -38,7 +38,7 @@ args = parser.parse_args()
 
 
 # get file_config and start time
-file_config = args.filename
+file_config = os.path.abspath(args.filename)
 timer_start = dt.datetime.now()
 
 # check for file existence before creating folder
