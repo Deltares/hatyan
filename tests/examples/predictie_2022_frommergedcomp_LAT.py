@@ -9,9 +9,6 @@ import os
 import pandas as pd
 import hatyan
 
-
-hatyan.init_RWS()
-
 #dir_base = '/home/rikz/baak/hatyan2/'
 #dir_base = '/home/ad.rws.nl/baaka01/hatyan/'
 dir_base = r'c:\DATA\hatyan_data_acceptancetests\predictie2019'
@@ -48,13 +45,9 @@ for current_station in selected_stations:
     hat_vallist_allstats.loc[current_station] = HAT
     lat_vallist_allstats.loc[current_station] = LAT
 
-
 print(f'LAT:\n{lat_vallist_allstats}\nHAT:\n{hat_vallist_allstats}')
 hat_vallist_allstats.to_csv('HAT_indication.csv')
 lat_vallist_allstats.to_csv('LAT_indication.csv')
-        
-hatyan.exit_RWS()
 
 print('\nthese %i stations were requested for processing:\n%s'%(len(selected_stations),selected_stations))
 print('\nthese %i stations were not processed because there is no ana/comp dataset available:\n%s'%(len(stats_noana),stats_noana))
-

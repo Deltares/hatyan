@@ -14,8 +14,6 @@ import datetime as dt
 import pandas as pd
 import hatyan
 
-hatyan.init_RWS()
-
 dir_testdata = 'C:\\DATA\\hatyan_github\\tests'
 
 selected_stations = ['VLISSGN']
@@ -97,7 +95,3 @@ for current_station in selected_stations:
     #plot and print HWLW statistics
     fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction1min, ts_ext_validation=ts_ext_validation)
     fig.savefig('HWLWstats_%im_%s_extvalidation'%(times_step_pred, current_station))
-    
-hatyan.exit_RWS()
-
-

@@ -9,8 +9,6 @@ import os
 import hatyan
 hatyan.close('all')
 
-hatyan.init_RWS()
-
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 current_station = 'HOEKVHLD'
@@ -45,11 +43,3 @@ for file_dia in [file_dia_wl,file_dia_ext]:
     #remove files
     os.remove(file_dia_out)
     os.remove(file_wia_out)
-    
-hatyan.exit_RWS() #provides footer to outputfile when calling this script with python
-
-
-
-
-
-

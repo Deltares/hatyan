@@ -19,7 +19,6 @@ tstop_dt = dt.datetime(2020,1,5)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
 #tstop_dt = dt.datetime(2012,12,31,23,50)
 
-##hatyan.init_RWS()
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 print('retrieving DDL catalog')
@@ -192,6 +191,3 @@ if 0:
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
             ax1.set_title('%s (%s)'%(stationdata['Naam'][0],stationdata['Code'][0]))
 
-
-#hatyan.exit_RWS() #provides footer to outputfile when calling this script with python
-            

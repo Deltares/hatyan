@@ -65,6 +65,7 @@ nav:
       - Contributing: "CONTRIBUTING.md"
   - Tutorials:
       - Introduction: tutorials.md
+      - command-line.md
       - notebooks/getting-started.ipynb
   - API reference:
       - API reference: api_reference.md # TODO: automate generation of this file

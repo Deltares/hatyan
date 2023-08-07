@@ -9,8 +9,6 @@ import datetime as dt
 #import pandas as pd
 import hatyan
 
-hatyan.init_RWS()
-
 selected_stations = ['VLISSGN','HOEKVHLD']
 
 tstart_dt = dt.datetime(2019,12,24) #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
@@ -66,7 +64,3 @@ for current_station in selected_stations:
     leglabels[1] = 'astro DDL'
     ax1.legend(leglabels)
     ax2.set_ylim(-0.5,0.5)
-    
-hatyan.exit_RWS()
-
-

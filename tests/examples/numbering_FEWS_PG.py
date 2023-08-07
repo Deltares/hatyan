@@ -11,7 +11,6 @@ plt.close('all')
 from netCDF4 import Dataset, num2date
 import hatyan
 
-hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -78,5 +77,3 @@ data_ncout = Dataset(file_ncout_nosidx)
 data_ncout.variables['waterlevel_astro_HW']
 data_ncout.variables['HWLWno']
 times_all_out = num2date(data_ncout.variables['time'],units=data_ncout.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
-
-hatyan.exit_RWS() #provides footer to outputfile when calling this script with python

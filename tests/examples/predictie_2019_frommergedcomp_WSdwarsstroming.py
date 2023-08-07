@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -75,6 +74,3 @@ for yr, pd_matig, pd_sterk in zip([2020,2021],list_matig,list_sterk):
 for yr, pd_matig, pd_sterk in zip([2020,2021],list_matig,list_sterk):
     print('%i matige vervaloverschrijdingen in %i'%(len(pd_matig),yr))
     print('%i sterke vervaloverschrijdingen in %i'%(len(pd_sterk),yr))
-
-hatyan.exit_RWS()
-

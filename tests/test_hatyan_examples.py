@@ -29,11 +29,9 @@ def test_examplescripts(file_config): #FROM DFM_TOOLS
     """
     file_config = os.path.join(dir_tests,'configfiles','predictie_2019_b02ex2_19Ycomp4Ydia_CUXHVN_test.py')
     """
-    # 1. Set up test data
-    dir_output = os.path.join(dir_output_general,os.path.basename(file_config).replace('.py',''))
-    os.makedirs(dir_output,exist_ok=True)
-    os.chdir(dir_output)
-    test = os.system(f"python {file_config} -D {dir_output} > {dir_output}/STDOUT.txt") #providing dir_output, so init_RWS() does not create a unique subdirectory
+    
+    os.chdir(dir_output_general)
+    test = os.system(f"python -m hatyan {file_config} --redirect-stdout")
     
     if test:
         raise Exception('execution did not finish properly')
