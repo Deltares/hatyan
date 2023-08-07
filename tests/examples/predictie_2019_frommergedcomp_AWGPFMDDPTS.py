@@ -12,7 +12,6 @@ import os
 import datetime as dt
 import hatyan
 
-hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -47,8 +46,3 @@ for current_station in selected_stations:
     fig.savefig('prediction_%im_%s_validation_DDPTST'%(times_step_pred, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction3, ts_validation=ts_prediction4)
     fig.savefig('prediction_%im_%s_validation_DDPTST_twoperiods'%(times_step_pred, current_station))
-    
-hatyan.exit_RWS()
-    
-
-

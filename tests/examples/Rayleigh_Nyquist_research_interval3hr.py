@@ -14,8 +14,6 @@ import hatyan
 
 dir_testdata = 'C:\\DATA\\hatyan_github\\tests\\data_unitsystemtests'
 
-hatyan.init_RWS()
-
 #defining a list of the components to be analysed (can also be 'half_year' and others, 'year' contains 94 components and the mean H0)
 const_list = hatyan.get_const_list_hatyan('year') #['A0','M2','S2','M4'] # 
 #const_list = ['3MS2','3M2S10']
@@ -75,8 +73,3 @@ if len(station_list)==0: #if no station is supplied, do analysis on artificial a
     ts_pred = hatyan.prediction(comp=comp_frommeas,times_pred_all=ts_meas_raw.index) #times_ext=[dt.datetime(ts_meas_raw.index.min().year,1,1),dt.datetime(ts_meas_raw.index.max().year+1,1,1)],timestep_min=1440) 
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_raw,ts_validation=ts_pred)
     ax2.set_ylim(-1,1)
-
-hatyan.exit_RWS() #provides footer to outputfile when calling this script with python
-
-
-

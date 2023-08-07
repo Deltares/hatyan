@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
 
-hatyan.init_RWS()
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -246,5 +245,3 @@ if create_spatialplot:
                    ctx.providers.Stamen.Watercolor]
         ctx.add_basemap(fig2_ax1, source=source_list[1], crs="EPSG:28992", attribution_size=5)
     fig2.savefig('tide_numbering_phasediff.png', dpi=250)
-
-hatyan.exit_RWS() #provides footer to outputfile when calling this script with python

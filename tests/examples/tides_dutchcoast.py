@@ -12,7 +12,6 @@ plt.close('all')
 import matplotlib.dates as mdates
 import hatyan
 
-hatyan.init_RWS() #provides header to outputfile when calling this script with python
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
@@ -88,7 +87,3 @@ ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b %H:%M'))
 #ax1.set_frame_on(False)
 fig.tight_layout()
 fig.savefig('tide_clock_nonpolar_copy.png', dpi=250)
-
-hatyan.exit_RWS()
-
-
