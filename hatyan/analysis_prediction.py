@@ -25,7 +25,6 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import warnings
-warnings.filterwarnings(action='always', category=DeprecationWarning)
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
@@ -475,6 +474,10 @@ def prediction(comp, times_pred_all=None, times_ext=None, hatyan_settings=None, 
         The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the prediction times and values.
     
     """
+    
+    if "timestep_min" in kwargs:
+        raise DeprecationWarning("'timestep_min' argument for deprecated, use times_ext=slice(start,stop,step) instead")
+        kwargs.pop("timestep_min")
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
