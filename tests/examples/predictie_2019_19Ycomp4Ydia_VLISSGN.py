@@ -10,7 +10,6 @@ voor alle stations indien mogelijk:
 """
 
 import os
-import datetime as dt
 import pandas as pd
 import hatyan
 hatyan.close('all')
