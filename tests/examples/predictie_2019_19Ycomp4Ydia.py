@@ -23,7 +23,8 @@ stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','
 stats_MSL = ['EURPFM','K13APFM','LICHTELGRE','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 
 #selected_stations = stats_all
-selected_stations = ['VLISSGN','CUXHVN','D15','FISHGD']
+selected_stations = ['VLISSGN','CUXHVN','D15','FISHGD','ABDN','BAALHK']
+# TODO: stations ABDN and BAALHK currently fail
 
 file_slotgemiddelden = os.path.join(dir_testdata,'predictie2019','_slotgemiddelden_predictie2019.txt')
 stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
