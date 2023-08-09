@@ -7,7 +7,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&metric=alert_status)](https://sonarcloud.io/dashboard?id=Deltares_hatyan)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD?urlpath=/tree/docs/notebooks)
 [![Supported versions](https://img.shields.io/pypi/pyversions/hatyan.svg)](https://pypi.org/project/hatyan)
-[![Downloads](https://img.shields.io/pypi/dm/dfm_tools.svg)](https://pypistats.org/packages/hatyan)
+[![Downloads](https://img.shields.io/pypi/dm/hatyan.svg)](https://pypistats.org/packages/hatyan)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6885342.svg)](https://doi.org/10.5281/zenodo.6885342)
 
 # hatyan
