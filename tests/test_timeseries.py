@@ -93,7 +93,6 @@ def test_pandas_concat_hasfreq():
     freq is None in case of index with non-constant freq (eg 2020+2022 or if one timestep is skipped/duplicated)
     freq is pd.offsets.Minute if index is equidistant
     """
-    import pandas as pd
 
     def df_index(year):
         pd_year = pd.date_range(f'{year}-01-01',f'{year}-12-31 23:50', freq='10min')
@@ -124,6 +123,9 @@ def SKIP_test_readts_dia_equidistant_multifile_hasfreq():
     """
     When reading multiple equidistant diafiles that combine into a continuous timeseries,
     there should be a freq attribute that is not None
+    
+    skipping testcase since it fails on Github
+    test_pandas_concat_hasfreq does succeed?, so something must be off with concatenating/passing the index
     """
     file_ts_pat = os.path.join(dir_testdata,'VLISSGN_obs?.txt')
     file_ts = glob.glob(file_ts_pat)
