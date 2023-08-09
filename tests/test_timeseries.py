@@ -88,6 +88,38 @@ def test_readts_dia_equidistant_singlefile_hasfreq():
 
 
 @pytest.mark.unittest
+def test_pandas_concat_hasfreq():
+    """
+    freq is None in case of index with non-constant freq (eg 2020+2022 or if one timestep is skipped/duplicated)
+    freq is pd.offsets.Minute if index is equidistant
+    """
+    import pandas as pd
+
+    def df_index(year):
+        pd_year = pd.date_range(f'{year}-01-01',f'{year}-12-31 23:50', freq='10min')
+        df_year = pd.DataFrame(index=pd_year)
+        return df_year
+    
+    df_2020 = df_index(2020)
+    df_2021 = df_index(2021)
+    df_2022 = df_index(2022)
+    
+    ts_pd = pd.concat([df_2020,df_2021])
+    ts_pd_nonequi = pd.concat([df_2020,df_2022])
+    
+    # assert on freq attribute
+    assert hasattr(ts_pd.index,'freq')
+    assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
+    assert ts_pd.index.freq is not None
+    assert ts_pd.index.freq.nanos/1e9 == 600    
+
+    # assert on freq attribute
+    assert hasattr(ts_pd_nonequi.index,'freq')
+    assert isinstance(ts_pd_nonequi.index.freq,type(None))
+    assert ts_pd_nonequi.index.freq is None  
+
+
+@pytest.mark.unittest
 def SKIP_test_readts_dia_equidistant_multifile_hasfreq():
     """
     When reading multiple equidistant diafiles that combine into a continuous timeseries,
