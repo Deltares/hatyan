@@ -1415,7 +1415,7 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     else:
         times_fromfile = pd.date_range(start=datestart,end=datestop,freq=f'{timestep_min*10000000} ns')
     
-    #get data for station
+    # get data for station
     data_nrows = diablocks_pd.loc[block_id,'data_ends'] - diablocks_pd.loc[block_id,'data_starts']
     data_pd = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'data_starts'],nrows=data_nrows, header=None)
     data_pdser = data_pd[0].str.strip()
@@ -1425,9 +1425,12 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     
     if len(times_fromfile) != len(data):
         raise Exception(f'ERROR: times and values for block_id={block_id} are not of equal length\nlen(times_fromfile): %d\nlen(data): %d'%(len(times_fromfile),len(data)))
-    data_pd = pd.DataFrame({'times':times_fromfile,'valuecm/qualitycode':data})
     
-    #convert HWLW+quality code to separate columns
+    # construct pandas dataframe (has equidistant index, so has freq property)
+    data_pd = pd.DataFrame({'valuecm/qualitycode':data},index=times_fromfile)
+    data_pd.index.name = 'times'
+    
+    # convert HWLW+quality code to separate columns
     data_pd_temp = data_pd.loc[:,'valuecm/qualitycode'].str.split('/', expand=True)
     data_pd['values'] = data_pd_temp.iloc[:,0].astype('int')/100
     data_pd['qualitycode'] = data_pd_temp.iloc[:,1].astype('int')
@@ -1435,7 +1438,6 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
 
     bool_hiaat = data_pd['qualitycode'] == 99
     data_pd.loc[bool_hiaat,'values'] = np.nan
-    data_pd = data_pd.set_index('times')
     
     return data_pd
 
