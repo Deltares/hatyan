@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
 import io
+import glob
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -1468,7 +1469,9 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     """
     
     if not isinstance(filename,list):
-        filename = [filename]
+        # solve wildcards and convert to list
+        filename = glob.glob(filename)
+    
     if len(filename)==0:
         raise Exception('ERROR: filename list is empty')
     

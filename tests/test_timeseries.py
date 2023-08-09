@@ -27,3 +27,16 @@ def test_ts_from_multifile_equidistant_dia_hasfreq():
     assert hasattr(ts_pd.index,'freq')
     assert ts_pd.index.freq is not None
     assert ts_freq_min==60
+
+
+def test_ts_from_multifile_equidistant_dia_correctglob():
+    """
+    When providing a file pattern for reading multiple equidistant diafiles,
+    glob is supported, this test checks if it results in the correct data
+    """
+    file_ts = os.path.join(dir_testdata,'VLISSGN_obs?.txt')
+    
+    ts_pd = hatyan.readts_dia(filename=file_ts)
+    
+    assert len(ts_pd) == 35064
+    
