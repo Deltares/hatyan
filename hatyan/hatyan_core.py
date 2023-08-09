@@ -146,9 +146,14 @@ def get_doodson_eqvals(dood_date, mode=None):
 def get_tstart_tstop_tstep(times_ext):
     if not isinstance(times_ext,slice):
         raise TypeError('times_ext should be of type slice: slice(tstart, tstop, tstep_min)')
-    tstart = pd.Timestamp(times_ext.start)
-    tstop = pd.Timestamp(times_ext.stop)
     
+    try:
+        tstart = pd.Timestamp(times_ext.start)
+        tstop = pd.Timestamp(times_ext.stop)
+    except pd.errors.OutOfBoundsDatetime: # escape for outofbounds datetimes like 1018
+        tstart = times_ext.start
+        tstop = times_ext.stop
+
     if times_ext.step is None:
         raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
     
