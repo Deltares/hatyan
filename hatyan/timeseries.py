@@ -1546,7 +1546,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
         raise ValueError("Merged datasets have duplicate/overlapping timesteps, "
                          "clean up your input data or provide one file instead of a list")
     if not data_pd_all.index.is_monotonic_increasing:
-        data_pd_all = data_pd_all.sort_index(axis=0)
+        data_pd_all = data_pd_all.sort_index()
     
     return data_pd_all
 
