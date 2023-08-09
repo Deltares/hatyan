@@ -7,4 +7,4 @@ Created on Wed Aug  9 16:29:16 2023
 
 
 def get_components_from_ts(**kwargs):
-    raise DeprecationWarning("get_components_from_ts() was deprecated, use analysis() instead")
+    raise DeprecationWarning("hatyan.get_components_from_ts() was deprecated, use hatyan.analysis() instead")

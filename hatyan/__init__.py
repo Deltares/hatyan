@@ -20,6 +20,7 @@ from hatyan.kw_slotgemiddelden import *
 from hatyan.kw_havengetallen import *
 from hatyan.kw_gemgetij import *
 from hatyan.kw_overschrijding import *
+from hatyan.deprecated import *
 from hatyan.utils import close
 
 import warnings
