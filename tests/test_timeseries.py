@@ -52,7 +52,7 @@ def test_readts_noos_resamplecrop():
 
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')
     times_ext_comp0 = slice(dt.datetime(2018,1,1),dt.datetime(2018,4,1))
-
+    
     #component groups
     ts_measurements_group0 = hatyan.readts_noos(filename=file_data_comp0)
     ts_measurements_group0_res = hatyan.resample_timeseries(ts_measurements_group0, timestep_min=10)

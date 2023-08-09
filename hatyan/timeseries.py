@@ -1053,7 +1053,7 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     tstop = pd.Timestamp(times_ext.stop)
     
     print('cropping timeseries')
-    if not tstart<tstop:
+    if tstart >= tstop:
         raise ValueError(f'tstop is not larger than tstart: {times_ext}')
     if (tstart < ts_pd_in.index.min()) or (tstart > ts_pd_in.index.max()):
         message = 'imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s'%(tstart,tstop,ts_pd_in.index[0],ts_pd_in.index[-1])
