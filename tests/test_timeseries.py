@@ -169,7 +169,10 @@ def test_readts_dia_equidistant_multifile_hasfreq():
     # check ts length (all four files are added)
     assert len(ts_pd) == 35064
     
-    # assert on freq attribute
+    # check index dtype
+    assert ts_pd.index.dtype == '<M8[ns]'
+    
+    # checks for freq attribute
     assert hasattr(ts_pd.index,'freq')
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
