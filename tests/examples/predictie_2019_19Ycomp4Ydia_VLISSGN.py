@@ -13,7 +13,7 @@ import os
 import pandas as pd
 import hatyan
 hatyan.close('all')
-import glob
+
 
 dir_testdata = 'C:\\DATA\\hatyan_github\\tests'
 
@@ -39,9 +39,9 @@ for current_station in selected_stations:
     vertref='NAP'
     #END OF STATION SETTINGS
     
-    file_data_comp0_pat = os.path.join(dir_testdata,"data_unitsystemtests",f"{current_station}_obs?.txt")
-    file_data_comp0 = glob.glob(file_data_comp0_pat)
-    
+    # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
+    file_data_comp0 = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_obs?.txt')
+     
     file_data_comp1 = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_ana.txt')
     
     file_data_compvali = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_ana.txt')
@@ -53,8 +53,12 @@ for current_station in selected_stations:
     file_data_predvaliHWLW = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_ext.txt')
     
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
-    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allyears=True)
-
+    
+    times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
+    times_step_comp0 = ts_measurements_group0.index.freq.nanos/1e9/60
+    
+    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True)
+    
     fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allyears=comp_frommeasurements_all_group0)
     fig.savefig('components_%s_4Y.png'%(current_station))
     times_ext_comp0 = slice(ts_measurements_group0.index[0],ts_measurements_group0.index[-1], ts_measurements_group0.index.freq)

@@ -24,8 +24,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
 import pandas as pd
 import datetime as dt
-import warnings
-
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
@@ -67,11 +65,10 @@ class HatyanSettings:
         Whether to generate a prediction for the ts time array. The default is False.
     
     """
-    #TODO: analysis_peryear,analysis_permonth,return_allyears only for get_components_from_ts, return_prediction only for analysis. Merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    #TODO: analysis_perperiod,return_allyears only for get_components_from_ts, return_prediction only for analysis. Merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
                  CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
-                 analysis_peryear=None, analysis_permonth=None, return_allyears=None,  #TODO: should be phased out, replaced by analysis_perperiod and return_allperiods
                  return_prediction=False,
                  xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
@@ -79,27 +76,7 @@ class HatyanSettings:
         source = source.lower()
         if source not in ['schureman','foreman']:
             raise Exception('invalid source {source}, should be schureman or foreman)')
-        
-        #for arguments that will be phased out, are now written to newer arguments and overwritten with None #TODO: phase out arguments
-        if analysis_peryear is not None:
-            if analysis_peryear:
-                warnings.warn("WARNING: argument analysis_peryear will be phased out, use analysis_perperiod='Y' instead", category=DeprecationWarning)
-                analysis_perperiod = 'Y'
-            else:
-                warnings.warn("WARNING: argument analysis_peryear will be phased out, use analysis_perperiod=False instead", category=DeprecationWarning)
-            analysis_peryear = None
-        if analysis_permonth is not None:
-            if analysis_permonth:
-                warnings.warn("WARNING: argument analysis_permonth will be phased out, use analysis_perperiod='M' instead", category=DeprecationWarning)
-                analysis_perperiod = 'M'
-            else:
-                warnings.warn("WARNING: argument analysis_permonth will be phased out, use analysis_perperiod=False instead", category=DeprecationWarning)
-            analysis_permonth = None
-        if return_allyears is not None:
-            warnings.warn("WARNING: argument return_allyears will be phased out, use return_allperiods instead", category=DeprecationWarning)
-            return_allperiods = return_allyears
-            return_allyears = None
-        
+                
         for var_in in [nodalfactors,fu_alltimes,return_allperiods,return_prediction]:
             if not isinstance(var_in,bool):
                 raise Exception(f'invalid {var_in} type, should be bool')
@@ -184,7 +161,7 @@ def vectoravg(A_all, phi_deg_all):
     return A_mean, phi_deg_mean
 
 
-def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_peryear=False, analysis_permonth=False, source='schureman'):
+def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_perperiod=False, source='schureman'):
     """
     Wrapper around the analysis() function, 
     it optionally processes a timeseries per year and vector averages the results afterwards, 
@@ -226,14 +203,14 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:
         const_list = const_list.tolist()
-    if hatyan_settings.CS_comps is None:
-        n_const = len(const_list)
-    else:
+    
+    n_const = len(const_list)
+    if hatyan_settings.CS_comps is not None:
         n_const = len(const_list) + len(hatyan_settings.CS_comps)
 
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
-        print(f'analysis_perperiod={hatyan_settings.analysis_perperiod}, separate periods are automatically determined from timeseries')
+        print(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
         ts_periods_dt = ts_pd.index.to_period(period).unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
@@ -250,21 +227,20 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs):#noda
             except MatrixConditionTooHigh: # accept exception if matrix condition is too high, since some years can then be skipped
                 print(f'WARNING: analysis of {period_dt} failed because MatrixConditionTooHigh, check if const_list is appropriate for timeseries lenght.')
         if np.isnan(A_i_all).all():
-            raise Exception('analysis peryear or permonth failed for all years/months, check warnings above')
+            raise ValueError('all nans: analysis perperiod failed for all periods, check warnings above')
         
         COMP_all_pd = pd.DataFrame(data=np.hstack([A_i_all,phi_i_deg_all]), columns=pd.MultiIndex.from_product([['A','phi_deg'],ts_periods_dt]), index=COMP_one.index)
         print('vector averaging analysis results')
         A_i_mean, phi_i_deg_mean = vectoravg(A_all=A_i_all, phi_deg_all=phi_i_deg_all)
         COMP_mean_pd = pd.DataFrame({ 'A': A_i_mean, 'phi_deg': phi_i_deg_mean},index=COMP_one.index)
-
     else: #dummy values, COMP_years should be equal to COMP_mean
         COMP_mean_pd = analysis(ts_pd, const_list=const_list, hatyan_settings=hatyan_settings)
         COMP_all_pd = None
     
     if hatyan_settings.return_allperiods:
         return COMP_mean_pd, COMP_all_pd
-    else:
-        return COMP_mean_pd
+    
+    return COMP_mean_pd
 
 
 def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
@@ -549,10 +525,6 @@ def prediction(comp, times_pred_all=None, times_ext=None, hatyan_settings=None, 
     return ts_prediction_pd
 
 
-def prediction_peryear(comp_allyears, timestep_min, hatyan_settings=None, **kwargs):
-    raise Exception('ERROR: prediction_peryear() is deprecated, use prediction_perperiod() instead')
-
-
 def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **kwargs):
     """
     Wrapper around prediction(), to use component set of multiple years/months to generate multi-year/month timeseries.
@@ -568,7 +540,7 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
         
     Returns
     -------
-    ts_prediction_peryear : TYPE
+    ts_prediction_perperiod : pd.DataFrame
         DESCRIPTION.
 
     """

@@ -2,6 +2,8 @@
 
 ### Feat
 - made hatyan callable via `python -m hatyan script.py` (deprecates `init_RWS()` and `exit_RWS()`) by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#113](https://github.com/Deltares/hatyan/pull/113)
+- retained `freq` attribute of `ts.index` in case of multifile equidistant dia by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#118](https://github.com/Deltares/hatyan/pull/118)
+- added support for file patterns in `hatyan.readts_dia()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#118](https://github.com/Deltares/hatyan/pull/120)
 
 
 ## 2.7.0 (2023-08-03)
