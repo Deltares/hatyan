@@ -115,7 +115,7 @@ def test_pandas_concat_hasfreq():
     # assert on freq attribute
     assert hasattr(ts_pd_nonequi.index,'freq')
     assert isinstance(ts_pd_nonequi.index.freq,type(None))
-    assert ts_pd_nonequi.index.freq is None  
+    assert ts_pd_nonequi.index.freq is None
 
 
 @pytest.mark.unittest
