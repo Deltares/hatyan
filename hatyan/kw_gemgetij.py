@@ -8,7 +8,7 @@ Created on Fri Dec 16 16:35:26 2022
 import numpy as np
 import pandas as pd
 from hatyan.hatyan_core import get_const_list_hatyan
-from hatyan.analysis_prediction import get_components_from_ts
+from hatyan.analysis_prediction import analysis
 from hatyan import HatyanSettings
 
 def get_gemgetij_components(data_pd_meas):
@@ -17,7 +17,7 @@ def get_gemgetij_components(data_pd_meas):
     # =============================================================================
     const_list = get_const_list_hatyan('year') #components should not be reduced, since higher harmonics are necessary
     hatyan_settings_ana = HatyanSettings(nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod='Y', return_allperiods=True) #RWS-default settings
-    comp_frommeasurements_avg, comp_frommeasurements_allyears = get_components_from_ts(data_pd_meas, const_list=const_list, hatyan_settings=hatyan_settings_ana)
+    comp_frommeasurements_avg, comp_frommeasurements_allyears = analysis(data_pd_meas, const_list=const_list, hatyan_settings=hatyan_settings_ana)
     
     # #check if all years are available
     # comp_years = comp_frommeasurements_allyears['A'].columns

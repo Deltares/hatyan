@@ -184,7 +184,7 @@ if 0:
             elif 0: #RWS style tidal analysis (but SA/SM should come from other 1976...1994)
                 ts_meas_pd.index = ts_meas_pd.index.tz_localize(None) #remove timezone info without changing the time
                 ts_pred_validation = hatyan.readts_dia('c:\\Users\\veenstra\\Downloads\\VLISSGN_pre.dia',station='VLISSGN')
-                comp = hatyan.get_components_from_ts(ts=ts_meas_pd,const_list='year',analysis_perperiod='Y',xfac=True,fu_alltimes=False)
+                comp = hatyan.analysis(ts=ts_meas_pd,const_list='year',analysis_perperiod='Y',xfac=True,fu_alltimes=False)
                 ts_pred = hatyan.prediction(comp=comp,times_pred_all=ts_pred_validation.index,xfac=True,fu_alltimes=False)
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_pred,ts_validation=ts_pred_validation)
             else:
