@@ -212,7 +212,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # no
 
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
-        print(f'analysis_perperiod={hatyan_settings.analysis_perperiod}, separate periods are automatically determined from timeseries')
+        print(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
         ts_periods_dt = ts_pd.index.to_period(period).unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
@@ -229,21 +229,20 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # no
             except MatrixConditionTooHigh: # accept exception if matrix condition is too high, since some years can then be skipped
                 print(f'WARNING: analysis of {period_dt} failed because MatrixConditionTooHigh, check if const_list is appropriate for timeseries lenght.')
         if np.isnan(A_i_all).all():
-            raise Exception('analysis perperiod failed for all periods, check warnings above')
+            raise ValueError('all nans: analysis perperiod failed for all periods, check warnings above')
         
         COMP_all_pd = pd.DataFrame(data=np.hstack([A_i_all,phi_i_deg_all]), columns=pd.MultiIndex.from_product([['A','phi_deg'],ts_periods_dt]), index=COMP_one.index)
         print('vector averaging analysis results')
         A_i_mean, phi_i_deg_mean = vectoravg(A_all=A_i_all, phi_deg_all=phi_i_deg_all)
         COMP_mean_pd = pd.DataFrame({ 'A': A_i_mean, 'phi_deg': phi_i_deg_mean},index=COMP_one.index)
-
     else: #dummy values, COMP_years should be equal to COMP_mean
         COMP_mean_pd = analysis(ts_pd, const_list=const_list, hatyan_settings=hatyan_settings)
         COMP_all_pd = None
     
     if hatyan_settings.return_allperiods:
         return COMP_mean_pd, COMP_all_pd
-    else:
-        return COMP_mean_pd
+    
+    return COMP_mean_pd
 
 
 def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
