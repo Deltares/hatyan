@@ -203,9 +203,9 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # no
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:
         const_list = const_list.tolist()
-    if hatyan_settings.CS_comps is None:
-        n_const = len(const_list)
-    else:
+    
+    n_const = len(const_list)
+    if hatyan_settings.CS_comps is not None:
         n_const = len(const_list) + len(hatyan_settings.CS_comps)
 
     if hatyan_settings.analysis_perperiod:
