@@ -6,6 +6,7 @@
 - added support for file patterns in `hatyan.readts_dia()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#118](https://github.com/Deltares/hatyan/pull/120)
 - uniform usage of `analysis` (deprecates `get_components_from_ts`) by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#125](https://github.com/Deltares/hatyan/pull/125)
 - added metadata to timeseries and components and retaining it in hatyan process by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/131)
+- improved metadata in component files by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/131)
 
 
 ## 2.7.0 (2023-08-03)
