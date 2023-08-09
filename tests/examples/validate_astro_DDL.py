@@ -51,11 +51,11 @@ for current_station in selected_stations:
     ax1.legend(leglabels)
     ax2.set_ylim(-0.5,0.5)
     
-    comp_frommeas = hatyan.get_components_from_ts(ts=ts_measwl, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False)#, analysis_perperiod=analysis_perperiod, return_allyears=False)
+    comp_frommeas = hatyan.get_components_from_ts(ts=ts_measwl, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False)
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeas)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_pred_all=ts_measwl.index)#, times_ext=times_ext, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_pred_all=ts_measwl.index)
 
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction,ts_validation=ts_astro)
     ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))
