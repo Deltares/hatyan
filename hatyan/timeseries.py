@@ -1531,7 +1531,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
             #data_pd_allblocks_list.append(data_pd_oneblock)
         #data_pd_allblocks = pd.concat(data_pd_allblocks_list)
-        data_pd_all_list.append(data_pd_oneblock)
+            data_pd_all_list.append(data_pd_oneblock)
     
     #concat allyears dataset
     data_pd_all = pd.concat(data_pd_all_list)
