@@ -1470,13 +1470,14 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     
     if not isinstance(filename,list):
         # solve wildcards and convert to list
-        filename = glob.glob(filename)
+        file_list = glob.glob(filename)
+        file_list.sort()
     
-    if len(filename)==0:
+    if len(file_list)==0:
         raise Exception('ERROR: filename list is empty')
     
-    data_pd_all = pd.DataFrame()
-    for iF, filename_one in enumerate(filename):    
+    data_pd_all_list = []
+    for iF, filename_one in enumerate(file_list):    
         diablocks_pd = get_diablocks(filename_one)
         pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
@@ -1515,7 +1516,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
             if not bool_samestation.all():
                 raise Exception('ERROR: both the arguments station and block_ids are provided, but at least one of the requested block_ids corresponds to a different station. %s'%(str_getdiablockspd))
             
-        data_pd_allblocks = pd.DataFrame()
+        data_pd_allblocks_list = []
         for block_id in block_ids:
             if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): #non-equidistant
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
@@ -1528,10 +1529,12 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                     status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
-            data_pd_allblocks = pd.concat([data_pd_allblocks,data_pd_oneblock], ignore_index=False)
-        
-        #append to allyears dataset
-        data_pd_all = pd.concat([data_pd_all,data_pd_allblocks], ignore_index=False)
+            data_pd_allblocks_list.append(data_pd_oneblock)
+        data_pd_allblocks = pd.concat(data_pd_allblocks_list)#, ignore_index=False)
+        data_pd_all_list.append(data_pd_allblocks)
+    
+    #append to allyears dataset
+    data_pd_all = pd.concat(data_pd_all_list)#, ignore_index=False)
 
     if allow_duplicates:
         return data_pd_all
