@@ -65,19 +65,13 @@ def test_analysis_settings():
     
     ts_comp_nfac1_fualltimes0_xfac1_peryear0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod=False)
     
-    # ts_comp_onecomp
-    hatyan.analysis(ts=ts_measurements_group0, const_list=['M2'], nodalfactors=True, fu_alltimes=True, xfac=True)
+    ts_comp_onecomp = hatyan.analysis(ts=ts_measurements_group0, const_list=['M2'], nodalfactors=True, fu_alltimes=True, xfac=True)
     
-    # ts_comp_nfac1_fualltimes1_xfac1
-    hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True)
-    # ts_comp_nfac1_fualltimes0_xfac1
+    ts_comp_nfac1_fualltimes1_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True)
     ts_comp_nfac1_fualltimes0_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True)
-    # ts_comp_nfac1_fualltimes1_xfac0
-    hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False)
-    # ts_comp_nfac1_fualltimes0_xfac0
-    hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False)
-    # ts_comp_nfac0_fualltimes0_xfac0
-    hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False)
+    ts_comp_nfac1_fualltimes1_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False)
+    ts_comp_nfac1_fualltimes0_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False)
+    ts_comp_nfac0_fualltimes0_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False)
     
     comp_A_expected = np.array([9.92687566e-04, 3.11039747e-02, 9.73652407e-02, 6.68645368e-02,
                                 4.02714135e-02, 2.44247279e-02, 1.34401343e-01, 2.69848016e-01,
@@ -148,22 +142,15 @@ def test_getcomponentsfromts_settings():
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2]]
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
     
-    # ts_comp_nfac1_fualltimes1_xfac1_peryear0
-    hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod=False)
+    ts_comp_nfac1_fualltimes1_xfac1_peryear0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod=False)
     
-    # ts_comp_nfac1_fualltimes1_xfac1_permonth0
-    hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod='M')
+    ts_comp_nfac1_fualltimes1_xfac1_permonth0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod='M')
     
-    # ts_comp_nfac1_fualltimes1_xfac1
-    hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod='Y')
-    # ts_comp_nfac1_fualltimes0_xfac1
-    hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod='Y')
-    # ts_comp_nfac1_fualltimes1_xfac0
-    hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False, analysis_perperiod='Y')
-    # ts_comp_nfac1_fualltimes0_xfac0
-    hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False, analysis_perperiod='Y')
-    # ts_comp_nfac0_fualltimes0_xfac0
-    hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False, analysis_perperiod='Y')
+    ts_comp_nfac1_fualltimes1_xfac1 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod='Y')
+    ts_comp_nfac1_fualltimes0_xfac1 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod='Y')
+    ts_comp_nfac1_fualltimes1_xfac0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False, analysis_perperiod='Y')
+    ts_comp_nfac1_fualltimes0_xfac0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False, analysis_perperiod='Y')
+    ts_comp_nfac0_fualltimes0_xfac0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False, analysis_perperiod='Y')
 
 
 @pytest.mark.unittest
@@ -173,17 +160,11 @@ def test_predictionsettings():
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    
-    # ts_prediction_nfac1_fualltimes1_xfac1
-    hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times_ext=times_ext)
-    # ts_prediction_nfac1_fualltimes0_xfac1
-    hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times_ext=times_ext)
-    # ts_prediction_nfac1_fualltimes1_xfac0
-    hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times_ext=times_ext)
-    # ts_prediction_nfac1_fualltimes0_xfac0
-    hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times_ext=times_ext)
-    # ts_prediction_nfac0_fualltimes0_xfac0
-    hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times_ext=times_ext)
+    ts_prediction_nfac1_fualltimes1_xfac1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times_ext=times_ext)
+    ts_prediction_nfac1_fualltimes0_xfac1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times_ext=times_ext)
+    ts_prediction_nfac1_fualltimes1_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times_ext=times_ext)
+    ts_prediction_nfac1_fualltimes0_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times_ext=times_ext)
+    ts_prediction_nfac0_fualltimes0_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times_ext=times_ext)
 
 
 @pytest.mark.unittest
