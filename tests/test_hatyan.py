@@ -16,15 +16,6 @@ import hatyan
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
-modulename_list = ['os','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
-
-
-@pytest.mark.parametrize("modulename", [pytest.param('%s'%(stat), id='%s'%(stat)) for stat in modulename_list])
-@pytest.mark.unittest
-def test_import_libraries(modulename):
-    exec('import %s'%(modulename))
-    if modulename == 'pyproj':
-        exec('from pyproj import Transformer')
 
 
 @pytest.mark.unittest
