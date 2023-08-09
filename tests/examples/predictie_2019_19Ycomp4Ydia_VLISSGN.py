@@ -39,9 +39,8 @@ for current_station in selected_stations:
     vertref='NAP'
     #END OF STATION SETTINGS
     
-
-    file_data_comp0_raw = [os.path.join(dir_testdata,'data_unitsystemtests','%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2,3,4]]
-    file_data_comp0 = [x for x in file_data_comp0_raw if os.path.exists(x)] #slim filename list down to available files/years
+    # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
+    file_data_comp0 = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_obs?.txt')
         
     file_data_comp1 = os.path.join(dir_testdata,'data_unitsystemtests','%s_ana.txt'%(current_station))
     
