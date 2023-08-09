@@ -58,7 +58,7 @@ for station in station_list:
         
         print(hatyan.check_ts(ts_meas_raw))
         
-        comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_perperiod=False)
+        comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, fu_alltimes=True)
         ts_pred = hatyan.prediction(comp=comp_frommeas,times_ext=[ts_meas_raw.index.min(),ts_meas_raw.index.max()],timestep_min=20) 
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_raw,ts_validation=ts_pred)
         ax2.set_ylim(-1,1)
@@ -69,7 +69,7 @@ if len(station_list)==0: #if no station is supplied, do analysis on artificial a
     ts_altimeter = os.path.join(dir_testdata,'altimeter_tsinterval_artificial.noos')
     ts_meas_raw = hatyan.readts_noos(ts_altimeter)
     
-    comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, return_allyears=False, fu_alltimes=True, analysis_perperiod=False)
+    comp_frommeas = hatyan.get_components_from_ts(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, fu_alltimes=True)
     ts_pred = hatyan.prediction(comp=comp_frommeas,times_pred_all=ts_meas_raw.index) #times_ext=[dt.datetime(ts_meas_raw.index.min().year,1,1),dt.datetime(ts_meas_raw.index.max().year+1,1,1)],timestep_min=1440) 
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_raw,ts_validation=ts_pred)
     ax2.set_ylim(-1,1)
