@@ -1477,7 +1477,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
         raise Exception('ERROR: filename list is empty')
     
     data_pd_all_list = []
-    for iF, filename_one in enumerate(file_list):    
+    for filename_one in file_list:    
         diablocks_pd = get_diablocks(filename_one)
         pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
