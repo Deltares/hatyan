@@ -1516,7 +1516,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
             if not bool_samestation.all():
                 raise Exception('ERROR: both the arguments station and block_ids are provided, but at least one of the requested block_ids corresponds to a different station. %s'%(str_getdiablockspd))
             
-        data_pd_allblocks_list = []
+        #data_pd_allblocks_list = []
         for block_id in block_ids:
             if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): #non-equidistant
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
@@ -1529,11 +1529,11 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                     status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
-            data_pd_allblocks_list.append(data_pd_oneblock)
-        data_pd_allblocks = pd.concat(data_pd_allblocks_list)
-        data_pd_all_list.append(data_pd_allblocks)
+            #data_pd_allblocks_list.append(data_pd_oneblock)
+        #data_pd_allblocks = pd.concat(data_pd_allblocks_list)
+        data_pd_all_list.append(data_pd_oneblock)
     
-    #append to allyears dataset
+    #concat allyears dataset
     data_pd_all = pd.concat(data_pd_all_list)
     
     if allow_duplicates:
