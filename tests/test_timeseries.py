@@ -25,6 +25,8 @@ def test_ts_from_multifile_equidistant_dia_hasfreq():
     
     ts_pd = hatyan.readts_dia(filename=file_ts)
     
+    assert len(ts_pd) == 35064
+    
     ts_freq_min = ts_pd.index.freq.nanos/1e9/60
     
     assert hasattr(ts_pd.index,'freq')
