@@ -1471,12 +1471,13 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     if not isinstance(filename,list):
         # solve wildcards and convert to list
         filename = glob.glob(filename)
+        filename.sort()
     
     if len(filename)==0:
-        raise Exception('ERROR: filename list is empty')
+        raise FileNotFoundError('Filename list is empty')
     
-    data_pd_all = pd.DataFrame()
-    for iF, filename_one in enumerate(filename):    
+    data_pd_all_list = []
+    for filename_one in filename:    
         diablocks_pd = get_diablocks(filename_one)
         pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
@@ -1490,13 +1491,15 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                 if len(diablocks_pd)==1:
                     station = diablocks_pd.loc[0,'station']
                 else:
-                    raise Exception('ERROR: if block_ids argument is not provided (or None) or is "allstation", station argument should be provided.')
+                    raise ValueError('If block_ids argument is not provided (or None) or is "allstation", station argument should be provided.')
             bool_station = diablocks_pd['station']==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)<1:
-                raise Exception('ERROR: no data block with requested station (%s) present in dia file. %s'%(station, str_getdiablockspd))
+                raise ValueError(f"No data block with requested station ({station}) present in dia file. {str_getdiablockspd}")
             elif len(ids_station)>1 and block_ids is None:
-                raise Exception('ERROR: more than one data block with requested station (%s) present in dia file. Provide block_ids argument to readts_dia() (int, list of int or "allstation"). %s'%(station, str_getdiablockspd))
+                raise ValueError(f"More than one data block with requested station ({station}) "
+                                 "present in dia file. Provide block_ids argument to readts_dia() (int, list of int or 'allstation'). "
+                                 f"{str_getdiablockspd}")
             else: #exactly one occurrence or block_ids is provided or block_ids='allstation'
                 block_ids = ids_station
         
@@ -1504,18 +1507,20 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
         if isinstance(block_ids,int):
             block_ids = [block_ids]
         if not isinstance(block_ids,list):
-            raise Exception('ERROR: invalid type for block_ids (should be int, list of int or "allstation")')
+            raise TypeError('Invalid type for block_ids (should be int, list of int or "allstation")')
         if not pd.Series(block_ids).isin(diablocks_pd.index).all():
-            raise Exception(f'ERROR: invalid values in block_ids list ({block_ids}), possible are {diablocks_pd.index.tolist()} (all integers)')
+            raise ValueError(f"Invalid values in block_ids list ({block_ids}), "
+                             f"possible are {diablocks_pd.index.tolist()} (all integers)")
             
         if station is not None:
             if not isinstance(station,str):
-                raise Exception('ERROR: station argument should be of type string')
+                raise TypeError('Station argument should be of type string')
             bool_samestation = diablocks_pd.loc[block_ids,'station']==station
             if not bool_samestation.all():
-                raise Exception('ERROR: both the arguments station and block_ids are provided, but at least one of the requested block_ids corresponds to a different station. %s'%(str_getdiablockspd))
+                raise ValueError("Both the arguments station and block_ids are provided, "
+                                 "but at least one of the requested block_ids corresponds to a different station. "
+                                 f"{str_getdiablockspd}")
             
-        data_pd_allblocks = pd.DataFrame()
         for block_id in block_ids:
             if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): #non-equidistant
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
@@ -1528,18 +1533,20 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                     status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
-            data_pd_allblocks = pd.concat([data_pd_allblocks,data_pd_oneblock], ignore_index=False)
-        
-        #append to allyears dataset
-        data_pd_all = pd.concat([data_pd_all,data_pd_allblocks], ignore_index=False)
-
+            data_pd_all_list.append(data_pd_oneblock)
+    
+    #concat allyears dataset
+    data_pd_all = pd.concat(data_pd_all_list)
+    
     if allow_duplicates:
         return data_pd_all
     
     #check overlapping timesteps, sort values on time and check_ts
-    if len(data_pd_all) != len(data_pd_all.index.unique()):
-        raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
-    data_pd_all = data_pd_all.sort_index(axis=0)
+    if data_pd_all.index.duplicated().any():
+        raise ValueError("Merged datasets have duplicate/overlapping timesteps, "
+                         "clean up your input data or provide one file instead of a list")
+    if not data_pd_all.index.is_monotonic_increasing:
+        data_pd_all = data_pd_all.sort_index()
     
     return data_pd_all
 
