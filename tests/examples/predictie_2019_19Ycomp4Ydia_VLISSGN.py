@@ -46,19 +46,18 @@ for current_station in selected_stations:
     
     file_data_compvali = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_ana.txt')
     
-    times_ext_pred = slice("2019-01-01","2020-01-01","10min")
-    times_ext_pred_1min = slice("2019-01-01","2020-01-01","1min")
+    times_ext_pred = slice("2019-01-01", "2020-01-01", 10)
+    times_ext_pred_1min = slice("2019-01-01", "2020-01-01", 1)
 
     file_data_predvali = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_pre.txt')
     file_data_predvaliHWLW = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_ext.txt')
     
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
-    times_step_comp0 = ts_measurements_group0.index.freq
-    times_ext_comp0 = slice(ts_measurements_group0.index[0],ts_measurements_group0.index[-1], times_step_comp0)
     comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allyears=True)
 
     fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allyears=comp_frommeasurements_all_group0)
     fig.savefig('components_%s_4Y.png'%(current_station))
+    times_ext_comp0 = slice(ts_measurements_group0.index[0],ts_measurements_group0.index[-1], ts_measurements_group0.index.freq)
     comp_metadata = {'station':current_station, 'vertref':vertref, 'times_ext':times_ext_comp0, 'xfac':xfac}
     hatyan.write_components(comp_frommeasurements_avg_group0, filename='components_%s_4Y.txt'%(current_station), metadata=comp_metadata)
     
@@ -73,7 +72,7 @@ for current_station in selected_stations:
     COMP_validation = hatyan.read_components(filename=file_data_compvali)
     fig, (ax1,ax2) = hatyan.plot_components(COMP_merged, comp_validation=COMP_validation)
     fig.savefig('components_%s_merged.png'%(current_station))
-    comp_metadata = {'station':current_station, 'vertref':vertref, 'times_ext':times_ext_comp0, 'times_ext2':'SA and SM imported from analyseresultatenbestand', 'times_step':times_step_comp0, 'xfac':xfac}
+    comp_metadata = {'station':current_station, 'vertref':vertref, 'times_ext':times_ext_comp0, 'times_ext2':'SA and SM imported from analyseresultatenbestand', 'xfac':xfac}
     hatyan.write_components(COMP_merged, filename='components_%s_merged.txt'%(current_station), metadata=comp_metadata)
     
     #prediction and validation

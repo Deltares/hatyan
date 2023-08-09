@@ -143,6 +143,24 @@ def get_doodson_eqvals(dood_date, mode=None):
     return doodson_pd
 
 
+def get_tstart_tstop_tstep(times_ext):
+    if not isinstance(times_ext,slice):
+        raise TypeError('times_ext should be of type slice: slice(tstart, tstop, tstep_min)')
+    tstart = pd.Timestamp(times_ext.start)
+    tstop = pd.Timestamp(times_ext.stop)
+    
+    if times_ext.step is None:
+        raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
+    
+    if isinstance(times_ext.step,int):
+        # assuming minutes
+        tstep = pd.offsets.Minute(times_ext.step)
+    else:
+        tstep = pd.tseries.frequencies.to_offset(times_ext.step)
+    
+    return tstart, tstop, tstep
+
+    
 def robust_daterange_fromtimesextfreq(times_ext):
     """
     Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
@@ -150,10 +168,8 @@ def robust_daterange_fromtimesextfreq(times_ext):
 
     Parameters
     ----------
-    times_ext : list of datetime.datetime
-        DESCRIPTION.
-    timestep_min : int
-        DESCRIPTION.
+    times_ext : slice
+        slice(tstart, tstop, freq) with types as understood by pd.Timestamp (for tstart/tstop) and int or str as understood by pd.tseries.frequencies.to_offset().
 
     Returns
     -------
@@ -161,22 +177,6 @@ def robust_daterange_fromtimesextfreq(times_ext):
         DESCRIPTION.
 
     """
-    
-    def get_tstart_tstop_tstep(times_ext):
-        if not isinstance(times_ext,slice):
-            raise TypeError('times_ext should be of type slice: slice(tstart, tstop, tstep_min)')
-        tstart = times_ext.start
-        tstop = times_ext.stop
-        if times_ext.step is None:
-            raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
-        
-        if isinstance(times_ext.step,int):
-            # assuming minutes
-            tstep = pd.offsets.Minute(times_ext.step)
-        else:
-            tstep = times_ext.step
-        
-        return tstart, tstop, tstep
     
     tstart, tstop, tstep = get_tstart_tstop_tstep(times_ext)
     
