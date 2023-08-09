@@ -1417,13 +1417,8 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
         times_fromfile = pd.date_range(start=datestart,end=datestop,freq='%dmin'%(timestep_min))
     else:
         times_fromfile = pd.date_range(start=datestart,end=datestop,freq=f'{timestep_min*10000000} ns')
-<<<<<<< HEAD
-
-    #get data for station
-=======
     
     # get data for station
->>>>>>> main
     data_nrows = diablocks_pd.loc[block_id,'data_ends'] - diablocks_pd.loc[block_id,'data_starts']
     data_pd = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'data_starts'],nrows=data_nrows, header=None)
     data_pdser = data_pd[0].str.strip()
@@ -1433,11 +1428,6 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     
     if len(times_fromfile) != len(data):
         raise Exception(f'ERROR: times and values for block_id={block_id} are not of equal length\nlen(times_fromfile): %d\nlen(data): %d'%(len(times_fromfile),len(data)))
-<<<<<<< HEAD
-    data_pd = pd.DataFrame({'valuecm/qualitycode':data},index=times_fromfile)
-    data_pd.index.name = 'times'
-=======
->>>>>>> main
     
     # construct pandas dataframe (has equidistant index, so has freq property)
     data_pd = pd.DataFrame({'valuecm/qualitycode':data},index=times_fromfile)
@@ -1545,19 +1535,10 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                     status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
-<<<<<<< HEAD
-            data_pd_allblocks = pd.concat([data_pd_allblocks,data_pd_oneblock], ignore_index=False)
-
-        #append to allyears dataset
-        data_pd_all = pd.concat([data_pd_all,data_pd_allblocks], ignore_index=False)
-
-=======
-            data_pd_all_list.append(data_pd_oneblock)
     
     #concat allyears dataset
     data_pd_all = pd.concat(data_pd_all_list)
-    
->>>>>>> main
+
     if allow_duplicates:
         return data_pd_all
     
