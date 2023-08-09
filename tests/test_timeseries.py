@@ -119,6 +119,34 @@ def test_pandas_concat_hasfreq():
 
 
 @pytest.mark.unittest
+def test_readts_dia_equidistant_multifile_manual_hasfreq():
+    """
+    When reading multiple equidistant diafiles that combine into a continuous timeseries,
+    there should be a freq attribute that is not None
+    
+    skipping testcase since it fails on Github
+    test_pandas_concat_hasfreq does succeed?, so something must be off with concatenating/passing the index
+    """
+    
+    ts_pd_list = []
+    for i in [1,2,3,4]:
+        file_ts = os.path.join(dir_testdata,f'VLISSGN_obs{i}.txt')
+        ts_pd_one = hatyan.readts_dia(filename=file_ts)
+        ts_pd_list.append(ts_pd_one)
+    
+    ts_pd = pd.concat(ts_pd_list)
+    
+    # check ts length (all four files are added)
+    assert len(ts_pd) == 35064
+    
+    # assert on freq attribute
+    assert hasattr(ts_pd.index,'freq')
+    assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
+    assert ts_pd.index.freq is not None
+    assert ts_pd.index.freq.nanos/1e9 == 3600
+
+
+@pytest.mark.unittest
 def SKIP_test_readts_dia_equidistant_multifile_hasfreq():
     """
     When reading multiple equidistant diafiles that combine into a continuous timeseries,
