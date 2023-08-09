@@ -142,7 +142,7 @@ def test_readts_dia_equidistant_multifile_hasfreq():
 
 
 @pytest.mark.unittest
-def test_ts_from_multifile_equidistant_dia_correctglob():
+def test_readts_dia_equidistant_multifile_glob_hasfreq():
     """
     When providing a file pattern for reading multiple equidistant diafiles,
     glob is supported, this test checks if it results in the correct data
@@ -161,4 +161,3 @@ def test_ts_from_multifile_equidistant_dia_correctglob():
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
     assert ts_pd.index.freq.nanos/1e9 == 3600
-
