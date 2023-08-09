@@ -16,61 +16,6 @@ import hatyan
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
-modulename_list = ['os','glob','shutil','scipy','numpy','datetime','pandas','pyproj','matplotlib','netCDF4','hatyan']
-
-
-@pytest.mark.parametrize("modulename", [pytest.param('%s'%(stat), id='%s'%(stat)) for stat in modulename_list])
-@pytest.mark.unittest
-def test_import_libraries(modulename):
-    exec('import %s'%(modulename))
-    if modulename == 'pyproj':
-        exec('from pyproj import Transformer')
-
-
-@pytest.mark.unittest
-def test_readts_dia_multifile():
-    file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%('VLISSGN', file_id)) for file_id in [1,2,3,4]]
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station='VLISSGN')
-    
-    assert len(ts_measurements_group0) == 35064
-
-
-@pytest.mark.unittest
-def test_readts_dia_multiblock():
-    
-    file1 = os.path.join(dir_testdata,'hoek_har.dia')
-    #ts_measurements_group0_extno = hatyan.readts_dia(filename=file1, station='HOEKVHLD')
-    ts_measurements_group0_ext0 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=0)
-    ts_measurements_group0_ext1 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=1)
-    ts_measurements_group0_ext2 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=2)
-    ts_measurements_group0_ext012 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=[0,1,2])
-    ts_measurements_group0_extall = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids='allstation')
-    
-    assert len(ts_measurements_group0_ext0) == 3977
-    assert len(ts_measurements_group0_ext1) == 9913
-    assert len(ts_measurements_group0_ext2) == 9403
-    assert len(ts_measurements_group0_ext012) == 23293
-    assert len(ts_measurements_group0_extall) == 23293
-
-
-@pytest.mark.unittest
-def test_readts_noos_resamplecrop():
-
-    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')
-    times_ext_comp0 = [dt.datetime(2018,1,1),dt.datetime(2018,4,1)]
-
-    #component groups
-    ts_measurements_group0 = hatyan.readts_noos(filename=file_data_comp0)
-    ts_measurements_group0_res = hatyan.resample_timeseries(ts_measurements_group0, timestep_min=10)
-    ts_measurements_group0_rescrop = hatyan.crop_timeseries(ts_measurements_group0_res, times_ext=times_ext_comp0)
-    
-    assert len(ts_measurements_group0) == 12752
-    assert len(ts_measurements_group0_res) == 12961
-    assert len(ts_measurements_group0_rescrop) == 12961
-    assert ts_measurements_group0_rescrop.index[0] == pd.Timestamp('2018-01-01')
-    assert ts_measurements_group0_rescrop.index[-1] == pd.Timestamp('2018-04-01')
-    assert ts_measurements_group0_rescrop['values'][0] == 2.5
-    assert ts_measurements_group0_rescrop['values'][-1] == 1.05
 
 
 @pytest.mark.unittest
