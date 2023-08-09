@@ -153,7 +153,7 @@ def test_readts_dia_equidistant_multifile_manual_hasfreq():
 
 
 @pytest.mark.unittest
-def SKIP_test_readts_dia_equidistant_multifile_hasfreq():
+def test_readts_dia_equidistant_multifile_hasfreq():
     """
     When reading multiple equidistant diafiles that combine into a continuous timeseries,
     there should be a freq attribute that is not None
