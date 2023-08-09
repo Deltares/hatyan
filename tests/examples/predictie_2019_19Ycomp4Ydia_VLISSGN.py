@@ -13,6 +13,7 @@ import os
 import datetime as dt
 import pandas as pd
 import hatyan
+hatyan.close('all')
 
 dir_testdata = 'C:\\DATA\\hatyan_github\\tests'
 
