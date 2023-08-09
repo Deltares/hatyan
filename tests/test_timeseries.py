@@ -134,16 +134,22 @@ def test_readts_dia_equidistant_multifile_manual_hasfreq():
         ts_pd_one = hatyan.readts_dia(filename=file_ts)
         ts_pd_list.append(ts_pd_one)
     
-    ts_pd = pd.concat(ts_pd_list)
+    ts_pd_merged = pd.concat(ts_pd_list)
+    ts_pd_list.append(ts_pd_merged)
     
-    # check ts length (all four files are added)
-    assert len(ts_pd) == 35064
+    expected_len = [8760, 8760, 8760, 8784, 35064]
     
-    # assert on freq attribute
-    assert hasattr(ts_pd.index,'freq')
-    assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
-    assert ts_pd.index.freq is not None
-    assert ts_pd.index.freq.nanos/1e9 == 3600
+    for i, ts_pd in enumerate(ts_pd_list):
+        print(i)
+        
+        # check ts length
+        assert len(ts_pd) == expected_len[i]
+        
+        # assert on freq attribute
+        assert hasattr(ts_pd.index,'freq')
+        assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
+        assert ts_pd.index.freq is not None
+        assert ts_pd.index.freq.nanos/1e9 == 3600
 
 
 @pytest.mark.unittest
