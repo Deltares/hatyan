@@ -1541,8 +1541,8 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     
     #check overlapping timesteps, sort values on time and check_ts
     if len(data_pd_all) != len(data_pd_all.index.unique()):
-        raise Exception('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
-    data_pd_all = data_pd_all.sort_index(axis=0)
+        raise ValueError('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
+    # data_pd_all = data_pd_all.sort_index(axis=0)
     
     return data_pd_all
 
