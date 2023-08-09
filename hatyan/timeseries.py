@@ -1468,8 +1468,9 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
 
     """
     
-    # solve wildcards and convert to list
-    filename = glob.glob(filename)
+    if not isinstance(filename,list):
+        # solve wildcards and convert to list
+        filename = glob.glob(filename)
     
     if len(filename)==0:
         raise Exception('ERROR: filename list is empty')
