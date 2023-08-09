@@ -6,12 +6,15 @@ Created on Wed Aug  9 12:14:02 2023
 """
 
 import os
+import pytest
 import glob
 import hatyan
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 
+
+@pytest.mark.unittest
 def test_ts_from_multifile_equidistant_dia_hasfreq():
     """
     When reading multiple equidistant diafiles that combine into a continuous timeseries,
@@ -29,6 +32,7 @@ def test_ts_from_multifile_equidistant_dia_hasfreq():
     assert ts_freq_min==60
 
 
+@pytest.mark.unittest
 def test_ts_from_multifile_equidistant_dia_correctglob():
     """
     When providing a file pattern for reading multiple equidistant diafiles,
