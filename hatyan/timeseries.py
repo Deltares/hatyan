@@ -1470,14 +1470,14 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     
     if not isinstance(filename,list):
         # solve wildcards and convert to list
-        file_list = glob.glob(filename)
-        file_list.sort()
+        filename = glob.glob(filename)
+        filename.sort()
     
-    if len(file_list)==0:
+    if len(filename)==0:
         raise Exception('ERROR: filename list is empty')
     
     data_pd_all_list = []
-    for filename_one in file_list:    
+    for filename_one in filename:    
         diablocks_pd = get_diablocks(filename_one)
         pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
