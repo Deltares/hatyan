@@ -27,6 +27,7 @@ import datetime as dt
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
+from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
 
 
 class PydanticConfig:
@@ -236,6 +237,13 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     else: #dummy values, COMP_years should be equal to COMP_mean
         COMP_mean_pd = analysis_singleperiod(ts_pd, const_list=const_list, hatyan_settings=hatyan_settings)
         COMP_all_pd = None
+    
+    #add metadata
+    metadata = metadata_from_obj(ts_pd)
+    metadata['nodalfactors'] = hatyan_settings.nodalfactors
+    metadata['xfac'] = hatyan_settings.xfac
+    metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
+    COMP_mean_pd = metadata_add_to_obj(COMP_mean_pd, metadata)
     
     if hatyan_settings.return_allperiods:
         return COMP_mean_pd, COMP_all_pd
@@ -522,6 +530,10 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
     print('PREDICTION finished')
     
+    #add metadata
+    metadata = metadata_from_obj(comp)
+    ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata)
+
     return ts_prediction_pd
 
 
@@ -566,4 +578,9 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
             raise Exception(f'unknown freqstr: {period_dt.freqstr}')
         ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
         ts_prediction_perperiod = pd.concat([ts_prediction_perperiod,ts_prediction_oneperiod])
+    
+    #add metadata
+    metadata = metadata_from_obj(comp_allperiods)
+    ts_prediction_perperiod = metadata_add_to_obj(ts_prediction_perperiod, metadata)
+
     return ts_prediction_perperiod

@@ -160,3 +160,32 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
     assert ts_pd.index.freq.nanos/1e9 == 3600
+
+
+@pytest.mark.unittest
+def test_crop_timeseries():
+    
+    current_station = 'VLISSGN'
+    times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,6,1)]
+    
+    file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
+    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_prediction_cropped = hatyan.crop_timeseries(ts_prediction, times_ext=times_ext)
+    
+    assert len(ts_prediction_cropped) == 21745
+    assert ts_prediction_cropped.index[0] == pd.Timestamp(times_ext[0])
+    assert ts_prediction_cropped.index[-1] == pd.Timestamp(times_ext[-1])
+
+
+@pytest.mark.unittest
+def test_resample_timeseries():
+    
+    current_station = 'VLISSGN'
+    
+    file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
+    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_prediction_res = hatyan.resample_timeseries(ts_prediction, timestep_min=120)
+    
+    assert len(ts_prediction_res) == 4380
+    assert ts_prediction_res.index[0] == pd.Timestamp(ts_prediction.index[0])
+    assert ts_prediction_res.index[-1] == pd.Timestamp("2019-12-31 22:00")

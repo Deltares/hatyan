@@ -26,9 +26,11 @@ from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pandas as pd
 import datetime as dt
+import pytz
 
 from hatyan.schureman import get_schureman_freqs, get_schureman_v0 #TODO: this is not generic foreman/schureman
 from hatyan.hatyan_core import sort_const_list, get_const_list_hatyan
+from hatyan.metadata import metadata_add_to_obj, metadata_from_obj, metadata_compare
 
 
 def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs=True):
@@ -117,7 +119,7 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
 
     
     
-def write_components(comp, filename, metadata=None):
+def write_components(comp, filename):
     """
     Writes the provided analysis results to a file
 
@@ -136,30 +138,84 @@ def write_components(comp, filename, metadata=None):
 
     """
     
-    COMP = comp.copy()
+    #get metadata before copying DataFrame
+    metadata = metadata_from_obj(comp)
     
-    t_const_freq_pd = get_schureman_freqs(COMP.index.tolist())
-    COMP['freq'] = t_const_freq_pd['freq']
-    COMP = COMP.sort_values(by='freq')
+    station = metadata.pop('station')
+    grootheid = metadata.pop('grootheid')
+    vertref = metadata.pop('vertref')
+    unit = metadata.pop('eenheid')
+    waarnemingssoort = metadata.pop('waarnemingssoort')
+    
+    tstart = metadata.pop('tstart')
+    tstop = metadata.pop('tstop')
+    tzone_min = metadata.pop('tzone')._minutes
+    tstart_str = tstart.strftime("%Y%M%d  %H%M%S")
+    tstop_str = tstop.strftime("%Y%M%d  %H%M%S")
+    
+    if 'A0' in comp.index.tolist():
+        midd = comp.loc['A0','A']*100
+        comp = comp.copy()
+        # comp = comp.drop('A0',axis=0) #TODO: consider removing A0
+    else:
+        midd = np.nan #TODO: maybe 0 instead or just do not allow it
+        comp = comp.copy()
 
+    #sort components by frequency
+    t_const_freq_pd = get_schureman_freqs(comp.index.tolist())
+    comp['freq'] = t_const_freq_pd['freq']
+    comp = comp.sort_values(by='freq')
+    
     const_list_hatyan195_orig = get_const_list_hatyan('all_schureman_originalorder')
-    const_no = [const_list_hatyan195_orig.index(x) for x in COMP.index]
-    const_speed = t_const_freq_pd['freq'].values*360
+    comp['const_no'] = [const_list_hatyan195_orig.index(x) for x in comp.index]  
+    comp['const_speed'] = t_const_freq_pd['freq'].values*360  
+    ncomp = len(comp.index)
     
     with open(filename,'w') as f:
-        if metadata is None:
+        
+        """
+        header of component file is described in https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_fortran/HATYAN40/anadea.f
+        
+        STAT:
+        Locatiecode station
+        Parametercode
+        Hoedanigheidcode
+        Eenheidcode
+        Waarnemingssoort
+        
+        PERD:
+        BEGINDATUM
+        BEGINTIJD
+        EINDDATUM
+        EINDTIJD
+        TIJDVERSCHIL T.O.V. GMT
+        
+        CODE: COMPONENTENCODE (?)
+        
+        NCOM: AANTAL COMPONENTEN
+        """
+        
+        from hatyan import __version__ as hatyan_version
+        f.write(f'* written with hatyan-{hatyan_version}\n')            
+        
+        if metadata is None: #TODO: maybe remove this or add metadata retrieval in try-except loop
             f.write('* no metadata available\n') #TODO: HATYAN40\anadea.f regel 297 schrijft format van header voor, '60' na start/stop datetime is tijdzone, '1' na eenheid is Waarnemingssoort. Beide belangrijke regels/gegevens
         else:
             for key in metadata.keys():
-                f.write('* %-20s: %s\n'%(key, metadata[key]))
-
-        if 'A0' in COMP.index.tolist():
-            f.write('MIDD   %.2f cm\n'%(COMP.loc['A0','A']*100))
-        else:
-            f.write('MIDD   %.2f cm\n'%(np.nan))
-        f.write('NCOM   %i\n'%(len(COMP.index)))
-        for iC, compname in enumerate(COMP.index.tolist()):
-            f.write("COMP %4i %12.6f %9.3f %7.2f  %-12s\n" % (const_no[iC], const_speed[iC], COMP.loc[compname,'A']*100, COMP.loc[compname,'phi_deg']%360, compname))
+                f.write(f'* {key} :  {metadata[key]}\n')
+        
+        f.write(f'STAT  {station}    {grootheid}    {vertref}    {unit}    {waarnemingssoort}\n')
+        f.write(f'PERD  {tstart_str}  {tstop_str}     {tzone_min}\n')
+        f.write( 'COMP      3\n')
+        f.write(f'MIDD {midd:9.2f}\n')
+        f.write(f'NCOM {ncomp:5d}\n')
+        for compname in comp.index.tolist():
+            comp_one = comp.loc[compname]
+            f.write("COMP %4i %12.6f %9.3f %7.2f  %-12s\n" % (comp_one['const_no'],
+                                                              comp_one['const_speed'], 
+                                                              comp_one['A']*100, 
+                                                              comp_one['phi_deg']%360, 
+                                                              compname))
 
 
 def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
@@ -186,22 +242,46 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
         DESCRIPTION.
 
     """
+    comp_main_meta = metadata_from_obj(comp_main).copy()
+    comp_sec_meta = metadata_from_obj(comp_sec).copy()
     
-    COMP_merged = comp_main.copy()
+    meta_settings_list = ['origin','nodalfactors','xfac','fu_alltimes','groepering','timestep_min','timestep_unit','TYP']
+    comp_main_meta_others = {}
+    for key in meta_settings_list:
+        if key in comp_main_meta:
+            comp_main_meta_others[f'{key}'] = comp_main_meta.pop(key)
+        if key in comp_sec_meta:
+            comp_main_meta_others[f'{key}_sec'] = comp_sec_meta.pop(key)
+    metadata_compare([comp_main_meta,comp_sec_meta])
     
-    comp_sec_list_sel = [comp for iC,comp in enumerate(COMP_merged.index) if comp in comp_sec_list]
+    # add metadata for analysis settings
+    comp_merged_meta = comp_main_meta.copy()
+    for key in meta_settings_list:
+        comp_merged_meta[key] = comp_main_meta_others[key]
+    
+    #add metadata for secondary components (list + origin)
+    comp_sec_str = ', '.join(comp_sec_list)
+    origin_sec = comp_main_meta_others['origin_sec']
+    comp_merged_meta['components_sec'] = f"{comp_sec_str} imported {origin_sec}"
+    
+    comp_merged = comp_main.copy()
+    
+    comp_sec_list_sel = [comp for iC,comp in enumerate(comp_merged.index) if comp in comp_sec_list]
     if comp_sec_list_sel != []:
-        COMP_merged = COMP_merged.drop(comp_sec_list_sel)
-    COMP_merged = pd.concat([comp_sec.loc[comp_sec_list],COMP_merged])
+        comp_merged = comp_merged.drop(comp_sec_list_sel)
+    comp_merged = pd.concat([comp_sec.loc[comp_sec_list],comp_merged])
 
-    t_const_freq = get_schureman_freqs(COMP_merged.index.tolist())
-    COMP_merged['freq'] = t_const_freq['freq']
-    COMP_merged = COMP_merged.sort_values(by='freq')
+    t_const_freq = get_schureman_freqs(comp_merged.index.tolist())
+    comp_merged['freq'] = t_const_freq['freq']
+    comp_merged = comp_merged.sort_values(by='freq')
     
-    return COMP_merged
+    # add metadata
+    comp_merged = metadata_add_to_obj(comp_merged, comp_merged_meta)
+    
+    return comp_merged
 
 
-def read_components(filename, get_metadata=False):
+def read_components(filename):
     """
     Reads analysis results from a file.
 
@@ -209,9 +289,7 @@ def read_components(filename, get_metadata=False):
     ----------
     filename : TYPE
         DESCRIPTION.
-    get_metadata : TYPE, optional
-        DESCRIPTION. The default is False.
-
+    
     Raises
     ------
     Exception
@@ -226,23 +304,29 @@ def read_components(filename, get_metadata=False):
     
     print('reading file: %s'%(filename))
 
-    file = open(filename)
     line_compstart = None
-    for i, line in enumerate(file):
-        if line.startswith('STAT'):
-            station_fromfile = line.split()[1]
-            print('retrieving data from components file for station %s'%(station_fromfile))
-            file_vertref = line.split()[3]
-            print('the vertical reference level in the imported file is: %s'%(file_vertref))
-        elif line.startswith('PERD'):
-            dateline = line.split()
-            times_compfile_ext = [dt.datetime.strptime(dateline[1]+dateline[2],'%Y%m%d%H%M'),dt.datetime.strptime(dateline[3]+dateline[4],'%Y%m%d%H%M')]
-            times_compfile_step = int(dateline[5])
-        elif line.startswith('MIDD'):
-            A0_cm = float(line.split()[1])
-        elif line.startswith('COMP'):
-            line_compstart = i
-            break #break because last line before actual data
+    
+    with open(filename) as f:
+        for i, line in enumerate(f):
+            if line.startswith('STAT'):
+                station = line.split()[1]
+                print('retrieving data from components file for station %s'%(station))
+                grootheid = line.split()[2]
+                vertref = line.split()[3]
+                print('the vertical reference level in the imported file is: %s'%(vertref))
+                eenheid = line.split()[4]
+                waarnemingssoort = line.split()[5]
+            elif line.startswith('PERD'):
+                dateline = line.split()
+                tstart = pd.Timestamp(dateline[1]+' '+dateline[2]) # dt.datetime.strptime(dateline[1]+dateline[2],'%Y%m%d%H%M'))
+                tstop = pd.Timestamp(dateline[3]+' '+dateline[4]) # dt.datetime.strptime(dateline[3]+dateline[4],'%Y%m%d%H%M')
+                tzone = pytz.FixedOffset(int(dateline[5]))
+            elif line.startswith('MIDD'):
+                A0_cm = float(line.split()[1])
+            elif line.startswith('COMP'):
+                line_compstart = i
+                break #break because last line before actual data
+    
     #retrieve raw data
     if line_compstart is None:
         raise Exception('invalid file, no line that starts with COMP')
@@ -250,12 +334,18 @@ def read_components(filename, get_metadata=False):
     
     Aphi_datapd_A0line = pd.DataFrame({'A': [A0_cm], 'phi': [0], 'name': ['A0']})
     Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
-    COMP_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
-    if get_metadata:
-        meta = {'station': station_fromfile, 'times_ext': times_compfile_ext, 'times_stepmin': times_compfile_step, 'origin':'import', 'vertref':file_vertref}#, 'usedxfac':None}
-        return COMP_pd, meta
-    else:
-        return COMP_pd
+    comp_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
+    
+    # add metadata
+    metadata = {'station':station,
+                'grootheid':grootheid, 'eenheid':eenheid,
+                'vertref':vertref,
+                'waarnemingssoort':waarnemingssoort,
+                'tstart':tstart, 'tstop':tstop, 'tzone':tzone, 
+                'origin':'from component file'}
+    
+    comp_pd = metadata_add_to_obj(comp_pd, metadata)
+    return comp_pd
 
 
 def components_timeshift(comp,hours):

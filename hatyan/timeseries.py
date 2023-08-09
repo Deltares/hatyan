@@ -137,6 +137,11 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     
     #return to normal time-index
     data_pd_HWLW = data_pd_HWLW.set_index('times')
+    
+    # add metadata #TODO: update metadata for extremes?
+    metadata = metadata_from_obj(ts)
+    data_pd_HWLW = metadata_add_to_obj(data_pd_HWLW,metadata)
+    
     return data_pd_HWLW
 
 
@@ -294,7 +299,11 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
     
     if not all((ts_ext['HWLWcode']==1) | (ts_ext['HWLWcode']==2) | (ts_ext['HWLWcode']==3) | (ts_ext['HWLWcode']==4) | (ts_ext['HWLWcode']==5)):
         raise Exception('calc_HWLWnumbering() not implemented for HWLWcode other than 1,2,3,4,5 (so no HWLWcode 11 or 22 supported), provide extreme timeseries derived with Timeseries.calc_HWLW(calc_HWLW345=False) or Timeseries.calc_HWLW(calc_HWLW345=True, calc_HWLW345_cleanup1122=True)')
+    
+    # copy object but retain metadata
+    metadata_ext = metadata_from_obj(ts_ext)
     ts_ext = ts_ext.copy()
+    ts_ext = metadata_add_to_obj(ts_ext, metadata_ext) # otherwise M2-analysis fails
     
     HW_bool = ts_ext['HWLWcode']==1
     HW_tdiff_cadzdraw = (ts_ext.loc[HW_bool].index.to_series()-firstHWcadz_fixed).dt.total_seconds()/3600
@@ -772,7 +781,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
     return
 
 
-def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
+def write_tsdia(ts, filename, headerformat='dia'):
     """
     Writes the timeseries to an equidistant dia file
 
@@ -797,6 +806,9 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
     None.
 
     """
+    metadata = metadata_from_obj(ts)
+    vertref = metadata['vertref']
+    station = metadata['station']
     
     if vertref == 'NAP':
         waarnemingssoort = 18
@@ -871,7 +883,7 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
+def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     """
     writes the extremes timeseries to a non-equidistant dia file
 
@@ -896,6 +908,10 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
     None.
 
     """
+    
+    metadata = metadata_from_obj(ts_ext)
+    vertref = metadata['vertref']
+    station = metadata['station']
     
     if vertref == 'NAP':
         waarnemingssoort = 18
@@ -1318,12 +1334,12 @@ def get_diablocks(filename):
         row_TYP = data_meta_series.loc[data_meta_series.str.startswith('TYP')].iloc[0].split(';')[1]
         diablocks_pd.loc[block_id,'TYP'] = row_TYP
         if row_TYP=='TN': #bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
-            mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
+            mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA', 'MXW;2']
             if bool_startswithmux.sum()==0:
                 raise Exception(f'ERROR: block_id={block_id} is of TYP={row_TYP} (non-equidistant, extreme waterlevels), but no MUX is available in metadata header so the file cannot be read:\n{diablocks_pd}')
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
         elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
-            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #WNS,CPM,HDH,ANA
+            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA','WNS'] #,CPM,HDH,ANA
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
         else:
             raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.readts_dia()')
@@ -1360,6 +1376,8 @@ def get_diablocks(filename):
                 diablocks_pd.loc[block_id,'eenheid'] = file_eenheid
             elif get_content_sel in ['HDH','MXH;2']: # Hoedanigheid (NAP/MSL). equidistant dia/wia, non-equidistant dia/wia
                 diablocks_pd.loc[block_id,'vertref'] = data_meta_mincontent[1]
+            elif get_content_sel in ['WNS','MXW;2']: # waarnemingssoort
+                diablocks_pd.loc[block_id,'waarnemingssoort'] = data_meta_mincontent[1]
             elif get_content_sel in ['TYD']: #Tijdstip. same in all files
                 datestart = dt.datetime.strptime(data_meta_mincontent[1]+data_meta_mincontent[2], "%Y%m%d%H%M")
                 datestop = dt.datetime.strptime(data_meta_mincontent[3]+data_meta_mincontent[4], "%Y%m%d%H%M")
@@ -1553,7 +1571,10 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     #concat allyears dataset
     data_pd_all = pd.concat(data_pd_list)
     metadata_compare(metadata_list)
-    data_pd_all = metadata_add_to_obj(data_pd_all,metadata_list[0])
+    metadata = metadata_list[0].copy()
+    metadata['tstart'] = metadata_list[0]['tstart']
+    metadata['tstop'] = metadata_list[-1]['tstop']
+    data_pd_all = metadata_add_to_obj(data_pd_all,metadata)
     
     if allow_duplicates:
         return data_pd_all
