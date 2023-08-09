@@ -90,7 +90,7 @@ for current_station in selected_stations:
     times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
     times_stepcomp0 = (ts_measurements_group0.index[1]-ts_measurements_group0.index[0]).total_seconds()/60
 
-    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, CS_comps=CS_comps)
+    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, CS_comps=CS_comps)
 
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allyears=comp_frommeasurements_all_group0)
     #fig.savefig('components_%s_4Y.png'%(current_station))
@@ -101,7 +101,7 @@ for current_station in selected_stations:
         continue
 
     ts_measurements_group1 = hatyan.readts_dia(filename=file_data_comp1, station=current_station)
-    comp_fromfile_group1 = hatyan.get_components_from_ts(ts=ts_measurements_group1, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=False)
+    comp_fromfile_group1 = hatyan.analysis(ts=ts_measurements_group1, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=False)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
     COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])

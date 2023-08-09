@@ -240,7 +240,7 @@ if 0:
     min_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).min()
     max_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).max()
 
-    comp_avg, comp_allperiods = hatyan.get_components_from_ts(ts_meas,const_list='year',analysis_perperiod='Y',return_allperiods=True)
+    comp_avg, comp_allperiods = hatyan.analysis(ts_meas,const_list='year',analysis_perperiod='Y',return_allperiods=True)
     ts_pred_py = hatyan.prediction_perperiod(comp_allperiods, timestep_min=20)
     ts_pred_ext = hatyan.calc_HWLW(ts_pred_py)
     if 0: #dropp close extremes (why do they occur with 5/10/30min interval??)

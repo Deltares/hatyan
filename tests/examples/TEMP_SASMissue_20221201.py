@@ -75,7 +75,7 @@ for current_station in ['HOEKVHLD']:#stat_list: #stat_list[stat_list.index('SCHE
     comp_19y = hatyan.analysis(ts_19y_H,const_list=['SA','SM'],fu_alltimes=False,xfac=True)
     
     ts_4y_H = hatyan.crop_timeseries(data_pd_meas_all_H, times_ext=times_ext_4y)
-    comp_4y = hatyan.get_components_from_ts(ts_4y_H,const_list='year',analysis_perperiod='Y',fu_alltimes=False,xfac=True)
+    comp_4y = hatyan.analysis(ts_4y_H,const_list='year',analysis_perperiod='Y',fu_alltimes=False,xfac=True)
     
     comp_merged = hatyan.merge_componentgroups(comp_main=comp_4y, comp_sec=comp_19y, comp_sec_list=['SA','SM'])
     

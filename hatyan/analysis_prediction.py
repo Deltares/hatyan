@@ -56,7 +56,7 @@ class HatyanSettings:
     CS_comps : pandas.DataFrame, optional
         contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. The default is None.
     
-    #following are only for get_components_from_ts
+    #following are only relevant if analysis_perperiod or return_prediction is not None
     analysis_perperiod : False or Y/Q/W, optional
         caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
     return_allperiods : bool, optional
@@ -65,7 +65,7 @@ class HatyanSettings:
         Whether to generate a prediction for the ts time array. The default is False.
     
     """
-    #TODO: analysis_perperiod,return_allyears only for get_components_from_ts, return_prediction only for analysis. Merge analysis and get_components_from_ts? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    #TODO: analysis_perperiod,return_allyears,return_prediction only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
                  CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
@@ -161,7 +161,7 @@ def vectoravg(A_all, phi_deg_all):
     return A_mean, phi_deg_mean
 
 
-def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_perperiod=False, source='schureman'):
+def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_perperiod=False, source='schureman'):
     """
     Wrapper around the analysis() function, 
     it optionally processes a timeseries per year and vector averages the results afterwards, 
@@ -197,7 +197,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # no
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
-    print('running: get_components_from_ts')
+    print('running: analysis')
     
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
@@ -221,7 +221,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # no
             print('analyzing %s of sequence %s'%(period_dt,ts_periods_strlist))
             ts_oneperiod_pd = ts_pd[ts_pd.index.to_period(period)==period_dt]
             try:
-                COMP_one = analysis(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
+                COMP_one = analysis_singleperiod(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iP] = COMP_one.loc[:,'A']
                 phi_i_deg_all[:,iP] = COMP_one.loc[:,'phi_deg']
             except MatrixConditionTooHigh: # accept exception if matrix condition is too high, since some years can then be skipped
@@ -234,7 +234,7 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # no
         A_i_mean, phi_i_deg_mean = vectoravg(A_all=A_i_all, phi_deg_all=phi_i_deg_all)
         COMP_mean_pd = pd.DataFrame({ 'A': A_i_mean, 'phi_deg': phi_i_deg_mean},index=COMP_one.index)
     else: #dummy values, COMP_years should be equal to COMP_mean
-        COMP_mean_pd = analysis(ts_pd, const_list=const_list, hatyan_settings=hatyan_settings)
+        COMP_mean_pd = analysis_singleperiod(ts_pd, const_list=const_list, hatyan_settings=hatyan_settings)
         COMP_all_pd = None
     
     if hatyan_settings.return_allperiods:
@@ -243,10 +243,10 @@ def get_components_from_ts(ts, const_list, hatyan_settings=None, **kwargs): # no
     return COMP_mean_pd
 
 
-def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
+def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
     """
     harmonic analysis with matrix transformations (least squares fit), optionally with component splitting
-    for details about arguments and return variables, see get_components_from_ts() definition
+    for details about arguments and return variables, see analysis() definition
     
     """
     
@@ -370,7 +370,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True,
 def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     """
     component splitting function
-    for details about arguments and return variables, see get_components_from_ts() definition
+    for details about arguments and return variables, see analysis() definition
 
     """
     

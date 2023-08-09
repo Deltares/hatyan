@@ -36,7 +36,6 @@ for fu_alltimes in [True,False]:
     times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
     times_step_comp0 = (ts_measurements_group0.index[1]-ts_measurements_group0.index[0]).total_seconds()/60
     
-    #COMP_merged = hatyan.get_components_from_ts(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=True)
     COMP_merged_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=False)#, return_prediction=True)
     COMP_merged_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=True)#, return_prediction=True)
     print(COMP_merged_xfac0)
