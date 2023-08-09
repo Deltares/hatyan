@@ -51,7 +51,7 @@ for current_station in selected_stations:
     ax1.legend(leglabels)
     ax2.set_ylim(-0.5,0.5)
     
-    comp_frommeas = hatyan.get_components_from_ts(ts=ts_measwl, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False)
+    comp_frommeas = hatyan.analysis(ts=ts_measwl, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False)
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeas)
     
     #prediction and validation

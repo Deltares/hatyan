@@ -63,11 +63,9 @@ for current_station in selected_stations:
         ts_measurements = pd.DataFrame({'values': meas_vals},index=meas_times)
         
         #analysis
-        #get_components_from_ts is a wrapper around analysis, for doing multiple analyses of separate years and then vector averaging the results), you probably don't need it
-        #comp_frommeasurements, comp_frommeasurements_all = hatyan.get_components_from_ts(ts=ts_measurements, const_list=const_list, nodalfactors=True, xfac=False, fu_alltimes=True, analysis_perperiod='Y', return_allperiods=True)
         comp_frommeasurements = hatyan.analysis(ts=ts_measurements, const_list=const_list, nodalfactors=True, xfac=False, fu_alltimes=True)
         print(comp_frommeasurements)
-    
+        
         fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements)
         #fig.savefig('components_%s_4Y.png'%(current_station))
         
