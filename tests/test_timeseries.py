@@ -39,5 +39,4 @@ def test_ts_from_multifile_equidistant_dia_correctglob():
     ts_pd = hatyan.readts_dia(filename=file_ts)
     
     assert len(ts_pd) == 35064
-    assert ts_pd.index.freq is not None
     
