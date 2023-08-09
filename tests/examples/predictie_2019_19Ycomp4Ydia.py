@@ -81,15 +81,15 @@ for current_station in selected_stations:
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
     file_data_comp0 = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_obs?.txt')
     
-    file_data_comp1 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
+    file_data_comp1 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ana.txt')
     
-    file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
+    file_data_compvali = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ana.txt')
     
     times_ext_pred = [dt.datetime(2019,1,1),dt.datetime(2020,1,1)]
     times_step_pred = 10
 
-    file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
-    file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
+    file_data_predvali = os.path.join(dir_testdata,'predictie2019',f'{current_station}_pre.txt')
+    file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ext.txt')
     
     if not os.path.exists(file_data_compvali):
         stats_noana.append(current_station)

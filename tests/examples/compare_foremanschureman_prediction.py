@@ -19,8 +19,6 @@ selected_stations = ['HOEKVHLD','VLISSGN','CUXHVN']
 for current_station in selected_stations:
     const_list = hatyan.get_const_list_hatyan('year')
     file_data_comp0_lastyear = os.path.join(dir_testdata,'predictie2019','%s_obs1.txt'%(current_station))
-    #file_data_comp0_raw = [os.path.join(dir_testdata,'predictie2019','%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2,3]]
-    #file_data_comp0 = [x for x in file_data_comp0_raw if os.path.exists(x)] #slim filename list down to available files/years
     
     ts_measurements_group0_lastyear = hatyan.readts_dia(filename=file_data_comp0_lastyear, station=current_station)
     #ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
