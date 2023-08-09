@@ -1530,19 +1530,21 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
             data_pd_allblocks_list.append(data_pd_oneblock)
-        data_pd_allblocks = pd.concat(data_pd_allblocks_list)#, ignore_index=False)
+        data_pd_allblocks = pd.concat(data_pd_allblocks_list)
         data_pd_all_list.append(data_pd_allblocks)
     
     #append to allyears dataset
-    data_pd_all = pd.concat(data_pd_all_list)#, ignore_index=False)
-
+    data_pd_all = pd.concat(data_pd_all_list)
+    
     if allow_duplicates:
         return data_pd_all
     
     #check overlapping timesteps, sort values on time and check_ts
-    if len(data_pd_all) != len(data_pd_all.index.unique()):
-        raise ValueError('ERROR: merged datasets have duplicate/overlapping timesteps, clean up your input data or provide one file instead of a list')
-    # data_pd_all = data_pd_all.sort_index(axis=0)
+    if data_pd_all.index.duplicated().any():
+        raise ValueError("ERROR: merged datasets have duplicate/overlapping timesteps, "
+                         "clean up your input data or provide one file instead of a list")
+    if not data_pd_all.index.is_monotonic_increasing:
+        data_pd_all = data_pd_all.sort_index(axis=0)
     
     return data_pd_all
 
