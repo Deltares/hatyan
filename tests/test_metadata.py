@@ -43,7 +43,7 @@ def test_readts_dia_metadata_multifile():
 
 @pytest.mark.unittest
 def test_readts_dia_metadata_multiblock():
-    file_ts = r'c:\DATA\hatyan_github\tests\data_unitsystemtests\hoek_har.dia'
+    file_ts = os.path.join(dir_testdata, 'hoek_har.dia')
     ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station='HOEKVHLD', block_ids='allstation')
     meta_fromts = metadata_from_obj(ts_measurements_group0)
     
