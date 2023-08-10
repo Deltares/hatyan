@@ -31,6 +31,7 @@ for iF in points_loop:
     file_tim_noSLR = os.path.join(dir_testdata,'other',f'DCSM-FM_OB_all_20181108_{iF+1:04d}.tim') # r'p:\11205235-014-getijde-energie\GTSM_runs\run_noSLR\nesthd2\DCSM-FM_OB_all_20181108_%04d.tim'%(iF+1)
     data_tim_noSLR = pd.read_csv(file_tim_noSLR, comment='*', delim_whitespace=True, names=['times_min','values'])
     data_tim_noSLR.index = dt.datetime(2024,12,15)+pd.to_timedelta(data_tim_noSLR['times_min'],unit='minute')
+    data_tim_noSLR.dummymeta = 'dummy'
     comphat_noSLR = hatyan.analysis(ts=data_tim_noSLR, const_list=consts_FES, nodalfactors=True, fu_alltimes=False,source='schureman')
     #print(comp_example[comp_example['const_list']=='M2'])
     

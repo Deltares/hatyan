@@ -23,13 +23,12 @@ stat_list = ['HOEKVHLD','DENHDR','PETTZD'] #HOEKVHLD has alternating aggers, DEN
 for current_station in stat_list:
 
     file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
-    COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    COMP_merged_temp = COMP_merged.copy()
+    comp_merged = hatyan.read_components(filename=file_data_comp0)
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
-    ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
-    ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)#, debug=True)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
+    ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)
+    ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)
     ts_ext_prediction_all.loc[ts_ext_prediction_all.index.isin(ts_ext_prediction_345.index),'HWLWcode'] = ts_ext_prediction_345['HWLWcode']
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_345, station=current_station)
     
@@ -46,7 +45,7 @@ for current_station in stat_list:
         ts_ext_vali = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_vali, station=current_station)
         fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_345, ts_ext_validation=ts_ext_vali)
 
-    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_main, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_main.dia'%(times_step_pred, current_station))
-    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_345, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_agger345.dia'%(times_step_pred, current_station))
+    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_main, filename='prediction_HWLW_%im_%s_main.dia'%(times_step_pred, current_station))
+    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction_345, filename='prediction_HWLW_%im_%s_agger345.dia'%(times_step_pred, current_station))
     
     #ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)

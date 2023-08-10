@@ -57,20 +57,17 @@ class HatyanSettings:
     CS_comps : pandas.DataFrame, optional
         contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. The default is None.
     
-    #following are only relevant if analysis_perperiod or return_prediction is not None
+    #following are only relevant if analysis_perperiod is not None
     analysis_perperiod : False or Y/Q/W, optional
         caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
     return_allperiods : bool, optional
         DESCRIPTION. The default is False.
-    return_prediction : bool, optional
-        Whether to generate a prediction for the ts time array. The default is False.
     
     """
-    #TODO: analysis_perperiod,return_allyears,return_prediction only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    #TODO: analysis_perperiod,return_allyears only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
                  CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
-                 return_prediction=False,
                  xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
             raise Exception('invalid source type, should be str')
@@ -78,7 +75,7 @@ class HatyanSettings:
         if source not in ['schureman','foreman']:
             raise Exception('invalid source {source}, should be schureman or foreman)')
                 
-        for var_in in [nodalfactors,fu_alltimes,return_allperiods,return_prediction]:
+        for var_in in [nodalfactors,fu_alltimes,return_allperiods]:
             if not isinstance(var_in,bool):
                 raise Exception(f'invalid {var_in} type, should be bool')
         
@@ -107,7 +104,6 @@ class HatyanSettings:
         self.CS_comps = CS_comps
         self.analysis_perperiod = analysis_perperiod
         self.return_allperiods = return_allperiods
-        self.return_prediction = return_prediction
         self.xTxmat_condition_max = xTxmat_condition_max
         
     def __str__(self):
@@ -251,7 +247,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     return COMP_mean_pd
 
 
-def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
+def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, source='schureman'):
     """
     harmonic analysis with matrix transformations (least squares fit), optionally with component splitting
     for details about arguments and return variables, see analysis() definition
@@ -367,12 +363,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         
     print('ANALYSIS finished')
     
-    if hatyan_settings.return_prediction:
-        print('immediately generating a prediction for the same time array as the input ts')
-        ts_prediction = prediction(comp=COMP_pd, times_pred_all=ts_pd.index, hatyan_settings=hatyan_settings)
-        return COMP_pd, ts_prediction
-    else:
-        return COMP_pd
+    return COMP_pd
 
 
 def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
@@ -471,9 +462,11 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     if times_pred_all is None:
         if times_ext is None or timestep_min is None:
-            raise Exception('if argument times_pred_all is not provided, the arguments times_ext and timestep_min are obligatory')
-        else:
-            times_pred_all = robust_daterange_fromtimesextfreq(times_ext,timestep_min)
+            print('arguments times_pred_all, times_ext and timestep_min are not provided. Constructing times_pred_all with tstart, tstop and timestep_min from component metadata')
+            metadata = metadata_from_obj(comp)
+            times_ext = [metadata['tstart'], metadata['tstop']]
+            timestep_min = metadata['timestep_min']
+        times_pred_all = robust_daterange_fromtimesextfreq(times_ext,timestep_min)
     else:
         if times_ext is not None or timestep_min is not None:
             raise Exception('if argument times_pred_all is provided, the arguments times_ext and timestep_min are not allowed')

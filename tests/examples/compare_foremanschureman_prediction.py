@@ -27,12 +27,13 @@ for current_station in selected_stations:
     stats_row = pd.DataFrame(index=[current_station])
     for fu_alltimes in [True,False]:
         xfac = False
-        return_prediction = True
         #prediction and comparison to measurements
-        settings_schu = hatyan.HatyanSettings(source='schureman',fu_alltimes=fu_alltimes,xfac=xfac,return_prediction=return_prediction)
-        settings_for = hatyan.HatyanSettings(source='foreman',fu_alltimes=fu_alltimes,xfac=xfac,return_prediction=return_prediction)
-        COMP_schu, ts_prediction_schu = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, hatyan_settings=settings_schu)
-        COMP_for, ts_prediction_for = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, hatyan_settings=settings_for)
+        settings_schu = hatyan.HatyanSettings(source='schureman',fu_alltimes=fu_alltimes,xfac=xfac)
+        settings_for = hatyan.HatyanSettings(source='foreman',fu_alltimes=fu_alltimes,xfac=xfac)
+        COMP_schu = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, hatyan_settings=settings_schu)
+        ts_prediction_schu = hatyan.prediction(comp=COMP_schu)
+        COMP_for = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, hatyan_settings=settings_for)
+        ts_prediction_for = hatyan.prediction(comp=COMP_for)
         
         fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_schu, ts_validation=ts_prediction_for)
         ax1.set_title(f'{current_station} fualltimes={fu_alltimes}')
