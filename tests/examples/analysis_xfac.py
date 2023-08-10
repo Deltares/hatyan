@@ -36,8 +36,8 @@ for fu_alltimes in [True,False]:
     times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
     times_step_comp0 = (ts_measurements_group0.index[1]-ts_measurements_group0.index[0]).total_seconds()/60
     
-    COMP_merged_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=False)#, return_prediction=True)
-    COMP_merged_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=True)#, return_prediction=True)
+    COMP_merged_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=False)
+    COMP_merged_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=True)
     print(COMP_merged_xfac0)
     print(COMP_merged_xfac1)
     #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_predCOMPyear, ts_validation=ts_measurements_group0)

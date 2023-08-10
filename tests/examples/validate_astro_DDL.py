@@ -36,10 +36,12 @@ for current_station in selected_stations:
 
     ts_astro, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC+01:00',
                                                           meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'NVT'},allow_multipleresultsfor=['WaardeBepalingsmethode'])
+    ts_astro.metadummy = ''
     ts_astro['values'] = ts_astro['values']/100 #convert from cm to m
     ts_astro.index = ts_astro.index.tz_localize(None)
     ts_measwl, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC+01:00',
                                                            meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},allow_multipleresultsfor=['WaardeBepalingsmethode']) #default meta_dict selects waterlevels
+    ts_measwl.metadummy = ''
     ts_measwl['values'] = ts_measwl['values']/100 #convert from cm to m
     ts_measwl.index = ts_measwl.index.tz_localize(None)
 

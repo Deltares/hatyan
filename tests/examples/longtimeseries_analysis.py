@@ -61,6 +61,7 @@ for current_station in selected_stations:
         meas_vals = var_wl[:]
         print('finished reading netcdf')
         ts_measurements = pd.DataFrame({'values': meas_vals},index=meas_times)
+        ts_measurements.metadummy = 'dummy'
         
         #analysis
         comp_frommeasurements = hatyan.analysis(ts=ts_measurements, const_list=const_list, nodalfactors=True, xfac=False, fu_alltimes=True)

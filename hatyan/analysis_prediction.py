@@ -462,8 +462,9 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     if times_pred_all is None:
         if times_ext is None or timestep_min is None:
-            print('arguments times_pred_all, times_ext and timestep_min are not provided. Constructing times_pred_all with tstart, tstop and timestep_min from component metadata')
             metadata = metadata_from_obj(comp)
+            if not set(['tstart','tstop','timestep_min']).issubset(metadata.keys()):
+                raise Exception('arguments times_pred_all, times_ext and timestep_min are not provided. Also components metadata does not contain tstart, tstop and timestep_min')
             times_ext = [metadata['tstart'], metadata['tstop']]
             timestep_min = metadata['timestep_min']
         times_pred_all = robust_daterange_fromtimesextfreq(times_ext,timestep_min)

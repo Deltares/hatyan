@@ -18,7 +18,6 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','BRESKS','BROUWHVSGT02','BROUWHVSGT08','CADZD','CROMR','CUXHVN','DELFZL','DENHDR','DENOVBTN','DEVPT','DORDT','DOVR','EEMHVN','EEMSHVN','EURPFM','EURPHVN','FELSWE','FISHGD','GEULHVN','GOIDSOD','GOUDBG','HAGSBNDN','HANSWT','HARLGN','HARMSBG','HARTBG','HARTHVN','HARVT10','HEESBN','HELLVSS','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','IMMHM','KATSBTN','KEIZVR','KINLBVE','KORNWDZBTN','KRAMMSZWT','KRIMPADIJSL','KRIMPADLK','K13APFM','LAUWOG','LEITH','LICHTELGRE','LITHDP','LLANDNO','LOWST','MAASMSMPL','MAASSS','MAESLKRZZDE','MARLGT','MOERDK','NES','NEWHVN','NEWLN','NIEUWSTZL','NORTHSS','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','PARKSS','PETTZD','PORTSMH','RAKND','ROOMPBNN','ROOMPBTN','ROTTDM','ROZBSSNZDE','ROZBSSZZDE','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SCHOONHVN','SHEERNS','SINTANLHVSGR','SPIJKNSE','STAVNSE','STELLDBTN','STORNWY','SUURHBNZDE','TENNSHVN','TERNZN','TERSLNZE','TEXNZE','VLAARDGN','VLAKTVDRN','VLIELHVN','VLISSGN','VURN','WALSODN','WERKDBTN','WESTKPLE','WESTTSLG','WEYMH','WHITBY','WICK','WIERMGDN','YERSKE','ZALTBML','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
-stats_MSL = ['EURPFM','K13APFM','LICHTELGRE','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 
 stats_CADZDm2 = ['WICK']
 stats_CADZDm1 = ['ABDN','CROMR','DOVR','EURPFM','FELSWE','IMMHM','LEITH','LOWST','NORTHSS','SHEERNS','WHITBY','VLAKTVDRN']
@@ -83,19 +82,13 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         print('%-45s = %s'%('station_name',current_station))
         print('-'*5)
         
-        #START OF STATION SETTINGS
-        #xfactor
+        # station settings
         if current_station in stats_xfac0:
             xfac=False
         else:
             xfac=True
-        #analysis_perperiod
-        #analysis_perperiod='Y'
-        #constituent list
         const_list = hatyan.get_const_list_hatyan('year') #94 const
-        #vertical reference
-        #vertref='NAP'
-        #END OF STATION SETTINGS
+        
         
         file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
@@ -114,13 +107,15 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
 
         #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
         #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
-        #hatyan.write_tsdia(ts=ts_prediction, station=current_station, vertref=vertref, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
+        #hatyan.write_tsdia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
         ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
         
         if i_stat == 0:
             COMP_merged_CADZD = hatyan.read_components(filename=file_data_comp0.replace(current_station,'CADZD'))
+            COMP_merged_CADZD_M2 = COMP_merged_CADZD.loc[['A0','M2']]
+            COMP_merged_CADZD_M2.metadummy = 'dummy'
             ts_prediction_CADZD = hatyan.prediction(comp=COMP_merged_CADZD, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-            ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD.loc[['A0','M2']], nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+            ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
             ax1.plot(ts_prediction_CADZD_M2.index, ts_prediction_CADZD_M2['values'], label='CADZD_M2', color='k')
             ts_ext_prediction_CADZD = hatyan.calc_HWLW(ts=ts_prediction_CADZD, debug=True)
             bool_newyear = (ts_ext_prediction_CADZD.index>dt.datetime(yr,1,1)) & (ts_ext_prediction_CADZD['HWLWcode']==1)
@@ -155,7 +150,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             pdrow['RDy'] = RDy/1000 #from m to km
         stats = pd.concat([stats,pdrow])
             
-        #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, station=current_station, vertref=vertref, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
+        #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
         #fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
@@ -168,9 +163,8 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         if 1: #validation case
             #calculate tidal wave number
             times_ext_pred_HWLWno = [dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12)]
-            COMP_merged_temp = COMP_merged.copy()
             #COMP_merged_temp.loc['M2','A']=0.05
-            ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+            ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
             ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
             #fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_HWLWno_pre)
             #breakit
@@ -205,7 +199,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     stats_M2phasediff_out = stats.sort_values('M2phasediff_hr')['M2phasediff']
     #stats_M2phasediff_out.to_csv(r'c:\DATA\hatyan_github\hatyan\data_M2phasediff_perstation_new.txt', sep=' ', header=False, float_format='%.2f')
     
-    #hatyan.exit_RWS()
     print(stats)    
     print('')
     print(hatyan.get_schureman_freqs(['M2']))

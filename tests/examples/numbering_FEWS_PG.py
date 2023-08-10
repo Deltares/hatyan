@@ -21,12 +21,14 @@ data_nc_meas = Dataset(file_meas)
 data_meas = data_nc_meas.variables['water_level'][:].flatten()
 data_times = num2date(data_nc_meas.variables['time'],units=data_nc_meas.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
 ts_meas = pd.DataFrame({'values':data_meas},index=data_times)
+ts_meas.metadummy = 'dummy'
 
 file_pred = os.path.join(dir_testdata,'other','FEWS_202010221200_testdata_S_4.nc')
 data_nc_pred = Dataset(file_pred)
 data_pred = data_nc_pred.variables['water_level'][:].flatten()
 data_times = num2date(data_nc_pred.variables['time'],units=data_nc_pred.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
 ts_prediction = pd.DataFrame({'values':data_pred},index=data_times)
+ts_prediction.metadummy = 'dummy'
 
 file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
 
