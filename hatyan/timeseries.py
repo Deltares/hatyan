@@ -27,6 +27,7 @@ import glob
 import numpy as np
 import pandas as pd
 import datetime as dt
+import pytz
 import scipy.signal as ssig
 file_path = os.path.realpath(__file__)
 import matplotlib.pyplot as plt
@@ -35,6 +36,9 @@ from netCDF4 import Dataset, date2num, stringtoarr#, num2date
 from hatyan.foreman import get_foreman_v0_freq
 from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
+from hatyan.metadata import (metadata_from_diablocks, metadata_add_to_obj, 
+                             metadata_from_obj, metadata_compare, 
+                             wns_from_metadata)
 
 
 def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_hr=6):
@@ -136,6 +140,11 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     
     #return to normal time-index
     data_pd_HWLW = data_pd_HWLW.set_index('times')
+    
+    # add metadata #TODO: update metadata for extremes?
+    metadata = metadata_from_obj(ts)
+    data_pd_HWLW = metadata_add_to_obj(data_pd_HWLW,metadata)
+    
     return data_pd_HWLW
 
 
@@ -293,7 +302,11 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
     
     if not all((ts_ext['HWLWcode']==1) | (ts_ext['HWLWcode']==2) | (ts_ext['HWLWcode']==3) | (ts_ext['HWLWcode']==4) | (ts_ext['HWLWcode']==5)):
         raise Exception('calc_HWLWnumbering() not implemented for HWLWcode other than 1,2,3,4,5 (so no HWLWcode 11 or 22 supported), provide extreme timeseries derived with Timeseries.calc_HWLW(calc_HWLW345=False) or Timeseries.calc_HWLW(calc_HWLW345=True, calc_HWLW345_cleanup1122=True)')
+    
+    # copy object but retain metadata
+    metadata_ext = metadata_from_obj(ts_ext)
     ts_ext = ts_ext.copy()
+    ts_ext = metadata_add_to_obj(ts_ext, metadata_ext) # otherwise M2-analysis fails
     
     HW_bool = ts_ext['HWLWcode']==1
     HW_tdiff_cadzdraw = (ts_ext.loc[HW_bool].index.to_series()-firstHWcadz_fixed).dt.total_seconds()/3600
@@ -771,7 +784,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
     return
 
 
-def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
+def write_tsdia(ts, filename, headerformat='dia'):
     """
     Writes the timeseries to an equidistant dia file
 
@@ -796,16 +809,26 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
     None.
 
     """
+    metadata = metadata_from_obj(ts)
+    waarnemingssoort = wns_from_metadata(metadata)
+    vertref = metadata['vertref']
+    station = metadata['station']
+    quantity = metadata['grootheid']
+    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    tzone = metadata['tzone']
+    if tzone != pytz.FixedOffset(60):
+        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
-        waarnemingssoort = 18
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
     elif vertref == 'MSL':
-        waarnemingssoort = 55
         vertreflong = 'T.o.v. Mean Sea Level'
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
+    
     grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
+
     ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #TODO: dit is niet per se generiek geldig, alleen in getijpredictieproces RWS
     
     time_today = dt.datetime.today().strftime('%Y%m%d')
@@ -870,7 +893,7 @@ def write_tsdia(ts, station, vertref, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
+def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     """
     writes the extremes timeseries to a non-equidistant dia file
 
@@ -896,12 +919,21 @@ def write_tsdia_HWLW(ts_ext, station, vertref, filename, headerformat='dia'):
 
     """
     
+    metadata = metadata_from_obj(ts_ext)
+    waarnemingssoort = wns_from_metadata(metadata)
+    vertref = metadata['vertref']
+    station = metadata['station']
+    quantity = metadata['grootheid']
+    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    tzone = metadata['tzone']
+    if tzone != pytz.FixedOffset(60):
+        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
+    
     if vertref == 'NAP':
-        waarnemingssoort = 18
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
         parameterX = 'GETETBRKD2;Getijextreem berekend'
     elif vertref == 'MSL':
-        waarnemingssoort = 55
         vertreflong = 'T.o.v. Mean Sea Level'
         parameterX = 'GETETBRKDMSL2;Getijextreem berekend t.o.v. MSL'
     else:
@@ -1062,6 +1094,12 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     #ts_pd_out = ts_pd_in.loc[times_selected_bool]
     ts_pd_out = ts_pd_in.loc[times_ext[0]:times_ext[1]]
     
+    # add metadata
+    metadata = metadata_from_obj(ts)
+    metadata['tstart'] = pd.Timestamp(times_ext[0])
+    metadata['tstop'] = pd.Timestamp(times_ext[-1])
+    ts_pd_out = metadata_add_to_obj(ts_pd_out,metadata)
+    
     return ts_pd_out
 
 
@@ -1099,6 +1137,13 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
         tstop = ts.index[-1]
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq='%dmin'%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample['values'] = ts['values'] #put measurements into this timeseries, matches to correct index automatically
+    
+    # add metadata
+    metadata = metadata_from_obj(ts)
+    metadata['tstart'] = pd.Timestamp(tstart)
+    metadata['tstop'] = pd.Timestamp(tstop)
+    metadata['timestep_min'] = timestep_min
+    data_pd_resample = metadata_add_to_obj(data_pd_resample,metadata)
     
     return data_pd_resample
 
@@ -1322,7 +1367,7 @@ def get_diablocks(filename):
                 raise Exception(f'ERROR: block_id={block_id} is of TYP={row_TYP} (non-equidistant, extreme waterlevels), but no MUX is available in metadata header so the file cannot be read:\n{diablocks_pd}')
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
         elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
-            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #WNS,CPM,HDH,ANA
+            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #,WNSCPM,HDH,ANA
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
         else:
             raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.readts_dia()')
@@ -1384,7 +1429,10 @@ def get_diablocks(filename):
 def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
 
     data_nrows = diablocks_pd.loc[block_id,'data_ends'] - diablocks_pd.loc[block_id,'data_starts']
-    data_pd_HWLW = pd.read_csv(filename,skiprows=diablocks_pd.loc[block_id,'data_starts'],nrows=data_nrows, header=None, names=['date','time','HWLWcode/qualitycode','valuecm:'], sep=';', parse_dates={'times':[0,1]})
+    skiprows = diablocks_pd.loc[block_id,'data_starts']
+    data_pd_HWLW = pd.read_csv(filename, skiprows=skiprows,nrows=data_nrows, header=None, sep=';',
+                               names=['date','time','HWLWcode/qualitycode','valuecm:'], 
+                               parse_dates={'times':[0,1]})
     
     #convert HWLW+quality code to separate columns
     data_pd_HWLWtemp = data_pd_HWLW.loc[:,'HWLWcode/qualitycode'].str.split('/', expand=True)
@@ -1401,6 +1449,10 @@ def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
     
     data_pd = data_pd_HWLW
     data_pd = data_pd.set_index('times')
+    
+    # add metadata
+    metadata = metadata_from_diablocks(diablocks_pd, block_id)
+    data_pd = metadata_add_to_obj(data_pd,metadata)
     
     return data_pd
 
@@ -1436,10 +1488,14 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     data_pd['values'] = data_pd_temp.iloc[:,0].astype('int')/100
     data_pd['qualitycode'] = data_pd_temp.iloc[:,1].astype('int')
     data_pd = data_pd.drop('valuecm/qualitycode',axis='columns')
-
+    
+    # replace missing values with nan
     bool_hiaat = data_pd['qualitycode'] == 99
     data_pd.loc[bool_hiaat,'values'] = np.nan
     
+    # add metadata
+    metadata = metadata_from_diablocks(diablocks_pd, block_id)
+    data_pd = metadata_add_to_obj(data_pd,metadata)
     return data_pd
 
 
@@ -1476,7 +1532,8 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     if len(filename)==0:
         raise FileNotFoundError('Filename list is empty')
     
-    data_pd_all_list = []
+    data_pd_list = []
+    metadata_list = []
     for filename_one in filename:    
         diablocks_pd = get_diablocks(filename_one)
         pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
@@ -1533,10 +1590,17 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                     status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
                     status_val = block_status_one[-1]
                     data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
-            data_pd_all_list.append(data_pd_oneblock)
+            data_pd_list.append(data_pd_oneblock)
+            metadata = metadata_from_obj(data_pd_oneblock)
+            metadata_list.append(metadata)
     
     #concat allyears dataset
-    data_pd_all = pd.concat(data_pd_all_list)
+    data_pd_all = pd.concat(data_pd_list)
+    metadata_compare(metadata_list)
+    metadata = metadata_list[0].copy()
+    metadata['tstart'] = metadata_list[0]['tstart']
+    metadata['tstop'] = metadata_list[-1]['tstop']
+    data_pd_all = metadata_add_to_obj(data_pd_all,metadata)
     
     if allow_duplicates:
         return data_pd_all

@@ -19,7 +19,6 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','BRESKS','BROUWHVSGT02','BROUWHVSGT08','CADZD','CROMR','CUXHVN','DELFZL','DENHDR','DENOVBTN','DEVPT','DORDT','DOVR','EEMHVN','EEMSHVN','EURPFM','EURPHVN','FELSWE','FISHGD','GEULHVN','GOIDSOD','GOUDBG','HAGSBNDN','HANSWT','HARLGN','HARMSBG','HARTBG','HARTHVN','HARVT10','HEESBN','HELLVSS','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','IMMHM','KATSBTN','KEIZVR','KINLBVE','KORNWDZBTN','KRAMMSZWT','KRIMPADIJSL','KRIMPADLK','K13APFM','LAUWOG','LEITH','LICHTELGRE','LITHDP','LLANDNO','LOWST','MAASMSMPL','MAASSS','MAESLKRZZDE','MARLGT','MOERDK','NES','NEWHVN','NEWLN','NIEUWSTZL','NORTHSS','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','PARKSS','PETTZD','PORTSMH','RAKND','ROOMPBNN','ROOMPBTN','ROTTDM','ROZBSSNZDE','ROZBSSZZDE','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SCHOONHVN','SHEERNS','SINTANLHVSGR','SPIJKNSE','STAVNSE','STELLDBTN','STORNWY','SUURHBNZDE','TENNSHVN','TERNZN','TERSLNZE','TEXNZE','VLAARDGN','VLAKTVDRN','VLIELHVN','VLISSGN','VURN','WALSODN','WERKDBTN','WESTKPLE','WESTTSLG','WEYMH','WHITBY','WICK','WIERMGDN','YERSKE','ZALTBML','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','L9PFM','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','Q1','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
-stats_MSL = ['EURPFM','K13APFM','LICHTELGRE','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 
 #selected_stations = stats_all
 selected_stations = ['VLISSGN','CUXHVN','D15','FISHGD','ABDN','BAALHK']
@@ -36,17 +35,13 @@ for current_station in selected_stations:
     print('%-45s = %s'%('station_name',current_station))
     print('-'*5)
     
-    #START OF STATION SETTINGS
-    #nodalfactors
+    # station settings
     nodalfactors = True
-    #xfactor
     if current_station in stats_xfac0:
         xfac=False
     else:
         xfac=True
-    #analysis_perperiod
     analysis_perperiod='Y'
-    #constituent list
     if current_station in ['D15','F3PFM','K14PFM','MAESLKRZZDE','Q1','A12','AWGPFM','F16','J6','L9PFM']:
         const_list = hatyan.get_const_list_hatyan('month') #21 const, potentially extended with component splitting (5 components) and SA+SM
     elif current_station in ['AMLAHVN']:
@@ -71,12 +66,7 @@ for current_station in selected_stations:
                                  'CS_degincrs':[-11,-24,174,1,-24]})
     else:
         CS_comps = None
-    #vertical reference
-    if current_station in stats_MSL:
-        vertref='MSL'
-    else:
-        vertref='NAP'
-    #END OF STATION SETTINGS
+    
     
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
     file_data_comp0 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs?.txt')
@@ -108,8 +98,7 @@ for current_station in selected_stations:
 
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allperiods=comp_frommeasurements_all_group0)
     #fig.savefig('components_%s_4Y.png'%(current_station))
-    #comp_metadata = {'station':current_station, 'vertref':vertref, 'times_ext':[x.strftime('%Y%m%d%H%M') for x in times_ext_comp0], 'times_step':times_stepcomp0, 'xfac':xfac}
-    #hatyan.write_components(comp_frommeasurements_avg_group0, filename='components_%s_4Y.txt'%(current_station), metadata=comp_metadata)
+    #hatyan.write_components(comp_frommeasurements_avg_group0, filename='components_%s_4Y.txt'%(current_station))
     
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
@@ -122,8 +111,7 @@ for current_station in selected_stations:
     COMP_validation = hatyan.read_components(filename=file_data_compvali)
     fig, (ax1,ax2) = hatyan.plot_components(COMP_merged, comp_validation=COMP_validation)
     fig.savefig('components_%s_merged.png'%(current_station))
-    comp_metadata = {'station':current_station, 'vertref':vertref, 'times_ext':times_ext_comp0, 'times_ext2':'SA and SM imported from analyseresultatenbestand', 'times_step':times_stepcomp0, 'xfac':xfac}
-    hatyan.write_components(COMP_merged, filename='components_%s_merged.txt'%(current_station), metadata=comp_metadata)
+    hatyan.write_components(COMP_merged, filename='components_%s_merged.txt'%(current_station))
     
     #prediction and validation
     ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
@@ -132,9 +120,9 @@ for current_station in selected_stations:
         ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
     else:
         ts_ext_validation = None
-    hatyan.write_tsdia(ts=ts_prediction, station=current_station, vertref=vertref, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
+    hatyan.write_tsdia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
-    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, station=current_station, vertref=vertref, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
+    hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
     fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_validation)

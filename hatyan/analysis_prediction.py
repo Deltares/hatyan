@@ -27,6 +27,7 @@ import datetime as dt
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
+from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
 
 
 class PydanticConfig:
@@ -56,20 +57,17 @@ class HatyanSettings:
     CS_comps : pandas.DataFrame, optional
         contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. The default is None.
     
-    #following are only relevant if analysis_perperiod or return_prediction is not None
+    #following are only relevant if analysis_perperiod is not None
     analysis_perperiod : False or Y/Q/W, optional
         caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
     return_allperiods : bool, optional
         DESCRIPTION. The default is False.
-    return_prediction : bool, optional
-        Whether to generate a prediction for the ts time array. The default is False.
     
     """
-    #TODO: analysis_perperiod,return_allyears,return_prediction only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
+    #TODO: analysis_perperiod,return_allyears only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
                  CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
-                 return_prediction=False,
                  xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
             raise Exception('invalid source type, should be str')
@@ -77,7 +75,7 @@ class HatyanSettings:
         if source not in ['schureman','foreman']:
             raise Exception('invalid source {source}, should be schureman or foreman)')
                 
-        for var_in in [nodalfactors,fu_alltimes,return_allperiods,return_prediction]:
+        for var_in in [nodalfactors,fu_alltimes,return_allperiods]:
             if not isinstance(var_in,bool):
                 raise Exception(f'invalid {var_in} type, should be bool')
         
@@ -106,7 +104,6 @@ class HatyanSettings:
         self.CS_comps = CS_comps
         self.analysis_perperiod = analysis_perperiod
         self.return_allperiods = return_allperiods
-        self.return_prediction = return_prediction
         self.xTxmat_condition_max = xTxmat_condition_max
         
     def __str__(self):
@@ -237,13 +234,20 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
         COMP_mean_pd = analysis_singleperiod(ts_pd, const_list=const_list, hatyan_settings=hatyan_settings)
         COMP_all_pd = None
     
+    #add metadata
+    metadata = metadata_from_obj(ts_pd)
+    metadata['nodalfactors'] = hatyan_settings.nodalfactors
+    metadata['xfac'] = hatyan_settings.xfac
+    metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
+    COMP_mean_pd = metadata_add_to_obj(COMP_mean_pd, metadata)
+    
     if hatyan_settings.return_allperiods:
         return COMP_mean_pd, COMP_all_pd
     
     return COMP_mean_pd
 
 
-def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, return_prediction=False, source='schureman'):
+def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, source='schureman'):
     """
     harmonic analysis with matrix transformations (least squares fit), optionally with component splitting
     for details about arguments and return variables, see analysis() definition
@@ -359,12 +363,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         
     print('ANALYSIS finished')
     
-    if hatyan_settings.return_prediction:
-        print('immediately generating a prediction for the same time array as the input ts')
-        ts_prediction = prediction(comp=COMP_pd, times_pred_all=ts_pd.index, hatyan_settings=hatyan_settings)
-        return COMP_pd, ts_prediction
-    else:
-        return COMP_pd
+    return COMP_pd
 
 
 def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
@@ -463,9 +462,12 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     if times_pred_all is None:
         if times_ext is None or timestep_min is None:
-            raise Exception('if argument times_pred_all is not provided, the arguments times_ext and timestep_min are obligatory')
-        else:
-            times_pred_all = robust_daterange_fromtimesextfreq(times_ext,timestep_min)
+            metadata = metadata_from_obj(comp)
+            if not set(['tstart','tstop','timestep_min']).issubset(metadata.keys()):
+                raise KeyError('arguments times_pred_all, times_ext and timestep_min are not provided. Also components metadata does not contain tstart, tstop and timestep_min')
+            times_ext = [metadata['tstart'], metadata['tstop']]
+            timestep_min = metadata['timestep_min']
+        times_pred_all = robust_daterange_fromtimesextfreq(times_ext,timestep_min)
     else:
         if times_ext is not None or timestep_min is not None:
             raise Exception('if argument times_pred_all is provided, the arguments times_ext and timestep_min are not allowed')
@@ -522,6 +524,14 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
     print('PREDICTION finished')
     
+    #add metadata
+    metadata = metadata_from_obj(comp)
+    if 'grootheid' in metadata:
+        # update metadata
+        if metadata['grootheid'] == 'WATHTE':
+            metadata['grootheid'] = 'WATHTBRKD'
+    ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata)
+
     return ts_prediction_pd
 
 
@@ -566,4 +576,9 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
             raise Exception(f'unknown freqstr: {period_dt.freqstr}')
         ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
         ts_prediction_perperiod = pd.concat([ts_prediction_perperiod,ts_prediction_oneperiod])
+    
+    #add metadata
+    metadata = metadata_from_obj(comp_allperiods)
+    ts_prediction_perperiod = metadata_add_to_obj(ts_prediction_perperiod, metadata)
+
     return ts_prediction_perperiod

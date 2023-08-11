@@ -35,6 +35,8 @@ meas_y = meas_mag*np.cos(np.deg2rad(meas_dir))
 
 data_x = pd.DataFrame({'values':meas_x})
 data_y = pd.DataFrame({'values':meas_y})
+data_x.dummymeta = 'dummy'
+data_y.dummymeta = 'dummy'
 
 comp_x = hatyan.analysis(ts=data_x, const_list=const_list)
 comp_y = hatyan.analysis(ts=data_y, const_list=const_list)

@@ -36,8 +36,7 @@ for yr, ax in zip([2020,2021],[ax1,ax2]):
     ts_prediction_HANSWT = hatyan.prediction(comp=COMP_merged_HANSWT, nodalfactors=True, xfac=True, fu_alltimes=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     ts_prediction_TERNZN = hatyan.prediction(comp=COMP_merged_TERNZN, nodalfactors=True, xfac=True, fu_alltimes=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     
-    ts_prediction_diff = ts_prediction_HANSWT.copy()
-    ts_prediction_diff['values'] = ts_prediction_TERNZN['values']-ts_prediction_HANSWT['values']
+    ts_prediction_diff = ts_prediction_TERNZN-ts_prediction_HANSWT # TODO: metadata is dropped
     ts_prediction_diff['values'] = ts_prediction_diff['values'].round(2) #round to cm
     ts_prediction_diff_HWLW = hatyan.calc_HWLW(ts=ts_prediction_diff)
     

@@ -15,14 +15,15 @@ ts_pred_can['times'] = ts_pred_can['times'].dt.tz_localize(None)
 ts_pred_can = ts_pred_can.set_index('times')
 
 source='foreman'
-hatyan_settings = hatyan.HatyanSettings(nodalfactors=True,return_prediction=True,source=source,fu_alltimes=False)
+hatyan_settings = hatyan.HatyanSettings(nodalfactors=True,source=source,fu_alltimes=False)
 
 #fft analysis
 hatyan_freqs_suggestions = hatyan.timeseries_fft(ts_pred_can, min_prominence=.5**1, plot_fft=True, source=source)
 const_list = hatyan_freqs_suggestions.index.unique().tolist()+['A0','SA','SSA','H1','H2']
 
 #harmonic analysis and reprediction
-comp,reprediction = hatyan.analysis(ts=ts_pred_can,const_list=const_list,hatyan_settings=hatyan_settings)
+comp = hatyan.analysis(ts=ts_pred_can, const_list=const_list, hatyan_settings=hatyan_settings)
+reprediction = hatyan.prediction(comp, times_pred_all=ts_pred_can.index, hatyan_settings=hatyan_settings)
 
 #plotting timeseries
 fig1, (ax1,ax2) = hatyan.plot_timeseries(ts=reprediction, ts_validation=ts_pred_can)

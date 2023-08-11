@@ -22,11 +22,9 @@ dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 def test_writenetcdf():
     
     current_station = 'VLISSGN'
-    times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,6,1)]
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
     ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
-    ts_prediction = hatyan.crop_timeseries(ts_prediction, times_ext=times_ext)
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     
     file_nc = 'prediction_10m_%s.nc'%(current_station)
@@ -43,8 +41,8 @@ def test_writenetcdf():
     
     assert list(data_nc.dimensions.keys()) == ['stations', 'statname_len', 'time', 'analysis_time', 'time_HW', 'time_LW']
     assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 'time_HW', 'waterlevel_astro_HW', 'time_LW', 'waterlevel_astro_LW']
-    assert timevar_dt[0] == times_ext[0]
-    assert timevar_dt[-1] == times_ext[-1]
+    assert timevar_dt[0] == ts_prediction.index[0]
+    assert timevar_dt[-1] == ts_prediction.index[-1]
     assert 'title' in data_nc.__dict__.keys()
     assert 'institution' in data_nc.__dict__.keys()
     assert 'source' in data_nc.__dict__.keys()
@@ -292,7 +290,6 @@ def test_meas_HWLW_toomuch():
 
     # Then store it as a pandas dataframe and compute extremes
     wl_pd = pd.DataFrame({'values':wl_vals},index=wl_times)
-
     wl_pd_ext = hatyan.calc_HWLW(wl_pd)
 
     assert len(wl_pd_ext) == 3
@@ -337,17 +334,13 @@ def test_frommergedcomp_HWLW_toomuch():
     current_station = 'DENHDR'
 
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    COMP_merged_temp = COMP_merged.copy()
-    #COMP_merged_temp.loc['M2','A']=0.05
-    ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    comp_merged = hatyan.read_components(filename=file_data_comp0)
+    
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, debug=True)
     
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
-    #fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_HWLWno_pre)
-    #for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
-    #    ax1.text(pdrow.index,pdrow['values'],pdrow['HWLWno'], color='k')
-
+    
     assert len(ts_ext_prediction_HWLWno_pre) == 5
     assert (np.abs(ts_ext_prediction_HWLWno_pre['HWLWcode'].values-np.array([2, 1, 2, 1, 2])) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_HWLWno_pre['values'].values-np.array([-0.80339484,  0.61842428, -0.76465391,  0.79758734, -0.87872493 ])) < 10E-9).all()
@@ -480,15 +473,14 @@ def test_frommergedcomp_HWLW_345(current_station):
     times_step_pred = 1
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    COMP_merged_temp = COMP_merged.copy()
+    comp_merged = hatyan.read_components(filename=file_data_comp0)
     
     times_ext_pred_HWLWno = [dt.datetime(2010,1,31,3),dt.datetime(2010,2,17,12)] #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
     #times_ext_pred_HWLWno = [dt.datetime(2010,1,31),dt.datetime(2010,2,3)] #extra agger outside of 1stLW/agger/2ndLW sequence
     #times_ext_pred_HWLWno = [dt.datetime(2010,6,26),dt.datetime(2010,6,28)] #lokale extremen tussen twee laagste LWs
     #times_ext_pred_HWLWno = [dt.datetime(2019,2,1),dt.datetime(2019,2,2)] #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged_temp, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
     #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
     ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes

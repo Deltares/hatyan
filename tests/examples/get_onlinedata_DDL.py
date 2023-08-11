@@ -179,7 +179,8 @@ if 0:
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd,ts_validation=ts_meas_validation)
             elif 0: #compare to tidal prediciton of retrieved dataset
                 ts_meas_pd.index = ts_meas_pd.index.tz_localize(None) #remove timezone info without changing the time
-                comp, ts_pred = hatyan.analysis(ts=ts_meas_pd,const_list='month',return_prediction=True)
+                comp = hatyan.analysis(ts=ts_meas_pd,const_list='month')
+                ts_pred = hatyan.prediction(comp)
                 fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd,ts_validation=ts_pred)
             elif 0: #RWS style tidal analysis (but SA/SM should come from other 1976...1994)
                 ts_meas_pd.index = ts_meas_pd.index.tz_localize(None) #remove timezone info without changing the time
