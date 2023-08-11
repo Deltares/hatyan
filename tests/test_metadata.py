@@ -10,7 +10,7 @@ import pytest
 import pytz
 import pandas as pd
 import hatyan
-from hatyan.metadata import metadata_from_obj, metadata_compare #, metadata_from_diablocks, metadata_add_to_obj
+from hatyan.metadata import metadata_from_obj, metadata_compare, wns_from_metadata #, metadata_from_diablocks, metadata_add_to_obj
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -79,3 +79,21 @@ def test_metadata_compare():
         'tstop': None}
     
     metadata_compare([metadata,metadata,metadata])
+
+
+@pytest.mark.unittest
+def test_wns_from_metadata():
+    metadata_1 = {'grootheid':'WATHE', 'eenheid':'cm', 'vertref':'NAP'}
+    metadata_54 = {'grootheid':'WATHE', 'eenheid':'cm', 'vertref':'MSL'}
+    metadata_18 = {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'NAP'}
+    metadata_55 = {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'MSL'}
+    
+    wns_1 = wns_from_metadata(metadata_1)
+    wns_54 = wns_from_metadata(metadata_54)
+    wns_18 = wns_from_metadata(metadata_18)
+    wns_55 = wns_from_metadata(metadata_55)
+    
+    assert wns_1 == 1
+    assert wns_54 == 54
+    assert wns_18 == 18
+    assert wns_55 == 55
