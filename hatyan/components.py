@@ -115,11 +115,8 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
     
     axs = (ax1,ax2)
     return fig, axs
-    
 
 
-    
-    
 def write_components(comp, filename):
     """
     Writes the provided analysis results to a file
@@ -243,6 +240,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
         DESCRIPTION.
 
     """
+    
     comp_main_meta = metadata_from_obj(comp_main).copy()
     comp_sec_meta = metadata_from_obj(comp_sec).copy()
     

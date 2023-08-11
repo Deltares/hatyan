@@ -68,8 +68,8 @@ def metadata_from_obj(obj):
     obj_vars = vars(obj)
     metadata = {key:obj_vars[key] for key in obj_vars.keys() if not key.startswith('_')}
     if len(metadata) == 0:
-        raise ValueError('no metadata found on object')
-        # metadata = {}
+        # raise ValueError('no metadata found on object')
+        metadata = {}
     return metadata
 
 
