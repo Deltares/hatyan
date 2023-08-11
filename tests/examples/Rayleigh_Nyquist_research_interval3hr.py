@@ -53,7 +53,6 @@ for station in station_list:
         if bool_duplicated_index.sum()>0:
             ts_meas_raw = ts_meas_raw[~bool_duplicated_index] #remove duplicate timesteps if they are present
         #ts_meas_raw = hatyan.crop_timeseries(ts_meas_raw,times_ext=[dt.datetime(1955,1,1),dt.datetime(1955,1,10)],onlyfull=False)
-        ts_meas_raw.metadummy = 'dummy'
         
         stats = hatyan.Timeseries_Statistics(ts=ts_meas_raw)
         

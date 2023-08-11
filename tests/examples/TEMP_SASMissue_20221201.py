@@ -35,6 +35,7 @@ for current_station in ['HOEKVHLD']:#stat_list: #stat_list[stat_list.index('SCHE
     
     tstart_pred = dt.datetime(pred_year,1,1)
     tstop_pred = dt.datetime(pred_year+1,1,1)
+    
     if pred_year==2019:
         times_ext_4y = [dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,50)]
     elif pred_year==2022:

@@ -13,7 +13,6 @@ file_predcan = r'p:\1230882-emodnet_hrsm\fromAmey\Regional_canada_model\bathymet
 ts_pred_can = pd.read_csv(file_predcan,comment='#',delim_whitespace=True, names=['times','values'], parse_dates=['times'])
 ts_pred_can['times'] = ts_pred_can['times'].dt.tz_localize(None)
 ts_pred_can = ts_pred_can.set_index('times')
-ts_pred_can.metadummy = 'dummy'
 
 source='foreman'
 hatyan_settings = hatyan.HatyanSettings(nodalfactors=True,source=source,fu_alltimes=False)

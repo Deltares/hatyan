@@ -113,7 +113,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         if i_stat == 0:
             COMP_merged_CADZD = hatyan.read_components(filename=file_data_comp0.replace(current_station,'CADZD'))
             COMP_merged_CADZD_M2 = COMP_merged_CADZD.loc[['A0','M2']]
-            COMP_merged_CADZD_M2.metadummy = 'dummy'
             ts_prediction_CADZD = hatyan.prediction(comp=COMP_merged_CADZD, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
             ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
             ax1.plot(ts_prediction_CADZD_M2.index, ts_prediction_CADZD_M2['values'], label='CADZD_M2', color='k')

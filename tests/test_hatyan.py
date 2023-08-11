@@ -290,7 +290,6 @@ def test_meas_HWLW_toomuch():
 
     # Then store it as a pandas dataframe and compute extremes
     wl_pd = pd.DataFrame({'values':wl_vals},index=wl_times)
-    wl_pd.dummymeta = 'dummy'
     wl_pd_ext = hatyan.calc_HWLW(wl_pd)
 
     assert len(wl_pd_ext) == 3
