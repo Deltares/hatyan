@@ -53,7 +53,6 @@ def metadata_from_ddlmeta(metadata_ddl, stationdata_ddl):
     metadata['grootheid'] = metadata_ddl.iloc[0]['Grootheid.Code']
     metadata['eenheid'] = metadata_ddl.iloc[0]['Eenheid.Code']
     metadata['vertref'] = metadata_ddl.iloc[0]['Hoedanigheid.Code']
-    # metadata['waarnemingssoort'] = metadata_ddl.iloc[0]['']
     # metadata['tstart'] = metadata_ddl.iloc[0]['']
     # metadata['tstop'] = metadata_ddl.iloc[0]['']
     # metadata['timestep_min'] = metadata_ddl.iloc[0]['']
@@ -112,14 +111,6 @@ def wns_from_metadata(metadata):
         wns = 18
     elif meta_sel == {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'MSL'}:
         wns = 55
-    # elif meta_sel == {'grootheid':'GETETM2', 'eenheid':'cm', 'vertref':'NAP'}:
-    #     wns = 1
-    # elif meta_sel == {'grootheid':'GETETM2', 'eenheid':'cm', 'vertref':'MSL'}:
-    #     wns = 54
-    # elif meta_sel == {'grootheid':'GETETBRKD2', 'eenheid':'cm', 'vertref':'NAP'}:
-    #     wns = 18
-    # elif meta_sel == {'grootheid':'GETETBRKD2', 'eenheid':'cm', 'vertref':'MSL'}:
-    #     wns = 55
     else:
         raise ValueError(f'combination of quantity/unit/vertref not found available in wns_from_metadata():\n{meta_sel}')
     

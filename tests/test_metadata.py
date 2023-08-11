@@ -177,18 +177,3 @@ def test_wns_from_metadata():
     assert wns_54 == 54
     assert wns_18 == 18
     assert wns_55 == 55
-    
-    # metadata_1 = {'grootheid':'GETETM2', 'eenheid':'cm', 'vertref':'NAP'}
-    # metadata_54 = {'grootheid':'GETETM2', 'eenheid':'cm', 'vertref':'MSL'}
-    # metadata_18 = {'grootheid':'GETETBRKD2', 'eenheid':'cm', 'vertref':'NAP'}
-    # metadata_55 = {'grootheid':'GETETBRKD2', 'eenheid':'cm', 'vertref':'MSL'}
-    
-    # wns_1 = wns_from_metadata(metadata_1)
-    # wns_54 = wns_from_metadata(metadata_54)
-    # wns_18 = wns_from_metadata(metadata_18)
-    # wns_55 = wns_from_metadata(metadata_55)
-    
-    # assert wns_1 == 1
-    # assert wns_54 == 54
-    # assert wns_18 == 18
-    # assert wns_55 == 55

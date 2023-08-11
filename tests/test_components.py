@@ -25,10 +25,10 @@ def test_components_timeshift():
     
     comp_shift = hatyan.components_timeshift(comp_merged,hours=timeshift_hr)
     
-    # assert shift
+    # check timeshift shift
     assert comp_shift.loc['SA','phi_deg'] == 221.54106863959504
     
-    # assert metadata
+    # check metadata contents
     comp_merged_meta = metadata_from_obj(comp_merged)
     comp_shift_meta = metadata_from_obj(comp_shift)
     

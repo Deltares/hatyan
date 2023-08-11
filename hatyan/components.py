@@ -322,8 +322,8 @@ def read_components(filename):
                 metadata_available = True
             elif line.startswith('PERD'):
                 dateline = line.split()
-                tstart = pd.Timestamp(dateline[1]+' '+dateline[2]) # dt.datetime.strptime(dateline[1]+dateline[2],'%Y%m%d%H%M'))
-                tstop = pd.Timestamp(dateline[3]+' '+dateline[4]) # dt.datetime.strptime(dateline[3]+dateline[4],'%Y%m%d%H%M')
+                tstart = pd.Timestamp(dateline[1]+' '+dateline[2])
+                tstop = pd.Timestamp(dateline[3]+' '+dateline[4])
                 tzone = pytz.FixedOffset(int(dateline[5]))
                 metadata_available = True
             elif line.startswith('MIDD'):
@@ -349,7 +349,6 @@ def read_components(filename):
     metadata = {'station':station,
                 'grootheid':grootheid, 'eenheid':eenheid,
                 'vertref':vertref,
-                #'waarnemingssoort':waarnemingssoort,
                 'tstart':tstart, 'tstop':tstop, 'tzone':tzone, 
                 'origin':'from component file'}
     comp_pd = metadata_add_to_obj(comp_pd, metadata)
