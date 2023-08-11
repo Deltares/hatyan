@@ -16,9 +16,9 @@ hatyan.close('all')
 
 dir_meas = r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
 
-for pred_year in [2019, 2022, 2023]: #2019 or 2022 or 2023
+for pred_year in [2019, 2022, 2023]:
 
-    for current_station in ['HOEKVHLD']: #['HOEKVHLD','DENOVBTN']:
+    for current_station in ['HOEKVHLD']:#,'DORDT']:
         
         tstart_pred = dt.datetime(pred_year,1,1)
         tstop_pred = dt.datetime(pred_year+1,1,1)
@@ -29,15 +29,14 @@ for pred_year in [2019, 2022, 2023]: #2019 or 2022 or 2023
             times_ext_4y = [dt.datetime(2015,1,1),dt.datetime(2018,12,31,23,50)]
             
         
-        file_astro = os.path.join(f'astro_HOEKVHLD_{pred_year}.pkl')
+        file_astro = os.path.join(f'astro_{current_station}_{pred_year}.pkl')
         if not os.path.exists(file_astro):
             print('retrieving DDL catalog')
             catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
             print('...done')
             
-            stationcode = 'HOEKVHLD'
             cat_locatielijst = catalog_dict['LocatieLijst']
-            station_dict = cat_locatielijst[cat_locatielijst['Code']==stationcode].iloc[0]
+            station_dict = cat_locatielijst[cat_locatielijst['Code']==current_station].iloc[0]
             
             ts_astro, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_pred,tstop_dt=tstop_pred,tzone='UTC+01:00',
                                                                   meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'NVT'},allow_multipleresultsfor=['WaardeBepalingsmethode'])
@@ -48,7 +47,7 @@ for pred_year in [2019, 2022, 2023]: #2019 or 2022 or 2023
             fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro)
         else:
             ts_astro = pd.read_pickle(file_astro)
-            
+
         print(f'loading data for {current_station}')
         file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
         data_pd_meas_all = pd.read_pickle(file_wl_pkl)
