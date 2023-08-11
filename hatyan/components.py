@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import pytz
+import warnings
 
 from hatyan.schureman import get_schureman_freqs, get_schureman_v0 #TODO: this is not generic foreman/schureman
 from hatyan.hatyan_core import sort_const_list, get_const_list_hatyan
@@ -308,7 +309,7 @@ def read_components(filename):
     print('reading file: %s'%(filename))
 
     line_compstart = None
-    
+    metadata_available = False
     with open(filename) as f:
         for i, line in enumerate(f):
             if line.startswith('STAT'):
@@ -319,11 +320,13 @@ def read_components(filename):
                 print('the vertical reference level in the imported file is: %s'%(vertref))
                 eenheid = line.split()[4]
                 # waarnemingssoort = int(line.split()[5])
+                metadata_available = True
             elif line.startswith('PERD'):
                 dateline = line.split()
                 tstart = pd.Timestamp(dateline[1]+' '+dateline[2]) # dt.datetime.strptime(dateline[1]+dateline[2],'%Y%m%d%H%M'))
                 tstop = pd.Timestamp(dateline[3]+' '+dateline[4]) # dt.datetime.strptime(dateline[3]+dateline[4],'%Y%m%d%H%M')
                 tzone = pytz.FixedOffset(int(dateline[5]))
+                metadata_available = True
             elif line.startswith('MIDD'):
                 A0_cm = float(line.split()[1])
             elif line.startswith('COMP'):
@@ -340,13 +343,16 @@ def read_components(filename):
     comp_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
     
     # add metadata
+    if not metadata_available:
+        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process')
+        return comp_pd
+    
     metadata = {'station':station,
                 'grootheid':grootheid, 'eenheid':eenheid,
                 'vertref':vertref,
                 #'waarnemingssoort':waarnemingssoort,
                 'tstart':tstart, 'tstop':tstop, 'tzone':tzone, 
                 'origin':'from component file'}
-    
     comp_pd = metadata_add_to_obj(comp_pd, metadata)
     return comp_pd
 
