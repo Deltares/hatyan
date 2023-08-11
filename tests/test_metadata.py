@@ -41,6 +41,38 @@ def test_readts_dia_metadata_multifile():
 
 
 @pytest.mark.unittest
+def test_anapred_metadata():
+    
+    current_station = 'VLISSGN'
+    file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station=current_station)
+    
+    comp = hatyan.analysis(ts_measurements_group0,const_list='month')
+    
+    pred = hatyan.prediction(comp)
+    
+    meta_fromts = metadata_from_obj(pred)
+    
+    meta_expected = {'station': 'VLISSGN',
+     'grootheid': 'WATHTBRKD',
+     'eenheid': 'cm',
+     'vertref': 'NAP',
+     'tstart': pd.Timestamp('2009-01-01 00:00:00'),
+     'tstop': pd.Timestamp('2009-12-31 23:00:00'),
+     'timestep_min': 60.0,
+     'timestep_unit': 'min',
+     'TYP': 'TE',
+     'groepering': 'NVT',
+     'tzone': pytz.FixedOffset(60),
+     'origin': 'from timeseries dia file',
+     'nodalfactors': True,
+     'xfac': False,
+     'fu_alltimes': True}
+    
+    assert meta_fromts == meta_expected
+
+
+@pytest.mark.unittest
 def test_readts_dia_metadata_multiblock():
     file_ts = os.path.join(dir_testdata, 'hoek_har.dia')
     ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station='HOEKVHLD', block_ids='allstation')
