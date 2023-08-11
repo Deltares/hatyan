@@ -35,7 +35,7 @@ def test_write_tsdia_rounding():
     
     #write to file
     fname_pred = 'prediction_%im_%s.dia'%(times_step_pred,current_station)
-    hatyan.write_tsdia(ts=ts_prediction, filename=fname_pred)
+    hatyan.write_tsdia(ts=ts_prediction, filename=fname_pred, station=current_station, vertref='NAP')
     
     #read from file
     ts_prediction_fromfile = hatyan.readts_dia(filename=fname_pred, station=current_station)
