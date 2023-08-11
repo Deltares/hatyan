@@ -235,6 +235,7 @@ def test_write_tsdia_rounding():
     
     #read from file
     ts_prediction_fromfile = hatyan.readts_dia(filename=fname_pred, station=current_station)
+    os.remove(fname_pred)
     
     # assert max differences
     ts_diff = ts_prediction_fromfile -ts_prediction
