@@ -27,6 +27,7 @@ import glob
 import numpy as np
 import pandas as pd
 import datetime as dt
+import pytz
 import scipy.signal as ssig
 file_path = os.path.realpath(__file__)
 import matplotlib.pyplot as plt
@@ -815,6 +816,9 @@ def write_tsdia(ts, filename, headerformat='dia'):
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    tzone = metadata['tzone']
+    if tzone != pytz.FixedOffset(60):
+        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
@@ -922,6 +926,9 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    tzone = metadata['tzone']
+    if tzone != pytz.FixedOffset(60):
+        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
