@@ -154,10 +154,9 @@ def write_components(comp, filename):
     
     if 'A0' in comp.index.tolist():
         midd = comp.loc['A0','A']*100
-        comp = comp.copy()
-        # comp = comp.drop('A0',axis=0) #TODO: consider removing A0
+        comp = comp.drop('A0',axis=0)
     else:
-        midd = np.nan #TODO: maybe 0 instead or just do not allow it
+        midd = 0
         comp = comp.copy()
 
     #sort components by frequency
