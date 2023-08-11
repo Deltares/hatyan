@@ -1087,6 +1087,12 @@ def crop_timeseries(ts, times_ext, onlyfull=True):
     #ts_pd_out = ts_pd_in.loc[times_selected_bool]
     ts_pd_out = ts_pd_in.loc[times_ext[0]:times_ext[1]]
     
+    # add metadata
+    metadata = metadata_from_obj(ts)
+    metadata['tstart'] = pd.Timestamp(times_ext[0])
+    metadata['tstop'] = pd.Timestamp(times_ext[-1])
+    ts_pd_out = metadata_add_to_obj(ts_pd_out,metadata)
+    
     return ts_pd_out
 
 
@@ -1124,6 +1130,13 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
         tstop = ts.index[-1]
     data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq='%dmin'%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
     data_pd_resample['values'] = ts['values'] #put measurements into this timeseries, matches to correct index automatically
+    
+    # add metadata
+    metadata = metadata_from_obj(ts)
+    metadata['tstart'] = pd.Timestamp(tstart)
+    metadata['tstop'] = pd.Timestamp(tstop)
+    metadata['timestep_min'] = timestep_min
+    data_pd_resample = metadata_add_to_obj(data_pd_resample,metadata)
     
     return data_pd_resample
 
