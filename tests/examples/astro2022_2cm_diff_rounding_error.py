@@ -16,20 +16,20 @@ hatyan.close('all')
 
 dir_meas = r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
 
-for pred_year in [2019, 2022, 2023]:
+for pred_year in [2019, 2020, 2021, 2022, 2023]:
 
     for current_station in ['HOEKVHLD']:#,'DORDT']:
         
         tstart_pred = dt.datetime(pred_year,1,1)
         tstop_pred = dt.datetime(pred_year+1,1,1)
         
-        if pred_year == 2019:
+        if pred_year in [2019, 2020]:
             times_ext_4y = [dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,50)]
-        elif pred_year in [2022,2023]:
+        elif pred_year in [2021, 2022, 2023]:
             times_ext_4y = [dt.datetime(2015,1,1),dt.datetime(2018,12,31,23,50)]
             
         
-        file_astro = os.path.join(f'astro_{current_station}_{pred_year}.pkl')
+        file_astro = os.path.join(r'c:\Users\veenstra\Downloads',f'astro_{current_station}_{pred_year}.pkl')
         if not os.path.exists(file_astro):
             print('retrieving DDL catalog')
             catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
