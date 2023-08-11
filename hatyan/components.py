@@ -256,12 +256,16 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     # add metadata for analysis settings
     comp_merged_meta = comp_main_meta.copy()
     for key in meta_settings_list:
-        comp_merged_meta[key] = comp_main_meta_others[key]
+        if key in comp_main_meta_others:
+            comp_merged_meta[key] = comp_main_meta_others[key]
     
     #add metadata for secondary components (list + origin)
     comp_sec_str = ', '.join(comp_sec_list)
-    origin_sec = comp_main_meta_others['origin_sec']
-    comp_merged_meta['components_sec'] = f"{comp_sec_str} imported {origin_sec}"
+    components_sec_str = f"{comp_sec_str} imported"
+    if 'origin_sec' in comp_main_meta_others:
+        origin_sec = comp_main_meta_others['origin_sec']
+        components_sec_str += ' '+origin_sec
+    comp_merged_meta['components_sec'] = components_sec_str
     
     comp_merged = comp_main.copy()
     

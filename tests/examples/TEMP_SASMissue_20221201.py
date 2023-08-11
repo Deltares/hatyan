@@ -15,22 +15,10 @@ import hatyan
 
 dir_meas = r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
 
-def clean_data(ts_meas_pd,current_station):
-    if 'HWLWcode' in ts_meas_pd.columns:
-        keep_columns = ['values','QC','HWLWcode']
-    else:
-        keep_columns = ['values','QC']
-    ts_meas_pd = ts_meas_pd[keep_columns] # reduces the memory consumption significantly in case of DDL data with a lot of metadata
-    ts_meas_pd.index = ts_meas_pd.index.tz_localize(None)
-    ts_meas_pd = ts_meas_pd.loc[~(ts_meas_pd['QC']==99)] #remove invalid data
-    
-    #optional nap correction
-    return ts_meas_pd
-
 pred_year = 2022 #2019 or 2022
 offset_19y = 0
 
-for current_station in ['HOEKVHLD']:#stat_list: #stat_list[stat_list.index('SCHEVNGN'):]: #['HOEKVHLD','DENOVBTN']:#
+for current_station in ['HOEKVHLD']: #['HOEKVHLD','DENOVBTN']:
     plt.close('all')
     
     tstart_pred = dt.datetime(pred_year,1,1)
@@ -67,9 +55,7 @@ for current_station in ['HOEKVHLD']:#stat_list: #stat_list[stat_list.index('SCHE
     file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
     if os.path.exists(file_wl_pkl): #for slotgemiddelden, gemgetijkrommen (needs slotgem+havget)
         data_pd_meas_all = pd.read_pickle(file_wl_pkl)
-        data_pd_meas_all = clean_data(data_pd_meas_all,current_station)
-        #crop measurement data
-        #data_pd_meas_10y = hatyan.crop_timeseries(data_pd_meas_all, times_ext=[tstart_dt,tstop_dt-dt.timedelta(minutes=10)])#,onlyfull=False)
+        data_pd_meas_all.index = data_pd_meas_all.index.tz_localize(None)
     data_pd_meas_all_H = data_pd_meas_all.loc[data_pd_meas_all.index.minute==0]
     
     ts_19y_H = hatyan.crop_timeseries(data_pd_meas_all_H, times_ext=[dt.datetime(1976+offset_19y,1,1),dt.datetime(1995+offset_19y,1,1)-dt.timedelta(minutes=10)])
@@ -81,13 +67,8 @@ for current_station in ['HOEKVHLD']:#stat_list: #stat_list[stat_list.index('SCHE
     comp_merged = hatyan.merge_componentgroups(comp_main=comp_4y, comp_sec=comp_19y, comp_sec_list=['SA','SM'])
     
     pred = hatyan.prediction(comp=comp_merged,times_ext=[tstart_pred,tstop_pred],timestep_min=10,fu_alltimes=False,xfac=True)
-    hatyan.write_tsdia(pred, station=current_station,vertref='NAP',filename=file_astro.replace('.pkl','.dia'))
-    pred_re = hatyan.readts_dia(file_astro.replace('.pkl','.dia'))
-    #pred2019_vali = hatyan.readts_dia(r'c:\DATA\hatyan_data_acceptancetests\predictie2019\HOEKVHLD_pre.txt')
     
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=pred,ts_validation=ts_astro)
-    #fig,(ax1,ax2) = hatyan.plot_timeseries(ts=pred_re,ts_validation=ts_astro)
-    
-    
-    
+    ax2.set_ylim(None,0.035)
+    ax2.set_xlim(tstart_pred,tstart_pred+dt.timedelta(days=40))
     
