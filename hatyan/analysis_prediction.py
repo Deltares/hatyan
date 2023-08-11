@@ -526,6 +526,9 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     
     #add metadata
     metadata = metadata_from_obj(comp)
+    if metadata['grootheid'] == 'WATHTE':
+        # update metadata
+        metadata['grootheid'] = 'WATHTBRKD'
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata)
 
     return ts_prediction_pd

@@ -35,7 +35,9 @@ from netCDF4 import Dataset, date2num, stringtoarr#, num2date
 from hatyan.foreman import get_foreman_v0_freq
 from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
-from hatyan.metadata import metadata_from_diablocks, metadata_add_to_obj, metadata_from_obj, metadata_compare
+from hatyan.metadata import (metadata_from_diablocks, metadata_add_to_obj, 
+                             metadata_from_obj, metadata_compare, 
+                             wns_from_metadata)
 
 
 def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_hr=6):
@@ -807,18 +809,22 @@ def write_tsdia(ts, filename, headerformat='dia'):
 
     """
     metadata = metadata_from_obj(ts)
+    waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
     station = metadata['station']
+    quantity = metadata['grootheid']
+    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
     
     if vertref == 'NAP':
-        waarnemingssoort = 18
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
     elif vertref == 'MSL':
-        waarnemingssoort = 55
         vertreflong = 'T.o.v. Mean Sea Level'
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
+    
     grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
+
     ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #TODO: dit is niet per se generiek geldig, alleen in getijpredictieproces RWS
     
     time_today = dt.datetime.today().strftime('%Y%m%d')
@@ -910,15 +916,17 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     """
     
     metadata = metadata_from_obj(ts_ext)
+    waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
     station = metadata['station']
+    quantity = metadata['grootheid']
+    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
     
     if vertref == 'NAP':
-        waarnemingssoort = 18
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
         parameterX = 'GETETBRKD2;Getijextreem berekend'
     elif vertref == 'MSL':
-        waarnemingssoort = 55
         vertreflong = 'T.o.v. Mean Sea Level'
         parameterX = 'GETETBRKDMSL2;Getijextreem berekend t.o.v. MSL'
     else:
@@ -1334,12 +1342,12 @@ def get_diablocks(filename):
         row_TYP = data_meta_series.loc[data_meta_series.str.startswith('TYP')].iloc[0].split(';')[1]
         diablocks_pd.loc[block_id,'TYP'] = row_TYP
         if row_TYP=='TN': #bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
-            mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA', 'MXW;2']
+            mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
             if bool_startswithmux.sum()==0:
                 raise Exception(f'ERROR: block_id={block_id} is of TYP={row_TYP} (non-equidistant, extreme waterlevels), but no MUX is available in metadata header so the file cannot be read:\n{diablocks_pd}')
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
         elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
-            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA','WNS'] #,CPM,HDH,ANA
+            mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #,WNSCPM,HDH,ANA
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
         else:
             raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.readts_dia()')
@@ -1376,8 +1384,6 @@ def get_diablocks(filename):
                 diablocks_pd.loc[block_id,'eenheid'] = file_eenheid
             elif get_content_sel in ['HDH','MXH;2']: # Hoedanigheid (NAP/MSL). equidistant dia/wia, non-equidistant dia/wia
                 diablocks_pd.loc[block_id,'vertref'] = data_meta_mincontent[1]
-            elif get_content_sel in ['WNS','MXW;2']: # waarnemingssoort
-                diablocks_pd.loc[block_id,'waarnemingssoort'] = data_meta_mincontent[1]
             elif get_content_sel in ['TYD']: #Tijdstip. same in all files
                 datestart = dt.datetime.strptime(data_meta_mincontent[1]+data_meta_mincontent[2], "%Y%m%d%H%M")
                 datestop = dt.datetime.strptime(data_meta_mincontent[3]+data_meta_mincontent[4], "%Y%m%d%H%M")

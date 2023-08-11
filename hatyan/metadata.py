@@ -24,7 +24,6 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     
     metadata_keys = ['station', 'grootheid', 'eenheid', 
                      'vertref', 
-                     'waarnemingssoort', 
                      'tstart', 'tstop',
                      'timestep_min', 'timestep_unit',
                      'TYP', 'groepering']
@@ -95,22 +94,30 @@ def metadata_compare(metadata_list):
 def wns_from_metadata(metadata):
     """
     Gets waarnemingssoort from metadata grootheid (quantity), eenheid (unit) and vertref (vertical reference).
-    Originally done in: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_fortran/HATYAN00/wnstab.f
+    Idea from: https://repos.deltares.nl/repos/lib_tide/trunk/src/hatyan_fortran/HATYAN00/wnstab.f
     Deliberately left out domeincode (type), I(int) and F(float) since we always have floats 
     that are only converted to int upon file writing
     """
     
     meta_sel = {key:metadata[key] for key in ['grootheid','eenheid','vertref']}
     
-    if meta_sel == {'grootheid':'WATHE', 'eenheid':'cm', 'vertref':'NAP'}:
+    if meta_sel == {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'NAP'}:
         wns = 1
-    elif meta_sel == {'grootheid':'WATHE', 'eenheid':'cm', 'vertref':'MSL'}:
+    elif meta_sel == {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'MSL'}:
         wns = 54
     elif meta_sel == {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'NAP'}:
         wns = 18
     elif meta_sel == {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'MSL'}:
         wns = 55
+    # elif meta_sel == {'grootheid':'GETETM2', 'eenheid':'cm', 'vertref':'NAP'}:
+    #     wns = 1
+    # elif meta_sel == {'grootheid':'GETETM2', 'eenheid':'cm', 'vertref':'MSL'}:
+    #     wns = 54
+    # elif meta_sel == {'grootheid':'GETETBRKD2', 'eenheid':'cm', 'vertref':'NAP'}:
+    #     wns = 18
+    # elif meta_sel == {'grootheid':'GETETBRKD2', 'eenheid':'cm', 'vertref':'MSL'}:
+    #     wns = 55
     else:
-        raise ValueError(f'combination of quantity/unit/vertref not found available in wns_from_metadata():\n{wns_from_metadata}')
+        raise ValueError(f'combination of quantity/unit/vertref not found available in wns_from_metadata():\n{meta_sel}')
     
     return wns
