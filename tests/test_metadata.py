@@ -73,6 +73,56 @@ def test_anapred_metadata():
 
 
 @pytest.mark.unittest
+def test_hwlw_metadata():
+    
+    current_station = 'VLISSGN'
+    file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station=current_station)
+    comp = hatyan.analysis(ts_measurements_group0,const_list='month')
+    pred = hatyan.prediction(comp)
+    
+    meas_ext = hatyan.calc_HWLW(ts_measurements_group0)
+    meas_ext = hatyan.calc_HWLWnumbering(meas_ext)
+    pred_ext = hatyan.calc_HWLW(pred)
+    pred_ext = hatyan.calc_HWLWnumbering(pred_ext)
+    
+    meas_ext_meta = metadata_from_obj(meas_ext)
+    pred_ext_meta = metadata_from_obj(pred_ext)
+    
+    meas_ext_meta_expected = {'station': 'VLISSGN',
+     'grootheid': 'WATHTE',
+     'eenheid': 'cm',
+     'vertref': 'NAP',
+     'tstart': pd.Timestamp('2009-01-01 00:00:00'),
+     'tstop': pd.Timestamp('2009-12-31 23:00:00'),
+     'timestep_min': 60.0,
+     'timestep_unit': 'min',
+     'TYP': 'TE',
+     'groepering': 'NVT',
+     'tzone': pytz.FixedOffset(60),
+     'origin': 'from timeseries dia file'}
+    
+    pred_ext_meta_expected = {'station': 'VLISSGN',
+     'grootheid': 'WATHTBRKD',
+     'eenheid': 'cm',
+     'vertref': 'NAP',
+     'tstart': pd.Timestamp('2009-01-01 00:00:00'),
+     'tstop': pd.Timestamp('2009-12-31 23:00:00'),
+     'timestep_min': 60.0,
+     'timestep_unit': 'min',
+     'TYP': 'TE',
+     'groepering': 'NVT',
+     'tzone': pytz.FixedOffset(60),
+     'origin': 'from timeseries dia file',
+     'nodalfactors': True,
+     'xfac': False,
+     'fu_alltimes': True}
+    
+    assert pred_ext_meta == pred_ext_meta_expected
+    assert meas_ext_meta == meas_ext_meta_expected
+
+
+@pytest.mark.unittest
 def test_readts_dia_metadata_multiblock():
     file_ts = os.path.join(dir_testdata, 'hoek_har.dia')
     ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station='HOEKVHLD', block_ids='allstation')
