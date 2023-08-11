@@ -54,7 +54,7 @@ for current_station in selected_stations:
     
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
     file_data_comp0 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs?.txt')
-        
+    
     file_data_comp1 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs19.txt')
     
     file_data_compvali = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ana.txt')
@@ -75,8 +75,6 @@ for current_station in selected_stations:
         
     #component groups
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
-    times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
-    times_stepcomp0 = (ts_measurements_group0.index[1]-ts_measurements_group0.index[0]).total_seconds()/60
 
     comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, CS_comps=CS_comps)
 

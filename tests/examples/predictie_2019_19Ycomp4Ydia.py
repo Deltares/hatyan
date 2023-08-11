@@ -91,9 +91,7 @@ for current_station in selected_stations:
         
     #component groups
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
-    times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
-    times_stepcomp0 = ts_measurements_group0.index.freq.nanos/1e9/60
-
+    
     comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, CS_comps=CS_comps)
 
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allperiods=comp_frommeasurements_all_group0)

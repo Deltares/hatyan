@@ -33,8 +33,6 @@ for fu_alltimes in [True,False]:
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
     ts_measurements_group0['values'] -=.1
     #ts_measurements_group0 = hatyan.crop_timeseries(ts_measurements_group0, times_ext=[dt.datetime(2012,1,1),dt.datetime(2012,2,1)])
-    times_ext_comp0 = [ts_measurements_group0.index[0],ts_measurements_group0.index[-1]]
-    times_step_comp0 = (ts_measurements_group0.index[1]-ts_measurements_group0.index[0]).total_seconds()/60
     
     COMP_merged_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=False)
     COMP_merged_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, fu_alltimes=fu_alltimes, xfac=True)
