@@ -363,6 +363,11 @@ def components_timeshift(comp,hours):
     
     comp_out['phi_deg'] = (comp_out['phi_deg']+hourcorr_v0_deg)%360
     
+    # add metadata
+    metadata = metadata_from_obj(comp)
+    metadata['tzone'] = pytz.FixedOffset(metadata['tzone']._minutes + hours*60)
+    comp_out = metadata_add_to_obj(comp_out,metadata)
+    
     return comp_out
 
 
