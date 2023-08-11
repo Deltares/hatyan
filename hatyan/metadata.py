@@ -79,8 +79,10 @@ def metadata_compare(metadata_list):
     metadata_list_notstartstop = []
     for meta in metadata_list:
         meta_new = meta.copy()
-        meta_new.pop('tstart')
-        meta_new.pop('tstop')
+        if 'tstart' in meta_new:
+            meta_new.pop('tstart')
+        if 'tstop' in meta_new:
+            meta_new.pop('tstop')
         metadata_list_notstartstop.append(meta_new)
     
     nmeta = len(metadata_list_notstartstop)
