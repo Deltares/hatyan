@@ -481,7 +481,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     else:
         raise TypeError(f'times argument can be of type, pd.DatetimeIndex or slice, not {type(times)}')
     
-    if not len(times_pred_all_pdDTI) > 1:
+    if len(times_pred_all_pdDTI) <= 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
     
     print('%-20s = %s'%('components used',len(comp)))
