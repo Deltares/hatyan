@@ -26,7 +26,7 @@ const_list = 'springneap' #'year' 'halfyear' 'month' etc
 
 file_stroming = os.path.join(dir_testdata,'other','NZB_N - Stroomsnelheid [cm_s].csv')
 data_stroming = pd.read_csv(file_stroming,sep=';',skipfooter=2, engine='python', parse_dates=[0], index_col=0)
-times_ext = [data_stroming.index[0],data_stroming.index[-1]+dt.timedelta(days=7)]
+times_pred = slice(data_stroming.index[0], data_stroming.index[-1]+dt.timedelta(days=7), 10)
 
 meas_mag = data_stroming['stroomsnelheid']
 meas_dir = data_stroming['stroomrichting']
@@ -40,8 +40,8 @@ data_y.dummymeta = 'dummy'
 
 comp_x = hatyan.analysis(ts=data_x, const_list=const_list)
 comp_y = hatyan.analysis(ts=data_y, const_list=const_list)
-pred_x = hatyan.prediction(comp=comp_x, times_ext=times_ext, timestep_min=10)
-pred_y = hatyan.prediction(comp=comp_y, times_ext=times_ext, timestep_min=10)
+pred_x = hatyan.prediction(comp=comp_x, times=times_pred)
+pred_y = hatyan.prediction(comp=comp_y, times=times_pred)
 
 pred_mag = np.sqrt(pred_x**2+pred_y**2)
 pred_dir = np.rad2deg(np.arctan2(pred_x,pred_y))%360

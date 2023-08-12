@@ -48,8 +48,7 @@ for current_station in selected_stations:
 
     file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
-    times_ext_pred = [dt.datetime(2019,1,1),dt.datetime(2020,1,1)]
-    times_step_pred = 10
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), 10)
     
     file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
     file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
@@ -62,16 +61,16 @@ for current_station in selected_stations:
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
     ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
     #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
-    hatyan.write_tsdia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
+    hatyan.write_tsdia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_pred.step,current_station))
     #ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
-    #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
+    #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_pred.step, current_station))
     #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
-    #fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
+    #fig.savefig('prediction_%im_%s_HWLW'%(times_pred.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_validation)
-    fig.savefig('prediction_%im_%s_validation'%(times_step_pred, current_station))
+    fig.savefig('prediction_%im_%s_validation'%(times_pred.step, current_station))
 
 print('\nthese %i stations were requested for processing:\n%s'%(len(selected_stations),selected_stations))
 print('\nthese %i stations were not processed because there is no ana/comp dataset available:\n%s'%(len(stats_noana),stats_noana))

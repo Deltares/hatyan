@@ -108,7 +108,7 @@ for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list: #stat_list[stat_list.
         data_pd_meas_all = pd.read_pickle(file_wl_pkl)
         data_pd_meas_all = clean_data(data_pd_meas_all,current_station)
         #crop measurement data
-        data_pd_meas_10y = hatyan.crop_timeseries(data_pd_meas_all, times_ext=[tstart_dt,tstop_dt-dt.timedelta(minutes=10)])#,onlyfull=False)
+        data_pd_meas_10y = hatyan.crop_timeseries(data_pd_meas_all, times=slice(tstart_dt,tstop_dt-dt.timedelta(minutes=10)))#,onlyfull=False)
     
     file_ext_pkl = os.path.join(dir_meas,f"{current_station}_measext.pkl")
     if os.path.exists(file_ext_pkl): #for slotgemiddelden, havengetallen, overschrijding
@@ -116,8 +116,8 @@ for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list: #stat_list[stat_list.
         data_pd_HWLW_all = clean_data(data_pd_HWLW_all,current_station)
         if compute_slotgem or compute_havengetallen or compute_overschrijding: #TODO: make calc_HWLW12345to12() faster
             data_pd_HWLW_all_12 = hatyan.calc_HWLW12345to12(data_pd_HWLW_all) #convert 12345 to 12 by taking minimum of 345 as 2 (laagste laagwater)
-            #crop timeseries to 10y]
-            data_pd_HWLW_10y_12 = hatyan.crop_timeseries(data_pd_HWLW_all_12, times_ext=[tstart_dt,tstop_dt],onlyfull=False)
+            #crop timeseries to 10y
+            data_pd_HWLW_10y_12 = hatyan.crop_timeseries(data_pd_HWLW_all_12, times=slice(tstart_dt,tstop_dt),onlyfull=False)
             
             #check if amount of HWs is enough
             M2_period_timedelta = pd.Timedelta(hours=hatyan.get_schureman_freqs(['M2']).loc['M2','period [hr]'])
@@ -266,7 +266,7 @@ for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list: #stat_list[stat_list.
         comp_frommeasurements_avg, comp_av = hatyan.get_gemgetij_components(data_pd_meas_10y)
         
         times_pred_1mnth = pd.date_range(start=dt.datetime(tstop_dt.year,1,1,0,0)-dt.timedelta(hours=12), end=dt.datetime(tstop_dt.year,2,1,0,0), freq=f'{pred_freq_sec} S') #start 12 hours in advance, to assure also corrected values on desired tstart
-        prediction_av = hatyan.prediction(comp_av, times_pred_all=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to guarantee repetative signal
+        prediction_av = hatyan.prediction(comp_av, times=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to guarantee repetative signal
         prediction_av_ext = hatyan.calc_HWLW(ts=prediction_av, calc_HWLW345=False)
         
         time_firstHW = prediction_av_ext.loc[prediction_av_ext['HWLWcode']==1].index[0] #time of first HW
@@ -302,7 +302,7 @@ for current_station in ['HOEKVHLD','DENOVBTN']:#stat_list: #stat_list[stat_list.
         
         #make prediction with springneap components with nodalfactors=False (alternative for choosing a year with a neutral nodal factor). Using 1yr instead of 1month does not make a difference in min/max tidal range and shape, also because of nodalfactors=False. (when using more components, there is a slight difference)
         comp_frommeasurements_avg_sncomp = comp_frommeasurements_avg.loc[components_sn]
-        prediction_sn = hatyan.prediction(comp_frommeasurements_avg_sncomp, times_pred_all=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to make independent on chosen year
+        prediction_sn = hatyan.prediction(comp_frommeasurements_avg_sncomp, times=times_pred_1mnth, nodalfactors=False) #nodalfactors=False to make independent on chosen year
         
         prediction_sn_ext = hatyan.calc_HWLW(ts=prediction_sn, calc_HWLW345=False)
         

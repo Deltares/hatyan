@@ -41,9 +41,11 @@ if analyse_ts_bool:
     ts_prediction_fromcomp = hatyan.prediction(comp=COMP_merged, times_pred_all=ts_prediction.index, xfac=True)#, fu_alltimes=False)
 else:
     COMP_merged = hatyan.read_components(filename=file_comp)
-    ts_prediction_fromcomp_2019 = hatyan.prediction(comp=COMP_merged, times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
-    ts_prediction_fromcomp_2020 = hatyan.prediction(comp=COMP_merged, times_ext=[dt.datetime(2020,1,1),dt.datetime(2020,12,31,23,50)], timestep_min=10, xfac=True, fu_alltimes=False)
-    ts_prediction_fromcomp = ts_prediction_fromcomp_2019.append(ts_prediction_fromcomp_2020)
+    times_pred_2019 = slice(dt.datetime(2019,1,1),dt.datetime(2019,12,31,23,50), 10)
+    times_pred_2020 = slice(dt.datetime(2020,1,1),dt.datetime(2020,12,31,23,50), 10)
+    ts_prediction_fromcomp_2019 = hatyan.prediction(comp=COMP_merged, times=times_pred_2019, xfac=True, fu_alltimes=False)
+    ts_prediction_fromcomp_2020 = hatyan.prediction(comp=COMP_merged, times=times_pred_2020, xfac=True, fu_alltimes=False)
+    ts_prediction_fromcomp = pd.concat([ts_prediction_fromcomp_2019,ts_prediction_fromcomp_2020],axis=0)
     ts_prediction_fromcomp.index = ts_prediction_fromcomp.index-dt.timedelta(hours=1) #convert MET prediction to GMT
 
 print(hatyan.check_ts(ts_prediction))

@@ -422,63 +422,67 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     return comp_inclCS
 
 
-def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hatyan_settings=None, **kwargs):
+def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_settings:HatyanSettings = None, **kwargs) -> pd.DataFrame:
     """
     generates a tidal prediction from a set of components A and phi values.
     The component set has the same timezone as the timeseries used to create it, therefore the resulting prediction will also be in that original timezone.
-    
+
     Parameters
     ----------
-    comp : pandas.DataFrame
+    comp : pd.DataFrame
         The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
-    times_pred_all : pandas.DatetimeIndex, optional
-        Prediction timeseries. The default is None.
-    times_ext : list of datetime.datetime, optional
-        Prediction time extents (list of start time and stop time). The default is None.
-    timestep_min : int, optional
-        Prediction timestep in minutes. The default is None.
-    hatyan_settings : hatyan.HatyanSettings()
-        Contains the used settings
+    times : (pd.DatetimeIndex,slice), optional
+        pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
+        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
+    hatyan_settings : HatyanSettings, optional
+        DESCRIPTION. The default is None.
+    **kwargs : TYPE
+        DESCRIPTION.
 
     Raises
     ------
     Exception
         DESCRIPTION.
+    KeyError
+        DESCRIPTION.
 
     Returns
     -------
-    ts_prediction_pd : pandas.DataFrame
+    ts_prediction_pd : TYPE
         The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the prediction times and values.
-    
+
     """
+    
+    if "times_pred_all" in kwargs:
+        raise DeprecationWarning("Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead")
+    if "timestep_min" in kwargs or "times_ext" in kwargs:
+        raise DeprecationWarning("Arguments 'times_ext' and 'timestep_min' for prediction() are deprecated, "
+                                 "pass times=slice(start,stop,step) instead")
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
     elif len(kwargs)>0:
-        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
+        raise Exception("both arguments hatyan_settings and other settings "
+                        "(e.g. nodalfactors) are provided, this is not valid")
     
     print('PREDICTION initializing')
     print(hatyan_settings)
     
-    if times_pred_all is None:
-        if times_ext is None or timestep_min is None:
-            metadata = metadata_from_obj(comp)
-            if not set(['tstart','tstop','timestep_min']).issubset(metadata.keys()):
-                raise KeyError('arguments times_pred_all, times_ext and timestep_min are not provided. Also components metadata does not contain tstart, tstop and timestep_min')
-            times_ext = [metadata['tstart'], metadata['tstop']]
-            timestep_min = metadata['timestep_min']
-        times_pred_all = robust_daterange_fromtimesextfreq(times_ext,timestep_min)
-    else:
-        if times_ext is not None or timestep_min is not None:
-            raise Exception('if argument times_pred_all is provided, the arguments times_ext and timestep_min are not allowed')
+    if times is None:
+        metadata = metadata_from_obj(comp)
+        if not set(['tstart','tstop','timestep_min']).issubset(metadata.keys()):
+            raise KeyError('arguments times is not provided to prediction(). Also components metadata does not contain tstart, tstop and timestep_min')
+        times = slice(metadata['tstart'], metadata['tstop'], metadata['timestep_min'])
     
-    if not len(times_pred_all) > 1:
+    if isinstance(times, pd.DatetimeIndex):
+        times_pred_all_pdDTI = times
+    elif isinstance(times,slice):
+        times_pred_all_pdDTI = robust_daterange_fromtimesextfreq(times)
+    else:
+        raise TypeError(f'times argument can be of type, pd.DatetimeIndex or slice, not {type(times)}')
+    
+    if not len(times_pred_all_pdDTI) > 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
-    
-    if isinstance(times_pred_all, pd.core.indexes.datetimes.DatetimeIndex) or isinstance(times_pred_all, pd.core.indexes.base.Index): #TODO: this is probably not necessary, maybe only in case of Index (year 1600 compatibility)
-        times_pred_all_pdDTI = times_pred_all
-    else:
-        times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
     
     print('%-20s = %s'%('components used',len(comp)))
     print('%-20s = %s'%('tstart',times_pred_all_pdDTI[0].strftime('%Y-%m-%d %H:%M:%S')))
@@ -486,10 +490,12 @@ def prediction(comp, times_pred_all=None, times_ext=None, timestep_min=None, hat
     if hasattr(times_pred_all_pdDTI,'freq'):
         print('%-20s = %s'%('timestep',times_pred_all_pdDTI.freq))
     
-    dood_date_mid = pd.Index([times_pred_all_pdDTI[len(times_pred_all_pdDTI)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
-    dood_date_start = times_pred_all_pdDTI[:1] #first date (for v0, also freq?)
+    # middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
+    dood_date_mid = pd.Index([times_pred_all_pdDTI[len(times_pred_all_pdDTI)//2]])
+    # first date (for v0, also freq?)
+    dood_date_start = times_pred_all_pdDTI[:1]
     
-    #sort component list and component dataframe
+    # sort component list and component dataframe
     if np.isnan(comp.values).any():
         raise Exception('provided component set contains nan values, prediction not possible')
     const_list = sort_const_list(comp.index.tolist())
@@ -563,19 +569,23 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
     ts_periods_dt = comp_allperiods.columns.levels[1]
     ts_periods_strlist = [str(x) for x in ts_periods_dt]
     
-    ts_prediction_perperiod = pd.DataFrame()
+    ts_prediction_perperiod_list = []
     for period_dt in ts_periods_dt:
         print(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
         comp_oneyear = comp_allperiods.loc[:,(slice(None),period_dt)]
         comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
         if period_dt.freqstr in ['A-DEC']: #year frequency
-            times_ext = [dt.datetime(period_dt.year,1,1),dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)]
+            tstart = dt.datetime(period_dt.year,1,1)
+            tstop = dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)
         elif period_dt.freqstr in ['M']: #month frequency
-            times_ext = [period_dt.to_timestamp().to_pydatetime(),period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)]
+            tstart = period_dt.to_timestamp().to_pydatetime()
+            tstop = period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)
         else:
             raise Exception(f'unknown freqstr: {period_dt.freqstr}')
-        ts_prediction_oneperiod = prediction(comp=comp_oneyear,times_ext=times_ext, timestep_min=timestep_min, hatyan_settings=hatyan_settings)
-        ts_prediction_perperiod = pd.concat([ts_prediction_perperiod,ts_prediction_oneperiod])
+        times_pred = slice(tstart, tstop, timestep_min)
+        ts_prediction_oneperiod = prediction(comp=comp_oneyear, times=times_pred, hatyan_settings=hatyan_settings)
+        ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
+    ts_prediction_perperiod = pd.concat(ts_prediction_perperiod_list)
     
     #add metadata
     metadata = metadata_from_obj(comp_allperiods)

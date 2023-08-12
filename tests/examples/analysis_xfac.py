@@ -24,9 +24,8 @@ for fu_alltimes in [True,False]:
     
     file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
-    times_ext_pred = [dt.datetime(2019,1,1),dt.datetime(2020,1,1)]
-    times_step_pred = 10
-
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), 10)
+    
     file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
     #file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
     
@@ -46,10 +45,10 @@ for fu_alltimes in [True,False]:
     
     #prediction and validation
     #ts_prediction = hatyan.prediction(comp=COMP_merged, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-    ts_prediction_xfac0_xfac0 = hatyan.prediction(comp=COMP_merged_xfac0, fu_alltimes=fu_alltimes, xfac=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
-    ts_prediction_xfac0_xfac1 = hatyan.prediction(comp=COMP_merged_xfac0, fu_alltimes=fu_alltimes, xfac=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-    ts_prediction_xfac1_xfac0 = hatyan.prediction(comp=COMP_merged_xfac1, fu_alltimes=fu_alltimes, xfac=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
-    ts_prediction_xfac1_xfac1 = hatyan.prediction(comp=COMP_merged_xfac1, fu_alltimes=fu_alltimes, xfac=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction_xfac0_xfac0 = hatyan.prediction(comp=COMP_merged_xfac0, fu_alltimes=fu_alltimes, xfac=False, times=times_pred)
+    ts_prediction_xfac0_xfac1 = hatyan.prediction(comp=COMP_merged_xfac0, fu_alltimes=fu_alltimes, xfac=True, times=times_pred)
+    ts_prediction_xfac1_xfac0 = hatyan.prediction(comp=COMP_merged_xfac1, fu_alltimes=fu_alltimes, xfac=False, times=times_pred)
+    ts_prediction_xfac1_xfac1 = hatyan.prediction(comp=COMP_merged_xfac1, fu_alltimes=fu_alltimes, xfac=True, times=times_pred)
 
     #ts_prediction1min = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=1)
     #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)

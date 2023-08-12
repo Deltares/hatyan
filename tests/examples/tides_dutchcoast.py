@@ -21,12 +21,11 @@ const_list = hatyan.get_const_list_hatyan('year')
 selected_stations = ['CADZD','BATH','VLISSGN','HOEKVHLD','IJMDBTHVN','DENHDR','TERSLNZE','SCHIERMNOG','DELFZL']
 selected_stations_names = ['Cadzand','Bath','Vlissingen','Hoek van Holland','IJmuiden Buitenhaven','Den Helder','Terschelling','Schiermonnikoog','Delfzijl']
 
-times_ext = [dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,0)]
+times_pred = slice(dt.datetime(2009,1,1), dt.datetime(2012,12,31,23,0), 1)
 
 tstart = dt.datetime(2019,1,6,2,30) #nieuwe maan op 6 jan
 tstart = dt.datetime(2019,1,6,13,1) #midden tussen opkomst en ondergang van de maan, dus maansdoorgang?
 times_ext_pred = [tstart, tstart+dt.timedelta(hours=24, minutes=49)]
-timestep_pred = 1
 
 
 if polar_fig:
@@ -39,7 +38,7 @@ for i_stat, current_station in enumerate(selected_stations):
     
     comp_frommeasurements_avg_group = hatyan.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
     
-    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times_ext=times_ext_pred, timestep_min=timestep_pred)
+    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times=times_pred)
     
     vals_real = ts_prediction['values']
     times_real = ts_prediction.index

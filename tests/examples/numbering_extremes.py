@@ -93,8 +93,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
         #file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
-        times_ext_pred = [dt.datetime(yr-1,12,31),dt.datetime(yr,1,2,12)]
-        times_step_pred = 1
+        times_pred = slice(dt.datetime(yr-1,12,31),dt.datetime(yr,1,2,12), 1)
         
         file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
         #file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
@@ -103,7 +102,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         COMP_merged = hatyan.read_components(filename=file_data_comp0)
         
         #prediction and validation
-        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=True, times=times_pred)
 
         #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
         #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
@@ -113,8 +112,8 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         if i_stat == 0:
             COMP_merged_CADZD = hatyan.read_components(filename=file_data_comp0.replace(current_station,'CADZD'))
             COMP_merged_CADZD_M2 = COMP_merged_CADZD.loc[['A0','M2']]
-            ts_prediction_CADZD = hatyan.prediction(comp=COMP_merged_CADZD, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-            ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+            ts_prediction_CADZD = hatyan.prediction(comp=COMP_merged_CADZD, nodalfactors=True, xfac=xfac, fu_alltimes=True, times=times_pred)
+            ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, nodalfactors=True, xfac=xfac, fu_alltimes=True, times=times_pred)
             ax1.plot(ts_prediction_CADZD_M2.index, ts_prediction_CADZD_M2['values'], label='CADZD_M2', color='k')
             ts_ext_prediction_CADZD = hatyan.calc_HWLW(ts=ts_prediction_CADZD, debug=True)
             bool_newyear = (ts_ext_prediction_CADZD.index>dt.datetime(yr,1,1)) & (ts_ext_prediction_CADZD['HWLWcode']==1)
@@ -161,9 +160,9 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         
         if 1: #validation case
             #calculate tidal wave number
-            times_ext_pred_HWLWno = [dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12)]
+            times_pred_HWLWno = slice(dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12), 1)
             #COMP_merged_temp.loc['M2','A']=0.05
-            ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=True, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+            ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=True, times=times_pred_HWLWno)
             ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
             #fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_HWLWno_pre)
             #breakit
@@ -202,8 +201,8 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     print('')
     print(hatyan.get_schureman_freqs(['M2']))
     
-    ax1.set_xlim(times_ext_pred)
-    ax2.set_xlim(times_ext_pred_HWLWno)
+    ax1.set_xlim(times_pred.start,times_pred.stop)
+    ax2.set_xlim(times_pred_HWLWno.start,times_pred_HWLWno.stop)
     ax2.set_xlim([dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12)])
     ax1_ylim = ax1.get_ylim()
     ax1.plot([dt.datetime(yr,1,1),dt.datetime(yr,1,1)],ax1_ylim,'k--')
