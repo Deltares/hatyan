@@ -51,12 +51,12 @@ def test_readts_dia_multiblock():
 def test_readts_noos_resamplecrop():
 
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')
-    times_ext_comp0 = [dt.datetime(2018,1,1),dt.datetime(2018,4,1)]
+    times_ext_comp0 = slice(dt.datetime(2018,1,1),dt.datetime(2018,4,1))
 
     #component groups
     ts_measurements_group0 = hatyan.readts_noos(filename=file_data_comp0)
     ts_measurements_group0_res = hatyan.resample_timeseries(ts_measurements_group0, timestep_min=10)
-    ts_measurements_group0_rescrop = hatyan.crop_timeseries(ts_measurements_group0_res, times_ext=times_ext_comp0)
+    ts_measurements_group0_rescrop = hatyan.crop_timeseries(ts_measurements_group0_res, times=times_ext_comp0)
     
     assert len(ts_measurements_group0) == 12752
     assert len(ts_measurements_group0_res) == 12961
@@ -167,22 +167,22 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
 def test_crop_timeseries():
     
     current_station = 'VLISSGN'
-    times_ext=[dt.datetime(2019,1,1),dt.datetime(2019,6,1)]
+    times_ext = slice(dt.datetime(2019,1,1),dt.datetime(2019,6,1))
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
     ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
-    ts_prediction_cropped = hatyan.crop_timeseries(ts_prediction, times_ext=times_ext)
+    ts_prediction_cropped = hatyan.crop_timeseries(ts_prediction, times=times_ext)
     
     assert len(ts_prediction_cropped) == 21745
-    assert ts_prediction_cropped.index[0] == pd.Timestamp(times_ext[0])
-    assert ts_prediction_cropped.index[-1] == pd.Timestamp(times_ext[-1])
+    assert ts_prediction_cropped.index[0] == pd.Timestamp(times_ext.start)
+    assert ts_prediction_cropped.index[-1] == pd.Timestamp(times_ext.stop)
     
     pred_meta = metadata_from_obj(ts_prediction)
     pred_cropped_meta = metadata_from_obj(ts_prediction_cropped)
     metadata_compare([pred_meta,pred_cropped_meta])
     
-    assert pred_cropped_meta['tstart'] == pd.Timestamp(times_ext[0])
-    assert pred_cropped_meta['tstop'] == pd.Timestamp(times_ext[-1])
+    assert pred_cropped_meta['tstart'] == pd.Timestamp(times_ext.start)
+    assert pred_cropped_meta['tstop'] == pd.Timestamp(times_ext.stop)
 
 
 
@@ -220,17 +220,16 @@ def test_write_tsdia_rounding():
     current_station = 'HOEKVHLD'
     file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_ana.txt')
     
-    times_ext_pred = [dt.datetime(2019,1,1),dt.datetime(2020,1,1)]
-    times_step_pred = 10
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), 10)
     
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
     ts_prediction = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, 
-                                      times_ext=times_ext_pred, timestep_min=times_step_pred)
+                                      times=times_pred)
     
     #write to file
-    fname_pred = 'prediction_%im_%s.dia'%(times_step_pred,current_station)
+    fname_pred = 'prediction_%im_%s.dia'%(times_pred.step,current_station)
     hatyan.write_tsdia(ts=ts_prediction, filename=fname_pred)
     
     #read from file
@@ -238,5 +237,5 @@ def test_write_tsdia_rounding():
     os.remove(fname_pred)
     
     # assert max differences
-    ts_diff = ts_prediction_fromfile -ts_prediction
+    ts_diff = ts_prediction_fromfile - ts_prediction
     assert (ts_diff['values'].abs()<=0.005).all()

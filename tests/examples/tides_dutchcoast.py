@@ -21,12 +21,9 @@ const_list = hatyan.get_const_list_hatyan('year')
 selected_stations = ['CADZD','BATH','VLISSGN','HOEKVHLD','IJMDBTHVN','DENHDR','TERSLNZE','SCHIERMNOG','DELFZL']
 selected_stations_names = ['Cadzand','Bath','Vlissingen','Hoek van Holland','IJmuiden Buitenhaven','Den Helder','Terschelling','Schiermonnikoog','Delfzijl']
 
-times_ext = [dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,0)]
-
 tstart = dt.datetime(2019,1,6,2,30) #nieuwe maan op 6 jan
 tstart = dt.datetime(2019,1,6,13,1) #midden tussen opkomst en ondergang van de maan, dus maansdoorgang?
-times_ext_pred = [tstart, tstart+dt.timedelta(hours=24, minutes=49)]
-timestep_pred = 1
+times_pred = slice(tstart, tstart+dt.timedelta(hours=24, minutes=49), 1)
 
 
 if polar_fig:
@@ -39,7 +36,7 @@ for i_stat, current_station in enumerate(selected_stations):
     
     comp_frommeasurements_avg_group = hatyan.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
     
-    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times_ext=times_ext_pred, timestep_min=timestep_pred)
+    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times=times_pred)
     
     vals_real = ts_prediction['values']
     times_real = ts_prediction.index
@@ -76,7 +73,7 @@ ax1.grid()
 #ax1.plot([2*np.pi],[1.75],'ok',markersize=15)
 #ax1.plot([np.pi],[1.75],'ok',markersize=15, mfc='none')
 ax1.legend(bbox_to_anchor=(1,1))
-ax1.set_xlim(tstart,times_ext_pred[1])
+ax1.set_xlim(tstart,times_pred.stop)
 ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d %b %H:%M'))
 #ax1.set_ylim([-0.1,3.6])
 #ax1.set_yticks([0,1.75,3.5])

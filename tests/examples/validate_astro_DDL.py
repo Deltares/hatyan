@@ -55,7 +55,7 @@ for current_station in selected_stations:
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeas)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_pred_all=ts_measwl.index)
+    ts_prediction = hatyan.prediction(comp=comp_frommeas, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=ts_measwl.index)
 
     fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction,ts_validation=ts_astro)
     ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))

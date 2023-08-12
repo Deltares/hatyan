@@ -17,16 +17,15 @@ import matplotlib.pyplot as plt
 plt.close('all')
 
 
-# predictin M2 / S2, spring/neap cycle
+# prediction M2 / S2, spring/neap cycle
 if 1:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
     stat_list = ['HOEKVHLD']#,'DENHDR','IJMDBTHVN'] #'K13APFM'
     
-    times_ext_pred = [dt.datetime(2010,1,1),dt.datetime(2010,2,1)]
-    times_ext_twoweeks = [dt.datetime(2010,1,1),dt.datetime(2010,1,16)]
-    times_ext_somedays = [dt.datetime(2010,1,9),dt.datetime(2010,1,16)]
-    times_step_pred = 10
+    times_pred = slice(dt.datetime(2010,1,1),dt.datetime(2010,2,1), 10)
+    times_twoweeks = slice(dt.datetime(2010,1,1),dt.datetime(2010,1,16), 10)
+    times_somedays = slice(dt.datetime(2010,1,9),dt.datetime(2010,1,16), 10)
     
     for current_station in stat_list:
     
@@ -43,19 +42,19 @@ if 1:
         bool_Msome = COMP_merged.index.isin([f'M{num}' for num in [1,2,3,5,6,7,8,9,12,11,12]])
         
         #ts_prediction_M2_nonodal = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=False, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_20 = hatyan.prediction(comp=COMP_merged.loc[['M2','S2','M4','N2','O1','MS4','A0','SA','MU2','K1','2MN2','MN4','K2','NU2','M6','Q1','2MS6','MK4','P1','3MS8']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_M2 = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_M4 = hatyan.prediction(comp=COMP_merged.loc[['M4']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_end1 = hatyan.prediction(comp=COMP_merged.loc[bool_end1], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_end2 = hatyan.prediction(comp=COMP_merged.loc[bool_end2], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_end4 = hatyan.prediction(comp=COMP_merged.loc[bool_end4], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        #ts_prediction_M1 = hatyan.prediction(comp=COMP_merged.loc[['M1']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_S2 = hatyan.prediction(comp=COMP_merged.loc[['S2']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_S4 = hatyan.prediction(comp=COMP_merged.loc[['S4']], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_Mstar = hatyan.prediction(comp=COMP_merged.loc[bool_Mstar], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_Sstar = hatyan.prediction(comp=COMP_merged.loc[bool_Sstar], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction_Msome = hatyan.prediction(comp=COMP_merged.loc[bool_Msome], nodalfactors=True, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
+        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_20 = hatyan.prediction(comp=COMP_merged.loc[['M2','S2','M4','N2','O1','MS4','A0','SA','MU2','K1','2MN2','MN4','K2','NU2','M6','Q1','2MS6','MK4','P1','3MS8']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_M2 = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_M4 = hatyan.prediction(comp=COMP_merged.loc[['M4']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_end1 = hatyan.prediction(comp=COMP_merged.loc[bool_end1], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_end2 = hatyan.prediction(comp=COMP_merged.loc[bool_end2], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_end4 = hatyan.prediction(comp=COMP_merged.loc[bool_end4], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        #ts_prediction_M1 = hatyan.prediction(comp=COMP_merged.loc[['M1']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_S2 = hatyan.prediction(comp=COMP_merged.loc[['S2']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_S4 = hatyan.prediction(comp=COMP_merged.loc[['S4']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_Mstar = hatyan.prediction(comp=COMP_merged.loc[bool_Mstar], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_Sstar = hatyan.prediction(comp=COMP_merged.loc[bool_Sstar], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction_Msome = hatyan.prediction(comp=COMP_merged.loc[bool_Msome], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
         
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
         fig,(ax1) = plt.subplots(1,1,figsize=(10,4),sharex=True,sharey=True)
@@ -66,8 +65,8 @@ if 1:
         ax1.plot(ts_prediction_Sstar,linewidth=1,label='Sun')
         ax1.legend(loc=1)
         #ax2.legend(loc=1)
-        ax1.set_xlim(times_ext_pred)
-        ax1.set_xlim(times_ext_somedays)
+        ax1.set_xlim(times_pred.start,times_pred.stop)
+        ax1.set_xlim(times_somedays.start,times_somedays.stop)
         fig.tight_layout()
         fig.savefig(f'moonsun_{current_station}')
         
@@ -80,7 +79,7 @@ if 1:
         ax2.plot(ts_prediction_M2+ts_prediction_S2,linewidth=1,label='M2+S2')
         ax1.legend(loc=1)
         ax2.legend(loc=1)
-        ax1.set_xlim(times_ext_pred)
+        ax1.set_xlim(times_pred.start,times_pred.stop)
         fig.tight_layout()
         fig.savefig(f'springneap_{current_station}')
         
@@ -96,7 +95,7 @@ if 1:
         ax1.grid()
         ax2.legend(loc=1)
         ax2.grid()
-        ax1.set_xlim(times_ext_somedays)
+        ax1.set_xlim(times_somedays.start,times_somedays.stop)
         fig.tight_layout()
         fig.savefig(f'dagelijkseongelijkheid_{current_station}')
         
@@ -107,7 +106,7 @@ if 1:
         ax1.plot(ts_prediction_M2,linewidth=1,label='M2')
         ax1.legend(loc=1)
         ax1.grid()
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         fig.tight_layout()
         fig.savefig(f'fullset_vs_M2_{current_station}')
@@ -118,7 +117,7 @@ if 1:
         ax1.plot(ts_prediction_M2+ts_prediction_S2,linewidth=1,label='M2+S2')
         ax1.legend(loc=1)
         ax1.grid()
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         fig.tight_layout()
         fig.savefig(f'fullset_vs_M2S2_{current_station}')
@@ -129,7 +128,7 @@ if 1:
         ax1.plot(ts_prediction_M2+ts_prediction_S2+ts_prediction_M4,linewidth=1,label='M2+S2+M4')
         ax1.legend(loc=1)
         ax1.grid()
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         fig.tight_layout()
         fig.savefig(f'fullset_vs_M2S2M4_{current_station}')
@@ -140,7 +139,7 @@ if 1:
         ax1.plot(ts_prediction_20,linewidth=1,label='20 components')
         ax1.legend(loc=1)
         ax1.grid()
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         fig.tight_layout()
         fig.savefig(f'fullset_vs_20comp_{current_station}')
@@ -149,7 +148,7 @@ if 1:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_M2,ts_validation=ts_prediction)
         ax1.set_title(f'fullset vs M2 {current_station}')
         ax1.legend(['full_set','20 components','difference','mean'],loc=4)
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         ax2.set_ylim(-0.5,0.5)
         fig.savefig(f'fullset_vs_M2_{current_station}')
@@ -157,7 +156,7 @@ if 1:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_M2+ts_prediction_S2,ts_validation=ts_prediction)
         ax1.set_title(f'fullset vs M2+S2 {current_station}')
         ax1.legend(['full_set','M2+S2','difference','mean'],loc=4)
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         ax2.set_ylim(-0.5,0.5)
         fig.savefig(f'fullset_vs_M2S2_{current_station}')
@@ -165,7 +164,7 @@ if 1:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_M2+ts_prediction_S2+ts_prediction_M4,ts_validation=ts_prediction)
         ax1.set_title(f'fullset vs M2+S2+M4 {current_station}')
         ax1.legend(['full_set','M2+S2+M4','difference','mean'],loc=4)
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         ax2.set_ylim(-0.5,0.5)
         fig.savefig(f'fullset_vs_M2S2M4_{current_station}')
@@ -173,7 +172,7 @@ if 1:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_20,ts_validation=ts_prediction)
         ax1.set_title(f'fullset vs 20 components {current_station}')
         ax1.legend(['full_set','20 components','difference','mean'],loc=4)
-        ax1.set_xlim(times_ext_twoweeks)
+        ax1.set_xlim(times_twoweeks.start,times_twoweeks.stop)
         ax1.set_ylim(-1.1,1.6)
         ax2.set_ylim(-0.5,0.5)
         fig.savefig(f'fullset_vs_20comp_{current_station}')
@@ -198,14 +197,13 @@ if 0:
         const_list = hatyan.get_const_list_hatyan('year') #94 const
     
     file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
-    times_ext_pred = [dt.datetime(2000,1,1),dt.datetime(2019,12,31,23,50)]
-    times_step_pred = 60
+    times_pred = slice(dt.datetime(2000,1,1),dt.datetime(2019,12,31,23,50), 60)
         
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=times_step_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
     A0_allyears = ts_prediction.groupby(by=pd.Grouper(freq='Y')).mean()
     
     #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
@@ -225,7 +223,7 @@ if 0:
     data_pkl = pd.read_pickle(file_pkl)
     ts_meas = data_pkl[['values']]
     ts_meas.index = ts_meas.index.tz_localize(None)
-    ts_meas = hatyan.crop_timeseries(ts_meas,times_ext=[dt.datetime(1972,1,1),dt.datetime(2019,12,31,23,50)])#,onlyfull=False)
+    ts_meas = hatyan.crop_timeseries(ts_meas,times=slice(dt.datetime(1972,1,1),dt.datetime(2019,12,31,23,50)))#,onlyfull=False)
     #bool_duplicatetimes = ts_meas.index.duplicated(keep='first')
     #ts_meas = ts_meas.loc[~bool_duplicatetimes]
         
@@ -291,26 +289,23 @@ if 0:
     selected_stations = ['CADZD','BATH','VLISSGN','HOEKVHLD','IJMDBTHVN','DENHDR','TERSLNZE','SCHIERMNOG','DELFZL']
     selected_stations_names = ['Cadzand','Bath','Vlissingen','Hoek van Holland','IJmuiden Buitenhaven','Den Helder','Terschelling','Schiermonnikoog','Delfzijl']
 
-    times_ext = [dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,0)]
-
     tstart = dt.datetime(2019,1,6,2,30) #nieuwe maan op 6 jan
     tstart = dt.datetime(2019,1,6,13,1) #midden tussen opkomst en ondergang van de maan, dus maansdoorgang?
-    times_ext_pred = [tstart, tstart+dt.timedelta(hours=1.2*24, minutes=49)]
-    timestep_pred = 1
+    times_pred = slice(tstart, tstart+dt.timedelta(hours=1.2*24, minutes=49), 1)
     
     fig, ax1 = plt.subplots(1,1,figsize=(10,5))
     n_colors = len(selected_stations)
     colors = plt.cm.jet(np.linspace(0,1,n_colors))
     for i_stat, current_station in enumerate(selected_stations):
         comp_frommeasurements_avg_group = hatyan.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
-        ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times_ext=times_ext_pred, timestep_min=timestep_pred)
+        ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times=times_pred)
         vals_real = ts_prediction['values']
         times_real = ts_prediction.index
         ax1.plot(times_real, vals_real, label=current_station, color=colors[i_stat])
     
     ax1.grid()
     ax1.legend(bbox_to_anchor=(1,1))
-    ax1.set_xlim(tstart,times_ext_pred[1])
+    ax1.set_xlim(tstart,times_pred.start)
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     fig.tight_layout()
     fig.savefig('tides_dutchcoast.png', dpi=250)

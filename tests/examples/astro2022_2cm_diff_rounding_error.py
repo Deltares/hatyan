@@ -24,9 +24,9 @@ for pred_year in [2019, 2020, 2021, 2022, 2023]:
         tstop_pred = dt.datetime(pred_year+1,1,1)
         
         if pred_year in [2019, 2020]:
-            times_ext_4y = [dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,50)]
+            times_ext_4y = slice(dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,50))
         elif pred_year in [2021, 2022, 2023]:
-            times_ext_4y = [dt.datetime(2015,1,1),dt.datetime(2018,12,31,23,50)]
+            times_ext_4y = slice(dt.datetime(2015,1,1),dt.datetime(2018,12,31,23,50))
             
         
         file_astro = os.path.join(r'c:\Users\veenstra\Downloads',f'astro_{current_station}_{pred_year}.pkl')
@@ -54,15 +54,15 @@ for pred_year in [2019, 2020, 2021, 2022, 2023]:
         data_pd_meas_all.index = data_pd_meas_all.index.tz_localize(None)
         data_pd_meas_all_H = data_pd_meas_all.loc[data_pd_meas_all.index.minute==0]
         
-        ts_19y_H = hatyan.crop_timeseries(data_pd_meas_all_H, times_ext=[dt.datetime(1976,1,1),dt.datetime(1995,1,1)-dt.timedelta(minutes=10)])
+        ts_19y_H = hatyan.crop_timeseries(data_pd_meas_all_H, times=slice(dt.datetime(1976,1,1),dt.datetime(1995,1,1)-dt.timedelta(minutes=10)))
         comp_19y = hatyan.analysis(ts_19y_H,const_list=['SA','SM'],fu_alltimes=False,xfac=True)
         
-        ts_4y_H = hatyan.crop_timeseries(data_pd_meas_all_H, times_ext=times_ext_4y)
+        ts_4y_H = hatyan.crop_timeseries(data_pd_meas_all_H, times=times_ext_4y)
         comp_4y = hatyan.analysis(ts_4y_H,const_list='year',analysis_perperiod='Y',fu_alltimes=False,xfac=True)
         
         comp_merged = hatyan.merge_componentgroups(comp_main=comp_4y, comp_sec=comp_19y, comp_sec_list=['SA','SM'])
         
-        pred = hatyan.prediction(comp=comp_merged,times_ext=[tstart_pred,tstop_pred],timestep_min=10,fu_alltimes=False,xfac=True)
+        pred = hatyan.prediction(comp=comp_merged,times=slice(tstart_pred,tstop_pred,10),fu_alltimes=False,xfac=True)
         
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=pred,ts_validation=ts_astro)
         ax2.set_ylim(None,0.035)

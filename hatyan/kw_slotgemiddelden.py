@@ -153,7 +153,7 @@ def calc_HAT_LAT_fromcomponents(comp: pd.DataFrame, hatyan_settings: HatyanSetti
     max_vallist_allyears = pd.Series(dtype=float)
     for year in range(2020,2039): # 19 arbitrary consequtive years to capture entire nodal cycle
         times_pred_all = pd.date_range(start=dt.datetime(year,1,1), end=dt.datetime(year+1,1,1), freq='1min')
-        ts_prediction = prediction(comp=comp, hatyan_settings=hatyan_settings, times_pred_all=times_pred_all)
+        ts_prediction = prediction(comp=comp, hatyan_settings=hatyan_settings, times=times_pred_all)
         
         min_vallist_allyears.loc[year] = ts_prediction['values'].min()
         max_vallist_allyears.loc[year] = ts_prediction['values'].max()

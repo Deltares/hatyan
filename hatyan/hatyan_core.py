@@ -142,18 +142,40 @@ def get_doodson_eqvals(dood_date, mode=None):
     return doodson_pd
 
 
-def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
+def get_tstart_tstop_tstep(times_slice):
+    if not isinstance(times_slice,slice):
+        raise TypeError('times_slice should be of type slice: slice(tstart, tstop, tstep_min)')
+
+    try:
+        tstart = pd.Timestamp(times_slice.start)
+        tstop = pd.Timestamp(times_slice.stop)
+    except pd.errors.OutOfBoundsDatetime: # escape for outofbounds datetimes like 1018
+        tstart = times_slice.start
+        tstop = times_slice.stop
+
+    if times_slice.step is None:
+        raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
+
+    if isinstance(times_slice.step,(int,float)):
+        # assuming minutes
+        tstep = pd.offsets.Minute(times_slice.step)
+    else:
+        tstep = pd.tseries.frequencies.to_offset(times_slice.step)
+
+    return tstart, tstop, tstep
+
+
+def robust_daterange_fromtimesextfreq(times_slice):
     """
     Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
     For dates outside this period, a list is generated and converted to a pd.Index instead.
 
     Parameters
     ----------
-    times_ext : list of datetime.datetime
-        DESCRIPTION.
-    timestep_min : int
-        DESCRIPTION.
-
+    times_slice : slice
+        slice(tstart, tstop, freq) with types as understood by pd.Timestamp (for tstart/tstop) 
+        and int or str as understood by pd.tseries.frequencies.to_offset().
+        
     Returns
     -------
     times_pred_all_pdDTI : pd.DatetimeIndex or pd.Index
@@ -161,14 +183,17 @@ def robust_daterange_fromtimesextfreq(times_ext,timestep_min):
 
     """
     
+    tstart, tstop, tstep = get_tstart_tstop_tstep(times_slice)
+
     try:
-        times_pred_all = pd.date_range(start=times_ext[0], end=times_ext[-1], freq='%imin'%(timestep_min))
+        times_pred_all = pd.date_range(start=tstart, end=tstop, freq=tstep)
         times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
-    except pd._libs.tslibs.np_datetime.OutOfBoundsDatetime as e: #OutOfBoundsDatetime: Out of bounds nanosecond timestamp
+    except pd.errors.OutOfBoundsDatetime as e: #OutOfBoundsDatetime: Out of bounds nanosecond timestamp
         print(f'WARNING: "{e}". Falling back to less fancy (slower) datetime ranges. Fancy ones are possible between {pd.Timestamp.min} and {pd.Timestamp.max}')
-        td_mins = (times_ext[-1]-times_ext[0]).total_seconds()/60
-        nsteps = int(td_mins/timestep_min)
-        times_pred_all = pd.Series([times_ext[0]+dt.timedelta(minutes=x*timestep_min) for x in range(nsteps+1)])
+        td_mins = (tstop-tstart).total_seconds()/60
+        tstep_min = tstep.delta.total_seconds()/60
+        nsteps = int(td_mins/tstep_min)
+        times_pred_all = pd.Series([tstart+dt.timedelta(minutes=x*tstep_min) for x in range(nsteps+1)])
         times_pred_all_pdDTI = pd.Index(times_pred_all)
     return times_pred_all_pdDTI
 

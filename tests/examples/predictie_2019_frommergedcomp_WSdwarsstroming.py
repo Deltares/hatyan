@@ -21,8 +21,7 @@ list_matig = []
 list_sterk = []
 for yr, ax in zip([2020,2021],[ax1,ax2]):
 
-    times_ext_pred_HWLWno = [dt.datetime(yr,1,1),dt.datetime(yr+1,1,1)] #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
-    times_step_pred = 1
+    times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1),1) #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
     
     if yr == 2020:
         file_data_comp_HANSWT = os.path.join(dir_testdata,'predictie2019','HANSWT_ana.txt') #2009-2012
@@ -33,8 +32,8 @@ for yr, ax in zip([2020,2021],[ax1,ax2]):
     COMP_merged_HANSWT = hatyan.read_components(filename=file_data_comp_HANSWT)
     COMP_merged_TERNZN = hatyan.read_components(filename=file_data_comp_TERNZN)
     
-    ts_prediction_HANSWT = hatyan.prediction(comp=COMP_merged_HANSWT, nodalfactors=True, xfac=True, fu_alltimes=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
-    ts_prediction_TERNZN = hatyan.prediction(comp=COMP_merged_TERNZN, nodalfactors=True, xfac=True, fu_alltimes=False, times_ext=times_ext_pred_HWLWno, timestep_min=times_step_pred)
+    ts_prediction_HANSWT = hatyan.prediction(comp=COMP_merged_HANSWT, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+    ts_prediction_TERNZN = hatyan.prediction(comp=COMP_merged_TERNZN, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
     
     ts_prediction_diff = ts_prediction_TERNZN-ts_prediction_HANSWT # TODO: metadata is dropped
     ts_prediction_diff['values'] = ts_prediction_diff['values'].round(2) #round to cm

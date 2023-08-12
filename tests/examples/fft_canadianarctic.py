@@ -23,7 +23,7 @@ const_list = hatyan_freqs_suggestions.index.unique().tolist()+['A0','SA','SSA','
 
 #harmonic analysis and reprediction
 comp = hatyan.analysis(ts=ts_pred_can, const_list=const_list, hatyan_settings=hatyan_settings)
-reprediction = hatyan.prediction(comp, times_pred_all=ts_pred_can.index, hatyan_settings=hatyan_settings)
+reprediction = hatyan.prediction(comp, times=ts_pred_can.index, hatyan_settings=hatyan_settings)
 
 #plotting timeseries
 fig1, (ax1,ax2) = hatyan.plot_timeseries(ts=reprediction, ts_validation=ts_pred_can)
