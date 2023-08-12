@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 
 
-# predictin M2 / S2, spring/neap cycle
+# prediction M2 / S2, spring/neap cycle
 if 1:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
