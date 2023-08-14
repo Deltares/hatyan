@@ -307,11 +307,16 @@ def read_components(filename):
     
     print('reading file: %s'%(filename))
 
+    xfac = True
     line_compstart = None
     metadata_available = False
     with open(filename) as f:
         for i, line in enumerate(f):
-            if line.startswith('STAT'):
+            if line.startswith('*'):
+                if 'theoretisch' in line:
+                    print(f"xfac=False derived from headerline: '{line.strip()}'")
+                    xfac = False
+            elif line.startswith('STAT'):
                 station = line.split()[1]
                 print('retrieving data from components file for station %s'%(station))
                 grootheid = line.split()[2]
@@ -332,6 +337,7 @@ def read_components(filename):
                 line_compstart = i
                 break #break because last line before actual data
     
+    
     #retrieve raw data
     if line_compstart is None:
         raise Exception('invalid file, no line that starts with COMP')
@@ -350,6 +356,7 @@ def read_components(filename):
                 'grootheid':grootheid, 'eenheid':eenheid,
                 'vertref':vertref,
                 'tstart':tstart, 'tstop':tstop, 'tzone':tzone, 
+                'nodalfactors':True, 'xfac':xfac,
                 'origin':'from component file'}
     comp_pd = metadata_add_to_obj(comp_pd, metadata)
     return comp_pd
