@@ -152,6 +152,13 @@ def write_components(comp, filename):
     tstart_str = tstart.strftime("%Y%M%d  %H%M%S")
     tstop_str = tstop.strftime("%Y%M%d  %H%M%S")
     
+    nodalfactors = metadata.pop('nodalfactors')
+    fu_alltimes = metadata.pop('fu_alltimes')
+    if not nodalfactors:
+        raise ValueError("nodalfactors=False cannot be distinguished in components file header, so not supported by write_components()")
+    if fu_alltimes:
+        raise ValueError("fu_alltimes=True cannot be distinguished in components file header, so not supported by write_components()")
+        
     if 'A0' in comp.index.tolist():
         midd = comp.loc['A0','A']*100
         comp = comp.drop('A0',axis=0)
@@ -313,7 +320,7 @@ def read_components(filename):
     with open(filename) as f:
         for i, line in enumerate(f):
             if line.startswith('*'):
-                if 'theoretisch' in line:
+                if 'theoretische' in line or 'empirisch' in line:
                     print(f"xfac=False derived from headerline: '{line.strip()}'")
                     xfac = False
             elif line.startswith('STAT'):
