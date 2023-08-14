@@ -320,9 +320,12 @@ def read_components(filename):
     with open(filename) as f:
         for i, line in enumerate(f):
             if line.startswith('*'):
-                if 'theoretische' in line or 'empirisch' in line:
+                if 'theoretische' in line:
                     print(f"xfac=False derived from headerline: '{line.strip()}'")
                     xfac = False
+                elif 'empirisch' in line:
+                    print(f"xfac=True derived from headerline: '{line.strip()}'")
+                    xfac = True
             elif line.startswith('STAT'):
                 station = line.split()[1]
                 print('retrieving data from components file for station %s'%(station))
