@@ -1,6 +1,6 @@
 #relevant/minimal hmc python libs on 02-03-2023 (full list raises many errors), hmc runs python==3.8.13
 scipy==1.10.1
-numpy==1.21.0 # downgraded from 1.23.5 because of hydrolib installation at hmc
+numpy==1.23.5 # version at HMC was downgraded to 1.21.0 because of hydrolib installation
 matplotlib==3.7.2
 pandas==1.5.3
 netCDF4==1.6.4
@@ -8,6 +8,6 @@ pyproj==3.3.1
 sip==6.7.11
 requests==2.31.0
 statsmodels==0.14.0
-xarray==0.17.0 # downgraded from 2022.12.0 because of hydrolib installation at hmc
+xarray==2022.12.0 # version at HMC was downgraded to 0.17.0 because of hydrolib installation
 #seaborn==0.12.2
 #six==1.16.0
