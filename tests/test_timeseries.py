@@ -23,8 +23,8 @@ def test_readts_dia_multifile():
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station='VLISSGN')
     
     assert len(ts_measurements_group0) == 35064
-    assert ts_measurements_group0['values'].iloc[0] == -1.24
-    assert ts_measurements_group0['values'].iloc[-1] == -1.5
+    assert np.isclose(ts_measurements_group0['values'].iloc[0], -1.24)
+    assert np.isclose(ts_measurements_group0['values'].iloc[-1], -1.5)
     assert (ts_measurements_group0['qualitycode'] != 0).sum() == 82
     assert list(np.unique(ts_measurements_group0['qualitycode'])) == [ 0, 25]
 
@@ -63,8 +63,8 @@ def test_readts_noos_resamplecrop():
     assert len(ts_measurements_group0_rescrop) == 12961
     assert ts_measurements_group0_rescrop.index[0] == pd.Timestamp('2018-01-01')
     assert ts_measurements_group0_rescrop.index[-1] == pd.Timestamp('2018-04-01')
-    assert ts_measurements_group0_rescrop['values'][0] == 2.5
-    assert ts_measurements_group0_rescrop['values'][-1] == 1.05
+    assert np.isclose(ts_measurements_group0_rescrop['values'][0], 2.5)
+    assert np.isclose(ts_measurements_group0_rescrop['values'][-1], 1.05)
 
 
 @pytest.mark.unittest
