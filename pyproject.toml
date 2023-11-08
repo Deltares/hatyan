@@ -20,7 +20,7 @@ dependencies = [
 	#matplotlib>=3.2.1 from setup.cfg
 	"matplotlib>=3.2.1",
 	#TODO: pandas>=1.4.0 is required by xarray>=2023.3.0
-	#pandas>=1.2.0 from setup.cfg
+	#pandas<2.0.0 supports non-nanosecond timestep and therefore larger min/max range
 	"pandas>=2.0.0",
 	#TODO: netcdf4<1.5.4 pip install fails in py39
 	#netcdf4<1.5.3 from setup.cfg
@@ -31,8 +31,8 @@ dependencies = [
 	"sip>=5.0.0",
 	#requests<2.28.0 not tested on hmc
 	"requests>=2.28.0",
-	#statsmodels<0.13.0 is more than 2 years old
-	"statsmodels>=0.13.0",
+	#statsmodels<0.13.2 has no support for pandas 2.0.0
+	"statsmodels>=0.13.2",
 	#TODO: xarray<2023.4.0 conflicts with pandas<2.0.0 for resampling, only available for py39
 	#xarray>=2022.6.0 is quite old version from dfm_tools
 	"xarray>=2022.6.0",
