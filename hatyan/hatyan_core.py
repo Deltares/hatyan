@@ -165,39 +165,6 @@ def get_tstart_tstop_tstep(times_slice):
     return tstart, tstop, tstep
 
 
-def robust_daterange_fromtimesextfreq(times_slice):
-    """
-    Generate daterange. Pandas pd.date_range and pd.DatetimeIndex only support times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
-    For dates outside this period, a list is generated and converted to a pd.Index instead.
-
-    Parameters
-    ----------
-    times_slice : slice
-        slice(tstart, tstop, freq) with types as understood by pd.Timestamp (for tstart/tstop) 
-        and int or str as understood by pd.tseries.frequencies.to_offset().
-        
-    Returns
-    -------
-    times_pred_all_pdDTI : pd.DatetimeIndex or pd.Index
-        DESCRIPTION.
-
-    """
-    
-    tstart, tstop, tstep = get_tstart_tstop_tstep(times_slice)
-
-    try:
-        times_pred_all = pd.date_range(start=tstart, end=tstop, freq=tstep)
-        times_pred_all_pdDTI = pd.DatetimeIndex(times_pred_all)
-    except pd.errors.OutOfBoundsDatetime as e: #OutOfBoundsDatetime: Out of bounds nanosecond timestamp
-        print(f'WARNING: "{e}". Falling back to less fancy (slower) datetime ranges. Fancy ones are possible between {pd.Timestamp.min} and {pd.Timestamp.max}')
-        td_mins = (tstop-tstart).total_seconds()/60
-        tstep_min = tstep.delta.total_seconds()/60
-        nsteps = int(td_mins/tstep_min)
-        times_pred_all = pd.Series([tstart+dt.timedelta(minutes=x*tstep_min) for x in range(nsteps+1)])
-        times_pred_all_pdDTI = pd.Index(times_pred_all)
-    return times_pred_all_pdDTI
-
-
 def robust_timedelta_sec(dood_date,refdate_dt=None):
     """
     Generate timedelta. Pandas pd.DatetimeIndex subtraction only supports times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
@@ -218,16 +185,11 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
         DESCRIPTION.
 
     """
-    #TODO: check if this is still necessary in newer pandas versions (might account for out of bounds timestamps automatically)
-    #TODO: merging with robust_daterange_fromtimesextfreq() possible?
     
     if refdate_dt is None:
         refdate_dt = dt.datetime(1900,1,1)
-        
-    if isinstance(dood_date,pd.core.indexes.datetimes.DatetimeIndex): # not OutOfBoundsDatetime datetime result in default DatetimeIndex
-        dood_tstart_sec = ( dood_date-refdate_dt ).total_seconds().values
-    else: #in case of OutOfBoundsDatetime it is an Index instead of a DatetimeIndex (following from hatyan.robust_daterange_fromtimesextfreq())
-        dood_tstart_sec = np.array([(x-refdate_dt).total_seconds() for x in dood_date])
+    
+    dood_tstart_sec = ( dood_date-refdate_dt ).total_seconds().values
     return dood_tstart_sec
 
 
