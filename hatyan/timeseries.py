@@ -1408,8 +1408,8 @@ def get_diablocks(filename):
                 datestart = dt.datetime.strptime(data_meta_mincontent[1]+data_meta_mincontent[2], "%Y%m%d%H%M")
                 datestop = dt.datetime.strptime(data_meta_mincontent[3]+data_meta_mincontent[4], "%Y%m%d%H%M")
                 if len(data_meta_mincontent)==5: #nonequidistant timeseries
-                    timestep_value = None
-                    timestep_unit = None
+                    timestep_value = np.nan #TODO: None is supported by pandas 2.1.2 and maybe earlier versions, but not 2.0.3 (py39 only)
+                    timestep_unit = np.nan
                 elif len(data_meta_mincontent)==7: #equidistant timeseries contains also timeunit and timestep
                     timestep_unit = data_meta_mincontent[6]
                     if timestep_unit not in ['min','cs']: #minutes and 1/100 sec
@@ -1579,7 +1579,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                                  f"{str_getdiablockspd}")
             
         for block_id in block_ids:
-            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): #non-equidistant
+            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']):
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
