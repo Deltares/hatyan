@@ -46,7 +46,7 @@ classifiers = [
 	"Programming Language :: Python :: 3.9",
 	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
-	#"Programming Language :: Python :: 3.12", #TODO: check if py312 is supported
+	#"Programming Language :: Python :: 3.12",
 ]
 
 [project.urls]
@@ -76,6 +76,7 @@ hatyan = ["data/*"]
 [tool.pytest.ini_options]
 console_output_style = "count"
 testpaths = ["tests"]
+python_files = "test_*.py"
 addopts = "-v --tb=short --durations=0"
 markers = [
 	"unittest: mark a test as unittest. Used for testing single methods",
