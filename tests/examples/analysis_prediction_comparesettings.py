@@ -20,7 +20,7 @@ selected_stations = ['HOEKVHLD']#,'VLISSGN','CUXHVN']
 #file_slotgemiddelden = os.path.join(dir_testdata,'predictie2019','_slotgemiddelden_predictie2019.txt')
 #stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
 
-stats = pd.DataFrame()
+stats_list = []
 
 for current_station in selected_stations:
     const_list = hatyan.get_const_list_hatyan('year')
@@ -47,8 +47,9 @@ for current_station in selected_stations:
                 #ax2.set_ylim(-0.3,0.3)
                 stats_row['fu_alltimes=%s_xfac=%s_%s'%(fu_alltimes,xfac,source)] = [rmse]
     #print(stats_row)
-    stats = stats.append(stats_row)
+    stats_list.append(stats_row)
 
+stats = pd.concat(stats_list,axis=0)
 statsT = stats.T
 print('RMSE values [cm] for several settings and stations:')
 print((statsT*100).round(3))
