@@ -63,8 +63,8 @@ def test_readts_noos_resamplecrop():
     assert len(ts_measurements_group0_rescrop) == 12961
     assert ts_measurements_group0_rescrop.index[0] == pd.Timestamp('2018-01-01')
     assert ts_measurements_group0_rescrop.index[-1] == pd.Timestamp('2018-04-01')
-    assert np.isclose(ts_measurements_group0_rescrop['values'][0], 2.5)
-    assert np.isclose(ts_measurements_group0_rescrop['values'][-1], 1.05)
+    assert np.isclose(ts_measurements_group0_rescrop['values'].iloc[0], 2.5)
+    assert np.isclose(ts_measurements_group0_rescrop['values'].iloc[-1], 1.05)
 
 
 @pytest.mark.unittest

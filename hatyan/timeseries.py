@@ -177,7 +177,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
         data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
         
         #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
-        data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,['values']].min()[0]
+        data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,'values'].min()
         data_pd_HWLW_1tide_min = data_pd_HWLW_1tide['values'].min()
         data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
         bool_LWs = data_pd_HWLW_1tide['values']<data_pd_HWLW_1tide_mid
@@ -1323,6 +1323,9 @@ def get_diablocks_startstopstation(filename):
     linenum_colnames = ['block_starts','data_starts','data_ends']
     diablocks_pd_startstopstation = pd.DataFrame({},columns=linenum_colnames)
     
+    # add str type columns to avoid "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'min' has dtype incompatible with float64, please explicitly cast to a compatible dtype first."
+    diablocks_pd_startstopstation['station'] = ""
+    
     with open(filename, encoding='latin1') as f: #'latin1 is nodig om predictie diafile die rechtstreeks uit hatyan komen in te lezen (validatietijdserie met op regel 4 (PAR) ongeldige tekens aan het einde)
         block_id = -1
         for linenum, line in enumerate(f, 1):
@@ -1349,6 +1352,12 @@ def get_diablocks(filename):
     
     print('reading file: %s'%(filename))
     diablocks_pd = get_diablocks_startstopstation(filename)
+    # add str type columns to avoid "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'min' has dtype incompatible with float64, please explicitly cast to a compatible dtype first."
+    columns_str = ['TYP','groepering','grootheid','coordsys',
+                   'eenheid','vertref',
+                   'timestep_unit',
+                   'STA']
+    diablocks_pd[columns_str] = ""
     for block_id in diablocks_pd.index.tolist():
         #read diafile metadata as pandas series, prevent splitting of combined paramater names like MXH;2 by replacing ; with !
         data_meta_nrows = diablocks_pd.loc[block_id,'data_starts'] - diablocks_pd.loc[block_id,'block_starts']
