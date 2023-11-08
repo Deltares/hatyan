@@ -40,7 +40,7 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     
     # replace nan with None (otherwise metadata_compare fails)
     #TODO: avoid nan in metadata (timestep for hoek_har.dia)
-    if np.isnan(metadata['timestep_min']):
+    if np.isnan(metadata['timestep_min']): #non-equidistant, nan in py38 and none in py39 (pandas 2.1.2)
         metadata['timestep_min'] = None
         metadata['timestep_unit'] = None
     return metadata

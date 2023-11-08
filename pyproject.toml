@@ -1,4 +1,91 @@
-
 [build-system]
-requires = ["setuptools>=42", "wheel"]   # PEP 508 specifications.
+requires = ["setuptools>=64.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "hatyan"
+version = "2.7.2"
+maintainers = [{ name = "Jelmer Veenstra", email = "jelmer.veenstra@deltares.nl" }]
+description = "hatyan is a tidal analysis and prediction tool of Rijkswaterstaat"
+readme = "README.md"
+keywords = ["hatyan", "tidal analysis", "tidal prediction"]
+license = { text = "LGPLv3" }
+requires-python = ">=3.8"
+dependencies = [
+	#scipy<1.5.4 env creation failed in https://github.com/Deltares/hatyan/issues/71
+	"scipy>=1.5.4",
+	#numpy 1.21 is EOL since june 2023
+	"numpy>=1.22.0",
+	#TODO: contour colorbar on uniform values fails with matplotlib<3.7.0, several other features with matplotlib<3.6.0
+	#matplotlib>=3.2.1 from setup.cfg
+	"matplotlib>=3.2.1",
+	#TODO: pandas>=1.4.0 is required by xarray>=2023.3.0
+	#pandas>=1.2.0 from setup.cfg
+	"pandas>=1.2.0",
+	#TODO: netcdf4<1.5.4 pip install fails in py39
+	#netcdf4<1.5.3 from setup.cfg
+	"netcdf4>=1.5.3",
+	#pyproj<3.1.0 not pip installable in py38
+	"pyproj>=3.1.0",
+	#sip<5.0.0 not available via pip in py38
+	"sip>=5.0.0",
+	#requests<2.28.0 not tested on hmc
+	"requests>=2.28.0",
+	#statsmodels<0.13.0 is more than 2 years old
+	"statsmodels>=0.13.0",
+	#TODO: xarray<2023.4.0 conflicts with pandas<2.0.0 for resampling, only available for py39
+	#xarray>=2022.6.0 is quite old version from dfm_tools
+	"xarray>=2022.6.0",
+]
+classifiers = [
+	"Development Status :: 5 - Production/Stable",
+	"Intended Audience :: Science/Research",
+	"Operating System :: OS Independent",
+	"Topic :: Scientific/Engineering :: Information Analysis",
+	"License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+	"Programming Language :: Python",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.8",
+	"Programming Language :: Python :: 3.9",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	#"Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Home = "https://github.com/deltares/hatyan"
+Code = "https://github.com/deltares/hatyan"
+Issues = "https://github.com/deltares/hatyan/issues"
+
+[project.optional-dependencies]
+test = [
+	"bump2version>=0.5.11",
+	"flake8",
+	"pytest",
+	"pytest-cov",
+	"twine",
+	"jupyter",
+	"notebook",
+	"mkdocs",
+	"mkdocs-material",
+	"mkdocs-jupyter",
+	"mkdocstrings-python",
+	"mkdocs-exclude",
+]
+
+[tool.setuptools.package-data]
+hatyan = ["data/*"]
+
+[tool.pytest.ini_options]
+console_output_style = "count"
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --tb=short --durations=0"
+markers = [
+	"unittest: mark a test as unittest. Used for testing single methods",
+	"systemtest: mark a test as systemtest. Used for testing at a higher level, verifying a given input returns the expected output",
+	"acceptance: mark a test as acceptance. Used for non-functional requirements and data that needs to be human-verified",
+]
+
+[tool.flake8]
+exclude = "docs"

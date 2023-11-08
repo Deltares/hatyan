@@ -1,10 +1,10 @@
-name: pytest-py311
+name: pytest-py38-mindeps
 
 on:
   push:
     branches: [ main ]
-  #pull_request:
-  #  branches: [ main ]
+  pull_request:
+    branches: [ main ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -15,10 +15,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.11
+    - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: '3.11'
+        python-version: '3.8'
+    - name: Set fixed versions in requirements.txt
+      run: |
+        sed -i -E 's/>=/==/' requirements.txt
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools
