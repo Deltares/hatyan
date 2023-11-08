@@ -7,6 +7,7 @@ Created on Fri Aug 11 14:33:40 2023
 
 import os
 import pytest
+import numpy as np
 import hatyan
 from hatyan.metadata import metadata_from_obj
 
@@ -26,7 +27,7 @@ def test_components_timeshift():
     comp_shift = hatyan.components_timeshift(comp_merged,hours=timeshift_hr)
     
     # check timeshift shift
-    assert comp_shift.loc['SA','phi_deg'] == 221.54106863959504
+    assert np.abs(comp_shift.loc['SA','phi_deg'] - 221.54106863959504) < 1e-9
     
     # check metadata contents
     comp_merged_meta = metadata_from_obj(comp_merged)

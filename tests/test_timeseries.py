@@ -23,8 +23,8 @@ def test_readts_dia_multifile():
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station='VLISSGN')
     
     assert len(ts_measurements_group0) == 35064
-    assert ts_measurements_group0['values'].iloc[0] == -1.24
-    assert ts_measurements_group0['values'].iloc[-1] == -1.5
+    assert np.isclose(ts_measurements_group0['values'].iloc[0], -1.24)
+    assert np.isclose(ts_measurements_group0['values'].iloc[-1], -1.5)
     assert (ts_measurements_group0['qualitycode'] != 0).sum() == 82
     assert list(np.unique(ts_measurements_group0['qualitycode'])) == [ 0, 25]
 
@@ -63,8 +63,8 @@ def test_readts_noos_resamplecrop():
     assert len(ts_measurements_group0_rescrop) == 12961
     assert ts_measurements_group0_rescrop.index[0] == pd.Timestamp('2018-01-01')
     assert ts_measurements_group0_rescrop.index[-1] == pd.Timestamp('2018-04-01')
-    assert ts_measurements_group0_rescrop['values'][0] == 2.5
-    assert ts_measurements_group0_rescrop['values'][-1] == 1.05
+    assert np.isclose(ts_measurements_group0_rescrop['values'][0], 2.5)
+    assert np.isclose(ts_measurements_group0_rescrop['values'][-1], 1.05)
 
 
 @pytest.mark.unittest
@@ -84,7 +84,7 @@ def test_readts_dia_equidistant_singlefile_hasfreq():
     assert hasattr(ts_pd.index,'freq')
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
-    assert ts_pd.index.freq.nanos/1e9 == 3600
+    assert np.isclose(ts_pd.index.freq.nanos/1e9, 3600)
 
 
 @pytest.mark.unittest
@@ -110,7 +110,7 @@ def test_pandas_concat_hasfreq():
     assert hasattr(ts_pd.index,'freq')
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
-    assert ts_pd.index.freq.nanos/1e9 == 600    
+    assert np.isclose(ts_pd.index.freq.nanos/1e9, 600)
 
     # assert on freq attribute
     assert hasattr(ts_pd_nonequi.index,'freq')
@@ -138,7 +138,7 @@ def test_readts_dia_equidistant_multifile_hasfreq():
     assert hasattr(ts_pd.index,'freq')
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
-    assert ts_pd.index.freq.nanos/1e9 == 3600
+    assert np.isclose(ts_pd.index.freq.nanos/1e9, 3600)
 
 
 @pytest.mark.unittest
@@ -160,7 +160,7 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
     assert hasattr(ts_pd.index,'freq')
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
-    assert ts_pd.index.freq.nanos/1e9 == 3600
+    assert np.isclose(ts_pd.index.freq.nanos/1e9, 3600)
 
 
 @pytest.mark.unittest
