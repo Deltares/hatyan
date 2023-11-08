@@ -84,7 +84,7 @@ def test_readts_dia_equidistant_singlefile_hasfreq():
     assert hasattr(ts_pd.index,'freq')
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
-    assert ts_pd.index.freq.nanos/1e9 == 3600
+    assert np.isclose(ts_pd.index.freq.nanos/1e9, 3600)
 
 
 @pytest.mark.unittest
@@ -110,7 +110,7 @@ def test_pandas_concat_hasfreq():
     assert hasattr(ts_pd.index,'freq')
     assert isinstance(ts_pd.index.freq,pd.offsets.Minute)
     assert ts_pd.index.freq is not None
-    assert ts_pd.index.freq.nanos/1e9 == 600    
+    assert np.isclose(ts_pd.index.freq.nanos/1e9, 600)
 
     # assert on freq attribute
     assert hasattr(ts_pd_nonequi.index,'freq')
