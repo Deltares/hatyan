@@ -1,4 +1,3 @@
-[![pytest-hmcenv](https://github.com/Deltares/hatyan/actions/workflows/pytest-hmcenv.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-devenv.yml)
 [![pytest-py38](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py38.yml)
 [![pytest-py39](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py39.yml)
 [![pytest-py310](https://github.com/Deltares/hatyan/actions/workflows/pytest-py310.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest-py310.yml)

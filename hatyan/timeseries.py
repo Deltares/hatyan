@@ -83,7 +83,8 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_sec = get_schureman_freqs(['M2']).loc['M2','period [hr]']*3600
-    ts_steps_sec_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()).astype(int).values))
+    
+    ts_steps_sec_most = np.argmax(np.bincount(pd.Series(np.diff(ts.index)).dt.total_seconds().astype(int).values))
     if ts_steps_sec_most > 60:
         print(f'WARNING: the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
     elif ts_steps_sec_most == 0:
