@@ -1579,7 +1579,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                                  f"{str_getdiablockspd}")
             
         for block_id in block_ids:
-            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): #non-equidistant
+            if diablocks_pd.loc[block_id,'timestep_min'] is None: #non-equidistant
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
