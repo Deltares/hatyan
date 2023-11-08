@@ -16,7 +16,7 @@ dependencies = [
 	#scipy>=1.5.4 from setup.cfg
 	"scipy>=1.5.4",
 	#numpy 1.21 is EOL since june 2023
-	"numpy>=1.22",
+	"numpy>=1.22.0",
 	#TODO: contour colorbar on uniform values fails with matplotlib<3.7.0, several other features with matplotlib<3.6.0
 	#matplotlib>=3.2.1 from setup.cfg
 	"matplotlib>=3.2.1",
