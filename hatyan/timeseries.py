@@ -177,7 +177,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
         data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
         
         #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
-        data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,['values']].min()[0]
+        data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,'values'].min()
         data_pd_HWLW_1tide_min = data_pd_HWLW_1tide['values'].min()
         data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
         bool_LWs = data_pd_HWLW_1tide['values']<data_pd_HWLW_1tide_mid
