@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import numpy as np
 import pandas as pd
 import datetime as dt
-from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, robust_daterange_fromtimesextfreq
+from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, get_tstart_tstop_tstep
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
 from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
@@ -477,7 +477,8 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     if isinstance(times, pd.DatetimeIndex):
         times_pred_all_pdDTI = times
     elif isinstance(times,slice):
-        times_pred_all_pdDTI = robust_daterange_fromtimesextfreq(times)
+        tstart, tstop, tstep = get_tstart_tstop_tstep(times)
+        times_pred_all_pdDTI = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
     else:
         raise TypeError(f'times argument can be of type, pd.DatetimeIndex or slice, not {type(times)}')
     
@@ -491,7 +492,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         print('%-20s = %s'%('timestep',times_pred_all_pdDTI.freq))
     
     # middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
-    dood_date_mid = pd.Index([times_pred_all_pdDTI[len(times_pred_all_pdDTI)//2]])
+    dood_date_mid = times_pred_all_pdDTI[[len(times_pred_all_pdDTI)//2]]
     # first date (for v0, also freq?)
     dood_date_start = times_pred_all_pdDTI[:1]
     

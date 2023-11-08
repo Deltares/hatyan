@@ -83,7 +83,8 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_sec = get_schureman_freqs(['M2']).loc['M2','period [hr]']*3600
-    ts_steps_sec_most = np.argmax(np.bincount((ts.index.to_series().diff().iloc[1:].dt.total_seconds()).astype(int).values))
+    
+    ts_steps_sec_most = np.argmax(np.bincount(pd.Series(np.diff(ts.index)).dt.total_seconds().astype(int).values))
     if ts_steps_sec_most > 60:
         print(f'WARNING: the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
     elif ts_steps_sec_most == 0:
@@ -176,7 +177,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
         data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
         
         #filter local extremes around HW (only interested in aggers, so LW), this is necessary for eg DENHDR and PETTZD, otherwise second HW is seen as first LW
-        data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,['values']].min()[0]
+        data_pd_HWLW_1tide_minHW = data_pd_HWLW_1tide.loc[data_pd_HWLW_1tide['HWLWcode']==1,'values'].min()
         data_pd_HWLW_1tide_min = data_pd_HWLW_1tide['values'].min()
         data_pd_HWLW_1tide_mid = np.mean([data_pd_HWLW_1tide_minHW,data_pd_HWLW_1tide_min])
         bool_LWs = data_pd_HWLW_1tide['values']<data_pd_HWLW_1tide_mid
@@ -1322,6 +1323,9 @@ def get_diablocks_startstopstation(filename):
     linenum_colnames = ['block_starts','data_starts','data_ends']
     diablocks_pd_startstopstation = pd.DataFrame({},columns=linenum_colnames)
     
+    # add str type columns to avoid "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'min' has dtype incompatible with float64, please explicitly cast to a compatible dtype first."
+    diablocks_pd_startstopstation['station'] = ""
+    
     with open(filename, encoding='latin1') as f: #'latin1 is nodig om predictie diafile die rechtstreeks uit hatyan komen in te lezen (validatietijdserie met op regel 4 (PAR) ongeldige tekens aan het einde)
         block_id = -1
         for linenum, line in enumerate(f, 1):
@@ -1348,6 +1352,12 @@ def get_diablocks(filename):
     
     print('reading file: %s'%(filename))
     diablocks_pd = get_diablocks_startstopstation(filename)
+    # add str type columns to avoid "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'min' has dtype incompatible with float64, please explicitly cast to a compatible dtype first."
+    columns_str = ['TYP','groepering','grootheid','coordsys',
+                   'eenheid','vertref',
+                   'timestep_unit',
+                   'STA']
+    diablocks_pd[columns_str] = ""
     for block_id in diablocks_pd.index.tolist():
         #read diafile metadata as pandas series, prevent splitting of combined paramater names like MXH;2 by replacing ; with !
         data_meta_nrows = diablocks_pd.loc[block_id,'data_starts'] - diablocks_pd.loc[block_id,'block_starts']
@@ -1408,8 +1418,8 @@ def get_diablocks(filename):
                 datestart = dt.datetime.strptime(data_meta_mincontent[1]+data_meta_mincontent[2], "%Y%m%d%H%M")
                 datestop = dt.datetime.strptime(data_meta_mincontent[3]+data_meta_mincontent[4], "%Y%m%d%H%M")
                 if len(data_meta_mincontent)==5: #nonequidistant timeseries
-                    timestep_value = None
-                    timestep_unit = None
+                    timestep_value = np.nan #TODO: None is supported by pandas 2.1.2 and maybe earlier versions, but not 2.0.3 (py39 only)
+                    timestep_unit = np.nan
                 elif len(data_meta_mincontent)==7: #equidistant timeseries contains also timeunit and timestep
                     timestep_unit = data_meta_mincontent[6]
                     if timestep_unit not in ['min','cs']: #minutes and 1/100 sec
@@ -1579,7 +1589,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                                  f"{str_getdiablockspd}")
             
         for block_id in block_ids:
-            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): #non-equidistant
+            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']):
                 data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)

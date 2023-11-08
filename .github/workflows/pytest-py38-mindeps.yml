@@ -1,4 +1,4 @@
-name: pytest-py38
+name: pytest-py38-mindeps
 
 on:
   push:
@@ -19,6 +19,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.8.14' #used at HMC
+    - name: Set fixed versions in requirements.txt
+      run: |
+        sed -i -E 's/>=/==/' requirements.txt
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools
