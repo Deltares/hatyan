@@ -288,10 +288,13 @@ def test_timeseries_fft():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
     ts_pred = hatyan.readts_dia(file_pred)
         
-    hatyan_freqs_suggestions = hatyan.timeseries_fft(ts_pred, min_prominence=2000, plot_fft=True)
-    const_list = hatyan_freqs_suggestions.index.unique().tolist()
+    hatyan_freqs_suggestions_schureman = hatyan.timeseries_fft(ts_pred, min_prominence=2000, plot_fft=True, source="schureman")
+    hatyan_freqs_suggestions_foreman = hatyan.timeseries_fft(ts_pred, min_prominence=2000, plot_fft=True, source="foreman")
+    const_list_schureman = hatyan_freqs_suggestions_schureman.index.unique().tolist()
+    const_list_foreman = hatyan_freqs_suggestions_foreman.index.unique().tolist()
     
-    assert const_list == ['O1', 'N2', 'M2', 'L2B', 'S2', 'K2', 'M4', 'M6']
+    assert const_list_schureman == ['O1', 'N2', 'M2', 'L2B', 'S2', 'K2', 'M4', 'M6']
+    assert const_list_foreman ==   ['O1', 'N2', 'M2', 'L2', 'S2', 'K2', 'M4', 'M6']
 
 
 @pytest.mark.unittest
