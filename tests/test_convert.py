@@ -28,14 +28,14 @@ def test_convert_coordinates():
     values_y = np.array([5759136.15818497, 5742305.0566163 , 5699181.90968435,
            5894519.40967015])
     
-    values_x_RD_exp = np.array([ 67930.00003341,  61679.99979896,  30479.9991833 , 156480.00176811])
-    values_y_RD_exp = np.array([444000.00275723, 427360.00284566, 385220.0032781 , 576550.00145627])
+    values_x_rd_exp = np.array([ 67930.00003341,  61679.99979896,  30479.9991833 , 156480.00176811])
+    values_y_rd_exp = np.array([444000.00275723, 427360.00284566, 385220.0032781 , 576550.00145627])
     
-    values_x_RD_int, values_y_RD_int = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out=28992)
-    values_x_RD_str, values_y_RD_str = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out="RD")
+    values_x_rd_int, values_y_rd_int = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out=28992)
+    values_x_rd_str, values_y_rd_str = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out="RD")
     
-    assert np.allclose(values_x_RD_int, values_x_RD_str, values_x_RD_exp)
-    assert np.allclose(values_y_RD_int, values_y_RD_str, values_y_RD_exp)
+    assert np.allclose(values_x_rd_int, values_x_rd_str, values_x_rd_exp)
+    assert np.allclose(values_y_rd_int, values_y_rd_str, values_y_rd_exp)
 
 
 @pytest.mark.unittest
@@ -46,8 +46,8 @@ def test_convert_coordinates_diafile():
     coordx_in = diablocks_pd_extra.loc[0,'x']
     coordy_in = diablocks_pd_extra.loc[0,'y']
     epsg_in = diablocks_pd_extra.loc[0,'epsg']
-    WGS84x_int, WGS84y_int = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in=epsg_in, epsg_out=4326)
-    WGS84x_str, WGS84y_str = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in="RD", epsg_out="W84")
+    wgs84x_int, wgs84y_int = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in=epsg_in, epsg_out=4326)
+    wgs84x_str, wgs84y_str = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in="RD", epsg_out="W84")
 
-    assert np.isclose(WGS84x_int, WGS84x_str, 3.596056794834692)
-    assert np.isclose(WGS84y_int, WGS84y_str, 51.44231093287052)
+    assert np.isclose(wgs84x_int, wgs84x_str, 3.596056794834692)
+    assert np.isclose(wgs84y_int, wgs84y_str, 51.44231093287052)
