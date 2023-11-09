@@ -302,3 +302,10 @@ def test_plot_timeseries():
     ts_ext = hatyan.readts_dia(file_ext)
     hatyan.plot_timeseries(ts=ts_pred, ts_validation=ts_pred, ts_ext=ts_ext, ts_ext_validation=ts_ext)
 
+
+@pytest.mark.unittest
+def test_plot_HWLW_validatestats():
+    file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
+    ts_ext = hatyan.readts_dia(file_ext)
+
+    hatyan.plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext, create_plot=True)
