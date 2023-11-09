@@ -26,7 +26,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 # script settings
 compare2fortran = True #requires validation data
-timeStart = dt.datetime(2000,1,1)
+timeStart = dt.datetime(2001,1,1)
 timeEnd   = dt.datetime(2012,1,1)
 dT_fortran = True #True is best comparison to fortran, False is more precise 
 tz_GMT = 'UTC' # UTC/GMT timezone
@@ -105,13 +105,13 @@ if compare2fortran:
     seasons_fortran = seasons_fortran[np.logical_and(seasons_fortran['datetime']>=timeStart,seasons_fortran['datetime']<=timeEnd)].reset_index(drop=True)
     
     #%% plot results (differences)
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python[['datetime','type']], culminations_fortran[['datetime','type']], typeLab=['lower','upper'], timeBand=[-.18,.18])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python, culminations_fortran, typeLab=['lower','upper'], timeBand=[-.18,.18])
     fig.savefig('culmination_differences.png')
     
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python[['datetime','parallax']], culminations_fortran[['datetime','parallax']], typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.000005,.000005])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python, culminations_fortran, typeCol="parallax", typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.000005,.000005])
     fig.savefig('culmination_differences_parallax.png')
     
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python[['datetime','declination']], culminations_fortran[['datetime','declination']], typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.0005,.0005])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python, culminations_fortran, typeCol="declination", typeUnit='degrees', timeBand=[-.18,.18], typeBand=[-.0005,.0005])
     fig.savefig('culmination_differences_declination.png')
 
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_python, pd_fortran=phases_fortran, typeLab=['FQ','FM','LQ','NM'], timeBand=[-30,30])
