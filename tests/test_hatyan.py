@@ -477,6 +477,7 @@ def test_frommergedcomp_HWLW_345(current_station):
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
     #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
     ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
+    ts_ext_prediction_clean_tomain = hatyan.calc_HWLW12345to12(ts_ext_prediction_clean)
     
     ts_ext_prediction_main_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_main, station=current_station)
     ts_ext_prediction_clean_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_clean, station=current_station)
@@ -551,6 +552,7 @@ def test_frommergedcomp_HWLW_345(current_station):
     
     assert (np.abs(ts_ext_prediction_main_HWLWno['HWLWno'].values - expected_ts_ext_prediction_main_HWLWno_HWLWno) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_main['HWLWcode'].values - expected_ts_ext_prediction_main_HWLWcode) < 10E-9).all()
+    assert (np.abs(ts_ext_prediction_clean_tomain['HWLWcode'].values - expected_ts_ext_prediction_main_HWLWcode) < 10E-9).all()
     #assert (np.abs(ts_ext_prediction_all['HWLWcode'].values - expected_ts_ext_prediction_all_HWLWcode) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWcode'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWcode) < 10E-9).all()
     assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWno'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWno) < 10E-9).all()
