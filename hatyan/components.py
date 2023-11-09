@@ -337,13 +337,18 @@ def read_components(filename):
         raise Exception('invalid file, no line that starts with COMP')
     Aphi_datapd_raw_noA0 = pd.read_csv(filename, delimiter=r"\s+", header=line_compstart-1, names=['COMP', 'hat_id', 'freq', 'A', 'phi', 'name'])
     
+    if "A0" in Aphi_datapd_raw_noA0["name"].tolist():
+        bool_a0 = Aphi_datapd_raw_noA0["name"] == "A0"
+        Aphi_datapd_raw_noA0 = Aphi_datapd_raw_noA0.loc[~bool_a0]
+        print(UserWarning("A0 component found in components file, the file is probably generated with hatyan 2.7.0 or older. Dropping the component since the data is available in MIDD."))
+    
     Aphi_datapd_A0line = pd.DataFrame({'A': [A0_cm], 'phi': [0], 'name': ['A0']})
     Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
     comp_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
     
     # add metadata
     if not metadata_available:
-        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process. Probably using a component file generated with hatyan 2.7.0 or older.')
+        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process. You are probably using a component file generated with hatyan 2.7.0 or older.')
         return comp_pd
     
     metadata = {'station':station,
