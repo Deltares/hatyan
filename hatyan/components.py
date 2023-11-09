@@ -152,13 +152,6 @@ def write_components(comp, filename):
     tstart_str = tstart.strftime("%Y%m%d  %H%M%S")
     tstop_str = tstop.strftime("%Y%m%d  %H%M%S")
     
-    nodalfactors = metadata.pop('nodalfactors')
-    fu_alltimes = metadata.pop('fu_alltimes')
-    if not nodalfactors:
-        raise ValueError("nodalfactors=False cannot be distinguished in components file header, so not supported by write_components()")
-    if fu_alltimes:
-        raise ValueError("fu_alltimes=True cannot be distinguished in components file header, so not supported by write_components()")
-        
     if 'A0' in comp.index.tolist():
         midd = comp.loc['A0','A']*100
         comp = comp.drop('A0',axis=0)
@@ -207,7 +200,7 @@ def write_components(comp, filename):
             f.write('* no metadata available\n') #TODO: HATYAN40\anadea.f regel 297 schrijft format van header voor, '60' na start/stop datetime is tijdzone, '1' na eenheid is Waarnemingssoort. Beide belangrijke regels/gegevens
         else:
             for key in metadata.keys():
-                f.write(f'* {key} :  {metadata[key]}\n')
+                f.write(f'* {key} : {metadata[key]}\n')
         
         f.write(f'STAT  {station}    {grootheid}    {vertref}    {unit}    {waarnemingssoort}\n')
         f.write(f'PERD  {tstart_str}  {tstop_str}     {tzone_min}\n')
@@ -291,6 +284,66 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     return comp_merged
 
 
+def _read_components_analysis_settings(filename):
+    xfac_guessed = _guess_xfactor_from_starcomments(filename)
+    metadata_starcomments = _get_metadata_fromstarcomments(filename)
+    
+    if 'xfac' in metadata_starcomments.keys():
+        xfac = metadata_starcomments.pop('xfac')
+    elif xfac_guessed is not None:
+        xfac = xfac_guessed
+    else:
+        warnings.warn(UserWarning("xfactor not found in starcomments of components file, guessing xfac=True"))
+        xfac = True
+    
+    print(metadata_starcomments)
+    if 'nodalfactors' in metadata_starcomments.keys():
+        nodalfactors = metadata_starcomments.pop('nodalfactors')
+    else:
+        warnings.warn(UserWarning("nodalfactors not found in starcomments of components file, guessing nodalfactors=True"))
+        nodalfactors = True
+    
+    if 'fu_alltimes' in metadata_starcomments.keys():
+        fu_alltimes = metadata_starcomments.pop('fu_alltimes')
+    else:
+        warnings.warn(UserWarning("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False"))
+        fu_alltimes = False
+    settings_dict = {'xfac':xfac, 'nodalfactors':nodalfactors, 'fu_alltimes':fu_alltimes}
+    return settings_dict
+
+
+def _get_metadata_fromstarcomments(filename):
+    metadata_dict = {}
+    with open(filename) as f:
+        for i, line in enumerate(f):
+            if line.startswith('*'):
+                line_nostar = line.strip("*")
+                if ":" in line_nostar:
+                    key, value = line_nostar.split(":")
+                    value = value.strip()
+                    if value.lower() == "true":
+                        value_bool = True
+                    else:
+                        value_bool = False
+                    metadata_dict[key.strip()] = value_bool
+    return metadata_dict
+
+
+def _guess_xfactor_from_starcomments(filename):
+    xfac_guessed = None
+    with open(filename) as f:
+        for i, line in enumerate(f):
+            if line.startswith('*'):
+                # TODO: also get xfac=True if none of these lines is found. Also derive xfac from metadata header
+                if 'theoretische' in line:
+                    print(f"xfac=False derived from headerline: '{line.strip()}'")
+                    xfac_guessed = False
+                elif 'empirisch' in line:
+                    print(f"xfac=True derived from headerline: '{line.strip()}'")
+                    xfac_guessed = True
+    return xfac_guessed
+
+
 def read_components(filename):
     """
     Reads analysis results from a file.
@@ -314,36 +367,31 @@ def read_components(filename):
     
     print('reading file: %s'%(filename))
     
-    xfac = True
     line_compstart = None
-    metadata_available = False
+    stat_perd_available = False
     with open(filename) as f:
         for i, line in enumerate(f):
-            if line.startswith('*'):
-                if 'theoretische' in line:
-                    print(f"xfac=False derived from headerline: '{line.strip()}'")
-                    xfac = False
-                elif 'empirisch' in line:
-                    print(f"xfac=True derived from headerline: '{line.strip()}'")
-                    xfac = True
-            elif line.startswith('STAT'):
+            if line.startswith('STAT'):
                 station = line.split()[1]
                 grootheid = line.split()[2]
                 vertref = line.split()[3]
                 eenheid = line.split()[4]
                 # waarnemingssoort = int(line.split()[5])
-                metadata_available = True
+                stat_perd_available = True
             elif line.startswith('PERD'):
                 dateline = line.split()
                 tstart = pd.Timestamp(dateline[1]+' '+dateline[2])
                 tstop = pd.Timestamp(dateline[3]+' '+dateline[4])
                 tzone = pytz.FixedOffset(int(dateline[5]))
-                metadata_available = True
+                stat_perd_available = True
             elif line.startswith('MIDD'):
                 A0_cm = float(line.split()[1])
             elif line.startswith('COMP'):
                 line_compstart = i
                 break #break because last line before actual data
+    
+    # derive analysis settings (xfac, nodalfactors, fu_alltimes)
+    settings_dict = _read_components_analysis_settings(filename)
     
     #retrieve raw data
     if line_compstart is None:
@@ -351,25 +399,35 @@ def read_components(filename):
     Aphi_datapd_raw_noA0 = pd.read_csv(filename, delimiter=r"\s+", header=line_compstart-1, names=['COMP', 'hat_id', 'freq', 'A', 'phi', 'name'])
     
     if "A0" in Aphi_datapd_raw_noA0["name"].tolist():
+        # A0 component found in components file, the file is probably generated with hatyan 2.7.0 or older
+        # silently dropping the component since the data is available in MIDD
         bool_a0 = Aphi_datapd_raw_noA0["name"] == "A0"
         Aphi_datapd_raw_noA0 = Aphi_datapd_raw_noA0.loc[~bool_a0]
-        print(UserWarning("A0 component found in components file, the file is probably generated with hatyan 2.7.0 or older. Dropping the component since the data is available in MIDD."))
     
     Aphi_datapd_A0line = pd.DataFrame({'A': [A0_cm], 'phi': [0], 'name': ['A0']})
     Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
     comp_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
     
     # add metadata
-    if not metadata_available:
-        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process. You are probably using a component file generated with hatyan 2.7.0 or older.')
-        return comp_pd
+    if not stat_perd_available:
+        warnings.warn(UserWarning("No metadata available in component file (STAT/PERD lines), "
+                                  "you are probably using a component file generated with hatyan 2.7.0 or older. "
+                                  "Using dummy values for station/grootheid/vertref/tstart/tstop/tzone "
+                                  "to avoid issues in the hatyan process."))
+        station = "UNKNOWN"
+        grootheid = "WATHTE" # 'UNKNOWN' #TODO: this is not guaranteed, problem?
+        eenheid = "cm"
+        vertref = "NAP" # 'UNKNOWN' #TODO: this is not guaranteed, problem?
+        tstart = pd.Timestamp('9999-01-01')
+        tstop = pd.Timestamp('9999-01-01')
+        tzone = pytz.FixedOffset(60)
     
     metadata = {'station':station,
                 'grootheid':grootheid, 'eenheid':eenheid,
                 'vertref':vertref,
                 'tstart':tstart, 'tstop':tstop, 'tzone':tzone, 
-                'nodalfactors':True, 'xfac':xfac,
                 'origin':'from component file'}
+    metadata.update(settings_dict)
     comp_pd = metadata_add_to_obj(comp_pd, metadata)
     return comp_pd
 

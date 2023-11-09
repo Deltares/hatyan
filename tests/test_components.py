@@ -41,24 +41,44 @@ def test_read_write_components_nometadata():
     """
     test for component files written with hatyan 2.7.0 or lower
     these files lack essential metadata for STAT, PERD and CODE lines
-    they are added as dummy, but in general these component files cannot be used for much things.
+    Dummy values are added in read_components, but in general these component files cannot be used for much things.
     """
     
     file_orig = os.path.join(dir_testdata,'DENHDR_ana_nometadata.txt')
     file_new = "temp_comp_dummymetadata.txt"
+    file_dia_new = "temp_dia_dummymetadata.txt"
     comp_orig = hatyan.read_components(file_orig)
     assert len(comp_orig) == 95
     
-    metadata_dummy = {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'NAP', 'station':'VLISSGN', 
-                      'tstart':pd.Timestamp('2001-01-01'), 'tstop':pd.Timestamp('2001-01-02'), 'tzone':pytz.FixedOffset(60)}
-    comp_orig = metadata_add_to_obj(comp_orig, metadata_dummy)
     hatyan.write_components(comp_orig, file_new)
     comp_new = hatyan.read_components(filename=file_new)
     
     ts_pred = hatyan.prediction(comp=comp_orig, times=slice("2020-01-01","2020-01-20",10))
-    hatyan.write_tsdia(ts=ts_pred, filename="temp_dia.txt")
+    hatyan.write_tsdia(ts=ts_pred, filename=file_dia_new)
     
     assert np.allclose(comp_orig, comp_new)
+    os.remove(file_new)
+    os.remove(file_dia_new)
+
+
+@pytest.mark.unittest
+def test_read_write_components_nodalfactorsfalse():
+    
+    current_station = 'HOEKVHLD'
+    file_orig = os.path.join(dir_testdata,f'{current_station}_ana.txt')
+    file_new = 'temp_components.txt'
+    
+    comp_orig = hatyan.read_components(filename=file_orig)
+    comp_orig.nodalfactors = False
+    
+    hatyan.write_components(comp_orig, filename=file_new)
+    comp_new = hatyan.read_components(filename=file_new)
+    
+    meta_orig = metadata_from_obj(comp_orig)
+    meta_new = metadata_from_obj(comp_new)
+    
+    assert np.allclose(comp_orig, comp_new)
+    assert meta_orig == meta_new
     os.remove(file_new)
 
 
