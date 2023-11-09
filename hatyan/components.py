@@ -313,7 +313,7 @@ def read_components(filename):
     """
     
     print('reading file: %s'%(filename))
-
+    
     xfac = True
     line_compstart = None
     metadata_available = False
@@ -328,10 +328,8 @@ def read_components(filename):
                     xfac = True
             elif line.startswith('STAT'):
                 station = line.split()[1]
-                print('retrieving data from components file for station %s'%(station))
                 grootheid = line.split()[2]
                 vertref = line.split()[3]
-                print('the vertical reference level in the imported file is: %s'%(vertref))
                 eenheid = line.split()[4]
                 # waarnemingssoort = int(line.split()[5])
                 metadata_available = True
@@ -346,7 +344,6 @@ def read_components(filename):
             elif line.startswith('COMP'):
                 line_compstart = i
                 break #break because last line before actual data
-    
     
     #retrieve raw data
     if line_compstart is None:
