@@ -8,8 +8,10 @@ Created on Fri Aug 11 14:33:40 2023
 import os
 import pytest
 import numpy as np
+import pandas as pd
+import pytz
 import hatyan
-from hatyan.metadata import metadata_from_obj
+from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -31,6 +33,32 @@ def test_read_write_components():
     
     assert np.allclose(comp_orig, comp_new)
     assert meta_orig == meta_new
+    os.remove(file_new)
+
+
+@pytest.mark.unittest
+def test_read_write_components_nometadata():
+    """
+    test for component files written with hatyan 2.7.0 or lower
+    these files lack essential metadata for STAT, PERD and CODE lines
+    they are added as dummy, but in general these component files cannot be used for much things.
+    """
+    
+    file_orig = os.path.join(dir_testdata,'DENHDR_ana_nometadata.txt')
+    file_new = "temp_comp_dummymetadata.txt"
+    comp_orig = hatyan.read_components(file_orig)
+    assert len(comp_orig) == 95
+    
+    metadata_dummy = {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'NAP', 'station':'VLISSGN', 
+                      'tstart':pd.Timestamp('2001-01-01'), 'tstop':pd.Timestamp('2001-01-02'), 'tzone':pytz.FixedOffset(60)}
+    comp_orig = metadata_add_to_obj(comp_orig, metadata_dummy)
+    hatyan.write_components(comp_orig, file_new)
+    comp_new = hatyan.read_components(filename=file_new)
+    
+    ts_pred = hatyan.prediction(comp=comp_orig, times=slice("2020-01-01","2020-01-20",10))
+    hatyan.write_tsdia(ts=ts_pred, filename="temp_dia.txt")
+    
+    assert np.allclose(comp_orig, comp_new)
     os.remove(file_new)
 
 
