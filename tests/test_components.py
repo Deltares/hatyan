@@ -16,6 +16,24 @@ dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 
 
 @pytest.mark.unittest
+def test_read_write_components():
+    
+    current_station = 'HOEKVHLD'
+    file_orig = os.path.join(dir_testdata,f'{current_station}_ana.txt')
+    file_new = 'temp_components.txt'
+    
+    comp_orig = hatyan.read_components(filename=file_orig)
+    hatyan.write_components(comp_orig, filename=file_new)
+    comp_new = hatyan.read_components(filename=file_new)
+    
+    meta_orig = metadata_from_obj(comp_orig)
+    meta_new = metadata_from_obj(comp_new)
+    
+    assert np.allclose(comp_orig, comp_new)
+    assert meta_orig == meta_new
+
+
+@pytest.mark.unittest
 def test_plot_components_validation():
     
     current_station = 'HOEKVHLD'
