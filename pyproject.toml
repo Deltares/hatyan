@@ -17,8 +17,8 @@ dependencies = [
 	#numpy 1.21 is EOL since june 2023
 	"numpy>=1.22.0",
 	#TODO: contour colorbar on uniform values fails with matplotlib<3.7.0, several other features with matplotlib<3.6.0
-	#matplotlib>=3.2.1 from setup.cfg
-	"matplotlib>=3.2.1",
+	#matplotlib<3.5.2 raises "ValueError: Multi-dimensional indexing" in hatyan.plot_timeseries()
+	"matplotlib>=3.5.2",
 	#TODO: pandas>=1.4.0 is required by xarray>=2023.3.0
 	#pandas<2.0.0 supports non-nanosecond timestep and therefore larger min/max range
 	"pandas>=2.0.0",
