@@ -62,7 +62,7 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
     COMP = comp.copy()
     if comp_allperiods is not None:
         comp_allperiods = comp_allperiods.copy()
-        comp_legend_labels = comp_allperiods['A'].columns #TODO: With py=3.7, matplotlib==3.4.2 and pandas==1.3.4 it is possible to provide a list of legend labels at once. With python=3.6.12, matplotlib==3.3.4 and pandas==1.1.5 this results in the list for each legend entry so providing a single string is better. Now we moved on to python3.7 and pandas>=1.2.0, is this still an issue in some cases?
+        comp_legend_labels = comp_allperiods['A'].columns
     
     if comp_validation is not None:
         COMPval = comp_validation.rename(columns={"A": "A_validation", "phi_deg": "phi_deg_validation"})
@@ -149,8 +149,8 @@ def write_components(comp, filename):
     tstart = metadata.pop('tstart')
     tstop = metadata.pop('tstop')
     tzone_min = metadata.pop('tzone')._minutes
-    tstart_str = tstart.strftime("%Y%M%d  %H%M%S")
-    tstop_str = tstop.strftime("%Y%M%d  %H%M%S")
+    tstart_str = tstart.strftime("%Y%m%d  %H%M%S")
+    tstop_str = tstop.strftime("%Y%m%d  %H%M%S")
     
     nodalfactors = metadata.pop('nodalfactors')
     fu_alltimes = metadata.pop('fu_alltimes')
@@ -211,7 +211,7 @@ def write_components(comp, filename):
         
         f.write(f'STAT  {station}    {grootheid}    {vertref}    {unit}    {waarnemingssoort}\n')
         f.write(f'PERD  {tstart_str}  {tstop_str}     {tzone_min}\n')
-        f.write( 'COMP      3\n')
+        f.write( 'CODE      3\n')
         f.write(f'MIDD {midd:9.2f}\n')
         f.write(f'NCOM {ncomp:5d}\n')
         for compname in comp.index.tolist():
@@ -359,7 +359,7 @@ def read_components(filename):
     
     # add metadata
     if not metadata_available:
-        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process')
+        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process. Probably using a component file generated with hatyan 2.7.0 or older.')
         return comp_pd
     
     metadata = {'station':station,
