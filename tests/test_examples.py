@@ -27,12 +27,12 @@ def test_run_examples(file_config):
         os.mkdir(dir_output)
     os.chdir(dir_output)
     
-    p = subprocess.Popen(f"python {file_config}",
+    p = subprocess.Popen(f"python -m hatyan {file_config} --redirect-stdout",
                          stderr=subprocess.STDOUT, # Merge stdout and stderr
                          stdout=subprocess.PIPE,
                          shell=True)
-    # max 30 minutes per test, if it hangs longer the test is killed
-    p.wait(1800)
+    # max 5 minutes per test, if it hangs longer the test is killed
+    p.wait(300)
     
     if p.returncode:
         out, err = p.communicate()
