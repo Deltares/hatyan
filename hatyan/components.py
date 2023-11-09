@@ -285,6 +285,7 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
 
 
 def _read_components_analysis_settings(filename):
+    # TODO: these prints should be warnings, but times out several acceptance tests: https://github.com/Deltares/hatyan/issues/177
     xfac_guessed = _guess_xfactor_from_starcomments(filename)
     metadata_starcomments = _get_metadata_fromstarcomments(filename)
     
@@ -293,20 +294,19 @@ def _read_components_analysis_settings(filename):
     elif xfac_guessed is not None:
         xfac = xfac_guessed
     else:
-        warnings.warn(UserWarning("xfactor not found in starcomments of components file, guessing xfac=True"))
+        print("xfactor not found in starcomments of components file, guessing xfac=True")
         xfac = True
     
-    print(metadata_starcomments)
     if 'nodalfactors' in metadata_starcomments.keys():
         nodalfactors = metadata_starcomments.pop('nodalfactors')
     else:
-        warnings.warn(UserWarning("nodalfactors not found in starcomments of components file, guessing nodalfactors=True"))
+        print("nodalfactors not found in starcomments of components file, guessing nodalfactors=True")
         nodalfactors = True
     
     if 'fu_alltimes' in metadata_starcomments.keys():
         fu_alltimes = metadata_starcomments.pop('fu_alltimes')
     else:
-        warnings.warn(UserWarning("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False"))
+        print("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False")
         fu_alltimes = False
     settings_dict = {'xfac':xfac, 'nodalfactors':nodalfactors, 'fu_alltimes':fu_alltimes}
     return settings_dict
