@@ -251,3 +251,15 @@ def test_calc_HWLWtidalrange():
     vals_expected = np.array([4.  , 4.  , 4.1 , 4.1 , 3.77, 3.77, 3.89, 3.89, 3.5 , 3.5 ])
     assert len(ranges) == 1411
     assert np.allclose(ranges[-10:], vals_expected)
+
+
+@pytest.mark.unittest
+def test_timeseries_fft():
+    file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
+    ts_pred = hatyan.readts_dia(file_pred)
+        
+    hatyan_freqs_suggestions = hatyan.timeseries_fft(ts_pred, min_prominence=2000, plot_fft=True)
+    const_list = hatyan_freqs_suggestions.index.unique().tolist()
+    
+    assert const_list == ['O1', 'N2', 'M2', 'L2B', 'S2', 'K2', 'M4', 'M6']
+
