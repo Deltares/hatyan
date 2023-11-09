@@ -1025,7 +1025,7 @@ def convert2perday(dataframeIn, timeformat='%H:%M %Z'):
     return dataframeOut
 
 
-def plot_astrog_diff(pd_python, pd_fortran, typeUnit='-', typeLab=None, typeBand=None, timeBand=None):
+def plot_astrog_diff(pd_python, pd_fortran, typeCol="type", typeUnit='-', typeLab=None, typeBand=None, timeBand=None):
     """
     Plots results of FORTRAN and python verison of astrog for visual inspection.
     Top plot shows values or type, middle plot shows time difference, bottom plot shows value/type difference.
@@ -1060,17 +1060,20 @@ def plot_astrog_diff(pd_python, pd_fortran, typeUnit='-', typeLab=None, typeBand
         pd_python = pd_python.copy() #do not overwrite original dataframe, so make a copy
         pd_python['datetime'] = pd_python['datetime'].dt.tz_localize(None) #Passing None will remove the time zone information preserving local time. https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.tz_localize.html#pandas.Series.dt.tz_localize
     
-    typeName = pd_python.columns[1]
+    # reset index
+    pd_python = pd_python.reset_index(drop=True)
+    pd_fortran = pd_fortran.reset_index(drop=True)
+    
     fig, (ax1,ax2,ax3) = plt.subplots(3,1,figsize=(15,9),sharex=True)
-    ax1.set_title('%s'%(typeName))
-    ax1.plot(pd_python['datetime'], pd_python[typeName], label='python')
-    ax1.plot(pd_fortran['datetime'],pd_fortran[typeName],label='FORTRAN',linestyle='dashed')
-    if typeName == 'type':
+    ax1.set_title('%s'%(typeCol))
+    ax1.plot(pd_python['datetime'], pd_python[typeCol], label='python')
+    ax1.plot(pd_fortran['datetime'],pd_fortran[typeCol],label='FORTRAN',linestyle='dashed')
+    if typeCol == 'type':
         if typeLab is not None:
             ax1.set_ylim(1,len(typeLab))
             ax1.set_yticks(np.arange(1,len(typeLab)+1,step=1))
             ax1.set_yticklabels(typeLab)
-    ax1.set_ylabel('%s [%s]'%(typeName, typeUnit))
+    ax1.set_ylabel('%s [%s]'%(typeCol, typeUnit))
     ax1.legend(loc=1)
 
     ax2.plot(pd_python['datetime'],(pd_python['datetime'] - pd.to_datetime(pd_fortran['datetime'])).dt.total_seconds())
@@ -1080,12 +1083,12 @@ def plot_astrog_diff(pd_python, pd_fortran, typeUnit='-', typeLab=None, typeBand
     ax2.set_ylabel('python - FORTRAN [seconds]')
     ax2.set_title('time difference [seconds]')
 
-    ax3.plot(pd_python['datetime'],pd_python[typeName] - pd_fortran[typeName])
+    ax3.plot(pd_python['datetime'],pd_python[typeCol] - pd_fortran[typeCol])
     if typeBand is not None:
         ax3.plot(pd_python['datetime'].iloc[[0,-1]],[typeBand[0],typeBand[0]],color='k',linestyle='dashed')
         ax3.plot(pd_python['datetime'].iloc[[0,-1]],[typeBand[1],typeBand[1]],color='k',linestyle='dashed')
     ax3.set_ylabel('python - FORTRAN [%s]'%(typeUnit))
-    ax3.set_title('%s difference [%s]'%(typeName, typeUnit))
+    ax3.set_title('%s difference [%s]'%(typeCol, typeUnit))
 
     ax1.set_xlim(pd_python['datetime'].iloc[[0,-1]])
     fig.tight_layout()
