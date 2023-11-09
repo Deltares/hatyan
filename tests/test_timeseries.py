@@ -310,5 +310,7 @@ def test_plot_timeseries():
 def test_plot_HWLW_validatestats():
     file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
     ts_ext = hatyan.readts_dia(file_ext)
+    ts_ext_nos = hatyan.calc_HWLWnumbering(ts_ext)
 
     hatyan.plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext, create_plot=True)
+    hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_nos, ts_ext_validation=ts_ext_nos, create_plot=True)
