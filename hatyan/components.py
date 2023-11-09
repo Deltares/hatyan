@@ -340,7 +340,7 @@ def read_components(filename):
     if "A0" in Aphi_datapd_raw_noA0["name"].tolist():
         bool_a0 = Aphi_datapd_raw_noA0["name"] == "A0"
         Aphi_datapd_raw_noA0 = Aphi_datapd_raw_noA0.loc[~bool_a0]
-        print(UserWarning("A0 component found in components file, the file is probably generated with hatyan 2.7.0 or older. Dropping the component."))
+        print(UserWarning("A0 component found in components file, the file is probably generated with hatyan 2.7.0 or older. Dropping the component since the data is available in MIDD."))
     
     Aphi_datapd_A0line = pd.DataFrame({'A': [A0_cm], 'phi': [0], 'name': ['A0']})
     Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
