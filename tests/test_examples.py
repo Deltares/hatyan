@@ -31,8 +31,8 @@ def test_run_examples(file_config):
                          stderr=subprocess.STDOUT, # Merge stdout and stderr
                          stdout=subprocess.PIPE,
                          shell=True)
-    # max 10 minutes per test, if it hangs longer the test is killed
-    p.wait(600)
+    # max 3 minutes per test, if it hangs longer the test is killed
+    p.wait(180)
     
     if p.returncode:
         out, err = p.communicate()
