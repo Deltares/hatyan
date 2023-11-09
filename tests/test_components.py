@@ -31,6 +31,7 @@ def test_read_write_components():
     
     assert np.allclose(comp_orig, comp_new)
     assert meta_orig == meta_new
+    os.remove(file_new)
 
 
 @pytest.mark.unittest

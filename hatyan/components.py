@@ -343,7 +343,7 @@ def read_components(filename):
     
     # add metadata
     if not metadata_available:
-        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process')
+        warnings.warn('No metadata available in component file (STAT/PERD lines), this might cause issues in the rest of the process. Probably using a component file generated with hatyan 2.7.0 or older.')
         return comp_pd
     
     metadata = {'station':station,
