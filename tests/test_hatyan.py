@@ -53,6 +53,42 @@ def test_writenetcdf():
 
 
 @pytest.mark.unittest
+def test_writenetcdf_nosidx():
+    
+    current_station = 'VLISSGN'
+    
+    file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
+    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
+    ts_ext_prediction = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction)
+    
+    file_nc = 'prediction_10m_%s.nc'%(current_station)
+    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, tzone_hr=1, nosidx=True)
+    
+    data_nc = Dataset(file_nc,'r')
+    
+    timevar = data_nc.variables['time']
+    timevar_dt = num2date(timevar[:],units=timevar.units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
+    
+    #put netcdf file contents in pandas DataFrame for usage in hatyan
+    ts_pd = pd.DataFrame({'values':data_nc.variables['waterlevel_astro'][:,0]}, index=timevar_dt)
+    print(ts_pd)
+    
+    assert list(data_nc.dimensions.keys()) == ['stations', 'statname_len', 'time', 'analysis_time', 'HWLWno']
+    assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 
+                                              'HWLWno', 'times_astro_HW', 'waterlevel_astro_HW', 'times_astro_LW', 'waterlevel_astro_LW']
+    assert timevar_dt[0] == ts_prediction.index[0]
+    assert timevar_dt[-1] == ts_prediction.index[-1]
+    assert 'title' in data_nc.__dict__.keys()
+    assert 'institution' in data_nc.__dict__.keys()
+    assert 'source' in data_nc.__dict__.keys()
+    assert timevar.units == 'minutes since 1900-01-01 00:00:00 +0100'
+
+    data_nc.close()
+    os.remove(file_nc)
+
+
+@pytest.mark.unittest
 def test_analysis_settings():
     
     current_station = 'VLISSGN'
