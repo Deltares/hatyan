@@ -26,7 +26,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 # script settings
 compare2fortran = True #requires validation data
-timeStart = dt.datetime(2001,1,1)
+timeStart = dt.datetime(2000,1,1)
 timeEnd   = dt.datetime(2012,1,1)
 dT_fortran = True #True is best comparison to fortran, False is more precise 
 tz_GMT = 'UTC' # UTC/GMT timezone
