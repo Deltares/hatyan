@@ -239,3 +239,15 @@ def test_write_tsdia_rounding():
     # assert max differences
     ts_diff = ts_prediction_fromfile - ts_prediction
     assert (ts_diff['values'].abs()<=0.005).all()
+
+
+@pytest.mark.unittest
+def test_calc_HWLWtidalrange():
+    file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
+    ts_ext = hatyan.readts_dia(file_ext)
+    ts_ext_range = hatyan.calc_HWLWtidalrange(ts_ext)
+    
+    ranges = ts_ext_range["tidalrange"].values
+    vals_expected = np.array([4.  , 4.  , 4.1 , 4.1 , 3.77, 3.77, 3.89, 3.89, 3.5 , 3.5 ])
+    assert len(ranges) == 1411
+    assert np.allclose(ranges[-10:], vals_expected)
