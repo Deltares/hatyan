@@ -46,7 +46,8 @@ def test_convert_coordinates_diafile():
     coordx_in = diablocks_pd_extra.loc[0,'x']
     coordy_in = diablocks_pd_extra.loc[0,'y']
     epsg_in = diablocks_pd_extra.loc[0,'epsg']
-    WGS84x, WGS84y = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in=epsg_in, epsg_out="W84")
+    WGS84x_int, WGS84y_int = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in=epsg_in, epsg_out=4326)
+    WGS84x_str, WGS84y_str = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in="RD", epsg_out="W84")
 
-    assert np.isclose(WGS84x, 3.596056794834692)
-    assert np.isclose(WGS84y, 51.44231093287052)
+    assert np.isclose(WGS84x_int, WGS84x_str, 3.596056794834692)
+    assert np.isclose(WGS84y_int, WGS84y_str, 51.44231093287052)
