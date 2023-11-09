@@ -24,9 +24,11 @@ def test_convert_coordinates():
     values_y = np.array([5759136.15818497, 5742305.0566163 , 5699181.90968435,
            5894519.40967015])
     
-    values_x_RD, values_y_RD = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out=28992)
     values_x_RD_exp = np.array([ 67930.00003341,  61679.99979896,  30479.9991833 , 156480.00176811])
     values_y_RD_exp = np.array([444000.00275723, 427360.00284566, 385220.0032781 , 576550.00145627])
     
-    assert np.allclose(values_x_RD, values_x_RD_exp)
-    assert np.allclose(values_y_RD, values_y_RD_exp)
+    values_x_RD_int, values_y_RD_int = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out=28992)
+    values_x_RD_str, values_y_RD_str = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out="RD")
+    
+    assert np.allclose(values_x_RD_int, values_x_RD_str, values_x_RD_exp)
+    assert np.allclose(values_y_RD_int, values_y_RD_str, values_y_RD_exp)
