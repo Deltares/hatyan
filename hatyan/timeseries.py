@@ -264,7 +264,7 @@ def calc_HWLW12345to12(data_HWLW_12345):
     return data_HWLW_12
 
 
-def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phase', doHWLWcheck=True):
+def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=True):
     """
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
     The number of every high and low water is calculated by taking the time difference between itself and the first high water at Cadzand, correcting it with the station phase difference (M2phasediff). 
@@ -282,6 +282,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
         Providing a value will result in a proper HWLWno, corresponing to CADZD. Providing None will result in a HWLWno that is a multiple of 360degrees/M2_period_hr off (positive or negative). This is only an issue when comparing different stations, not comparing e.g. measured and predicted HW values of one station.
     corr_tideperiods : integer, optional
         Test keyword to derive HWLWnumbering with a n*360 degrees offset on top of what is calculated automatically. The default is None.    
+    
     Raises
     ------
     Exception
@@ -312,19 +313,13 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, mode='M2phas
     HW_bool = ts_ext['HWLWcode']==1
     HW_tdiff_cadzdraw = (ts_ext.loc[HW_bool].index.to_series()-firstHWcadz_fixed).dt.total_seconds()/3600
     if station is None:
-        if mode=='M2phase':
-            from hatyan.analysis_prediction import analysis #TODO: local import since Importerror: cannot import name 'analysis' from partially initialized module 'hatyan.analysis_prediction' (most likely due to a circular import) 
-            M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
-            comp_M2 = analysis(ts_ext,const_list=['M2'],xTxmat_condition_max=250) ##TODO: high condition value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW. However, maybe HWtimediff mode is more robust
-            print(comp_M2.loc['M2','phi_deg'],M2phase_cadzd)
-            M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd+90)%360-90
-        elif mode=='HWtimediff': #TODO: in principle this code is not necesary anymore
-            HW_tdiff_cadzdraw_M2remainders = (HW_tdiff_cadzdraw)%M2_period_hr
-            if HW_tdiff_cadzdraw_M2remainders.std()>3: #arbitrary value, but at least catches if all values are around 11/12/0/1 (rather have it around -2/-1/0/1)
-                HW_tdiff_cadzdraw_M2remainders = (HW_tdiff_cadzdraw+3)%M2_period_hr-3
-            M2phasediff_hr = (HW_tdiff_cadzdraw_M2remainders).median()
-            M2phasediff_deg = M2phasediff_hr/M2_period_hr*360
-        print(f'no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand (mode={mode}): ',end='')
+        from hatyan.analysis_prediction import analysis #TODO: local import since Importerror: cannot import name 'analysis' from partially initialized module 'hatyan.analysis_prediction' (most likely due to a circular import) 
+        M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
+        # high xTxmat_condition_max value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW.
+        comp_M2 = analysis(ts_ext,const_list=['M2'],xTxmat_condition_max=250)
+        print(comp_M2.loc['M2','phi_deg'],M2phase_cadzd)
+        M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd+90)%360-90
+        print('no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand based on M2phase: ',end='')
         if corr_tideperiods is not None:
             M2phasediff_deg += corr_tideperiods
     else:
