@@ -10,6 +10,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+plt.close('all')
 import hatyan
 
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
@@ -91,8 +92,8 @@ for case in case_list:
     ax2.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
     
 
-    ax1_sc = ax1.scatter(stats_x, stats_y, 20, c=A_list, vmin=v_val_A[0], vmax=v_val_A[1], cmap=plt.cm.get_cmap('jet'), edgecolors='face')
-    ax2_sc = ax2.scatter(stats_x, stats_y, 20, c=phi_list, vmin=v_val_phi[0], vmax=v_val_phi[1], cmap=plt.cm.get_cmap(cmmap_phi), edgecolors='face')
+    ax1_sc = ax1.scatter(stats_x, stats_y, 20, c=A_list, vmin=v_val_A[0], vmax=v_val_A[1], cmap='jet', edgecolors='face')
+    ax2_sc = ax2.scatter(stats_x, stats_y, 20, c=phi_list, vmin=v_val_phi[0], vmax=v_val_phi[1], cmap=cmmap_phi, edgecolors='face')
     ax1_cbar = fig.colorbar(ax1_sc, ax=ax1)
     ax2_cbar = fig.colorbar(ax2_sc, ax=ax2, ticks=np.linspace(v_val_phi[0],v_val_phi[1],9))
 
