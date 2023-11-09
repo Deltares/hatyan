@@ -62,7 +62,7 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
     COMP = comp.copy()
     if comp_allperiods is not None:
         comp_allperiods = comp_allperiods.copy()
-        comp_legend_labels = comp_allperiods['A'].columns #TODO: With py=3.7, matplotlib==3.4.2 and pandas==1.3.4 it is possible to provide a list of legend labels at once. With python=3.6.12, matplotlib==3.3.4 and pandas==1.1.5 this results in the list for each legend entry so providing a single string is better. Now we moved on to python3.7 and pandas>=1.2.0, is this still an issue in some cases?
+        comp_legend_labels = comp_allperiods['A'].columns
     
     if comp_validation is not None:
         COMPval = comp_validation.rename(columns={"A": "A_validation", "phi_deg": "phi_deg_validation"})
