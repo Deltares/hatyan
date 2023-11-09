@@ -893,7 +893,8 @@ def dT(dateIn,dT_fortran=False):
     dateIn : datetime.datetime or pandas.DatetimeIndex
         Date for correction. Definition makes use of provided year.
     dT_fortran : boolean, optional
-        When True, use latest fortran dT and increment value instead of default international definition. The default is False.
+        If True, use latest fortran dT and increment value, which is not accurate for years that are far away from 2012. 
+        Use the default dT_fortran=False to use the automatically updated list of leap-seconds instead. The default is False.
     Raises
     ------
     Warning
@@ -912,7 +913,6 @@ def dT(dateIn,dT_fortran=False):
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
     
     if dT_fortran: # reproduce fortran dT_TT values with latest dT and increment values from fortran code
-        warnings.warn('WARNING: If dT_fortran=True, the last values for dT and its increment are used from the fortran code, this is not accurate for years that are far away from 2012. Use dT_fortran=False since the default approach uses an automatically updated list of leap-seconds instead')
         # historical hard-coded values (taken from FORTRAN comments) from Astronomical Almanac - Reduction of time scales (only last ones are used to reproduce fortran code)
         dT_TTyear     = [ 1980,  1993,  2002,  2012 ] # year of used dT_TTval value
         dT_TTval      = [50.97, 59.35, 64.90, 67.184] # difference between TT and UT1 (32.184s + leap seconds)
@@ -924,7 +924,7 @@ def dT(dateIn,dT_fortran=False):
     else: #use most exact approximation
         # get list with leap seconds
         if (dateIn<dt.datetime(1972,1,1)).any():
-            warnings.warn('WARNING: The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this might not be accurate.')
+            warnings.warn(UserWarning('The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this might not be accurate.'))
         leap_seconds_pd, expirydate = get_leapsecondslist_fromurlorfile()
 
         NTP_date = leap_seconds_pd['datetime'].values#tolist()
