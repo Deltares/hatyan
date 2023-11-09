@@ -18,6 +18,36 @@ dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 
 
 @pytest.mark.unittest
+def test_readwrite_tsdia_rounding():
+    file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
+    file_new = 'temp_dia.txt'
+    ts_pred = hatyan.readts_dia(file_pred)
+    for diff in [0,0.004, -0.004]:
+        ts_pred_rounddiff = hatyan.readts_dia(file_pred)
+        ts_pred_rounddiff['values'] = ts_pred['values'] + diff
+        hatyan.write_tsdia(ts=ts_pred_rounddiff, filename=file_new)
+        ts_new = hatyan.readts_dia(file_new)
+        
+        assert np.allclose(ts_pred, ts_new)
+    os.remove(file_new)
+
+
+@pytest.mark.unittest
+def test_readwrite_tsdia_ext_rounding():
+    file_pred = os.path.join(dir_testdata, "VLISSGN_ext.txt")
+    file_new = 'temp_dia_ext.txt'
+    ts_pred = hatyan.readts_dia(file_pred)
+    for diff in [0, 0.004, -0.004]:
+        ts_pred_rounddiff = hatyan.readts_dia(file_pred)
+        ts_pred_rounddiff['values'] = ts_pred['values'] + diff
+        hatyan.write_tsdia_HWLW(ts_ext=ts_pred_rounddiff, filename=file_new)
+        ts_new = hatyan.readts_dia(file_new)
+        
+        assert np.allclose(ts_pred, ts_new)
+    os.remove(file_new)
+
+
+@pytest.mark.unittest
 def test_readts_dia_multifile():
     file_data_comp0 = [os.path.join(dir_testdata,f'VLISSGN_obs{file_id}.txt') for file_id in [1,2,3,4]]
     ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station='VLISSGN')
