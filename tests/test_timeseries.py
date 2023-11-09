@@ -263,3 +263,12 @@ def test_timeseries_fft():
     
     assert const_list == ['O1', 'N2', 'M2', 'L2B', 'S2', 'K2', 'M4', 'M6']
 
+
+@pytest.mark.unittest
+def test_plot_timeseries():
+    file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
+    file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
+    ts_pred = hatyan.readts_dia(file_pred)
+    ts_ext = hatyan.readts_dia(file_ext)
+    hatyan.plot_timeseries(ts=ts_pred, ts_validation=ts_pred, ts_ext=ts_ext, ts_ext_validation=ts_ext)
+
