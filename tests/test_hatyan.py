@@ -185,7 +185,15 @@ def test_getcomponentsfromts_settings():
     ts_comp_nfac1_fualltimes1_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=False, analysis_perperiod='Y')
     ts_comp_nfac1_fualltimes0_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=False, analysis_perperiod='Y')
     ts_comp_nfac0_fualltimes0_xfac0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=False, fu_alltimes=False, xfac=False, analysis_perperiod='Y')
-
+    
+    # assert if the results are somewhat close to each other
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1_peryear0, ts_comp_nfac1_fualltimes1_xfac1_permonth0, rtol=1e-1, atol=1e-1)
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac1_fualltimes0_xfac1, rtol=1e-2, atol=1e-3)
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac1_fualltimes0_xfac1, rtol=1e-2, atol=1e-2)
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac1_fualltimes1_xfac0, rtol=1e-2, atol=1e-2)
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac1_fualltimes0_xfac0, rtol=1e-2, atol=1e-2)
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac0_fualltimes0_xfac0, rtol=1e1, atol=1e0)
+    
 
 @pytest.mark.unittest
 def test_predictionsettings():
