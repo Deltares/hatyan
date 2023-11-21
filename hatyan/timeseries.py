@@ -812,8 +812,8 @@ def write_tsdia(ts, filename, headerformat='dia'):
     vertref = metadata['vertref']
     station = metadata['station']
     quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    #if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+    #    raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = metadata['tzone']
     if tzone != pytz.FixedOffset(60):
         raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
@@ -838,7 +838,7 @@ def write_tsdia(ts, filename, headerformat='dia'):
     #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
     metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                              '[W3H]', #WIE, WAT, WAAR en HOE
-                             'WNS;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia dus geheel weglaten?
+                             #'WNS;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia dus geheel weglaten?
                              'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55. GHD in wia (PAR is daar parameter, maar betekent wat anders)
                              'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
                              'EHD;I;cm', #domein (I: integer) en eenheid, gelijk voor waarnemingssoorten 18 en 55
@@ -848,10 +848,10 @@ def write_tsdia(ts, filename, headerformat='dia'):
                              ##'IVS;NVT;Niet van toepassing',
                              ##'BTX;NVT;NVT;Niet van toepassing', #Biotaxonnaam
                              ##'BTN;Niet van toepassing', >> niet ondersteund in wia
-                             'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Analyserende-instantie
-                             'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Beherende-instantie
-                             'BMI;NVT;Niet van toepassing', #niet_essentieel? Bemonsterende-instantie
-                             'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? Opdrachtgevende-instantie
+                             #'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Analyserende-instantie
+                             #'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Beherende-instantie
+                             #'BMI;NVT;Niet van toepassing', #niet_essentieel? Bemonsterende-instantie
+                             #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? Opdrachtgevende-instantie
                              ##'GBD;NIEUWWTWG;Nieuwe Waterweg', >> niet ondersteund in wia
                              'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code #;Hoek van Holland;P;RD;6793000;44400000
                              'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
@@ -922,8 +922,8 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     vertref = metadata['vertref']
     station = metadata['station']
     quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    #if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+    #    raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = metadata['tzone']
     if tzone != pytz.FixedOffset(60):
         raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
@@ -951,10 +951,10 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
                              ##IVS;NVT;Niet van toepassing
                              ##BTX;NVT;NVT;Niet van toepassing #Biotaxonnaam
                              ##BTN;Niet van toepassing >> niet ondersteund in wia
-                             'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Analyserende-instantie
-                             'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Beherende-instantie
-                             'BMI;NVT;Niet van toepassing', #niet_essentieel? #Bemonsterende-instantie
-                             'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? #Opdrachtgevende-instantie
+                             #'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Analyserende-instantie
+                             #'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Beherende-instantie
+                             #'BMI;NVT;Niet van toepassing', #niet_essentieel? #Bemonsterende-instantie
+                             #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? #Opdrachtgevende-instantie
                              ##GBD;NIEUWWTWG;Nieuwe Waterweg >> niet ondersteund in wia
                              'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code
                              'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
@@ -963,20 +963,20 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
                              #'VAT;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
                              'TYP;TN', #Reekstype: niet-equidistant
                              '[MUX]', #Multiplex administratieblok
-                             'MXW;1;15', #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
+                             #'MXW;1;15', #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
                              'MXP;1;GETETCDE;Getijextreem code;J', #MXG in wia: grootheid muxkanaal (TODO: wia GETETTPE in welke groep?)
                              'MXC;1;10;Oppervlaktewater', #Compartiment Muxkanaal
                              'MXE;1;T;DIMSLS', #domein (T: integer met waarde 1 tot 127, vertaaltabel TYPERING met dezelfde parameter/compartiment-combinatie is dan verplicht) en eenheid
                              'MXH;1;NVT;Niet van toepassing', #Hoedanigheid Muxkanaal
-                             'MXO;1;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
-                             'MXS;1;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
-                             'MXW;2;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
+                             #'MXO;1;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
+                             #'MXS;1;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
+                             #'MXW;2;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
                              'MXP;2;%s'%(grootheid), #MXG in wia: grootheid muxkanaal
                              'MXC;2;10;Oppervlaktewater', #Compartiment Muxkanaal
                              'MXE;2;I;cm', #domein (I: integer) en eenheid
                              'MXH;2;%s;%s'%(vertref, vertreflong), #Hoedanigheid Muxkanaal
-                             'MXO;2;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
-                             'MXS;2;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
+                             #'MXO;2;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
+                             #'MXS;2;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
                              '[TYP]',
                              'TVL;1;1;hoogwater',
                              'TVL;1;2;laagwater',
