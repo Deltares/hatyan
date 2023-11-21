@@ -58,19 +58,24 @@ Code = "https://github.com/deltares/hatyan"
 Issues = "https://github.com/deltares/hatyan/issues"
 
 [project.optional-dependencies]
-test = [
+dev = [
 	"bump2version>=0.5.11",
 	"flake8",
 	"pytest",
 	"pytest-cov",
 	"twine",
-	"jupyter",
-	"notebook",
+	"build",
+]
+docs = [
 	"mkdocs",
 	"mkdocs-material",
 	"mkdocs-jupyter",
 	"mkdocstrings-python",
 	"mkdocs-exclude",
+]
+examples = [
+	"jupyter",
+	"notebook",
 ]
 
 [tool.setuptools.package-data]

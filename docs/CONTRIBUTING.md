@@ -18,7 +18,7 @@ Information for developers
 - ``conda create --name hatyan_hmcenv python=3.8.13 git spyder -y`` (``git`` and ``spyder``, python version should be the one at HMC)
 - ``conda activate hatyan_hmcenv``
 - ``pip install -r environment_hmc.txt`` (installs fixed python/package versions like on HMC)
-- ``python -m pip install -e .[test]`` (pip developer mode, any updates to the local folder are immediately available in your python. ``[test]`` installs also the developer requirements)
+- ``python -m pip install -e .[dev,docs,examples]`` (pip developer mode, any updates to the local folder are immediately available in your python. It also installs all requirements via pip, square brackets are to install optional dependency groups)
 - ``conda deactivate``
 - to remove hatyan_hmcenv when necessary: ``conda remove -n hatyan_hmcenv --all``
 
