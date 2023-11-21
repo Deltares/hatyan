@@ -67,7 +67,7 @@ mkdocs build
 - bump the versionnumber with ``bumpversion minor``
 - update ``docs/whats-new.md`` and add a date to the current release heading
 - run local testbank
-- local check with: ``python setup.py sdist bdist_wheel`` and ``twine check dist/*``
+- local check with: ``python -m build`` and ``twine check dist/*`` ([does not work on WCF](https://github.com/pypa/setuptools/issues/4133))
 - make sure the remote ``main`` branch is up to date (important issues solved, all pullrequests and branches closed, commit+push all local changes)
 - copy the hatyan version from https://github.com/Deltares/hatyan/blob/main/setup.cfg (e.g. ``0.11.0``)
 - go to https://github.com/Deltares/hatyan/releases/new
