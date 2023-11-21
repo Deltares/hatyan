@@ -840,7 +840,7 @@ def write_tsdia(ts, filename, headerformat='dia'):
                              '[W3H]', #WIE, WAT, WAAR en HOE
                              #'WNS;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia dus geheel weglaten?
                              'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55. GHD in wia (PAR is daar parameter, maar betekent wat anders)
-                             'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
+                             #'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
                              'EHD;I;cm', #domein (I: integer) en eenheid, gelijk voor waarnemingssoorten 18 en 55
                              'HDH;%s;%s'%(vertref,vertreflong),
                              ##'ORG;NVT;Niet van toepassing', #orgaan
@@ -965,14 +965,14 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
                              '[MUX]', #Multiplex administratieblok
                              #'MXW;1;15', #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
                              'MXP;1;GETETCDE;Getijextreem code;J', #MXG in wia: grootheid muxkanaal (TODO: wia GETETTPE in welke groep?)
-                             'MXC;1;10;Oppervlaktewater', #Compartiment Muxkanaal
+                             #'MXC;1;10;Oppervlaktewater', #Compartiment Muxkanaal
                              'MXE;1;T;DIMSLS', #domein (T: integer met waarde 1 tot 127, vertaaltabel TYPERING met dezelfde parameter/compartiment-combinatie is dan verplicht) en eenheid
                              'MXH;1;NVT;Niet van toepassing', #Hoedanigheid Muxkanaal
                              #'MXO;1;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
                              #'MXS;1;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
                              #'MXW;2;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
                              'MXP;2;%s'%(grootheid), #MXG in wia: grootheid muxkanaal
-                             'MXC;2;10;Oppervlaktewater', #Compartiment Muxkanaal
+                             #'MXC;2;10;Oppervlaktewater', #Compartiment Muxkanaal
                              'MXE;2;I;cm', #domein (I: integer) en eenheid
                              'MXH;2;%s;%s'%(vertref, vertreflong), #Hoedanigheid Muxkanaal
                              #'MXO;2;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
