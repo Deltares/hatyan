@@ -780,7 +780,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
     return
 
 
-def write_tsdia(ts, filename, headerformat='dia'):
+def write_tsdia(ts, filename, headerformat='dia', check_meta=True):
     """
     Writes the timeseries to an equidistant dia file
 
@@ -812,7 +812,7 @@ def write_tsdia(ts, filename, headerformat='dia'):
     vertref = metadata['vertref']
     station = metadata['station']
     quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+    if quantity != 'WATHTBRKD' and check_meta: #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = metadata['tzone']
     if tzone != pytz.FixedOffset(60):
@@ -854,7 +854,7 @@ def write_tsdia(ts, filename, headerformat='dia'):
                              #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? Opdrachtgevende-instantie
                              ##'GBD;NIEUWWTWG;Nieuwe Waterweg', >> niet ondersteund in wia
                              'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code #;Hoek van Holland;P;RD;6793000;44400000
-                             'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
+                             #'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
                              #'BEM;NVT', #niet_essentieel? >> niet ondersteund in wia
                              #'BEW;NVT', #niet_essentieel? >> niet ondersteund in wia
                              #'VAT;NVT', #niet_essentieel? >> niet ondersteund in wia
@@ -891,7 +891,7 @@ def write_tsdia(ts, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
+def write_tsdia_HWLW(ts_ext, filename, headerformat='dia', check_meta=True):
     """
     writes the extremes timeseries to a non-equidistant dia file
 
@@ -922,7 +922,7 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     vertref = metadata['vertref']
     station = metadata['station']
     quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
+    if quantity != 'WATHTBRKD' and check_meta: #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = metadata['tzone']
     if tzone != pytz.FixedOffset(60):
@@ -957,7 +957,7 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
                              #'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? #Opdrachtgevende-instantie
                              ##GBD;NIEUWWTWG;Nieuwe Waterweg >> niet ondersteund in wia
                              'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code
-                             'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
+                             #'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
                              #'BEM;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
                              #'BEW;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
                              #'VAT;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
