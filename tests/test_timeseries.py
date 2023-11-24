@@ -368,7 +368,7 @@ def test_nyquist_folding():
     
     station = 'DENHDR'
     year = 1955
-    url_dataraw = 'http://watersysteemdata.deltares.nl/thredds/fileServer/watersysteemdata/Wadden/ddl/raw/waterhoogte/'
+    url_dataraw = 'https://watersysteemdata.deltares.nl/thredds/fileServer/watersysteemdata/Wadden/ddl/raw/waterhoogte/'
     file_csv = url_dataraw+f'{station}_OW_WATHTE_NVT_NAP_{year}_ddl_wq.csv'
     
     data_pd = pd.read_csv(file_csv,sep=';',parse_dates=['tijdstip'])
