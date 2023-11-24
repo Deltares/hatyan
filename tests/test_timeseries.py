@@ -356,3 +356,30 @@ def test_plot_HWLW_validatestats():
 
     hatyan.plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext, create_plot=True)
     hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_nos, ts_ext_validation=ts_ext_nos, create_plot=True)
+
+
+@pytest.mark.unittest
+def test_nyquist_folding():
+    const_list = hatyan.get_const_list_hatyan('year')
+    
+    # drop_list = ['S4','3M2S10','2SM6','4M2S12'] # overlappende frequenties na folding, en S4 is precies op Nyquist frequentie
+    # for const in drop_list:
+    #     const_list.remove(const)
+    
+    station = 'DENHDR'
+    year = 1955
+    url_dataraw = 'http://watersysteemdata.deltares.nl/thredds/fileServer/watersysteemdata/Wadden/ddl/raw/waterhoogte/'
+    file_csv = url_dataraw+f'{station}_OW_WATHTE_NVT_NAP_{year}_ddl_wq.csv'
+    
+    data_pd = pd.read_csv(file_csv,sep=';',parse_dates=['tijdstip'])
+    
+    ts_meas_raw = pd.DataFrame({'values':data_pd['numeriekewaarde'].values/100},index=data_pd['tijdstip'].dt.tz_localize(None)) #read dataset and convert to DataFrame with correct format #TODO: tijdzone is MET (UTC+1), ook van de resulterende getijcomponenten. Is dat wenselijk?
+    ts_meas_raw = ts_meas_raw.sort_index(axis='index') #sort dataset on times (not necessary but easy for debugging)
+    
+    try:
+        hatyan.analysis(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, fu_alltimes=True)
+    except Exception as e:
+        # check if we get "Exception: there is a component on the Nyquist frequency (0.16666666666666666 [1/hr]), this not possible"
+        # without doing the nyquist check, we get a MatrixConditionTooHigh error instead
+        assert "nyquist" in str(e).lower()
+
