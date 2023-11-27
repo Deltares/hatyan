@@ -188,7 +188,7 @@ def write_components(comp, filename):
         EINDTIJD
         TIJDVERSCHIL T.O.V. GMT
         
-        CODE: COMPONENTENCODE (?)
+        CODE: COMPONENTENCODE (note: CODE 3 is at least available from 1979 and refers to the set of 195 components that are available in hatyan-fortran. It is required since the component numbers are used for indexing.)
         
         NCOM: AANTAL COMPONENTEN
         """

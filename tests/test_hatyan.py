@@ -603,6 +603,43 @@ def test_frommergedcomp_HWLW_345(current_station):
 
 
 @pytest.mark.systemtest
+def test_hwlw_numbering_aggers():
+    """
+    This is probably already tested with other hwlw tests
+    """
+    
+    times_pred = slice(dt.datetime(2010,1,31,3),dt.datetime(2010,2,17,12), 1) #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
+    #HOEKVHLD has alternating aggers, DENHDR has double HW's
+    expect_345_len = {'HOEKVHLD':99,'DENHDR':66}
+    expect_345_code_sum = {'HOEKVHLD':267,'DENHDR':99}
+    expect_345_nos_sum = {'HOEKVHLD':706061,'DENHDR':470712}
+    expect_all_len = {'HOEKVHLD':105,'DENHDR':93}
+    expect_all_code_sum = {'HOEKVHLD':366,'DENHDR':539}
+    
+    for current_station in expect_345_len.keys():
+    
+        file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
+        comp_merged = hatyan.read_components(filename=file_data_comp0)
+        
+        ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred)
+        ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)
+        ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)
+        ts_ext_prediction_all.loc[ts_ext_prediction_all.index.isin(ts_ext_prediction_345.index),'HWLWcode'] = ts_ext_prediction_345['HWLWcode']
+        ts_ext_prediction_345_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_345, station=current_station)
+        
+        assert len(ts_ext_prediction_345_HWLWno) == expect_345_len[current_station]
+        assert ts_ext_prediction_345_HWLWno["HWLWcode"].sum() == expect_345_code_sum[current_station]
+        assert ts_ext_prediction_345_HWLWno["HWLWno"].sum() == expect_345_nos_sum[current_station]
+        assert len(ts_ext_prediction_all) == expect_all_len[current_station]
+        assert ts_ext_prediction_all["HWLWcode"].sum() == expect_all_code_sum[current_station]
+        
+        fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_345)
+        for irow, pdrow in ts_ext_prediction_345_HWLWno.iterrows():
+            ax1.text(pdrow.name,pdrow['values'],pdrow['HWLWno'].astype(int))
+        ax1.set_ylim(-1.2,1.7)
+        
+
+@pytest.mark.systemtest
 def test_19Ycomp4Ydia():
     # 1. define test data
     nodalfactors = True

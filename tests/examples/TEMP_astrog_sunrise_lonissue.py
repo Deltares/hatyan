@@ -55,7 +55,7 @@ astrabOutput = hatyan.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat
 #print(astrabOutput['ALTMOO'])
 
 print('moon')
-for lon in []:#np.arange(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntime
+for lon in range(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntime
     print()
     print(lon)
     tz_LOCAL = dt.timezone(dt.timedelta(hours=lon/360*24))

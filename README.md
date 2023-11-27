@@ -6,6 +6,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/deltares/hatyan.svg?style=flat-square)](https://app.codecov.io/gh/deltares/hatyan)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&metric=alert_status)](https://sonarcloud.io/dashboard?id=Deltares_hatyan)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD?urlpath=/tree/docs/notebooks)
+[![Available on pypi](https://img.shields.io/pypi/v/hatyan.svg)](https://pypi.python.org/pypi/hatyan)
 [![Supported versions](https://img.shields.io/pypi/pyversions/hatyan.svg)](https://pypi.org/project/hatyan)
 [![Downloads](https://img.shields.io/pypi/dm/hatyan.svg)](https://pypistats.org/packages/hatyan)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6885342.svg)](https://doi.org/10.5281/zenodo.6885342)
