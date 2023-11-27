@@ -119,7 +119,13 @@ def test_astrog_astrac():
         assert abs(timeExpect[iMode-1]-timeOutput[iMode-1]).total_seconds() < 10E-5
 
 
-def test_astrog_astrac_inf_to_zero():
+def test_astrog_moonriseset():
+    """
+    This part of code resulted in timesteps being dropped in newer pandas versions.
+    This was due to 0 RATES in astract, resulting in inf values in 'addtime'
+    Solved by supplying posinf=0 to np.nan_to_num()
+    We assert here if the length of the resulting dataframe is correct.
+    """
     
     # script settings
     tstart = dt.datetime(2003,1,1)
@@ -128,8 +134,7 @@ def test_astrog_astrac_inf_to_zero():
     # moonrise and -set
     moonriseset_python = hatyan.astrog_moonriseset(tFirst=tstart, tLast=tstop)
     
-    # assert len, should be 292
-    # but 0 RATE results in nan if we do not use posinf=0 in np.nan_to_num(), which gives len 291
+    # assert len
     assert len(moonriseset_python) == 292
 
 
