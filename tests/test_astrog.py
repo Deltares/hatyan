@@ -122,9 +122,9 @@ def test_astrog_astrac():
 def test_astrog_moonriseset():
     """
     This part of code resulted in timesteps being dropped in newer pandas versions.
-    This was due to 0 RATES in astract, resulting in inf values in 'addtime'
-    Solved by supplying posinf=0 to np.nan_to_num()
-    We assert here if the length of the resulting dataframe is correct.
+    This was due to 0 RATES in astract, resulting in inf values in 'addtime'.
+    This is solved by supplying posinf=0 to np.nan_to_num().
+    This test therefore checks if the length of the resulting dataframe is correct.
     """
     
     # script settings
@@ -134,7 +134,6 @@ def test_astrog_moonriseset():
     # moonrise and -set
     moonriseset_python = hatyan.astrog_moonriseset(tFirst=tstart, tLast=tstop)
     
-    # assert len
     assert len(moonriseset_python) == 292
 
 
