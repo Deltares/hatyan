@@ -811,7 +811,9 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
         POLD = PNEW.copy()
         if IPAR=='ALTMOO': # correction for semidiameter moon #TODO, might not be necessary to put in loop since PARLAX is not that variable over iterations
             ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. # ANGLE in degrees and PARLAX in arcseconds (/3600 gives degrees)
-        addtime = pd.TimedeltaIndex(np.nan_to_num((ANG-POLD)/RATE,nan=0,posinf=0,neginf=0),unit='D') #nan_to_num to make sure no NaT output in next iteration
+        # nan_to_num to make sure no NaT/inf output in next iteration
+        addtime_nonan = np.nan_to_num((ANG-POLD)/RATE, nan=0, posinf=0, neginf=0)
+        addtime = pd.TimedeltaIndex(addtime_nonan, unit='D')
         #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))
         if IPAR in ['ALTMOO','ALTSUN'] and (np.abs(np.array(addtime.total_seconds()/3600)) > 24).any(): #catch for ALTMOO and ALTSUN to let the iteration process stop before it escalates
             raise Exception(f'Iteration step resulted in time changes larger than 24 hours (max {np.abs(addtime.total_seconds()).max()/3600:.2f} hours), try using a lower latitude')
