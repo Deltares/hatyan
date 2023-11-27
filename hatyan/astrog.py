@@ -75,14 +75,15 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add s
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]'] # interval between lunar culminations (hours)
     
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
-    date_first = tFirst-dt.timedelta(hours=M2_period_hr+1*24)
-    date_last = tLast+dt.timedelta(hours=M2_period_hr+1*24)
+    date_first = tFirst - pd.Timedelta(hours=M2_period_hr+1*24)
+    date_last = tLast + pd.Timedelta(hours=M2_period_hr+1*24)
 
     # estimate culminations (time and type)
     astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
     EHMOON = astrabOutput['EHMOON']
     ICUL = np.floor(EHMOON[0]%360/180).astype(int)+1 # ICUL=1: next culmination is lower culmination, ICUL=2: next culmination is upper culmination
-    CULEST = pd.date_range(start=date_first+dt.timedelta(days=(180.*ICUL-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
+    date_start = date_first + pd.Timedelta(days=(180.*ICUL-EHMOON[0])/EHMINC)
+    CULEST = pd.date_range(start=date_start, end=date_last, freq='%iN'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
     CULTYP = np.zeros(len(CULEST),dtype=int)
     CULTYP[::2] = ICUL
     CULTYP[1::2] = (ICUL%2)+1
@@ -140,8 +141,8 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     FASINT = 29.530587981/4 # quarter of a lunar synodic month (days)
 
     # first and last datetime in calculation (add enough margin (done later), and an extra day for timezone differences)
-    date_first = tFirst-dt.timedelta(days=FASINT+1)
-    date_last = tLast+dt.timedelta(days=FASINT+1)
+    date_first = tFirst - pd.Timedelta(days=FASINT+1)
+    date_last = tLast + pd.Timedelta(days=FASINT+1)
 
     # estimate first lunar phase (time and type), correct first date (FAEST_first to 45 deg from there)
     astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
@@ -208,14 +209,14 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     tFirst,tLast = convert_str2datetime(tFirst,tLast)
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
-    date_first = tFirst - dt.timedelta(days=1)
-    date_last = tLast + dt.timedelta(days=1)
+    date_first = tFirst - pd.Timedelta(days=1)
+    date_last = tLast + pd.Timedelta(days=1)
     
     # --- sunrise and -set ---
     # estimate times: starting at tFirst, 0h local solar time
     DAYEST = pd.date_range(start=date_first,end=date_last,freq='%iN'%(24*3600*1e9))
-    OPEST  = DAYEST + dt.timedelta(days=-lon/360.+.25) # correct for longitude and 'floor' date to 00:00 +6h
-    ONEST  = DAYEST + dt.timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
+    OPEST  = DAYEST + pd.Timedelta(days=-lon/360.+.25) # correct for longitude and 'floor' date to 00:00 +6h
+    ONEST  = DAYEST + pd.Timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
     # calculate exact times
     TIMDIF = pd.TimedeltaIndex(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
@@ -275,8 +276,8 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     EHMINC = 346.8 # increment of EHMOON ephemeris hour angle of moon (deg/day) TODO: 360/(M2_period_hr*2/24) = 347.8092506037627
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
-    date_first = tFirst-dt.timedelta(hours=M2_period_hr+1*24)
-    date_last = tLast+dt.timedelta(hours=M2_period_hr+1*24)
+    date_first = tFirst - pd.Timedelta(hours=M2_period_hr+1*24)
+    date_last = tLast + pd.Timedelta(hours=M2_period_hr+1*24)
 
     # --- moonrise and -set ---
     # estimate times
@@ -285,11 +286,11 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     EHMOON = astrabOutput['EHMOON']
 
     if ALTMOO < -(0.5667+(0.08+0.2725*astrabOutput['PARLAX'])/3600): # first phenomenon is moonrise #the PARLAX output is in arcseconds, so /3600 is conversion to degrees
-        OPEST = pd.date_range(start=date_first+dt.timedelta(days=(270-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
-        ONEST = OPEST + dt.timedelta(hours=M2_period_hr)
+        date_first_plus = date_first + pd.Timedelta(days=(270-EHMOON[0])/EHMINC)
     else: # first phenomenon is moonset
-        ONEST = pd.date_range(start=date_first+dt.timedelta(days=(90-EHMOON[0])/EHMINC), end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
-        OPEST = ONEST + dt.timedelta(hours=M2_period_hr)
+        date_first_plus = date_first + pd.Timedelta(days=(90-EHMOON[0])/EHMINC)
+    ONEST = pd.date_range(start=date_first_plus, end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
+    OPEST = ONEST + pd.Timedelta(hours=M2_period_hr)
 
     # calculate exact times
     TIMDIF = pd.TimedeltaIndex(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
@@ -344,8 +345,8 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     ANOINT = 27.554551/2 # half of a lunar anomalistic month (days)
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
-    date_first = tFirst-dt.timedelta(days=ANOINT+1)
-    date_last = tLast+dt.timedelta(days=ANOINT+1)
+    date_first = tFirst - pd.Timedelta(days=ANOINT+1)
+    date_last = tLast + pd.Timedelta(days=ANOINT+1)
 
     # estimate first lunar anomaly (time and type)
     astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
@@ -357,7 +358,8 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     elif DPAXDT<=0: # ANOTYP=2: apogeum first
         ref_deg = 180    
         IANO = 2
-    ANOEST = pd.date_range(start=date_first+dt.timedelta(days=(ref_deg-ANM[0])/ANMINC),end=date_last,freq='%iN'%(ANOINT*24*3600*1e9))
+    date_first_plus = date_first + pd.Timedelta(days=(ref_deg-ANM[0])/ANMINC)
+    ANOEST = pd.date_range(start=date_first_plus,end=date_last,freq='%iN'%(ANOINT*24*3600*1e9))
     ANOTYP = np.zeros(len(ANOEST),dtype=int)
     ANOTYP[::2] = IANO
     ANOTYP[1::2] = (IANO%2)+1
@@ -409,7 +411,9 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     tFirst,tLast = convert_str2datetime(tFirst,tLast)
 
     # estimate start of seasons (time and type)
-    SEIEST = pd.date_range(start=dt.datetime(tFirst.year,int(np.ceil(tFirst.month/3)*3),1),end=tLast+dt.timedelta(days=1),freq='%iMS'%(3))+dt.timedelta(days=20)
+    date_start = dt.datetime(tFirst.year,int(np.ceil(tFirst.month/3)*3),1)
+    date_end = tLast + pd.Timedelta(days=1)
+    SEIEST = pd.date_range(start=date_start, end=date_end, freq='3MS') + pd.Timedelta(days=20)
     SEITYP = np.floor(SEIEST.month/3).astype(int)
 
     # calculate exact times, loop until tLast
@@ -872,7 +876,7 @@ def get_leapsecondslist_fromurlorfile():
     expirydate_line = resp_pd_all.loc[resp_pd_all.str.startswith(expirydate_linestart)]
     if len(expirydate_line) != 1:
         raise Exception('less or more than 1 expirydate line found with "{expirydate_linestart}": {expirydate_line}')
-    expirydate = refdate + dt.timedelta(seconds=int(expirydate_line.iloc[0].split()[1]))
+    expirydate = refdate + pd.Timedelta(seconds=int(expirydate_line.iloc[0].split()[1]))
     
     #get leapsecond list from file
     resp_pd = pd.read_csv(file_leap_seconds_list,comment='#',names=['seconds_since_19000101','leap_seconds'],delim_whitespace=True)
