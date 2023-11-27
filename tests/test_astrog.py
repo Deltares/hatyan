@@ -119,6 +119,20 @@ def test_astrog_astrac():
         assert abs(timeExpect[iMode-1]-timeOutput[iMode-1]).total_seconds() < 10E-5
 
 
+def test_astrog_astrac_inf_to_zero():
+    
+    # script settings
+    tstart = dt.datetime(2003,1,1)
+    tstop = dt.datetime(2003,6,1)
+    
+    # moonrise and -set
+    moonriseset_python = hatyan.astrog_moonriseset(tFirst=tstart, tLast=tstop)
+    
+    # assert len, should be 292
+    # but 0 RATE results in nan if we do not use posinf=0 in np.nan_to_num(), which gives len 291
+    assert len(moonriseset_python) == 292
+
+
 @pytest.mark.systemtest
 def test_astrog_leapsecondslist():
     leap_seconds_pd, expirydate = hatyan.get_leapsecondslist_fromurlorfile()
