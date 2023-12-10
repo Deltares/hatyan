@@ -194,6 +194,48 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
 
 
 @pytest.mark.unittest
+def test_readwrite_diawia():
+    
+    current_station = 'HOEKVHLD'
+    
+    file_dia_wl = os.path.join(dir_testdata,'diawia_%s_astro_tijdreeks.dia'%(current_station))
+    file_dia_ext = os.path.join(dir_testdata,'diawia_%s_astro_extremen.dia'%(current_station))
+    
+    for file_dia in [file_dia_wl,file_dia_ext]:
+        file_wia = file_dia.replace('.dia','.wia')
+        file_dia_out = file_dia.replace('.dia','_out.dia')
+        file_wia_out = file_dia.replace('.dia','_out.wia')
+        ts_dia = hatyan.readts_dia(filename=file_dia, station=current_station)
+        ts_wia = hatyan.readts_dia(filename=file_wia, station=current_station)
+        assert (ts_dia==ts_wia).all().all() #check if wia and dia input is equal
+        
+        #write to files
+        if 'HWLWcode' in ts_dia.columns:
+            hatyan.write_tsdia_HWLW(ts_ext=ts_dia, filename=file_dia_out)
+            hatyan.write_tsdia_HWLW(ts_ext=ts_wia, filename=file_wia_out, headerformat='wia')
+        else:
+            hatyan.write_tsdia(ts=ts_dia, filename=file_dia_out)
+            hatyan.write_tsdia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
+        
+        #read from new files
+        ts_dia_new = hatyan.readts_dia(filename=file_dia_out, station=current_station)
+        ts_wia_new = hatyan.readts_dia(filename=file_wia_out, station=current_station)
+        assert np.allclose(ts_dia, ts_dia_new) #check if wia and dia input is equal
+        assert np.allclose(ts_wia, ts_wia_new) #check if wia and dia input is equal
+        
+        #meta
+        meta_dia = hatyan.metadata_from_obj(ts_dia)
+        meta_wia = hatyan.metadata_from_obj(ts_wia)
+        meta_dia_new = hatyan.metadata_from_obj(ts_dia_new)
+        meta_wia_new = hatyan.metadata_from_obj(ts_wia_new)
+        assert (meta_dia == meta_wia == meta_dia_new == meta_wia_new)
+        
+        #remove files
+        os.remove(file_dia_out)
+        os.remove(file_wia_out)
+
+
+@pytest.mark.unittest
 def test_crop_timeseries():
     
     current_station = 'VLISSGN'
@@ -314,3 +356,30 @@ def test_plot_HWLW_validatestats():
 
     hatyan.plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext, create_plot=True)
     hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_nos, ts_ext_validation=ts_ext_nos, create_plot=True)
+
+
+@pytest.mark.unittest
+def test_nyquist_folding():
+    const_list = hatyan.get_const_list_hatyan('year')
+    
+    # drop_list = ['S4','3M2S10','2SM6','4M2S12'] # overlappende frequenties na folding, en S4 is precies op Nyquist frequentie
+    # for const in drop_list:
+    #     const_list.remove(const)
+    
+    station = 'DENHDR'
+    year = 1955
+    url_dataraw = 'https://watersysteemdata.deltares.nl/thredds/fileServer/watersysteemdata/Wadden/ddl/raw/waterhoogte/'
+    file_csv = url_dataraw+f'{station}_OW_WATHTE_NVT_NAP_{year}_ddl_wq.csv'
+    
+    data_pd = pd.read_csv(file_csv,sep=';',parse_dates=['tijdstip'])
+    
+    ts_meas_raw = pd.DataFrame({'values':data_pd['numeriekewaarde'].values/100},index=data_pd['tijdstip'].dt.tz_localize(None)) #read dataset and convert to DataFrame with correct format #TODO: tijdzone is MET (UTC+1), ook van de resulterende getijcomponenten. Is dat wenselijk?
+    ts_meas_raw = ts_meas_raw.sort_index(axis='index') #sort dataset on times (not necessary but easy for debugging)
+    
+    try:
+        hatyan.analysis(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, fu_alltimes=True)
+    except Exception as e:
+        # check if we get "Exception: there is a component on the Nyquist frequency (0.16666666666666666 [1/hr]), this not possible"
+        # without doing the nyquist check, we get a MatrixConditionTooHigh error instead
+        assert "nyquist" in str(e).lower()
+
