@@ -18,7 +18,7 @@ plt.close('all')
 
 
 # prediction M2 / S2, spring/neap cycle
-if 1:
+if 0:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
     stat_list = ['HOEKVHLD']#,'DENHDR','IJMDBTHVN'] #'K13APFM'
@@ -313,7 +313,7 @@ if 0:
 
 
 
-if 0:
+if 1:
     import xarray as xr
     data_nc_TS = xr.open_dataset(r'p:\1204257-dcsmzuno\1980-2017\DCSM-FM\A03_FES2014_GTSM_H1H2\DFM_OUTPUT_DCSM-FM_0_5nm\DCSM-FM_0_5nm_0000_his.nc')
     data_nc_tide = xr.open_dataset(r'p:\1204257-dcsmzuno\1980-2017\DCSM-FM\A03_FES2014_GTSM_H1H2_astro\DFM_OUTPUT_DCSM-FM_0_5nm\DCSM-FM_0_5nm_0000_his.nc')
@@ -324,19 +324,32 @@ if 0:
     
     time_slice = slice(dt.datetime(2013,1,1),dt.datetime(2013,12,31))
     
+    # get waterlevels from model files
     wl_HvH_TS = data_nc_TS.waterlevel.sel(time=time_slice).isel(stations=idx_HvH)
     wl_HvH_tide = data_nc_tide.waterlevel.sel(time=time_slice).isel(stations=idx_HvH)
     
+    # tidal analysis and prediction based on model TS waterlevels
     ts_TS = pd.DataFrame({'values':wl_HvH_TS.to_numpy()},index=wl_HvH_TS.time)
     comp_set = hatyan.analysis(ts_TS,const_list='year',xfac=True)
     ts_pred = hatyan.prediction(comp_set,times_pred_all=ts_TS.index)
     
-    fig,ax = plt.subplots()
+    # tidal prediction based RWS TA components
+    # file_comp = r"c:\DATA\hatyan_github\tests\data_unitsystemtests\HOEKVHLD_ana.txt"
+    # comp_set_rws = hatyan.read_components(file_comp)
+    # ts_pred_rws = hatyan.prediction(comp_set_rws,times_pred_all=ts_TS.index)
+    # ts_pred_rws.index = ts_pred_rws.index - pd.Timedelta(hours=1)
+    
+    fig,ax = plt.subplots(figsize=(7,5))
+    # raw timeseries
     ax.plot(wl_HvH_TS.time, wl_HvH_TS, linewidth=1, label='model TS (tide+surge)')
     ax.plot(wl_HvH_tide.time, wl_HvH_tide, linewidth=1, label='model tide-only')
-    ax.plot(ts_pred, linewidth=1, label='astro from TS')
-    ax.plot(wl_HvH_tide.time, wl_HvH_TS-wl_HvH_tide, linewidth=1, label='model TS-tide')
-    ax.plot(ts_TS-ts_pred, linewidth=1, label='TS - astro')
+    ax.plot(ts_pred, linewidth=1, label='astro (from model TS)')
+    # ax.plot(ts_pred_rws, linewidth=1, label='astro (from TA RWS)')
+    
+    # differences
+    ax.plot(wl_HvH_tide.time, wl_HvH_TS-wl_HvH_tide, linewidth=1, linestyle="--", label='model TS - model tide-only')
+    ax.plot(ts_TS-ts_pred, linewidth=1, linestyle="--", label='model TS - astro (from model TS)')
+    # ax.plot(ts_TS-ts_pred_rws, linewidth=1, linestyle="--", label='model TS - astro (from TA RWS)')
     
     #surgediff = wl_HvH_TS.data-wl_HvH_tide.data-(ts_TS['values'].values-ts_pred['values'].values)
     #ax.plot(wl_HvH_tide.time, surgediff, label='surgediff')
