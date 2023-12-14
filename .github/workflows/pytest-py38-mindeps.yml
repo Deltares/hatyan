@@ -15,8 +15,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8.14
-      uses: actions/setup-python@v2
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
         python-version: '3.8.14' #used at HMC
     - name: Set fixed versions in requirements.txt extracted from pyproject.toml
