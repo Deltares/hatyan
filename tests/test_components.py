@@ -37,9 +37,9 @@ def test_read_write_components():
 @pytest.mark.unittest
 def test_read_write_components_nometadata():
     """
-    test for component files written with hatyan 2.7.0 or lower
-    these files lack essential metadata for STAT, PERD and CODE lines
-    Dummy values are added in read_components, but in general these component files cannot be used for much things.
+    Test for component files written with hatyan 2.7.0 or lower,
+    these files lack essential metadata for STAT, PERD and CODE lines.
+    This tests tests whether the correct exception is raised.
     """
     
     file_orig = os.path.join(dir_testdata,'DENHDR_ana.txt')
@@ -51,6 +51,8 @@ def test_read_write_components_nometadata():
             if line.startswith("STAT"):
                 continue
             if line.startswith("PERD"):
+                continue
+            if line.startswith("CODE"):
                 continue
             f.write(line)
     
