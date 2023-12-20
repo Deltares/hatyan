@@ -8,10 +8,8 @@ Created on Fri Aug 11 14:33:40 2023
 import os
 import pytest
 import numpy as np
-import pandas as pd
-import pytz
 import hatyan
-from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
+from hatyan.metadata import metadata_from_obj
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -41,15 +39,27 @@ def test_read_write_components_nometadata():
     """
     test for component files written with hatyan 2.7.0 or lower
     these files lack essential metadata for STAT, PERD and CODE lines
-    It should return a KeyError
+    Dummy values are added in read_components, but in general these component files cannot be used for much things.
     """
     
-    file_orig = os.path.join(dir_testdata,'DENHDR_ana_nometadata.txt')
+    file_orig = os.path.join(dir_testdata,'DENHDR_ana.txt')
+    file_nometa = "temp_comp_dummymetadata.txt"
+    with open(file_orig, "r") as f:
+        data = f.readlines()
+    with open(file_nometa, "w") as f:
+        for line in data:
+            if line.startswith("STAT"):
+                continue
+            if line.startswith("PERD"):
+                continue
+            f.write(line)
     
     try:
-        _ = hatyan.read_components(file_orig)
+        _ = hatyan.read_components(file_nometa)
     except KeyError as e:
         assert "No STAT/PERD metadata available in component file" in str(e)
+
+    os.remove(file_nometa)
 
 
 @pytest.mark.unittest
