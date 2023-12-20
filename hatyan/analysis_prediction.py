@@ -537,6 +537,9 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         # update metadata
         if metadata['grootheid'] == 'WATHTE':
             metadata['grootheid'] = 'WATHTBRKD'
+    metadata['nodalfactors'] = hatyan_settings.nodalfactors
+    metadata['xfac'] = hatyan_settings.xfac
+    metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata)
 
     return ts_prediction_pd

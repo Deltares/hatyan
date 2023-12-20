@@ -49,11 +49,14 @@ def test_anapred_metadata():
     
     comp = hatyan.analysis(ts_measurements_group0,const_list='month')
     
-    pred = hatyan.prediction(comp)
+    pred_xfac0 = hatyan.prediction(comp, xfac=False)
+    # we also test if metadata is correctly passed if e.g. xfac is not in line with xfac in components file
+    pred_xfac1 = hatyan.prediction(comp, xfac=True)
     
-    meta_fromts = metadata_from_obj(pred)
+    meta_fromts_xfac0 = metadata_from_obj(pred_xfac0)
+    meta_fromts_xfac1 = metadata_from_obj(pred_xfac1)
     
-    meta_expected = {'station': 'VLISSGN',
+    meta_expected_xfac0 = {'station': 'VLISSGN',
      'grootheid': 'WATHTBRKD',
      'eenheid': 'cm',
      'vertref': 'NAP',
@@ -69,7 +72,11 @@ def test_anapred_metadata():
      'xfac': False,
      'fu_alltimes': True}
     
-    assert meta_fromts == meta_expected
+    meta_expected_xfac1 = meta_expected_xfac0.copy()
+    meta_expected_xfac1["xfac"] = True
+    
+    assert meta_fromts_xfac0 == meta_expected_xfac0
+    assert meta_fromts_xfac1 == meta_expected_xfac1
 
 
 @pytest.mark.unittest
