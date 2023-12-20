@@ -149,8 +149,8 @@ def write_components(comp, filename):
     tstart = metadata.pop('tstart')
     tstop = metadata.pop('tstop')
     tzone_min = metadata.pop('tzone')._minutes
-    tstart_str = tstart.strftime("%Y%m%d  %H%M%S")
-    tstop_str = tstop.strftime("%Y%m%d  %H%M%S")
+    tstart_str = tstart.strftime("%Y%m%d  %H%M")
+    tstop_str = tstop.strftime("%Y%m%d  %H%M")
     
     if 'A0' in comp.index.tolist():
         midd = comp.loc['A0','A']*100
@@ -205,7 +205,7 @@ def write_components(comp, filename):
         f.write(f'STAT  {station}    {grootheid}    {vertref}    {unit}    {waarnemingssoort}\n')
         f.write(f'PERD  {tstart_str}  {tstop_str}     {tzone_min}\n')
         f.write( 'CODE      3\n')
-        f.write(f'MIDD {midd:9.2f}\n')
+        f.write(f'MIDD {midd:9.3f}\n')
         f.write(f'NCOM {ncomp:5d}\n')
         for compname in comp.index.tolist():
             comp_one = comp.loc[compname]
