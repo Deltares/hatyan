@@ -149,8 +149,8 @@ def write_components(comp, filename):
     tstart = metadata.pop('tstart')
     tstop = metadata.pop('tstop')
     tzone_min = metadata.pop('tzone')._minutes
-    tstart_str = tstart.strftime("%Y%m%d  %H%M%S")
-    tstop_str = tstop.strftime("%Y%m%d  %H%M%S")
+    tstart_str = tstart.strftime("%Y%m%d  %H%M")
+    tstop_str = tstop.strftime("%Y%m%d  %H%M")
     
     if 'A0' in comp.index.tolist():
         midd = comp.loc['A0','A']*100
@@ -205,7 +205,7 @@ def write_components(comp, filename):
         f.write(f'STAT  {station}    {grootheid}    {vertref}    {unit}    {waarnemingssoort}\n')
         f.write(f'PERD  {tstart_str}  {tstop_str}     {tzone_min}\n')
         f.write( 'CODE      3\n')
-        f.write(f'MIDD {midd:9.2f}\n')
+        f.write(f'MIDD {midd:9.3f}\n')
         f.write(f'NCOM {ncomp:5d}\n')
         for compname in comp.index.tolist():
             comp_one = comp.loc[compname]
@@ -368,7 +368,8 @@ def read_components(filename):
     print('reading file: %s'%(filename))
     
     line_compstart = None
-    stat_perd_available = False
+    stat_available = False
+    perd_available = False
     with open(filename) as f:
         for i, line in enumerate(f):
             if line.startswith('STAT'):
@@ -377,13 +378,13 @@ def read_components(filename):
                 vertref = line.split()[3]
                 eenheid = line.split()[4]
                 # waarnemingssoort = int(line.split()[5])
-                stat_perd_available = True
+                stat_available = True
             elif line.startswith('PERD'):
                 dateline = line.split()
                 tstart = pd.Timestamp(dateline[1]+' '+dateline[2])
                 tstop = pd.Timestamp(dateline[3]+' '+dateline[4])
                 tzone = pytz.FixedOffset(int(dateline[5]))
-                stat_perd_available = True
+                perd_available = True
             elif line.startswith('MIDD'):
                 A0_cm = float(line.split()[1])
             elif line.startswith('COMP'):
@@ -409,19 +410,12 @@ def read_components(filename):
     comp_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
     
     # add metadata
-    if not stat_perd_available:
-        warnings.warn(UserWarning("No metadata available in component file (STAT/PERD lines), "
-                                  "you are probably using a component file generated with hatyan 2.7.0 or older. "
-                                  "Using dummy values for station/grootheid/vertref/tstart/tstop/tzone "
-                                  "to avoid issues in the hatyan process."))
-        station = "UNKNOWN"
-        grootheid = "WATHTE" # 'UNKNOWN' #TODO: this is not guaranteed, problem?
-        eenheid = "cm"
-        vertref = "NAP" # 'UNKNOWN' #TODO: this is not guaranteed, problem?
-        tstart = pd.Timestamp('9999-01-01')
-        tstop = pd.Timestamp('9999-01-01')
-        tzone = pytz.FixedOffset(60)
-    
+    if not (stat_available & perd_available):
+        raise KeyError("No STAT/PERD metadata available in component file, "
+                       "you are probably using a component file generated with hatyan 2.7.0 or older. "
+                       "Add metadata to the header of the component file like this:\n"
+                       "STAT  DENHDR    WATHTE     NAP     cm    1\n"
+                       "PERD  20090101  0000  20121231  2300     60")
     metadata = {'station':station,
                 'grootheid':grootheid, 'eenheid':eenheid,
                 'vertref':vertref,

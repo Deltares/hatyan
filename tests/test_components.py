@@ -8,10 +8,8 @@ Created on Fri Aug 11 14:33:40 2023
 import os
 import pytest
 import numpy as np
-import pandas as pd
-import pytz
 import hatyan
-from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
+from hatyan.metadata import metadata_from_obj
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -39,26 +37,31 @@ def test_read_write_components():
 @pytest.mark.unittest
 def test_read_write_components_nometadata():
     """
-    test for component files written with hatyan 2.7.0 or lower
-    these files lack essential metadata for STAT, PERD and CODE lines
-    Dummy values are added in read_components, but in general these component files cannot be used for much things.
+    Test for component files written with hatyan 2.7.0 or lower,
+    these files lack essential metadata for STAT, PERD and CODE lines.
+    This tests tests whether the correct exception is raised.
     """
     
-    file_orig = os.path.join(dir_testdata,'DENHDR_ana_nometadata.txt')
-    file_new = "temp_comp_dummymetadata.txt"
-    file_dia_new = "temp_dia_dummymetadata.txt"
-    comp_orig = hatyan.read_components(file_orig)
-    assert len(comp_orig) == 95
+    file_orig = os.path.join(dir_testdata,'DENHDR_ana.txt')
+    file_nometa = "temp_comp_dummymetadata.txt"
+    with open(file_orig, "r") as f:
+        data = f.readlines()
+    with open(file_nometa, "w") as f:
+        for line in data:
+            if line.startswith("STAT"):
+                continue
+            if line.startswith("PERD"):
+                continue
+            if line.startswith("CODE"):
+                continue
+            f.write(line)
     
-    hatyan.write_components(comp_orig, file_new)
-    comp_new = hatyan.read_components(filename=file_new)
-    
-    ts_pred = hatyan.prediction(comp=comp_orig, times=slice("2020-01-01","2020-01-20",10))
-    hatyan.write_tsdia(ts=ts_pred, filename=file_dia_new)
-    
-    assert np.allclose(comp_orig, comp_new)
-    os.remove(file_new)
-    os.remove(file_dia_new)
+    try:
+        _ = hatyan.read_components(file_nometa)
+    except KeyError as e:
+        assert "No STAT/PERD metadata available in component file" in str(e)
+
+    os.remove(file_nometa)
 
 
 @pytest.mark.unittest
