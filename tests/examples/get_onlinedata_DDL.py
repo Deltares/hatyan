@@ -5,11 +5,11 @@ Created on Wed Dec  1 17:03:52 2021
 @author: veenstra
 """
 
+import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
 import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
 import datetime as dt
 import matplotlib.pyplot as plt
 plt.close("all")
-import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
 
 # input parameters
 tstart_dt = dt.datetime(2019,12,24) #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
@@ -25,7 +25,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 
 ######### oneline waterlevel data retrieval for one station
-if 0: #for RWS
+if 1: #for RWS
     include_extremes = True
 
     locations = ddlpy.locations()
