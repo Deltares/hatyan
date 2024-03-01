@@ -7,7 +7,6 @@ Created on Wed Dec  1 17:03:52 2021
 
 import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
 import datetime as dt
-import pandas as pd
 import matplotlib.pyplot as plt
 plt.close("all")
 
@@ -129,11 +128,7 @@ if 1: #for CMEMS
         # filter measured waterlevels (drop waterlevel extremes)
         meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
         
-        # flatten quality code
-        ts_measwl = pd.DataFrame({'waterlevels':meas_wathte_ts['Meetwaarde.Waarde_Numeriek'].values,
-                                  'QC':pd.to_numeric(meas_wathte_ts['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values,
-                                  'Status':meas_wathte_ts['WaarnemingMetadata.StatuswaardeLijst'].str[0].values}, 
-                                  index=pd.to_datetime(meas_wathte_ts['Tijdstip']))
+        ts_measwl = meas_wathte_ts.set_index("t")
         
         # sort on time values # TODO: do this in ddlpy or in ddl
         ts_measwl = ts_measwl.sort_index()
@@ -141,8 +136,8 @@ if 1: #for CMEMS
         stat_name = locs_wathte_one.iloc[0]["Naam"]
         stat_code = current_station
         fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
-        ax1.plot(ts_measwl["waterlevels"])
-        ax2.plot(ts_measwl["QC"])
+        ax1.plot(ts_measwl["Meetwaarde.Waarde_Numeriek"])
+        ax2.plot(ts_measwl["WaarnemingMetadata.KwaliteitswaardecodeLijst"].astype(int))
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_title(f'QC for {stat_code} ({stat_name})')
         fig.tight_layout()
