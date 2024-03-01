@@ -319,10 +319,11 @@ def ddlpy_to_hatyan(ddlpy_meas):
             raise Exception(f"ddlpy_meas['{col}'] is not unique")
     
     import pandas as pd
-    #TODO: below copied from hatyan.getonlinedata.py (more TODO in that script). also in dfm_tools.observations.py
-    key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
-    isnumeric = True
-    if not key_numericvalues in ddlpy_meas.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
+    if 'Meetwaarde.Waarde_Numeriek' in ddlpy_meas.columns: 
+        key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
+        isnumeric = True
+    else:
+        #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
         isnumeric = False
     ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues].values,
