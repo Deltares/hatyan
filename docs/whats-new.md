@@ -9,6 +9,8 @@
 - added metadata to timeseries and components and passing it between those objects in the hatyan process by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/131)
 - improved metadata in component files by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/131)
 - replaced `times_ext` `timestep_min` and `times_pred_all` for `prediction()` with `times` argument by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/143)
+- integrated ddlpy to in ddl example script by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#202](https://github.com/Deltares/hatyan/pull/202)
+
 
 ## 2.7.0 (2023-08-03)
 
