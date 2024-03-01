@@ -6,8 +6,8 @@ Created on Wed Dec  1 17:03:52 2021
 """
 
 import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
-import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
 import datetime as dt
+import pandas as pd
 import matplotlib.pyplot as plt
 plt.close("all")
 
@@ -21,11 +21,10 @@ tstop_dt = dt.datetime(2020,1,5)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
 #tstop_dt = dt.datetime(2012,12,31,23,50)
 
-dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
-
 
 ######### online waterlevel data retrieval for one station
 if 1: #for RWS
+    import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
     include_extremes = True
 
     locations = ddlpy.locations()
@@ -57,20 +56,14 @@ if 1: #for RWS
         # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
         if len(locs_wathte_one) > 1:
             raise Exception("duplicate stations for wathte")
-        else:
-            locs_wathte_one = locs_wathte_one.iloc[0]
         if len(locs_wathtbrkd_one) > 1:
             raise Exception("duplicate stations for wathtbrkd")
-        else:
-            locs_wathtbrkd_one = locs_wathtbrkd_one.iloc[0]
         if len(locs_types_one) > 1:
             raise Exception("duplicate stations for types")
-        else:
-            locs_types_one = locs_types_one.iloc[0]
         
-        meas_wathte = ddlpy.measurements(locs_wathte_one, start_date=tstart_dt, end_date=tstop_dt)
-        meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one, start_date=tstart_dt, end_date=tstop_dt)
-        meas_types = ddlpy.measurements(locs_types_one, start_date=tstart_dt, end_date=tstop_dt)
+        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        meas_types = ddlpy.measurements(locs_types_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         
         # TODO: rename lowercase code to uppercase Code
         meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
@@ -112,39 +105,43 @@ if 1: #for RWS
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
 if 1: #for CMEMS
-
     locations = ddlpy.locations()
-    locations["Code"] = locations.index #TODO: maybe check in index directly?
     
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
-    # bool_groepering = locations['Groepering.code'].isin(['NVT']) # TODO: we cannot subset on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
+    # bool_groepering = locations['Groepering.code'].isin(['NVT']) # TODO: we cannot subset locations on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
 
     # get wathte locations (ts and extremes) >> measured waterlevel
     bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
     locs_wathte = locations.loc[bool_grootheid & bool_hoedanigheid]
     
     for current_station in ['HOEKVHLD']:
-        locs_wathte_one = locs_wathte.loc[locs_wathte['Code'].isin([current_station])]
+        locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
         
         # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
         if len(locs_wathte_one) > 1:
             raise Exception("duplicate stations for wathte")
-        else:
-            locs_wathte_one = locs_wathte_one.iloc[0]
         
-        meas_wathte = ddlpy.measurements(locs_wathte_one, start_date=tstart_dt, end_date=tstop_dt)
+        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         
-        # TODO: rename lowercase code to uppercase Code
+        # TODO: rename lowercase code to uppercase Code, fix in ddlpy
         meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
         
-        # timeseries
+        # filter measured waterlevels (drop waterlevel extremes)
         meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
-        ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte_ts)
         
-        stat_name = locs_wathte_one["Naam"]
-        stat_code = locs_wathte_one["Code"]
+        # flatten quality code
+        ts_measwl = pd.DataFrame({'waterlevels':meas_wathte_ts['Meetwaarde.Waarde_Numeriek'].values,
+                                  'QC':pd.to_numeric(meas_wathte_ts['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values,
+                                  'Status':meas_wathte_ts['WaarnemingMetadata.StatuswaardeLijst'].str[0].values}, 
+                                 index=pd.to_datetime(meas_wathte_ts['Tijdstip']))
+        
+        # sort on time values # TODO: do this in ddlpy or in ddl
+        ts_measwl = ts_measwl.sort_index()
+        
+        stat_name = locs_wathte_one.iloc[0]["Naam"]
+        stat_code = current_station
         fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
-        ts_measwl["values"].plot(ax=ax1)
+        ts_measwl["waterlevels"].plot(ax=ax1)
         ts_measwl["QC"].plot(ax=ax2)
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_title(f'QC for {stat_code} ({stat_name})')
