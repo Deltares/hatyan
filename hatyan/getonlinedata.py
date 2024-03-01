@@ -313,12 +313,15 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
 
 
 def ddlpy_to_hatyan(ddlpy_meas):
+
+    # TODO: rename lowercase code to uppercase Code: https://github.com/openearth/ddlpy/issues/38
+    ddlpy_meas.columns = [x.replace(".code",".Code") for x in ddlpy_meas.columns]
+
     cols_mustbe_unique = ['Grootheid.Code','Groepering.Code','Typering.Code','Hoedanigheid.Code']
     for col in cols_mustbe_unique:
         if len(ddlpy_meas[col].drop_duplicates()) != 1:
             raise Exception(f"ddlpy_meas['{col}'] is not unique")
     
-    import pandas as pd
     if 'Meetwaarde.Waarde_Numeriek' in ddlpy_meas.columns: 
         key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
         isnumeric = True
@@ -327,20 +330,17 @@ def ddlpy_to_hatyan(ddlpy_meas):
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
         isnumeric = False
     
-    ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues].values,
-                         'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'].values,downcast='integer'), # DDL IMPROVEMENT: should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> replace None with int code
-                         'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'].values,
-                         #'Bemonsteringshoogte':measurements_wathte['WaarnemingMetadata.BemonsteringshoogteLijst'].astype(int).values, 
-                         #'Referentievlak':measurements_wathte['WaarnemingMetadata.ReferentievlakLijst'].values,
-                         #'OpdrachtgevendeInstantie':measurements_wathte['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].values,
-                         },
-                        index=pd.to_datetime(ddlpy_meas['Tijdstip']))
+    ddlpy_meas = ddlpy_meas.set_index("t")
+    ddlpy_meas.index.name = "time"
+    
+    # DDL IMPROVEMENT: qc conversion should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> now flattened by ddlpy
+    ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues],
+                         'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
+                         'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'],
+                         })
     
     if isnumeric:
         ts_pd['values'] /= 100 #convert from cm to m
-
-    # sort on time values # TODO: do this in ddlpy or in ddl
-    ts_pd = ts_pd.sort_index()
     
     return ts_pd
 

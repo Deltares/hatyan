@@ -20,15 +20,14 @@ tstop_dt = dt.datetime(2020,1,5)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
 #tstop_dt = dt.datetime(2012,12,31,23,50)
 
+locations = ddlpy.locations()
 
 ######### online waterlevel data retrieval for one station
 if 1: #for RWS
     import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
     include_extremes = True
 
-    locations = ddlpy.locations()
     locations["Code"] = locations.index
-    # locations = locations_ddlpy.reset_index(drop=False).set_index('Locatie_MessageID')
     
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
     # bool_groepering = locations['Groepering.code'].isin(['NVT']) # TODO: we cannot subset on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
@@ -64,7 +63,7 @@ if 1: #for RWS
         meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         meas_types = ddlpy.measurements(locs_types_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         
-        # TODO: rename lowercase code to uppercase Code
+        # TODO: rename lowercase code to uppercase Code: https://github.com/openearth/ddlpy/issues/38
         meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
         meas_wathtbrkd.columns = [x.replace(".code",".Code") for x in meas_wathtbrkd.columns]
         meas_types.columns = [x.replace(".code",".Code") for x in meas_types.columns]
@@ -104,10 +103,10 @@ if 1: #for RWS
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
 if 1: #for CMEMS
-    locations = ddlpy.locations()
     
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
-    # bool_groepering = locations['Groepering.code'].isin(['NVT']) # TODO: we cannot subset locations on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
+    # TODO: we cannot subset locations on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
+    # bool_groepering = locations['Groepering.code'].isin(['NVT'])
 
     # get wathte locations (ts and extremes) >> measured waterlevel
     bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
@@ -122,22 +121,19 @@ if 1: #for CMEMS
         
         meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         
-        # TODO: rename lowercase code to uppercase Code, fix in ddlpy
+        # TODO: rename lowercase code to uppercase Code, fix in ddlpy: https://github.com/openearth/ddlpy/issues/38
         meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
+        # TODO: add time as index, fix in ddlpy: https://github.com/openearth/ddlpy/issues/38
+        meas_wathte = meas_wathte.set_index("t")
         
         # filter measured waterlevels (drop waterlevel extremes)
         meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
         
-        ts_measwl = meas_wathte_ts.set_index("t")
-        
-        # sort on time values # TODO: do this in ddlpy or in ddl
-        ts_measwl = ts_measwl.sort_index()
-        
         stat_name = locs_wathte_one.iloc[0]["Naam"]
         stat_code = current_station
         fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
-        ax1.plot(ts_measwl["Meetwaarde.Waarde_Numeriek"])
-        ax2.plot(ts_measwl["WaarnemingMetadata.KwaliteitswaardecodeLijst"].astype(int))
+        ax1.plot(meas_wathte_ts["Meetwaarde.Waarde_Numeriek"])
+        ax2.plot(meas_wathte_ts["WaarnemingMetadata.KwaliteitswaardecodeLijst"].astype(int))
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_title(f'QC for {stat_code} ({stat_name})')
         fig.tight_layout()
