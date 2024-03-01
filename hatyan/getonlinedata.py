@@ -330,6 +330,7 @@ def ddlpy_to_hatyan(ddlpy_meas):
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
         isnumeric = False
     
+    #TODO: put in ddlpy: https://github.com/openearth/ddlpy/issues/38
     ddlpy_meas = ddlpy_meas.set_index("t")
     ddlpy_meas.index.name = "time"
     
