@@ -5,6 +5,7 @@ Created on Wed Dec  1 17:03:52 2021
 @author: veenstra
 """
 
+import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
 import datetime as dt
 import matplotlib.pyplot as plt
 plt.close("all")
@@ -23,40 +24,8 @@ tstop_dt = dt.datetime(2020,1,5)
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 
-def ddlpy_to_hatyan(ddlpy_meas):
-    cols_mustbe_unique = ['Grootheid.Code','Groepering.Code','Typering.Code','Hoedanigheid.Code']
-    for col in cols_mustbe_unique:
-        if len(ddlpy_meas[col].drop_duplicates()) != 1:
-            raise Exception(f"ddlpy_meas['{col}'] is not unique")
-    
-    import pandas as pd
-    #TODO: below copied from hatyan.getonlinedata.py (more TODO in that script). also in dfm_tools.observations.py
-    key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
-    isnumeric = True
-    if not key_numericvalues in ddlpy_meas.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
-        key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
-        isnumeric = False
-    ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues].values,
-                         'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values, # DDL IMPROVEMENT: should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> replace None with int code
-                         'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
-                         #'Bemonsteringshoogte':measurements_wathte['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 
-                         #'Referentievlak':measurements_wathte['WaarnemingMetadata.ReferentievlakLijst'].str[0].values,
-                         #'OpdrachtgevendeInstantie':measurements_wathte['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].str[0].values,
-                         },
-                        index=pd.to_datetime(ddlpy_meas['Tijdstip']))
-    
-    if isnumeric:
-        ts_pd['values'] /= 100 #convert from cm to m
-
-    # sort on time values # TODO: do this in ddlpy or in ddl
-    ts_pd = ts_pd.sort_index()
-    
-    return ts_pd
-
-
 ######### oneline waterlevel data retrieval for one station
 if 0: #for RWS
-    import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
     include_extremes = True
 
     locations = ddlpy.locations()
@@ -110,21 +79,21 @@ if 0: #for RWS
         
         # timeseries
         meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
-        ts_measwl = ddlpy_to_hatyan(meas_wathte_ts)
+        ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte_ts)
         meas_wathtbrkd_ts = meas_wathtbrkd.loc[meas_wathtbrkd['Groepering.Code'].isin(['NVT'])]
-        ts_astro = ddlpy_to_hatyan(meas_wathtbrkd_ts)
+        ts_astro = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ts)
         
         if include_extremes:
             #extremes
             meas_wathte_ext = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['GETETM2'])]
-            ts_measwlHWLW = ddlpy_to_hatyan(meas_wathte_ext)
+            ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext)
             meas_wathtbrkd_ext = meas_wathtbrkd.loc[meas_wathtbrkd['Groepering.Code'].isin(['GETETBRKD2'])]
-            ts_astroHWLW = ddlpy_to_hatyan(meas_wathtbrkd_ext)
+            ts_astroHWLW = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ext)
             # extreme types
             meas_wathte_exttype = meas_types.loc[meas_types['Groepering.Code'].isin(['GETETM2'])]
-            ts_measwlHWLWtype = ddlpy_to_hatyan(meas_wathte_exttype)
+            ts_measwlHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathte_exttype)
             meas_wathtbrkd_exttype = meas_types.loc[meas_types['Groepering.Code'].isin(['GETETBRKD2'])]
-            ts_astroHWLWtype = ddlpy_to_hatyan(meas_wathtbrkd_exttype)
+            ts_astroHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_exttype)
             
             ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
             ts_astrolHWLW = hatyan.convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
@@ -170,7 +139,7 @@ if 1: #for CMEMS
         
         # timeseries
         meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
-        ts_measwl = ddlpy_to_hatyan(meas_wathte_ts)
+        ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte_ts)
         
         stat_name = locs_wathte_one["Naam"]
         stat_code = locs_wathte_one["Code"]

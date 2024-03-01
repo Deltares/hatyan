@@ -312,6 +312,37 @@ def get_DDL_stationmetasubset(catalog_dict, station_dict=None, meta_dict=None, e
     return cat_aquometadatalijst_sel, cat_locatielijst_sel
 
 
+def ddlpy_to_hatyan(ddlpy_meas):
+    cols_mustbe_unique = ['Grootheid.Code','Groepering.Code','Typering.Code','Hoedanigheid.Code']
+    for col in cols_mustbe_unique:
+        if len(ddlpy_meas[col].drop_duplicates()) != 1:
+            raise Exception(f"ddlpy_meas['{col}'] is not unique")
+    
+    import pandas as pd
+    #TODO: below copied from hatyan.getonlinedata.py (more TODO in that script). also in dfm_tools.observations.py
+    key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
+    isnumeric = True
+    if not key_numericvalues in ddlpy_meas.columns: #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
+        key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
+        isnumeric = False
+    ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues].values,
+                         'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values, # DDL IMPROVEMENT: should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> replace None with int code
+                         'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
+                         #'Bemonsteringshoogte':measurements_wathte['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 
+                         #'Referentievlak':measurements_wathte['WaarnemingMetadata.ReferentievlakLijst'].str[0].values,
+                         #'OpdrachtgevendeInstantie':measurements_wathte['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].str[0].values,
+                         },
+                        index=pd.to_datetime(ddlpy_meas['Tijdstip']))
+    
+    if isnumeric:
+        ts_pd['values'] /= 100 #convert from cm to m
+
+    # sort on time values # TODO: do this in ddlpy or in ddl
+    ts_pd = ts_pd.sort_index()
+    
+    return ts_pd
+
+
 def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
     """
     TVL;1;1;hoogwater
