@@ -13,6 +13,8 @@ import pandas as pd
 import datetime as dt
 from netCDF4 import Dataset, num2date
 import hatyan
+import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
+import pandas.api.types as ptypes
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -861,3 +863,33 @@ def test_DDL_QCvalues():
     assert uniqueQC.dtype=='int8'
     assert (uniqueQC == np.array([ 0, 25])).all()
 
+
+@pytest.mark.unittest
+def test_ddlpy_to_hatyan():
+
+    # input parameters
+    tstart_dt = dt.datetime(2019,12,24) #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
+    tstop_dt = dt.datetime(2020,1,5)
+
+    locations = ddlpy.locations()
+
+    bool_station = locations.index.isin(['HOEKVHLD'])
+    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
+    locs_wathte = locations.loc[bool_station & bool_grootheid & bool_hoedanigheid]
+
+    meas_wathte = ddlpy.measurements(locs_wathte.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+
+    # TODO: rename lowercase code to uppercase Code
+    meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
+
+    # timeseries
+    meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
+    ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte_ts)
+
+    assert ts_measwl.columns.tolist() == ['values', 'QC', 'Status']
+    assert ts_measwl.index.name == 'Tijdstip'
+
+    assert ptypes.is_float_dtype(ts_measwl["values"])
+    assert ptypes.is_integer_dtype(ts_measwl["QC"])
+    assert ptypes.is_object_dtype(ts_measwl["Status"])
