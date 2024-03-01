@@ -24,7 +24,7 @@ tstop_dt = dt.datetime(2020,1,5)
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 
-######### oneline waterlevel data retrieval for one station
+######### online waterlevel data retrieval for one station
 if 1: #for RWS
     include_extremes = True
 
