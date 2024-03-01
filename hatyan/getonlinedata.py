@@ -326,12 +326,13 @@ def ddlpy_to_hatyan(ddlpy_meas):
         #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
         isnumeric = False
+    
     ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues].values,
-                         'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values, # DDL IMPROVEMENT: should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> replace None with int code
-                         'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'].str[0].values,
-                         #'Bemonsteringshoogte':measurements_wathte['WaarnemingMetadata.BemonsteringshoogteLijst'].str[0].astype(int).values, 
-                         #'Referentievlak':measurements_wathte['WaarnemingMetadata.ReferentievlakLijst'].str[0].values,
-                         #'OpdrachtgevendeInstantie':measurements_wathte['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].str[0].values,
+                         'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'].values,downcast='integer'), # DDL IMPROVEMENT: should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> replace None with int code
+                         'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'].values,
+                         #'Bemonsteringshoogte':measurements_wathte['WaarnemingMetadata.BemonsteringshoogteLijst'].astype(int).values, 
+                         #'Referentievlak':measurements_wathte['WaarnemingMetadata.ReferentievlakLijst'].values,
+                         #'OpdrachtgevendeInstantie':measurements_wathte['WaarnemingMetadata.OpdrachtgevendeInstantieLijst'].values,
                          },
                         index=pd.to_datetime(ddlpy_meas['Tijdstip']))
     
