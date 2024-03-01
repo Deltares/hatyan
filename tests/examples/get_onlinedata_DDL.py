@@ -5,9 +5,11 @@ Created on Wed Dec  1 17:03:52 2021
 @author: veenstra
 """
 
+import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
 import datetime as dt
-import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
-hatyan.close('all')
+import pandas as pd
+import matplotlib.pyplot as plt
+plt.close("all")
 
 # input parameters
 tstart_dt = dt.datetime(2019,12,24) #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
@@ -19,176 +21,128 @@ tstop_dt = dt.datetime(2020,1,5)
 #tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
 #tstop_dt = dt.datetime(2012,12,31,23,50)
 
-dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
-print('retrieving DDL catalog')
-catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
-print('...done')
-
-######### oneline waterlevel data retrieval for one station
-if 0: #for RWS
+######### online waterlevel data retrieval for one station
+if 1: #for RWS
+    import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
     include_extremes = True
-    stationcode = 'HOEKVHLD'
-    cat_locatielijst = catalog_dict['LocatieLijst']#.set_index('Locatie_MessageID',drop=True)
-    station_dict = cat_locatielijst[cat_locatielijst['Code']==stationcode].iloc[0]
-    
-    ts_astro, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC',
-                                                          meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'NVT'},allow_multipleresultsfor=['WaardeBepalingsmethode'])
-    ts_astro['values'] = ts_astro['values']/100 #convert from cm to m
-    ts_measwl, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,
-                                                           meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT'},allow_multipleresultsfor=['WaardeBepalingsmethode']) #default meta_dict selects waterlevels
-    ts_measwl['values'] = ts_measwl['values']/100 #convert from cm to m
-    if include_extremes:
-        ts_measwlHWLW, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
-                                                                   meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'GETETM2'})
-        ts_measwlHWLW['values'] = ts_measwlHWLW['values']/100 #convert from cm to m
-        ts_measwlHWLWtype, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
-                                                                       meta_dict={'Groepering.Code':'GETETM2','Typering.Code':'GETETTPE'})
-        ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
-        
-        ts_astroHWLW, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
-                                                                  meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'GETETBRKD2'})
-        ts_astroHWLW['values'] = ts_astroHWLW['values']/100 #convert from cm to m
-        ts_astroHWLWtype, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,allow_multipleresultsfor=['WaardeBepalingsmethode'],
-                                                                      meta_dict={'Groepering.Code':'GETETBRKD2','Typering.Code':'GETETTPE'})
-        ts_astrolHWLW = hatyan.convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
 
+    locations = ddlpy.locations()
+    locations["Code"] = locations.index
+    # locations = locations_ddlpy.reset_index(drop=False).set_index('Locatie_MessageID')
+    
+    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
+    # bool_groepering = locations['Groepering.code'].isin(['NVT']) # TODO: we cannot subset on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
+    # bool_typering = locations['Typering.code'].isin(['GETETTPE']) # TODO: we cannot subset on Typering (NVT/GETETTPE) yet: https://github.com/openearth/ddlpy/issues/21
+    
+    # get wathte locations (ts and extremes) >> measured waterlevel
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
+    locs_wathte = locations.loc[bool_grootheid & bool_hoedanigheid]
+    
+    # get WATHTBRKD locations (ts and extremes) >> computed astronomical waterlevel
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTBRKD'])
+    locs_wathtbrkd = locations.loc[bool_grootheid & bool_hoedanigheid]
+
+    # get types locations (ts and extremes) #TODO: replace with filter for Typering
+    bool_grootheid = locations['Grootheid.Code'].isin(['NVT'])
+    bool_eenheid = locations['Eenheid.Code'].isin(['DIMSLS'])
+    locs_types = locations.loc[bool_grootheid & bool_eenheid]
+    
+    for current_station in ['HOEKVHLD']:
+        locs_wathte_one = locs_wathte.loc[locs_wathte['Code'].isin([current_station])]
+        locs_wathtbrkd_one = locs_wathtbrkd.loc[locs_wathtbrkd['Code'].isin([current_station])]
+        locs_types_one = locs_types.loc[locs_types['Code'].isin([current_station])]
+        
+        # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
+        if len(locs_wathte_one) > 1:
+            raise Exception("duplicate stations for wathte")
+        if len(locs_wathtbrkd_one) > 1:
+            raise Exception("duplicate stations for wathtbrkd")
+        if len(locs_types_one) > 1:
+            raise Exception("duplicate stations for types")
+        
+        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        meas_types = ddlpy.measurements(locs_types_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        
+        # TODO: rename lowercase code to uppercase Code
+        meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
+        meas_wathtbrkd.columns = [x.replace(".code",".Code") for x in meas_wathtbrkd.columns]
+        meas_types.columns = [x.replace(".code",".Code") for x in meas_types.columns]
+        
+        # timeseries
+        meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
+        ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte_ts)
+        meas_wathtbrkd_ts = meas_wathtbrkd.loc[meas_wathtbrkd['Groepering.Code'].isin(['NVT'])]
+        ts_astro = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ts)
+        
+        if include_extremes:
+            #extremes
+            meas_wathte_ext = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['GETETM2'])]
+            ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext)
+            meas_wathtbrkd_ext = meas_wathtbrkd.loc[meas_wathtbrkd['Groepering.Code'].isin(['GETETBRKD2'])]
+            ts_astroHWLW = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ext)
+            # extreme types
+            meas_wathte_exttype = meas_types.loc[meas_types['Groepering.Code'].isin(['GETETM2'])]
+            ts_measwlHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathte_exttype)
+            meas_wathtbrkd_exttype = meas_types.loc[meas_types['Groepering.Code'].isin(['GETETBRKD2'])]
+            ts_astroHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_exttype)
+            
+            ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
+            ts_astrolHWLW = hatyan.convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
+
+    stat_name = locs_wathte_one["Naam"]
+    stat_code = locs_wathte_one["Code"]
     if include_extremes:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl,ts_ext=ts_astroHWLW,ts_ext_validation=ts_measwlHWLW)
-        ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))
+        ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_ylim(-0.5,0.5)
     else:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl)
-        ax1.set_title('waterlevels for %s (%s)'%(stationcode, stationdata['Naam'][0]))
+        ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_ylim(-0.5,0.5)
 
 
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
-if 0: #for CMEMS
-    cat_locatielijst = catalog_dict['LocatieLijst'].set_index('Code',drop=False)
-    cat_locatielijst['lon'],cat_locatielijst['lat'] = hatyan.convert_coordinates(coordx_in=cat_locatielijst['X'].values, coordy_in=cat_locatielijst['Y'].values, epsg_in=int(cat_locatielijst['Coordinatenstelsel'].iloc[0]),epsg_out=4326)
+if 1: #for CMEMS
+    locations = ddlpy.locations()
     
-    # subset of catalog and station list with all waterlevel related values
-    cat_aquometadatalijst_waterhoogte, cat_locatielijst_waterhoogte = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Code':'WATHTE$','Groepering.Code':'NVT'}) #waterhoogte, so waterlevel measurements
-    key_list = ['Eenheid','Grootheid','Groepering','Hoedanigheid','MeetApparaat']
-    
-    #printing unique metadata in selection
-    for key in key_list:
-        print(f'unique {key} available in requested subset:\n{cat_aquometadatalijst_waterhoogte[[f"{key}.Code",f"{key}.Omschrijving"]].drop_duplicates()}')
-    
-    #data query
-    meta_dict={'Grootheid.Code':'WATHTE','Groepering.Code':'NVT', #combination for measured waterlevels
-               'Hoedanigheid.Code':'NAP', # vertical reference. Hoedanigheid is necessary for eg EURPFM/LICHTELGRE, where NAP and MSL values are available while it should only contain MSL #MSL, NAP, PLAATSLR, TAW, NVT (from cat_aquometadatalijst_waterhoogte['Hoedanigheid.Code'])
-               'MeetApparaat.Code':'127', # measurement device type. MeetApparaat.Code is necessary for IJMDBTHVN/ROOMPBTN, where also radar measurements are available (all other stations are vlotter and these stations also have all important data in vlotter) TODO: Except LICHTELGRE/K13APFM which have Radar/Stappenbaak en Radar as MeetApparaat
-               }
-    
-    stat_list = cat_locatielijst_waterhoogte['Code'].tolist()
-    
-    #loop over the each station
-    for current_station in ['HOEKVHLD']: #stat_list: #['HOEKVHLD']:
-        station_dict = cat_locatielijst.loc[current_station,['Locatie_MessageID','X','Y','Naam','Code']] #station query
-        station_latlon = cat_locatielijst.loc[current_station,['lat','lon']]
-        
-        allow_multipleresultsfor = ['WaardeBepalingsmethode'] # necessary for retrieving very long timeseries
-        
-        #retrieving waterlevels
-        print(f'retrieving measwl data from DDL for {current_station}')
-        request_output = hatyan.get_DDL_data(station_dict=station_dict, tstart_dt=tstart_dt, tstop_dt=tstop_dt, tzone='UTC+00:00', meta_dict=meta_dict, allow_multipleresultsfor=allow_multipleresultsfor)
-        if request_output is None: #no output so this station is skipped
-            continue
-        
-        ts_meas_pd, metadata, stationdata = request_output #ts_meas_pd contains values/QC/Status/WaardeBepalingsmethode, metadata contains unit/reference/etc, stationdata contains X/Y/Naam/Code
-        
-        ts_meas_pd = ts_meas_pd.loc[:,['values', 'QC', 'Status']] #dropping WaardeBepalingsmethode reduces memory 
-        if not (metadata['Eenheid.Code']=='cm').all(): #skipping station if unit is not cm (should not happen)
-            continue
-        ts_meas_pd['values'] /= 100 #convert from cm to m
-        print(ts_meas_pd)
-        #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
+    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
+    # bool_groepering = locations['Groepering.code'].isin(['NVT']) # TODO: we cannot subset locations on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
 
-
-######### more complex retrieval of selection of data from DDL from selection of stations
-if 0:
-    import os
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    plt.close('all')
+    # get wathte locations (ts and extremes) >> measured waterlevel
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
+    locs_wathte = locations.loc[bool_grootheid & bool_hoedanigheid]
     
-    plot_stations = False
-    write_measurement_files = False
-    
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Naam':'Hoek van holland'},meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'HOEKVHLD'},meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'VLISSGN'},meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'VLISSGN'},meta_dict={'Grootheid.Omschrijving':'waterhoogte','Groepering.Code':'NVT'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Omschrijving':'waterhoogte'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict=None,meta_dict={'Grootheid.Omschrijving':'stroom'})
-    #cat_aquometadatalijst_sel, cat_locatielijst_sel = hatyan.get_DDL_stationmetasubset(catalog_dict=catalog_dict,station_dict={'Code':'VLISSGN|HOEKVHLD'},meta_dict=None)
-    
-    print('Grootheid/Groepering Code/Omschrijving:\n', cat_aquometadatalijst_sel[['Grootheid.Code','Grootheid.Omschrijving','Groepering.Code']])
-    print('station selection:\n', cat_locatielijst_sel[['Naam','Code']])
-    
-    # construct meta_dict dict, use cat_aquometadatalijst_sel to select the data you are interested in
-    meta_dict = {#'Compartiment.Code':'OW', #OW (oppervlaktewater)
-                 #'Eenheid.Code':'cm', #cm (centimeter)
-                 #'MeetApparaat.Code':'109',
-                 #'Hoedanigheid.Code':'NAP', #MSL, NAP, PLAATSLR, TAW, NVT (from cat_aquometadatalijst['Hoedanigheid.Code'])
-                 'Grootheid.Code':'WATHTE', #WATHTBRKD (Waterhoogte berekend), WATHTE (Waterhoogte), WATHTEASTRO (Waterhoogte astronomisch), WATHTEVERWACHT (Waterhoogte verwacht), STROOMSHD (Stroomsnelheid), STROOMRTG (Stroomrichting) (from cat_aquometadatalijst['Grootheid.Code'])
-                 'Groepering.Code':'NVT', #GETETBRKD2 (Getijextreem berekend), GETETBRKDMSL2 (Getijextreem berekend t.o.v. MSL), GETETM2 (Getijextremen), GETETMSL2 (Getijextremen t.o.v. MSL), NVT (entire waterlevel timeseries) (from cat_aquometadatalijst['Groepering.Code'])
-                 #'WaardeBepalingsmethode.Code': 'other:F007', #other:F009 ('Visuele aflezing van blad'), other:F001 (Rekenkundig gemiddelde waarde over vorige 10 minuten), other:F007 (Rekenkundig gemiddelde waarde over vorige 5 en volgende 5 minuten)
-                 }
-
-    if plot_stations: #plot all stations
-        file_ldb = os.path.join(dir_testdata,'other','wvs_coastline3.ldb') #WGS84 ldb is converted to RD, but does not change anything wrt to matlab converted ldb, which is good
-        ldb_pd_wgs = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['x','y'],na_values=[999.999])
-        x_out, y_out = hatyan.convert_coordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
-        ldb_pd = pd.DataFrame({'RDx':x_out/1000, 'RDy':y_out/1000})
+    for current_station in ['HOEKVHLD']:
+        locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
         
-        x_out, y_out = hatyan.convert_coordinates(coordx_in=cat_locatielijst_sel['X'].values, coordy_in=cat_locatielijst_sel['Y'].values, epsg_in=25831, epsg_out=28992)
-        fig,ax_map = plt.subplots()
-        ax_map.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
-        ax_map.plot(x_out/1000,y_out/1000,'xr')
-        #x_NZBN, y_NZBN = hatyan.convert_coordinates(coordx_in=4.07075, coordy_in=52.16182, epsg_in=4326, epsg_out=28992)
-        #ax_map.plot(x_NZBN/1000,y_NZBN/1000,'xb')
-        for statx,staty,statname in zip(x_out,y_out,cat_locatielijst_sel['Naam']):
-            ax_map.text(statx/1000,staty/1000,statname)
-    
-    #cat_locatielijst_sel = cat_locatielijst_sel.iloc[[2]] # use only one station to speed up testing of script
-    for iR, locatie_row in cat_locatielijst_sel.iterrows(): #loop over the each station
-        #locatie_row['Locatie_MessageID'] = cat_locatielijst_sel.loc[iR].name
-        station_dict = locatie_row
-        request_output = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_dt,tstop_dt=tstop_dt,tzone='UTC+01:00',
-                                             meta_dict=meta_dict,)#,allow_multipleresultsfor=['WaardeBepalingsmethode'])
-        if request_output is not None:
-            ts_meas_pd, metadata, stationdata = request_output
-            if (metadata['Eenheid.Code']=='cm').all():
-                ts_meas_pd['values'] = ts_meas_pd['values']/100 #convert from cm to m in case of waterstanden
-            print(stationdata['Naam'][0])
-            print(ts_meas_pd)
-            if write_measurement_files and ts_meas_pd is not None:
-                ts_meas_pd.to_csv('waterlevel_%s.txt'%(stationdata['Code']))
-            
-            # PLOTTING
-            if plot_stations: #plot all stations
-                x_out, y_out = hatyan.convert_coordinates(coordx_in=stationdata['X'], coordy_in=stationdata['Y'], epsg_in=25831, epsg_out=28992)
-                ax_map.plot(x_out/1000,y_out/1000,'xg')
-            
-            if 0: #compare to local available measurements (Vlis 2009)
-                ts_meas_pd.index = ts_meas_pd.index.tz_localize(None) #remove timezone info without changing the time
-                ts_meas_validation = hatyan.readts_dia('c:\\Users\\veenstra\\Downloads\\VLISSGN_obs1.dia',station='VLISSGN')
-                fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd,ts_validation=ts_meas_validation)
-            elif 0: #compare to tidal prediciton of retrieved dataset
-                ts_meas_pd.index = ts_meas_pd.index.tz_localize(None) #remove timezone info without changing the time
-                comp = hatyan.analysis(ts=ts_meas_pd,const_list='month')
-                ts_pred = hatyan.prediction(comp)
-                fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd,ts_validation=ts_pred)
-            elif 0: #RWS style tidal analysis (but SA/SM should come from other 1976...1994)
-                ts_meas_pd.index = ts_meas_pd.index.tz_localize(None) #remove timezone info without changing the time
-                ts_pred_validation = hatyan.readts_dia('c:\\Users\\veenstra\\Downloads\\VLISSGN_pre.dia',station='VLISSGN')
-                comp = hatyan.analysis(ts=ts_meas_pd,const_list='year',analysis_perperiod='Y',xfac=True,fu_alltimes=False)
-                ts_pred = hatyan.prediction(comp=comp,times_pred_all=ts_pred_validation.index,xfac=True,fu_alltimes=False)
-                fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_pred,ts_validation=ts_pred_validation)
-            else:
-                fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas_pd)
-            ax1.set_title('%s (%s)'%(stationdata['Naam'][0],stationdata['Code'][0]))
-
+        # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
+        if len(locs_wathte_one) > 1:
+            raise Exception("duplicate stations for wathte")
+        
+        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        
+        # TODO: rename lowercase code to uppercase Code, fix in ddlpy
+        meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
+        
+        # filter measured waterlevels (drop waterlevel extremes)
+        meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
+        
+        # flatten quality code
+        ts_measwl = pd.DataFrame({'waterlevels':meas_wathte_ts['Meetwaarde.Waarde_Numeriek'].values,
+                                  'QC':pd.to_numeric(meas_wathte_ts['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values,
+                                  'Status':meas_wathte_ts['WaarnemingMetadata.StatuswaardeLijst'].str[0].values}, 
+                                 index=pd.to_datetime(meas_wathte_ts['Tijdstip']))
+        
+        # sort on time values # TODO: do this in ddlpy or in ddl
+        ts_measwl = ts_measwl.sort_index()
+        
+        stat_name = locs_wathte_one.iloc[0]["Naam"]
+        stat_code = current_station
+        fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
+        ts_measwl["waterlevels"].plot(ax=ax1)
+        ts_measwl["QC"].plot(ax=ax2)
+        ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
+        ax2.set_title(f'QC for {stat_code} ({stat_name})')
+        fig.tight_layout()
