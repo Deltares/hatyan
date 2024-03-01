@@ -133,7 +133,7 @@ if 1: #for CMEMS
         ts_measwl = pd.DataFrame({'waterlevels':meas_wathte_ts['Meetwaarde.Waarde_Numeriek'].values,
                                   'QC':pd.to_numeric(meas_wathte_ts['WaarnemingMetadata.KwaliteitswaardecodeLijst'].str[0],downcast='integer').values,
                                   'Status':meas_wathte_ts['WaarnemingMetadata.StatuswaardeLijst'].str[0].values}, 
-                                 index=pd.to_datetime(meas_wathte_ts['Tijdstip']))
+                                  index=pd.to_datetime(meas_wathte_ts['Tijdstip']))
         
         # sort on time values # TODO: do this in ddlpy or in ddl
         ts_measwl = ts_measwl.sort_index()
@@ -141,8 +141,8 @@ if 1: #for CMEMS
         stat_name = locs_wathte_one.iloc[0]["Naam"]
         stat_code = current_station
         fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
-        ts_measwl["waterlevels"].plot(ax=ax1)
-        ts_measwl["QC"].plot(ax=ax2)
+        ax1.plot(ts_measwl["waterlevels"])
+        ax2.plot(ts_measwl["QC"])
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_title(f'QC for {stat_code} ({stat_name})')
         fig.tight_layout()
