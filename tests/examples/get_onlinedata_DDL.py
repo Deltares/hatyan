@@ -6,19 +6,18 @@ Created on Wed Dec  1 17:03:52 2021
 """
 
 import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
-import datetime as dt
 import matplotlib.pyplot as plt
 plt.close("all")
 
 # input parameters
-tstart_dt = dt.datetime(2019,12,24) #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
-tstop_dt = dt.datetime(2020,1,5)
-#tstart_dt = dt.datetime(2020,11,25,9,47,0) #quite recent period
-#tstop_dt = dt.datetime(2021,1,30,9,50,0)
-#tstart_dt = dt.datetime(1993,8,25,9,47,0) #VLISSGN got new Waardebepalingsmethode in this year
-#tstop_dt = dt.datetime(1994,11,30,9,50,0)
-#tstart_dt = dt.datetime(2009,1,1) #common RWS retrieval period
-#tstop_dt = dt.datetime(2012,12,31,23,50)
+tstart_dt = "2019-12-24" #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
+tstop_dt = "2020-01-05"
+#tstart_dt = "2020-11-25 09:47:00" #quite recent period
+#tstop_dt = "2021-01-30 09:50:00"
+#tstart_dt = "1993-08-25 09:47:00" #VLISSGN got new Waardebepalingsmethode in this year
+#tstop_dt = "1994-11-30 09:50:00"
+#tstart_dt = "2009-01-01" #common RWS retrieval period
+#tstop_dt = "2012-12-31 23:50:00"
 
 locations = ddlpy.locations()
 
