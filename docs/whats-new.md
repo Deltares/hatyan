@@ -11,6 +11,8 @@
 - replaced `times_ext` `timestep_min` and `times_pred_all` for `prediction()` with `times` argument by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/143)
 - integrated ddlpy to in ddl example script by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#202](https://github.com/Deltares/hatyan/pull/202)
 
+### Deprecated
+- hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#206](https://github.com/Deltares/hatyan/pull/206)
 
 ## 2.7.0 (2023-08-03)
 
