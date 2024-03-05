@@ -10,9 +10,6 @@ import pandas as pd
 
 def ddlpy_to_hatyan(ddlpy_meas):
 
-    # TODO: rename lowercase code to uppercase Code: https://github.com/openearth/ddlpy/issues/38
-    ddlpy_meas.columns = [x.replace(".code",".Code") for x in ddlpy_meas.columns]
-
     cols_mustbe_unique = ['Grootheid.Code','Groepering.Code','Typering.Code','Hoedanigheid.Code']
     for col in cols_mustbe_unique:
         if len(ddlpy_meas[col].drop_duplicates()) != 1:
@@ -25,10 +22,6 @@ def ddlpy_to_hatyan(ddlpy_meas):
         #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
         isnumeric = False
-    
-    #TODO: put in ddlpy: https://github.com/openearth/ddlpy/issues/38
-    ddlpy_meas = ddlpy_meas.set_index("t")
-    ddlpy_meas.index.name = "time"
     
     # DDL IMPROVEMENT: qc conversion should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> now flattened by ddlpy
     ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues],

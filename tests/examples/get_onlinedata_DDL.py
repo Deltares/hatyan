@@ -29,8 +29,8 @@ if 1: #for RWS
     locations["Code"] = locations.index
     
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
-    # bool_groepering = locations['Groepering.code'].isin(['NVT']) # TODO: we cannot subset on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
-    # bool_typering = locations['Typering.code'].isin(['GETETTPE']) # TODO: we cannot subset on Typering (NVT/GETETTPE) yet: https://github.com/openearth/ddlpy/issues/21
+    # bool_groepering = locations['Groepering.Code'].isin(['NVT']) # TODO: we cannot subset on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
+    # bool_typering = locations['Typering.Code'].isin(['GETETTPE']) # TODO: we cannot subset on Typering (NVT/GETETTPE) yet: https://github.com/openearth/ddlpy/issues/21
     
     # get wathte locations (ts and extremes) >> measured waterlevel
     bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
@@ -52,20 +52,15 @@ if 1: #for RWS
         
         # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
         if len(locs_wathte_one) > 1:
-            raise Exception("duplicate stations for wathte")
+            raise Exception("multiple stations in locs_wathte dataframe")
         if len(locs_wathtbrkd_one) > 1:
-            raise Exception("duplicate stations for wathtbrkd")
+            raise Exception("multiple stations in locs_wathtbrkd dataframe")
         if len(locs_types_one) > 1:
-            raise Exception("duplicate stations for types")
+            raise Exception("multiple stations in locs_types dataframe")
         
         meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         meas_types = ddlpy.measurements(locs_types_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-        
-        # TODO: rename lowercase code to uppercase Code: https://github.com/openearth/ddlpy/issues/38
-        meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
-        meas_wathtbrkd.columns = [x.replace(".code",".Code") for x in meas_wathtbrkd.columns]
-        meas_types.columns = [x.replace(".code",".Code") for x in meas_types.columns]
         
         # timeseries
         meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
@@ -105,7 +100,7 @@ if 1: #for CMEMS
     
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
     # TODO: we cannot subset locations on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
-    # bool_groepering = locations['Groepering.code'].isin(['NVT'])
+    # bool_groepering = locations['Groepering.Code'].isin(['NVT'])
 
     # get wathte locations (ts and extremes) >> measured waterlevel
     bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
@@ -119,11 +114,6 @@ if 1: #for CMEMS
             raise Exception("duplicate stations for wathte")
         
         meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-        
-        # TODO: rename lowercase code to uppercase Code, fix in ddlpy: https://github.com/openearth/ddlpy/issues/38
-        meas_wathte.columns = [x.replace(".code",".Code") for x in meas_wathte.columns]
-        # TODO: add time as index, fix in ddlpy: https://github.com/openearth/ddlpy/issues/38
-        meas_wathte = meas_wathte.set_index("t")
         
         # filter measured waterlevels (drop waterlevel extremes)
         meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
