@@ -28,61 +28,70 @@ if 1: #for RWS
 
     locations["Code"] = locations.index
     
+    bool_grootheid_meas = locations['Grootheid.Code'].isin(['WATHTE'])
+    bool_grootheid_astro = locations['Grootheid.Code'].isin(['WATHTBRKD'])
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
-    # bool_groepering = locations['Groepering.Code'].isin(['NVT']) # TODO: we cannot subset on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
-    # bool_typering = locations['Typering.Code'].isin(['GETETTPE']) # TODO: we cannot subset on Typering (NVT/GETETTPE) yet: https://github.com/openearth/ddlpy/issues/21
+    bool_groepering_ts = locations['Groepering.Code'].isin(['NVT'])
+    bool_groepering_ext = locations['Groepering.Code'].isin(['GETETM2','GETETBRKD2','GETETMSL2','GETETBRKDMSL2'])
     
-    # get wathte locations (ts and extremes) >> measured waterlevel
-    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
-    locs_wathte = locations.loc[bool_grootheid & bool_hoedanigheid]
+    # get WATHTE locations (ts) >> measured waterlevel
+    locs_wathte = locations.loc[bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ts]
+    # get WATHTBRKD locations (ts) >> computed astronomical waterlevel
+    locs_wathtbrkd = locations.loc[bool_grootheid_astro & bool_hoedanigheid & bool_groepering_ts]
     
-    # get WATHTBRKD locations (ts and extremes) >> computed astronomical waterlevel
-    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTBRKD'])
-    locs_wathtbrkd = locations.loc[bool_grootheid & bool_hoedanigheid]
-
-    # get types locations (ts and extremes) #TODO: replace with filter for Typering
-    bool_grootheid = locations['Grootheid.Code'].isin(['NVT'])
-    bool_eenheid = locations['Eenheid.Code'].isin(['DIMSLS'])
-    locs_types = locations.loc[bool_grootheid & bool_eenheid]
+    if include_extremes:
+        locs_wathte_ext = locations.loc[bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ext]
+        locs_wathtbrkd_ext = locations.loc[bool_grootheid_astro & bool_hoedanigheid & bool_groepering_ext]
+        
+        # get types locations (ts and extremes)
+        # we cannot subset locations on Typering in ddlpy (NVT/GETETTPE), so we use a groepering+grootheid combination
+        bool_grootheid_exttypes = locations['Grootheid.Code'].isin(['NVT'])
+        bool_groepering_ext_meas = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
+        bool_groepering_ext_astro = locations['Groepering.Code'].isin(['GETETBRKD2','GETETBRKDMSL2'])
+        locs_exttypes_wathte = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_meas]
+        locs_exttypes_wathtbrkd = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_astro]
     
     for current_station in ['HOEKVHLD']:
         locs_wathte_one = locs_wathte.loc[locs_wathte['Code'].isin([current_station])]
         locs_wathtbrkd_one = locs_wathtbrkd.loc[locs_wathtbrkd['Code'].isin([current_station])]
-        locs_types_one = locs_types.loc[locs_types['Code'].isin([current_station])]
         
         # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
         if len(locs_wathte_one) > 1:
             raise Exception("multiple stations in locs_wathte dataframe")
         if len(locs_wathtbrkd_one) > 1:
             raise Exception("multiple stations in locs_wathtbrkd dataframe")
-        if len(locs_types_one) > 1:
-            raise Exception("multiple stations in locs_types dataframe")
-        
         meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-        meas_types = ddlpy.measurements(locs_types_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-        
-        # timeseries
-        meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
-        ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte_ts)
-        meas_wathtbrkd_ts = meas_wathtbrkd.loc[meas_wathtbrkd['Groepering.Code'].isin(['NVT'])]
-        ts_astro = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ts)
+        # hatyan timeseries
+        ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte)
+        ts_astro = hatyan.ddlpy_to_hatyan(meas_wathtbrkd)
         
         if include_extremes:
-            #extremes
-            meas_wathte_ext = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['GETETM2'])]
+            locs_wathte_ext_one = locs_wathte_ext.loc[locs_wathte_ext['Code'].isin([current_station])]
+            locs_wathtbrkd_ext_one = locs_wathtbrkd_ext.loc[locs_wathtbrkd_ext['Code'].isin([current_station])]
+            locs_wathte_exttypes_one = locs_exttypes_wathte.loc[locs_exttypes_wathte['Code'].isin([current_station])]
+            locs_wathtbrkd_exttypes_one = locs_exttypes_wathtbrkd.loc[locs_exttypes_wathtbrkd['Code'].isin([current_station])]
+            if len(locs_wathte_ext_one) > 1:
+                raise Exception("multiple stations in locs_wathte_ext dataframe")
+            if len(locs_wathtbrkd_ext_one) > 1:
+                raise Exception("multiple stations in locs_wathtbrkd_ext dataframe")
+            if len(locs_wathte_exttypes_one) > 1:
+                raise Exception("multiple stations in locs_wathte_exttypes dataframe")
+            if len(locs_wathtbrkd_exttypes_one) > 1:
+                raise Exception("multiple stations in locs_wathtbrkd_exttypes dataframe")
+            meas_wathte_ext = ddlpy.measurements(locs_wathte_ext_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+            meas_wathtbrkd_ext = ddlpy.measurements(locs_wathtbrkd_ext_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+            meas_wathte_exttypes = ddlpy.measurements(locs_wathte_exttypes_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+            meas_wathtbrkd_exttypes = ddlpy.measurements(locs_wathtbrkd_exttypes_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+            # hatyan timeseries
             ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext)
-            meas_wathtbrkd_ext = meas_wathtbrkd.loc[meas_wathtbrkd['Groepering.Code'].isin(['GETETBRKD2'])]
             ts_astroHWLW = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ext)
-            # extreme types
-            meas_wathte_exttype = meas_types.loc[meas_types['Groepering.Code'].isin(['GETETM2'])]
-            ts_measwlHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathte_exttype)
-            meas_wathtbrkd_exttype = meas_types.loc[meas_types['Groepering.Code'].isin(['GETETBRKD2'])]
-            ts_astroHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_exttype)
-            
+            ts_measwlHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathte_exttypes)
+            ts_astroHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_exttypes)
+            # convert exttype string to num
             ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
             ts_astrolHWLW = hatyan.convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
-
+    
     stat_name = locs_wathte_one["Naam"]
     stat_code = locs_wathte_one["Code"]
     if include_extremes:
@@ -98,13 +107,10 @@ if 1: #for RWS
 ######### simple waterlevel data retrieval for all waterlevel stations or all stations
 if 1: #for CMEMS
     
-    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
-    # TODO: we cannot subset locations on Groepering (NVT/GETETM2) yet: https://github.com/openearth/ddlpy/issues/21
-    # bool_groepering = locations['Groepering.Code'].isin(['NVT'])
-
-    # get wathte locations (ts and extremes) >> measured waterlevel
-    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
-    locs_wathte = locations.loc[bool_grootheid & bool_hoedanigheid]
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE']) # measured waterlevels (not astro)
+    bool_groepering = locations['Groepering.Code'].isin(['NVT']) # timeseries (not extremes)
+    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP']) # vertical reference
+    locs_wathte = locations.loc[bool_grootheid & bool_groepering & bool_hoedanigheid]
     
     for current_station in ['HOEKVHLD']:
         locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
@@ -115,14 +121,11 @@ if 1: #for CMEMS
         
         meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
         
-        # filter measured waterlevels (drop waterlevel extremes)
-        meas_wathte_ts = meas_wathte.loc[meas_wathte['Groepering.Code'].isin(['NVT'])]
-        
         stat_name = locs_wathte_one.iloc[0]["Naam"]
         stat_code = current_station
         fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
-        ax1.plot(meas_wathte_ts["Meetwaarde.Waarde_Numeriek"])
-        ax2.plot(meas_wathte_ts["WaarnemingMetadata.KwaliteitswaardecodeLijst"].astype(int))
+        ax1.plot(meas_wathte["Meetwaarde.Waarde_Numeriek"])
+        ax2.plot(meas_wathte["WaarnemingMetadata.KwaliteitswaardecodeLijst"].astype(int))
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_title(f'QC for {stat_code} ({stat_name})')
         fig.tight_layout()
