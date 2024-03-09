@@ -13,6 +13,8 @@
 
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#206](https://github.com/Deltares/hatyan/pull/206)
+- moved kenmerkendewaarden functions and examples to https://github.com/Deltares-research/kenmerkendewaarden by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#211](https://github.com/Deltares/hatyan/pull/211)
+
 
 ## 2.7.0 (2023-08-03)
 
