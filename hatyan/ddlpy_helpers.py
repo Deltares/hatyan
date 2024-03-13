@@ -9,7 +9,10 @@ import pandas as pd
 
 
 def ddlpy_to_hatyan(ddlpy_meas):
-
+    
+    if ddlpy_meas.empty:
+        raise ValueError("supplied dataframe is empty")
+    
     cols_mustbe_unique = ['Grootheid.Code','Groepering.Code','Typering.Code','Hoedanigheid.Code']
     for col in cols_mustbe_unique:
         if len(ddlpy_meas[col].drop_duplicates()) != 1:
