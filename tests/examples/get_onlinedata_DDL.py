@@ -126,6 +126,7 @@ if 1: #for CMEMS
         stat_code = current_station
         fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
         ax1.plot(meas_wathte["Meetwaarde.Waarde_Numeriek"])
+        # QC codes are documented in https://rijkswaterstaatdata.nl/publish/pages/223004/uitleg-attributen-bij-bulkwaarnemingenservice-dd-06-11-2023-.pdf
         ax2.plot(meas_wathte["WaarnemingMetadata.KwaliteitswaardecodeLijst"].astype(int))
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_title(f'QC for {stat_code} ({stat_name})')
