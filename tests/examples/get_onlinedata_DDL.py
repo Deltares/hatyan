@@ -5,13 +5,13 @@ Created on Wed Dec  1 17:03:52 2021
 @author: veenstra
 """
 
-import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
+import ddlpy # available via pip install rws-ddlpy or at https://github.com/Deltares/ddlpy
 import matplotlib.pyplot as plt
 plt.close("all")
 
 # input parameters
-tstart_dt = "2019-12-24" #period begins with Gecontroleerd and ends with Ongecontroleerd for HOEKVHLD
-tstop_dt = "2020-01-05"
+tstart_dt = "2022-12-19"
+tstop_dt = "2022-12-31"
 #tstart_dt = "2020-11-25 09:47:00" #quite recent period
 #tstop_dt = "2021-01-30 09:50:00"
 #tstart_dt = "1993-08-25 09:47:00" #VLISSGN got new Waardebepalingsmethode in this year
@@ -55,7 +55,7 @@ if 1: #for RWS
         locs_wathte_one = locs_wathte.loc[locs_wathte['Code'].isin([current_station])]
         locs_wathtbrkd_one = locs_wathtbrkd.loc[locs_wathtbrkd['Code'].isin([current_station])]
         
-        # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
+        # no support for multiple rows, so pass one at a time
         if len(locs_wathte_one) > 1:
             raise Exception("multiple stations in locs_wathte dataframe")
         if len(locs_wathtbrkd_one) > 1:
@@ -71,6 +71,7 @@ if 1: #for RWS
             locs_wathtbrkd_ext_one = locs_wathtbrkd_ext.loc[locs_wathtbrkd_ext['Code'].isin([current_station])]
             locs_wathte_exttypes_one = locs_exttypes_wathte.loc[locs_exttypes_wathte['Code'].isin([current_station])]
             locs_wathtbrkd_exttypes_one = locs_exttypes_wathtbrkd.loc[locs_exttypes_wathtbrkd['Code'].isin([current_station])]
+            # no support for multiple rows, so pass one at a time
             if len(locs_wathte_ext_one) > 1:
                 raise Exception("multiple stations in locs_wathte_ext dataframe")
             if len(locs_wathtbrkd_ext_one) > 1:
@@ -115,7 +116,7 @@ if 1: #for CMEMS
     for current_station in ['HOEKVHLD']:
         locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
         
-        # TODO: no support for multiple rows, create issue from example code in https://github.com/Deltares/hatyan/issues/187
+        # no support for multiple rows, so pass one at a time
         if len(locs_wathte_one) > 1:
             raise Exception("duplicate stations for wathte")
         
@@ -125,6 +126,7 @@ if 1: #for CMEMS
         stat_code = current_station
         fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,6), sharex=True)
         ax1.plot(meas_wathte["Meetwaarde.Waarde_Numeriek"])
+        # QC codes are documented in https://rijkswaterstaatdata.nl/publish/pages/223004/uitleg-attributen-bij-bulkwaarnemingenservice-dd-06-11-2023-.pdf
         ax2.plot(meas_wathte["WaarnemingMetadata.KwaliteitswaardecodeLijst"].astype(int))
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
         ax2.set_title(f'QC for {stat_code} ({stat_name})')

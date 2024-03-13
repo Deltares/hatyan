@@ -14,7 +14,7 @@ from hatyan.hatyan_core import *
 from hatyan.foreman import *
 from hatyan.schureman import *
 from hatyan.timeseries import *
-from hatyan.getonlinedata import *
+from hatyan.ddlpy_helpers import *
 from hatyan.convert import *
 from hatyan.deprecated import *
 from hatyan.utils import close
