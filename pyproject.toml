@@ -36,6 +36,8 @@ dependencies = [
 	#TODO: xarray<2023.4.0 conflicts with pandas<2.0.0 for resampling, only available for py39
 	#xarray>=2022.6.0 is quite old version from dfm_tools
 	"xarray>=2022.6.0",
+	#ddlpy<0.3.0 is very old and does not support newer pandas versions
+	"ddlpy>=0.3.0",
 ]
 classifiers = [
 	"Development Status :: 5 - Production/Stable",

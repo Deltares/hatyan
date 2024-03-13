@@ -5,7 +5,7 @@ Created on Wed Dec  1 17:03:52 2021
 @author: veenstra
 """
 
-import ddlpy # TODO: we require ddlpy from main/master branch (>0.1.0) >> pip install git+https://github.com/openearth/ddlpy
+import ddlpy
 import matplotlib.pyplot as plt
 plt.close("all")
 
