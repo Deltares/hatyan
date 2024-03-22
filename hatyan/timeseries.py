@@ -782,7 +782,9 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
 
 def write_tsdia(ts, filename, headerformat='dia'):
     """
-    Writes the timeseries to an equidistant dia file
+    Writes the timeseries to an equidistant dia file. This is only supported 
+    for timeseries with a UTC+1 timestamp, since DONAR (and therefore dia)
+    data is always in UTC+1 (MET/CET), also during summertime periods.
 
     Parameters
     ----------
