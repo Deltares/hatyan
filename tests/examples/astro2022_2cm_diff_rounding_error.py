@@ -8,6 +8,7 @@ Created on Fri Aug 11 12:51:56 2023
 import os
 import pandas as pd
 import datetime as dt
+import ddlpy
 import hatyan
 hatyan.close('all')
 
@@ -16,7 +17,9 @@ hatyan.close('all')
 
 dir_meas = r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
 
-for pred_year in [2019, 2020, 2021, 2022, 2023]:
+# year_list = [2019, 2020, 2021, 2022, 2023]
+year_list = [2019, 2023]
+for pred_year in year_list:
 
     for current_station in ['HOEKVHLD']:#,'DORDT']:
         
@@ -32,15 +35,15 @@ for pred_year in [2019, 2020, 2021, 2022, 2023]:
         file_astro = os.path.join(r'c:\Users\veenstra\Downloads',f'astro_{current_station}_{pred_year}.pkl')
         if not os.path.exists(file_astro):
             print('retrieving DDL catalog')
-            catalog_dict = hatyan.get_DDL_catalog(catalog_extrainfo=['WaardeBepalingsmethoden','MeetApparaten','Typeringen'])
-            print('...done')
+            locations = ddlpy.locations()
+            bool_station = locations.index.isin([current_station])
+            bool_grootheid = locations["Grootheid.Code"].isin(["WATHTBRKD"])
+            bool_groepering = locations["Groepering.Code"].isin(["NVT"])
+            selected = locations.loc[bool_station & bool_grootheid & bool_groepering]
             
-            cat_locatielijst = catalog_dict['LocatieLijst']
-            station_dict = cat_locatielijst[cat_locatielijst['Code']==current_station].iloc[0]
+            measurements = ddlpy.measurements(selected.iloc[0], start_date=tstart_pred, end_date=tstop_pred)
             
-            ts_astro, metadata, stationdata = hatyan.get_DDL_data(station_dict=station_dict,tstart_dt=tstart_pred,tstop_dt=tstop_pred,tzone='UTC+01:00',
-                                                                  meta_dict={'Grootheid.Code':'WATHTBRKD','Groepering.Code':'NVT'},allow_multipleresultsfor=['WaardeBepalingsmethode'])
-            ts_astro['values'] = ts_astro['values']/100 #convert from cm to m
+            ts_astro = hatyan.ddlpy_to_hatyan(measurements)
             ts_astro.index = ts_astro.index.tz_localize(None)
             ts_astro.to_pickle(file_astro)
             
