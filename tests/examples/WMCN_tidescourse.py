@@ -18,7 +18,7 @@ plt.close('all')
 
 
 # prediction M2 / S2, spring/neap cycle
-if 0:
+if 1:
     dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
     
     stat_list = ['HOEKVHLD']#,'DENHDR','IJMDBTHVN'] #'K13APFM'
@@ -313,7 +313,7 @@ if 0:
 
 
 
-if 1:
+if 0:
     import xarray as xr
     data_nc_TS = xr.open_dataset(r'p:\1204257-dcsmzuno\1980-2017\DCSM-FM\A03_FES2014_GTSM_H1H2\DFM_OUTPUT_DCSM-FM_0_5nm\DCSM-FM_0_5nm_0000_his.nc')
     data_nc_tide = xr.open_dataset(r'p:\1204257-dcsmzuno\1980-2017\DCSM-FM\A03_FES2014_GTSM_H1H2_astro\DFM_OUTPUT_DCSM-FM_0_5nm\DCSM-FM_0_5nm_0000_his.nc')
