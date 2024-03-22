@@ -147,7 +147,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     # estimate first lunar phase (time and type), correct first date (FAEST_first to 45 deg from there)
     astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
     ELONG = astrabOutput['ELONG']
-    FAEST_first = date_first - pd.TimedeltaIndex((ELONG-45)/ELOINC, unit='D')
+    FAEST_first = date_first - pd.to_timedelta((ELONG-45)/ELOINC, unit='D')
 
     # use the first date to create a new daterange from the correct starting time. The frequency is 29 days, 12 hours and 44 minutes, following from dood_S-dood_H
     date = pd.date_range(start=FAEST_first[0],end=date_last,freq='%iN'%(FASINT*24*3600*1e9))
@@ -156,10 +156,10 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     astrabOutput = astrab(date,dT_fortran=dT_fortran)
     ELONG = astrabOutput['ELONG']
     FATYP = (np.floor(ELONG/90).astype(int)+3)%4+1 #make sure the next phase is searched for (modulus to use 'FATYP-1')
-    FAEST = date - pd.TimedeltaIndex((90*FATYP-ELONG%360)/ELOINC, unit='D')
+    FAEST = date - pd.to_timedelta((90*FATYP-ELONG%360)/ELOINC, unit='D')
 
     # calculate exact time of phase, loop until date_last
-    TIMDIF = pd.TimedeltaIndex(-dT(FAEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(FAEST,dT_fortran=dT_fortran),unit='S')
     FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe
@@ -219,7 +219,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     ONEST  = DAYEST + pd.Timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
     OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array(9),lon=lon,lat=lat) + TIMDIF
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(10),lon=lon,lat=lat) + TIMDIF
 
@@ -293,7 +293,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     OPEST = ONEST + pd.Timedelta(hours=M2_period_hr)
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
     OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array(7),lon=lon,lat=lat) + TIMDIF
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(8),lon=lon,lat=lat) + TIMDIF
 
@@ -365,7 +365,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     ANOTYP[1::2] = (IANO%2)+1
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(ANOEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(ANOEST,dT_fortran=dT_fortran),unit='S')
     ANOTIM = astrac(ANOEST,dT_fortran=dT_fortran,mode=ANOTYP+14) + TIMDIF
 
     # make dataframe
@@ -417,7 +417,7 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     SEITYP = np.floor(SEIEST.month/3).astype(int)
 
     # calculate exact times, loop until tLast
-    TIMDIF = pd.TimedeltaIndex(-dT(SEIEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(SEIEST,dT_fortran=dT_fortran),unit='S')
     SEITIM = astrac(SEIEST,dT_fortran=dT_fortran,mode=SEITYP+10) + TIMDIF
 
     # make dataframe
@@ -817,7 +817,7 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
             ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. # ANGLE in degrees and PARLAX in arcseconds (/3600 gives degrees)
         # nan_to_num to make sure no NaT/inf output in next iteration
         addtime_nonan = np.nan_to_num((ANG-POLD)/RATE, nan=0, posinf=0, neginf=0)
-        addtime = pd.TimedeltaIndex(addtime_nonan, unit='D')
+        addtime = pd.to_timedelta(addtime_nonan, unit='D')
         #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))
         if IPAR in ['ALTMOO','ALTSUN'] and (np.abs(np.array(addtime.total_seconds()/3600)) > 24).any(): #catch for ALTMOO and ALTSUN to let the iteration process stop before it escalates
             raise Exception(f'Iteration step resulted in time changes larger than 24 hours (max {np.abs(addtime.total_seconds()).max()/3600:.2f} hours), try using a lower latitude')
