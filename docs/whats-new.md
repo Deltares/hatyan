@@ -34,7 +34,7 @@
 - added Kenmerkende Waarden functions
 - moved from analysis_peryear and analysis_permonth to analysis_perperiod
 - modernized python package and updated dependencies in several commits
-- updated `xTxmat_condition_max=12` (was `10` before) to allow several correct cases by [@veenstrajelmer](https://github.com/veenstrajelmer
+- updated `xTxmat_condition_max=12` (was `10` before) to allow several correct cases
 - moved from analysis_peryear and analysis_permonth to analysis_perperiod
 - added xtrack and fes2014b constituent list
 - added shallow water components 2MK2, M(SK)2, M(KS)2. Added harmonic components S3, M!M, MSTM from tugo (provided by Henrique Guarneri)
