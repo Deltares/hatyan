@@ -16,6 +16,7 @@
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)
 - moved kenmerkendewaarden functions and examples to https://github.com/Deltares-research/kenmerkendewaarden in [#211](https://github.com/Deltares/hatyan/pull/211)
+- deprecated `hatyan.write_tsdia_HWLW()` in favor of `hatyan.write_tsdia()` in [#223](https://github.com/Deltares/hatyan/pull/223)
 
 
 ## 2.7.0 (2023-08-03)
