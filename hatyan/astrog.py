@@ -159,7 +159,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     FAEST = date - pd.to_timedelta((90*FATYP-ELONG%360)/ELOINC, unit='D')
 
     # calculate exact time of phase, loop until date_last
-    TIMDIF = pd.to_timedelta(-dT(FAEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(FAEST,dT_fortran=dT_fortran),unit='s')
     FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe
@@ -219,7 +219,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     ONEST  = DAYEST + pd.Timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
     # calculate exact times
-    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='s')
     OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array(9),lon=lon,lat=lat) + TIMDIF
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(10),lon=lon,lat=lat) + TIMDIF
 
@@ -293,7 +293,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     OPEST = ONEST + pd.Timedelta(hours=M2_period_hr)
 
     # calculate exact times
-    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='s')
     OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array(7),lon=lon,lat=lat) + TIMDIF
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(8),lon=lon,lat=lat) + TIMDIF
 
@@ -365,7 +365,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     ANOTYP[1::2] = (IANO%2)+1
 
     # calculate exact times
-    TIMDIF = pd.to_timedelta(-dT(ANOEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(ANOEST,dT_fortran=dT_fortran),unit='s')
     ANOTIM = astrac(ANOEST,dT_fortran=dT_fortran,mode=ANOTYP+14) + TIMDIF
 
     # make dataframe
@@ -417,7 +417,7 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     SEITYP = np.floor(SEIEST.month/3).astype(int)
 
     # calculate exact times, loop until tLast
-    TIMDIF = pd.to_timedelta(-dT(SEIEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(SEIEST,dT_fortran=dT_fortran),unit='s')
     SEITIM = astrac(SEIEST,dT_fortran=dT_fortran,mode=SEITYP+10) + TIMDIF
 
     # make dataframe
