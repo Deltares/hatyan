@@ -147,10 +147,9 @@ def write_components(comp, filename):
     fu_alltimes = metadata.pop('fu_alltimes')
     if fu_alltimes is not False:
         raise ValueError(f'write_components() expects fu_alltimes=False, but {fu_alltimes} was provided.')
-    if "source" in metadata.keys():
-        source = metadata.pop('source')
-        if source != "schureman":
-            raise ValueError(f'write_components() expects source="schureman", but {source} was provided.')
+    source = metadata.pop('source')
+    if source != "schureman":
+        raise ValueError(f'write_components() expects source="schureman", but {source} was provided.')
     
     station = metadata.pop('station')
     grootheid = metadata.pop('grootheid')
@@ -321,7 +320,7 @@ def _read_components_analysis_settings(filename):
     # else:
     #     print("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False")
     #     fu_alltimes = False
-    settings_dict = {'xfac':xfac, 'nodalfactors':True, 'fu_alltimes':False}
+    settings_dict = {'xfac':xfac, 'nodalfactors':True, 'fu_alltimes':False, 'source':'schureman'}
     return settings_dict
 
 

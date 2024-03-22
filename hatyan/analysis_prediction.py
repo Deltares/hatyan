@@ -239,6 +239,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     metadata['nodalfactors'] = hatyan_settings.nodalfactors
     metadata['xfac'] = hatyan_settings.xfac
     metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
+    metadata['source'] = hatyan_settings.source
     COMP_mean_pd = metadata_add_to_obj(COMP_mean_pd, metadata)
     
     if hatyan_settings.return_allperiods:
@@ -540,6 +541,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     metadata['nodalfactors'] = hatyan_settings.nodalfactors
     metadata['xfac'] = hatyan_settings.xfac
     metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
+    metadata['source'] = hatyan_settings.source
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata)
 
     return ts_prediction_pd
