@@ -1,30 +1,31 @@
 ## Unreleased
 
 ### Feat
-- reading/writing analysis settings (xfac, nodalfactors, fu_alltimes) from/to component file by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#175](https://github.com/Deltares/hatyan/pull/175)
-- made hatyan callable via `python -m hatyan script.py` (deprecates `init_RWS()` and `exit_RWS()`) by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#113](https://github.com/Deltares/hatyan/pull/113)
-- retained `freq` attribute of `ts.index` in case of multifile equidistant dia by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#118](https://github.com/Deltares/hatyan/pull/118)
-- added support for file patterns in `hatyan.readts_dia()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#118](https://github.com/Deltares/hatyan/pull/120)
-- uniform usage of `analysis` (deprecates `get_components_from_ts`) by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#125](https://github.com/Deltares/hatyan/pull/125)
-- added metadata to timeseries and components and passing it between those objects in the hatyan process by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/131)
-- improved metadata in component files by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/131)
-- replaced `times_ext` `timestep_min` and `times_pred_all` for `prediction()` with `times` argument by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/143)
-- integrated ddlpy to in ddl example script by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#202](https://github.com/Deltares/hatyan/pull/202) and [#213](https://github.com/Deltares/hatyan/pull/213)
-- prevent writing components with non-standard settings to file and prevent prediction with different settings than provided components by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#218](https://github.com/Deltares/hatyan/pull/218)
+- reading/writing analysis settings (xfac, nodalfactors, fu_alltimes) from/to component file in [#175](https://github.com/Deltares/hatyan/pull/175)
+- made hatyan callable via `python -m hatyan script.py` (deprecates `init_RWS()` and `exit_RWS()`) in [#113](https://github.com/Deltares/hatyan/pull/113)
+- retained `freq` attribute of `ts.index` in case of multifile equidistant dia in [#118](https://github.com/Deltares/hatyan/pull/118)
+- added support for file patterns in `hatyan.readts_dia()` in [#118](https://github.com/Deltares/hatyan/pull/120)
+- uniform usage of `analysis` (deprecates `get_components_from_ts`) in [#125](https://github.com/Deltares/hatyan/pull/125)
+- added metadata to timeseries and components and passing it between those objects in the hatyan process in [#131](https://github.com/Deltares/hatyan/pull/131)
+- improved metadata in component files in [#131](https://github.com/Deltares/hatyan/pull/131)
+- replaced `times_ext` `timestep_min` and `times_pred_all` for `prediction()` with `times` argument in [#131](https://github.com/Deltares/hatyan/pull/143)
+- integrated ddlpy to in ddl example script in [#202](https://github.com/Deltares/hatyan/pull/202) and [#213](https://github.com/Deltares/hatyan/pull/213)
+- prevent writing components with non-standard settings to file and prevent prediction with different settings than provided components in [#218](https://github.com/Deltares/hatyan/pull/218)
+- use `pandas.DataFrame.attrs` instead of separate metadata attrs in [#219](https://github.com/Deltares/hatyan/pull/219)
 
 ### Deprecated
-- hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#206](https://github.com/Deltares/hatyan/pull/206)
-- moved kenmerkendewaarden functions and examples to https://github.com/Deltares-research/kenmerkendewaarden by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#211](https://github.com/Deltares/hatyan/pull/211)
+- hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)
+- moved kenmerkendewaarden functions and examples to https://github.com/Deltares-research/kenmerkendewaarden in [#211](https://github.com/Deltares/hatyan/pull/211)
 
 
 ## 2.7.0 (2023-08-03)
 
 ### Feat
-- added py38/py310/py311 testbanks by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#89](https://github.com/Deltares/hatyan/pull/89)
+- added py38/py310/py311 testbanks in [#89](https://github.com/Deltares/hatyan/pull/89)
 
 ### Fix
-- introduced `min_width` of two hours to avoid incorrectly marked primary extremes by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#86](https://github.com/Deltares/hatyan/pull/86)
-- fixed `pandas>=2.0.0` AttributeError for outofbounds datetimes by [@veenstrajelmer](https://github.com/veenstrajelmer) in [commit aab36ba](https://github.com/Deltares/hatyan/commit/aab36ba6a5adeb4cec255f39c505f397f6a60be5)
+- introduced `min_width` of two hours to avoid incorrectly marked primary extremes in [#86](https://github.com/Deltares/hatyan/pull/86)
+- fixed `pandas>=2.0.0` AttributeError for outofbounds datetimes in [commit aab36ba](https://github.com/Deltares/hatyan/commit/aab36ba6a5adeb4cec255f39c505f397f6a60be5)
 
 
 ## 2.6.0 (2023-02-15)
@@ -32,7 +33,7 @@
 ### Feat
 - added Kenmerkende Waarden functions
 - moved from analysis_peryear and analysis_permonth to analysis_perperiod
-- modernized python package and updated dependencies by [@veenstrajelmer](https://github.com/veenstrajelmer) in several commits
+- modernized python package and updated dependencies in several commits
 - updated `xTxmat_condition_max=12` (was `10` before) to allow several correct cases by [@veenstrajelmer](https://github.com/veenstrajelmer
 - moved from analysis_peryear and analysis_permonth to analysis_perperiod
 - added xtrack and fes2014b constituent list
