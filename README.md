@@ -9,11 +9,11 @@
 
 # hatyan
 
-A Python package for harmonic tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat. Hatyan contains the methods to derive water level extremes (high and low waters) and several other water level indicators (Kenmerkende Waarden). Furthermore, hatyan provides easier access to Rijkswaterstaat data via their data distribution layer (DataDistributieLaag, DDL).
+A Python package for harmonic tidal analysis and prediction, based on the FORTRAN version and developed for Rijkswaterstaat. Hatyan also contains methods to derive water level extremes (high and low waters) and it is a dependency to derive the [Kenmerkende Waarden](https://github.com/Deltares-research/kenmerkendewaarden).
 
 ## Information
 
 - install with ``pip install hatyan -U``
-- [online documentation](https://deltares.github.io/hatyan) with contributing guide, tutorials/examples, API reference and a convenient search box.
+- [online documentation](https://deltares.github.io/hatyan) with contributing guide, tutorials/examples and an API reference.
 - [docs folder](https://github.com/Deltares/hatyan/tree/main/docs) with background information
 - Bug or feature request? Create a [GitHub issue](https://github.com/Deltares/hatyan/issues)
