@@ -22,10 +22,7 @@ os.makedirs(dir_output_general, exist_ok=True)
 @pytest.mark.parametrize("file_config", [pytest.param(file_config, id=os.path.basename(file_config).replace('.py','')) for file_config in list_configfiles])
 def test_run_examples(file_config):
     # 1. Set up test data
-    dir_output = os.path.join(dir_output_general,os.path.basename(file_config).replace('.py',''))
-    if not os.path.exists(dir_output):
-        os.mkdir(dir_output)
-    os.chdir(dir_output)
+    os.chdir(dir_output_general)
     
     p = subprocess.Popen(f"python -m hatyan {file_config} --redirect-stdout",
                          stderr=subprocess.STDOUT, # Merge stdout and stderr
