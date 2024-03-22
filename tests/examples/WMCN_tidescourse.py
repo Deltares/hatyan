@@ -32,6 +32,9 @@ if 1:
         #component groups
         file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
         COMP_merged = hatyan.read_components(filename=file_data_comp0)
+        # overwrite metadata to avoid AssertionError from prediction
+        COMP_merged.attrs["xfac"] = False
+        COMP_merged.attrs["fu_alltimes"] = True
         
         #prediction and validation
         bool_end1 = COMP_merged.index.astype(str).str.endswith('1')
@@ -298,7 +301,7 @@ if 0:
     colors = plt.cm.jet(np.linspace(0,1,n_colors))
     for i_stat, current_station in enumerate(selected_stations):
         comp_frommeasurements_avg_group = hatyan.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
-        ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times=times_pred)
+        ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times=times_pred, xfac=True, fu_alltimes=False)
         vals_real = ts_prediction['values']
         times_real = ts_prediction.index
         ax1.plot(times_real, vals_real, label=current_station, color=colors[i_stat])
@@ -360,12 +363,6 @@ if 0:
     ax.set_xlim(dt.datetime(2013,12,4),dt.datetime(2013,12,10))
     fig.tight_layout()
     fig.savefig('TS_model_astro.png', dpi=250)
-
-
-
-
-
-
 
 
 

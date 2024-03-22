@@ -153,7 +153,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             pdrow['RDy'] = RDy/1000 #from m to km
         stats = pd.concat([stats,pdrow])
             
-        #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
+        #hatyan.write_tsdia(ts=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
         #fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
