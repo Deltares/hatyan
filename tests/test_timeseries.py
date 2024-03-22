@@ -210,12 +210,8 @@ def test_readwrite_diawia():
         assert (ts_dia==ts_wia).all().all() #check if wia and dia input is equal
         
         #write to files
-        if 'HWLWcode' in ts_dia.columns:
-            hatyan.write_tsdia(ts=ts_dia, filename=file_dia_out)
-            hatyan.write_tsdia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
-        else:
-            hatyan.write_tsdia(ts=ts_dia, filename=file_dia_out)
-            hatyan.write_tsdia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
+        hatyan.write_tsdia(ts=ts_dia, filename=file_dia_out)
+        hatyan.write_tsdia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
         
         #read from new files
         ts_dia_new = hatyan.readts_dia(filename=file_dia_out, station=current_station)
