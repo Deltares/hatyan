@@ -51,6 +51,7 @@ def test_anapred_metadata():
     
     pred_xfac0 = hatyan.prediction(comp, xfac=False)
     # we also test if metadata is correctly passed if e.g. xfac is not in line with xfac in components file
+    comp.xfac = True
     pred_xfac1 = hatyan.prediction(comp, xfac=True)
     
     meta_fromts_xfac0 = metadata_from_obj(pred_xfac0)
