@@ -34,4 +34,4 @@ def test_run_examples(file_config):
     if p.returncode:
         out, err = p.communicate()
         out_str = "\n".join([x.decode("utf-8") for x in out.split(b'\r\n')])
-        raise OSError(f'execution did not finish properly:\n{out_str}')
+        raise RuntimeError(out_str)
