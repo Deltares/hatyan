@@ -141,6 +141,17 @@ def write_components(comp, filename):
     metadata = metadata_from_obj(comp)
     waarnemingssoort = wns_from_metadata(metadata)
     
+    nodalfactors = metadata.pop('nodalfactors')
+    if nodalfactors is not True:
+        raise ValueError(f'write_components() expects nodalfactors=True, but {nodalfactors} was provided.')
+    fu_alltimes = metadata.pop('fu_alltimes')
+    if fu_alltimes is not False:
+        raise ValueError(f'write_components() expects fu_alltimes=False, but {fu_alltimes} was provided.')
+    if "source" in metadata.keys():
+        source = metadata.pop('source')
+        if source != "schureman":
+            raise ValueError(f'write_components() expects source="schureman", but {source} was provided.')
+    
     station = metadata.pop('station')
     grootheid = metadata.pop('grootheid')
     vertref = metadata.pop('vertref')
@@ -297,18 +308,20 @@ def _read_components_analysis_settings(filename):
         print("xfactor not found in starcomments of components file, guessing xfac=True")
         xfac = True
     
-    if 'nodalfactors' in metadata_starcomments.keys():
-        nodalfactors = metadata_starcomments.pop('nodalfactors')
-    else:
-        print("nodalfactors not found in starcomments of components file, guessing nodalfactors=True")
-        nodalfactors = True
+    # # derive nodalfactors, although nodalfactors=False is not supported by write_components()
+    # if 'nodalfactors' in metadata_starcomments.keys():
+    #     nodalfactors = metadata_starcomments.pop('nodalfactors')
+    # else:
+    #     print("nodalfactors not found in starcomments of components file, guessing nodalfactors=True")
+    #     nodalfactors = True
     
-    if 'fu_alltimes' in metadata_starcomments.keys():
-        fu_alltimes = metadata_starcomments.pop('fu_alltimes')
-    else:
-        print("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False")
-        fu_alltimes = False
-    settings_dict = {'xfac':xfac, 'nodalfactors':nodalfactors, 'fu_alltimes':fu_alltimes}
+    # # derive fu_alltimes, although fu_alltimes=True is not supported by write_components()
+    # if 'fu_alltimes' in metadata_starcomments.keys():
+    #     fu_alltimes = metadata_starcomments.pop('fu_alltimes')
+    # else:
+    #     print("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False")
+    #     fu_alltimes = False
+    settings_dict = {'xfac':xfac, 'nodalfactors':True, 'fu_alltimes':False}
     return settings_dict
 
 
