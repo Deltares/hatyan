@@ -18,7 +18,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 selected_stations = ['HOEKVHLD']#,'VLISSGN','CUXHVN']
 
 #file_slotgemiddelden = os.path.join(dir_testdata,'predictie2019','_slotgemiddelden_predictie2019.txt')
-#stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
+#stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', sep="\s+")
 
 stats_list = []
 

@@ -33,7 +33,7 @@ selected_stations = ['WICK','ABDN','LEITH','WHITBY','IMMHM','CROMR','FELSWE','CA
 #selected_stations = ['CADZD','DENHDR']
 
 file_ldb = os.path.join(dir_testdata,'other','wvs_coastline3.ldb') #WGS84 ldb is converted to RD, but does not change anything wrt to matlab converted ldb, which is good
-ldb_pd_wgs = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['x','y'],na_values=[999.999])
+ldb_pd_wgs = pd.read_csv(file_ldb, sep="\s+",skiprows=4,names=['x','y'],na_values=[999.999])
 x_out, y_out = hatyan.convert_coordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
 ldb_pd = pd.DataFrame({'RDx':x_out/1000, 'RDy':y_out/1000})
 
