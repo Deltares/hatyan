@@ -289,7 +289,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
         date_first_plus = date_first + pd.Timedelta(days=(270-EHMOON[0])/EHMINC)
     else: # first phenomenon is moonset
         date_first_plus = date_first + pd.Timedelta(days=(90-EHMOON[0])/EHMINC)
-    ONEST = pd.date_range(start=date_first_plus, end=date_last, freq='%inss'%(M2_period_hr*2*3600*1e9))
+    ONEST = pd.date_range(start=date_first_plus, end=date_last, freq='%ins'%(M2_period_hr*2*3600*1e9))
     OPEST = ONEST + pd.Timedelta(hours=M2_period_hr)
 
     # calculate exact times
