@@ -12,9 +12,10 @@ import pytz
 def metadata_add_to_obj(obj,metadata):
     """
     add metadata to components/timeseries object (is pd.DataFrame)
+    via attrs, but this function prevents dropping existing attrs that are not in metadata dict
     """
     for key in metadata.keys():
-        obj.__setattr__(key,metadata[key])
+        obj.attrs[key] = metadata[key]
     
     return obj
 
@@ -47,12 +48,10 @@ def metadata_from_diablocks(diablocks_pd, block_id):
 
 
 def metadata_from_obj(obj):
-    obj_vars = vars(obj)
-    metadata = {key:obj_vars[key] for key in obj_vars.keys() if not key.startswith('_')}
+    metadata = obj.attrs.copy()
     if len(metadata) == 0:
         print('no metadata found on object')
         # raise ValueError('no metadata found on object')
-        metadata = {}
     return metadata
 
 

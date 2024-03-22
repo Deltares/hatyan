@@ -26,8 +26,9 @@ stats_CADZDp1 = []
 stats_CADZDtoofar = ['NORTHCMRT','FISHGD','LLANDNO','NEWLN','DEVPT','WEYMH','PORTSMH','BOURNMH','NEWHVN','STORNWY','KINLBVE']
 
 #selected_stations = stats_all
+# TODO: temporarily disabled CUXHVN because of https://github.com/Deltares/hatyan/issues/197
 selected_stations = ['AUKFPFM']
-selected_stations = ['WICK','ABDN','LEITH','WHITBY','IMMHM','CROMR','FELSWE','CADZD','VLISSGN','TERNZN','ROOMPBTN','HARVT10','HOEKVHLD','ROTTDM','DORDT','SCHEVNGN','IJMDBTHVN','PETTZD','DENHDR','DENOVBTN','HARLGN','HOLWD','SCHIERMNOG','LAUWOG','EEMSHVN','DELFZL','CUXHVN']
+selected_stations = ['WICK','ABDN','LEITH','WHITBY','IMMHM','CROMR','FELSWE','CADZD','VLISSGN','TERNZN','ROOMPBTN','HARVT10','HOEKVHLD','ROTTDM','DORDT','SCHEVNGN','IJMDBTHVN','PETTZD','DENHDR','DENOVBTN','HARLGN','HOLWD','SCHIERMNOG','LAUWOG','EEMSHVN','DELFZL']#,'CUXHVN']
 #selected_stations = ['CROMR','CADZD','HOEKVHLD','DENHDR','CUXHVN']
 #selected_stations = ['CADZD','DENHDR']
 

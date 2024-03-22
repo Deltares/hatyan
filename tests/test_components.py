@@ -72,19 +72,19 @@ def test_read_write_components_nondefaultsettings():
     file_new = 'temp_components.txt'
     
     comp_orig = hatyan.read_components(filename=file_orig)
-    comp_orig.nodalfactors = False
+    comp_orig.attrs["nodalfactors"] = False
     with pytest.raises(ValueError) as e:
         hatyan.write_components(comp_orig, filename=file_new)
     assert "nodalfactors" in str(e.value)
     
     comp_orig = hatyan.read_components(filename=file_orig)
-    comp_orig.fu_alltimes = True
+    comp_orig.attrs["fu_alltimes"] = True
     with pytest.raises(ValueError) as e:
         hatyan.write_components(comp_orig, filename=file_new)
     assert "fu_alltimes" in str(e.value)
     
     comp_orig = hatyan.read_components(filename=file_orig)
-    comp_orig.source = "notschureman"
+    comp_orig.attrs["source"] = "notschureman"
     with pytest.raises(ValueError) as e:
         hatyan.write_components(comp_orig, filename=file_new)
     assert "source" in str(e.value)

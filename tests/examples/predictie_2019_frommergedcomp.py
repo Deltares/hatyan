@@ -18,7 +18,8 @@ stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','B
 stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','L9PFM','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','Q1','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
 
 #selected_stations = stats_all
-selected_stations = ['CADZD','DORDT','ABDN','AUKFPFM']
+# TODO: temporarily disabled AUKFPFM because of https://github.com/Deltares/hatyan/issues/197
+selected_stations = ['CADZD','DORDT','ABDN']#,'AUKFPFM']
 
 stats_noana = []
 
