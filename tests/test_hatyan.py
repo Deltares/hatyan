@@ -127,6 +127,16 @@ def test_analysis_settings():
 
 
 @pytest.mark.unittest
+def test_analysis_settings_perperiod():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0)
+    
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod="M", return_allperiods=True)
+    assert len(comp_mean.attrs) > 0
+    assert len(comp_all.attrs) > 0
+
+
+@pytest.mark.unittest
 def test_analysis_foreman():
     current_station = 'VLISSGN'
     
