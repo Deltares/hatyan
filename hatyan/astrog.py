@@ -224,7 +224,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(10),lon=lon,lat=lat) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('S'))),'type':np.repeat([1,2],len(OPTIM))})
+    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
     astrog_df = astrog_df.sort_values('datetime').reset_index(drop=True)
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','sunrise').replace('2','sunset')
 
@@ -879,7 +879,7 @@ def get_leapsecondslist_fromurlorfile():
     expirydate = refdate + pd.Timedelta(seconds=int(expirydate_line.iloc[0].split()[1]))
     
     #get leapsecond list from file
-    resp_pd = pd.read_csv(file_leap_seconds_list,comment='#',names=['seconds_since_19000101','leap_seconds'],sep="\s+")
+    resp_pd = pd.read_csv(file_leap_seconds_list,comment='#',names=['seconds_since_19000101','leap_seconds'],delim_whitespace=True)
     resp_pd['datetime'] = refdate + pd.to_timedelta(resp_pd['seconds_since_19000101'],unit='s')
     resp_pd['datetime_str'] = resp_pd['datetime'].dt.strftime('%Y-%m-%d')
     leap_seconds_pd = resp_pd.set_index('datetime_str')

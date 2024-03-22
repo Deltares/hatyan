@@ -25,7 +25,7 @@ selected_stations = ['VLISSGN','CUXHVN','D15','FISHGD','ABDN','BAALHK']
 # TODO: stations ABDN and BAALHK currently fail
 
 file_slotgemiddelden = os.path.join(dir_testdata,'predictie2019','_slotgemiddelden_predictie2019.txt')
-stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', sep="\s+")
+stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
 
 stats_noana = []
 stats_no4Y = []
