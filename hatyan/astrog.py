@@ -83,7 +83,7 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add s
     EHMOON = astrabOutput['EHMOON']
     ICUL = np.floor(EHMOON[0]%360/180).astype(int)+1 # ICUL=1: next culmination is lower culmination, ICUL=2: next culmination is upper culmination
     date_start = date_first + pd.Timedelta(days=(180.*ICUL-EHMOON[0])/EHMINC)
-    CULEST = pd.date_range(start=date_start, end=date_last, freq='%iN'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
+    CULEST = pd.date_range(start=date_start, end=date_last, freq='%ins'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
     CULTYP = np.zeros(len(CULEST),dtype=int)
     CULTYP[::2] = ICUL
     CULTYP[1::2] = (ICUL%2)+1
@@ -147,23 +147,23 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     # estimate first lunar phase (time and type), correct first date (FAEST_first to 45 deg from there)
     astrabOutput = astrab(date_first,dT_fortran=dT_fortran)
     ELONG = astrabOutput['ELONG']
-    FAEST_first = date_first - pd.TimedeltaIndex((ELONG-45)/ELOINC, unit='D')
+    FAEST_first = date_first - pd.to_timedelta((ELONG-45)/ELOINC, unit='D')
 
     # use the first date to create a new daterange from the correct starting time. The frequency is 29 days, 12 hours and 44 minutes, following from dood_S-dood_H
-    date = pd.date_range(start=FAEST_first[0],end=date_last,freq='%iN'%(FASINT*24*3600*1e9))
+    date = pd.date_range(start=FAEST_first[0],end=date_last,freq='%ins'%(FASINT*24*3600*1e9))
 
     # estimate all lunar phases (time and type)
     astrabOutput = astrab(date,dT_fortran=dT_fortran)
     ELONG = astrabOutput['ELONG']
     FATYP = (np.floor(ELONG/90).astype(int)+3)%4+1 #make sure the next phase is searched for (modulus to use 'FATYP-1')
-    FAEST = date - pd.TimedeltaIndex((90*FATYP-ELONG%360)/ELOINC, unit='D')
+    FAEST = date - pd.to_timedelta((90*FATYP-ELONG%360)/ELOINC, unit='D')
 
     # calculate exact time of phase, loop until date_last
-    TIMDIF = pd.TimedeltaIndex(-dT(FAEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(FAEST,dT_fortran=dT_fortran),unit='s')
     FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':FATIM.round('S'),'type':FATYP})
+    astrog_df = pd.DataFrame({'datetime':FATIM.round('s'),'type':FATYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','FQ').replace('2','FM').replace('3','LQ').replace('4','NM')
 
     #set timezone, check datetime order and filter datetimerange
@@ -214,17 +214,17 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     
     # --- sunrise and -set ---
     # estimate times: starting at tFirst, 0h local solar time
-    DAYEST = pd.date_range(start=date_first,end=date_last,freq='%iN'%(24*3600*1e9))
+    DAYEST = pd.date_range(start=date_first,end=date_last,freq='%ins'%(24*3600*1e9))
     OPEST  = DAYEST + pd.Timedelta(days=-lon/360.+.25) # correct for longitude and 'floor' date to 00:00 +6h
     ONEST  = DAYEST + pd.Timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='s')
     OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array(9),lon=lon,lat=lat) + TIMDIF
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(10),lon=lon,lat=lat) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('S'))),'type':np.repeat([1,2],len(OPTIM))})
+    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('s'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
     astrog_df = astrog_df.sort_values('datetime').reset_index(drop=True)
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','sunrise').replace('2','sunset')
 
@@ -289,16 +289,16 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
         date_first_plus = date_first + pd.Timedelta(days=(270-EHMOON[0])/EHMINC)
     else: # first phenomenon is moonset
         date_first_plus = date_first + pd.Timedelta(days=(90-EHMOON[0])/EHMINC)
-    ONEST = pd.date_range(start=date_first_plus, end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
+    ONEST = pd.date_range(start=date_first_plus, end=date_last, freq='%ins'%(M2_period_hr*2*3600*1e9))
     OPEST = ONEST + pd.Timedelta(hours=M2_period_hr)
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(OPEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(OPEST,dT_fortran=dT_fortran),unit='s')
     OPTIM  = astrac(OPEST,dT_fortran=dT_fortran,mode=np.array(7),lon=lon,lat=lat) + TIMDIF
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(8),lon=lon,lat=lat) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('S'))),'type':np.repeat([1,2],len(OPTIM))})
+    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('s'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
     astrog_df = pd.DataFrame(astrog_df).sort_values('datetime').reset_index(drop=True)
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','moonrise').replace('2','moonset')
 
@@ -359,17 +359,17 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
         ref_deg = 180    
         IANO = 2
     date_first_plus = date_first + pd.Timedelta(days=(ref_deg-ANM[0])/ANMINC)
-    ANOEST = pd.date_range(start=date_first_plus,end=date_last,freq='%iN'%(ANOINT*24*3600*1e9))
+    ANOEST = pd.date_range(start=date_first_plus,end=date_last,freq='%ins'%(ANOINT*24*3600*1e9))
     ANOTYP = np.zeros(len(ANOEST),dtype=int)
     ANOTYP[::2] = IANO
     ANOTYP[1::2] = (IANO%2)+1
 
     # calculate exact times
-    TIMDIF = pd.TimedeltaIndex(-dT(ANOEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(ANOEST,dT_fortran=dT_fortran),unit='s')
     ANOTIM = astrac(ANOEST,dT_fortran=dT_fortran,mode=ANOTYP+14) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':ANOTIM.round('S'),'type':ANOTYP})
+    astrog_df = pd.DataFrame({'datetime':ANOTIM.round('s'),'type':ANOTYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','perigeum').replace('2','apogeum')
 
     #set timezone, check datetime order and filter datetimerange
@@ -417,11 +417,11 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     SEITYP = np.floor(SEIEST.month/3).astype(int)
 
     # calculate exact times, loop until tLast
-    TIMDIF = pd.TimedeltaIndex(-dT(SEIEST,dT_fortran=dT_fortran),unit='S')
+    TIMDIF = pd.to_timedelta(-dT(SEIEST,dT_fortran=dT_fortran),unit='s')
     SEITIM = astrac(SEIEST,dT_fortran=dT_fortran,mode=SEITYP+10) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':SEITIM.round('S'),'type':SEITYP})
+    astrog_df = pd.DataFrame({'datetime':SEITIM.round('s'),'type':SEITYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','spring').replace('2','summer').replace('3','autumn').replace('4','winter')
     
     #set timezone, check datetime order and filter datetimerange
@@ -817,7 +817,7 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
             ANG = itertargets_pd.loc[mode,'ANGLE']-(0.08+0.2725*astrabOutput['PARLAX'])/3600. # ANGLE in degrees and PARLAX in arcseconds (/3600 gives degrees)
         # nan_to_num to make sure no NaT/inf output in next iteration
         addtime_nonan = np.nan_to_num((ANG-POLD)/RATE, nan=0, posinf=0, neginf=0)
-        addtime = pd.TimedeltaIndex(addtime_nonan, unit='D')
+        addtime = pd.to_timedelta(addtime_nonan, unit='D')
         #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))
         if IPAR in ['ALTMOO','ALTSUN'] and (np.abs(np.array(addtime.total_seconds()/3600)) > 24).any(): #catch for ALTMOO and ALTSUN to let the iteration process stop before it escalates
             raise Exception(f'Iteration step resulted in time changes larger than 24 hours (max {np.abs(addtime.total_seconds()).max()/3600:.2f} hours), try using a lower latitude')
@@ -880,7 +880,7 @@ def get_leapsecondslist_fromurlorfile():
     
     #get leapsecond list from file
     resp_pd = pd.read_csv(file_leap_seconds_list,comment='#',names=['seconds_since_19000101','leap_seconds'],delim_whitespace=True)
-    resp_pd['datetime'] = refdate + pd.to_timedelta(resp_pd['seconds_since_19000101'],unit='S')
+    resp_pd['datetime'] = refdate + pd.to_timedelta(resp_pd['seconds_since_19000101'],unit='s')
     resp_pd['datetime_str'] = resp_pd['datetime'].dt.strftime('%Y-%m-%d')
     leap_seconds_pd = resp_pd.set_index('datetime_str')
     
