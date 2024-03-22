@@ -83,7 +83,7 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add s
     EHMOON = astrabOutput['EHMOON']
     ICUL = np.floor(EHMOON[0]%360/180).astype(int)+1 # ICUL=1: next culmination is lower culmination, ICUL=2: next culmination is upper culmination
     date_start = date_first + pd.Timedelta(days=(180.*ICUL-EHMOON[0])/EHMINC)
-    CULEST = pd.date_range(start=date_start, end=date_last, freq='%iN'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
+    CULEST = pd.date_range(start=date_start, end=date_last, freq='%ins'%(M2_period_hr*3600*1e9)) #defined freq as M2_period in nanoseconds
     CULTYP = np.zeros(len(CULEST),dtype=int)
     CULTYP[::2] = ICUL
     CULTYP[1::2] = (ICUL%2)+1
@@ -150,7 +150,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     FAEST_first = date_first - pd.to_timedelta((ELONG-45)/ELOINC, unit='D')
 
     # use the first date to create a new daterange from the correct starting time. The frequency is 29 days, 12 hours and 44 minutes, following from dood_S-dood_H
-    date = pd.date_range(start=FAEST_first[0],end=date_last,freq='%iN'%(FASINT*24*3600*1e9))
+    date = pd.date_range(start=FAEST_first[0],end=date_last,freq='%ins'%(FASINT*24*3600*1e9))
 
     # estimate all lunar phases (time and type)
     astrabOutput = astrab(date,dT_fortran=dT_fortran)
@@ -214,7 +214,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     
     # --- sunrise and -set ---
     # estimate times: starting at tFirst, 0h local solar time
-    DAYEST = pd.date_range(start=date_first,end=date_last,freq='%iN'%(24*3600*1e9))
+    DAYEST = pd.date_range(start=date_first,end=date_last,freq='%ins'%(24*3600*1e9))
     OPEST  = DAYEST + pd.Timedelta(days=-lon/360.+.25) # correct for longitude and 'floor' date to 00:00 +6h
     ONEST  = DAYEST + pd.Timedelta(days=-lon/360.+.75) # correct for longitude and 'floor' date to 00:00 +18h
 
@@ -289,7 +289,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
         date_first_plus = date_first + pd.Timedelta(days=(270-EHMOON[0])/EHMINC)
     else: # first phenomenon is moonset
         date_first_plus = date_first + pd.Timedelta(days=(90-EHMOON[0])/EHMINC)
-    ONEST = pd.date_range(start=date_first_plus, end=date_last, freq='%iN'%(M2_period_hr*2*3600*1e9))
+    ONEST = pd.date_range(start=date_first_plus, end=date_last, freq='%inss'%(M2_period_hr*2*3600*1e9))
     OPEST = ONEST + pd.Timedelta(hours=M2_period_hr)
 
     # calculate exact times
@@ -359,7 +359,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
         ref_deg = 180    
         IANO = 2
     date_first_plus = date_first + pd.Timedelta(days=(ref_deg-ANM[0])/ANMINC)
-    ANOEST = pd.date_range(start=date_first_plus,end=date_last,freq='%iN'%(ANOINT*24*3600*1e9))
+    ANOEST = pd.date_range(start=date_first_plus,end=date_last,freq='%ins'%(ANOINT*24*3600*1e9))
     ANOTYP = np.zeros(len(ANOEST),dtype=int)
     ANOTYP[::2] = IANO
     ANOTYP[1::2] = (IANO%2)+1
