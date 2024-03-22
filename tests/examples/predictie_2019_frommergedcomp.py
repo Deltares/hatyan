@@ -67,7 +67,7 @@ for current_station in selected_stations:
     #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
     hatyan.write_tsdia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_pred.step,current_station))
     #ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
-    #hatyan.write_tsdia_HWLW(ts_ext=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_pred.step, current_station))
+    #hatyan.write_tsdia(ts=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_pred.step, current_station))
     #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
     #fig.savefig('prediction_%im_%s_HWLW'%(times_pred.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_validation)

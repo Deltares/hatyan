@@ -243,6 +243,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     COMP_mean_pd = metadata_add_to_obj(COMP_mean_pd, metadata)
     
     if hatyan_settings.return_allperiods:
+        COMP_all_pd = metadata_add_to_obj(COMP_all_pd, metadata)
         return COMP_mean_pd, COMP_all_pd
     
     return COMP_mean_pd

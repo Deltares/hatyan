@@ -782,14 +782,16 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
 
 def write_tsdia(ts, filename, headerformat='dia'):
     """
-    Writes the timeseries to an equidistant dia file. This is only supported 
+    Writes the timeseries to an equidistant dia file or the extremes to 
+    a non-equidistant dia file. This is only supported 
     for timeseries with a UTC+1 timestamp, since DONAR (and therefore dia)
     data is always in UTC+1 (MET/CET), also during summertime periods.
 
     Parameters
     ----------
     ts : pandas.DataFrame
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries.
+        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries. 
+        In case of extremes, the DataFrame should also contain a 'HWLW_code' column.
     station : TYPE
         DESCRIPTION.
     vertref : TYPE
@@ -807,7 +809,14 @@ def write_tsdia(ts, filename, headerformat='dia'):
     None.
 
     """
-    if "HWLWcode"in ts.columns:
+    if "HWLWcode" in ts.columns:
+        write_tsdia_HWLW(ts_ext=ts, filename=filename, headerformat=headerformat)
+    else:
+        write_tsdia_ts(ts=ts, filename=filename, headerformat=headerformat)
+
+    
+def write_tsdia_ts(ts, filename, headerformat='dia'):
+    if "HWLWcode" in ts.columns:
         raise TypeError("a timeseries with extremes (HWLW) was passed to write_tsdia, use `write_tsdia_HWLW()` instead")
     metadata = metadata_from_obj(ts)
     waarnemingssoort = wns_from_metadata(metadata)
@@ -894,30 +903,6 @@ def write_tsdia(ts, filename, headerformat='dia'):
 
 
 def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
-    """
-    writes the extremes timeseries to a non-equidistant dia file
-
-    Parameters
-    ----------
-    ts_ext : pandas.DataFrame
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes.
-    station : TYPE
-        DESCRIPTION.
-    vertref : TYPE
-        DESCRIPTION.
-    filename : TYPE
-        DESCRIPTION.
-
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
     
     metadata = metadata_from_obj(ts_ext)
     waarnemingssoort = wns_from_metadata(metadata)

@@ -16,6 +16,7 @@
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)
 - moved kenmerkendewaarden functions and examples to https://github.com/Deltares-research/kenmerkendewaarden in [#211](https://github.com/Deltares/hatyan/pull/211)
+- deprecated `hatyan.write_tsdia_HWLW()` in favor of `hatyan.write_tsdia()` in [#223](https://github.com/Deltares/hatyan/pull/223)
 
 
 ## 2.7.0 (2023-08-03)
@@ -34,7 +35,7 @@
 - added Kenmerkende Waarden functions
 - moved from analysis_peryear and analysis_permonth to analysis_perperiod
 - modernized python package and updated dependencies in several commits
-- updated `xTxmat_condition_max=12` (was `10` before) to allow several correct cases by [@veenstrajelmer](https://github.com/veenstrajelmer
+- updated `xTxmat_condition_max=12` (was `10` before) to allow several correct cases
 - moved from analysis_peryear and analysis_permonth to analysis_perperiod
 - added xtrack and fes2014b constituent list
 - added shallow water components 2MK2, M(SK)2, M(KS)2. Added harmonic components S3, M!M, MSTM from tugo (provided by Henrique Guarneri)
