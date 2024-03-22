@@ -163,7 +163,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':FATIM.round('S'),'type':FATYP})
+    astrog_df = pd.DataFrame({'datetime':FATIM.round('s'),'type':FATYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','FQ').replace('2','FM').replace('3','LQ').replace('4','NM')
 
     #set timezone, check datetime order and filter datetimerange
@@ -224,7 +224,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(10),lon=lon,lat=lat) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
+    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('s'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
     astrog_df = astrog_df.sort_values('datetime').reset_index(drop=True)
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','sunrise').replace('2','sunset')
 
@@ -298,7 +298,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     ONTIM  = astrac(ONEST,dT_fortran=dT_fortran,mode=np.array(8),lon=lon,lat=lat) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('S'),ONTIM.round('S'))),'type':np.repeat([1,2],len(OPTIM))})
+    astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('s'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
     astrog_df = pd.DataFrame(astrog_df).sort_values('datetime').reset_index(drop=True)
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','moonrise').replace('2','moonset')
 
@@ -369,7 +369,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     ANOTIM = astrac(ANOEST,dT_fortran=dT_fortran,mode=ANOTYP+14) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':ANOTIM.round('S'),'type':ANOTYP})
+    astrog_df = pd.DataFrame({'datetime':ANOTIM.round('s'),'type':ANOTYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','perigeum').replace('2','apogeum')
 
     #set timezone, check datetime order and filter datetimerange
@@ -421,7 +421,7 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     SEITIM = astrac(SEIEST,dT_fortran=dT_fortran,mode=SEITYP+10) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':SEITIM.round('S'),'type':SEITYP})
+    astrog_df = pd.DataFrame({'datetime':SEITIM.round('s'),'type':SEITYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','spring').replace('2','summer').replace('3','autumn').replace('4','winter')
     
     #set timezone, check datetime order and filter datetimerange
