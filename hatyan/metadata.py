@@ -46,23 +46,6 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     return metadata
 
 
-def metadata_from_ddlmeta(metadata_ddl, stationdata_ddl):
-    
-    metadata = {}
-    metadata['station'] = stationdata_ddl.iloc[0]['Code']
-    metadata['grootheid'] = metadata_ddl.iloc[0]['Grootheid.Code']
-    metadata['eenheid'] = metadata_ddl.iloc[0]['Eenheid.Code']
-    metadata['vertref'] = metadata_ddl.iloc[0]['Hoedanigheid.Code']
-    # metadata['tstart'] = metadata_ddl.iloc[0]['']
-    # metadata['tstop'] = metadata_ddl.iloc[0]['']
-    # metadata['timestep_min'] = metadata_ddl.iloc[0]['']
-    # metadata['timestep_unit'] = metadata_ddl.iloc[0]['']
-    # metadata['TYP'] = metadata_ddl.iloc[0]['Typering.Code']
-    metadata['groepering'] = metadata_ddl.iloc[0]['Groepering.Code']
-    
-    return metadata
-
-
 def metadata_from_obj(obj):
     obj_vars = vars(obj)
     metadata = {key:obj_vars[key] for key in obj_vars.keys() if not key.startswith('_')}

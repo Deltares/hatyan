@@ -10,6 +10,7 @@
 - improved metadata in component files by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/131)
 - replaced `times_ext` `timestep_min` and `times_pred_all` for `prediction()` with `times` argument by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#131](https://github.com/Deltares/hatyan/pull/143)
 - integrated ddlpy to in ddl example script by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#202](https://github.com/Deltares/hatyan/pull/202) and [#213](https://github.com/Deltares/hatyan/pull/213)
+- prevent writing components with non-standard settings to file and prevent prediction with different settings than provided components by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#218](https://github.com/Deltares/hatyan/pull/218)
 
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` by [@veenstrajelmer](https://github.com/veenstrajelmer) in [#206](https://github.com/Deltares/hatyan/pull/206)

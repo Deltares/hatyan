@@ -51,6 +51,7 @@ def test_anapred_metadata():
     
     pred_xfac0 = hatyan.prediction(comp, xfac=False)
     # we also test if metadata is correctly passed if e.g. xfac is not in line with xfac in components file
+    comp.xfac = True
     pred_xfac1 = hatyan.prediction(comp, xfac=True)
     
     meta_fromts_xfac0 = metadata_from_obj(pred_xfac0)
@@ -70,7 +71,8 @@ def test_anapred_metadata():
      'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,
-     'fu_alltimes': True}
+     'fu_alltimes': True,
+     'source': 'schureman'}
     
     meta_expected_xfac1 = meta_expected_xfac0.copy()
     meta_expected_xfac1["xfac"] = True
@@ -123,7 +125,8 @@ def test_hwlw_metadata():
      'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,
-     'fu_alltimes': True}
+     'fu_alltimes': True,
+     'source': 'schureman'}
     
     assert pred_ext_meta == pred_ext_meta_expected
     assert meas_ext_meta == meas_ext_meta_expected

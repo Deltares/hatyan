@@ -376,10 +376,9 @@ def test_nyquist_folding():
     ts_meas_raw = pd.DataFrame({'values':data_pd['numeriekewaarde'].values/100},index=data_pd['tijdstip'].dt.tz_localize(None)) #read dataset and convert to DataFrame with correct format #TODO: tijdzone is MET (UTC+1), ook van de resulterende getijcomponenten. Is dat wenselijk?
     ts_meas_raw = ts_meas_raw.sort_index(axis='index') #sort dataset on times (not necessary but easy for debugging)
     
-    try:
+    # check if we get "Exception: there is a component on the Nyquist frequency (0.16666666666666666 [1/hr]), this not possible"
+    # without doing the nyquist check, we get a MatrixConditionTooHigh error instead
+    with pytest.raises(Exception) as e:
         hatyan.analysis(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, fu_alltimes=True)
-    except Exception as e:
-        # check if we get "Exception: there is a component on the Nyquist frequency (0.16666666666666666 [1/hr]), this not possible"
-        # without doing the nyquist check, we get a MatrixConditionTooHigh error instead
-        assert "nyquist" in str(e).lower()
+    assert "nyquist" in str(e).lower()
 

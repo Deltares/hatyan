@@ -202,11 +202,38 @@ def test_predictionsettings():
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    ts_prediction_nfac1_fualltimes1_xfac1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
-    ts_prediction_nfac1_fualltimes0_xfac1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times=times_pred)
-    ts_prediction_nfac1_fualltimes1_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
-    ts_prediction_nfac1_fualltimes0_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times=times_pred)
-    ts_prediction_nfac0_fualltimes0_xfac0 = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times=times_pred)
+    # ts_prediction_nfac1_fualltimes0_xfac1
+    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times=times_pred)
+    COMP_merged.fu_alltimes = True
+    # ts_prediction_nfac1_fualltimes1_xfac1
+    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
+    COMP_merged.xfac = False
+    # ts_prediction_nfac1_fualltimes1_xfac0
+    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
+    COMP_merged.fu_alltimes = False
+    # ts_prediction_nfac1_fualltimes0_xfac0
+    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times=times_pred)
+    COMP_merged.nodalfactors = False
+    # ts_prediction_nfac0_fualltimes0_xfac0
+    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times=times_pred)
+
+
+@pytest.mark.unittest
+def test_predictionsettings_wrongsettings():
+    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), 1)
+    current_station = 'DENHDR'
+    
+    file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
+    COMP_merged = hatyan.read_components(filename=file_data_comp0)
+    with pytest.raises(AssertionError):
+        # incorrect fu_alltimes
+        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
+    with pytest.raises(AssertionError):
+        # incorrect xfac
+        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
+    with pytest.raises(AssertionError):
+        # incorrect nodalfactors
+        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times=times_pred)
 
 
 @pytest.mark.unittest
@@ -376,17 +403,22 @@ def test_frommergedcomp_HWLW_toomuch():
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
     ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, debug=True)
     
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
     
+    values_actual = ts_ext_prediction_HWLWno_pre['values'].values
+    values_expected = np.array([-0.80339617,  0.61842454, -0.76465349,  0.79758517, -0.87872312])
+    hwlwcodes_actual = ts_ext_prediction_HWLWno_pre['HWLWcode'].values
+    hwlwcodes_expected = np.array([2, 1, 2, 1, 2])
+    hwlwnos_actual = ts_ext_prediction_HWLWno['HWLWno'].values
+    hwlwnos_expected = np.array([7057, 7058, 7058, 7059, 7059])
+    
     assert len(ts_ext_prediction_HWLWno_pre) == 5
-    assert (np.abs(ts_ext_prediction_HWLWno_pre['HWLWcode'].values-np.array([2, 1, 2, 1, 2])) < 10E-9).all()
-    assert (np.abs(ts_ext_prediction_HWLWno_pre['values'].values-np.array([-0.80339484,  0.61842428, -0.76465391,  0.79758734, -0.87872493 ])) < 10E-9).all()
-
-    assert len(ts_ext_prediction_HWLWno['HWLWno']) == 5
-    assert (np.abs(ts_ext_prediction_HWLWno['HWLWno'].values -np.array([7057, 7058, 7058, 7059, 7059])) < 10E-9).all()
+    assert np.allclose(values_actual, values_expected)
+    assert np.allclose(hwlwcodes_actual, hwlwcodes_expected)
+    assert np.allclose(hwlwnos_actual, hwlwnos_expected)
 
 
 @pytest.mark.systemtest
@@ -517,7 +549,7 @@ def test_frommergedcomp_HWLW_345(current_station):
     # times_pred = slice(dt.datetime(2010,6,26),dt.datetime(2010,6,28), 1) #lokale extremen tussen twee laagste LWs
     # times_pred = slice(dt.datetime(2019,2,1),dt.datetime(2019,2,2), 1) #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
     #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
     ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
@@ -594,12 +626,11 @@ def test_frommergedcomp_HWLW_345(current_station):
                                                                    7138, 7138, 7139, 7139, 7140, 7140, 7141, 7141, 7142, 7142, 7143,
                                                                    7143, 7144, 7144, 7145, 7145, 7146, 7146, 7147, 7147, 7148, 7148])
     
-    assert (np.abs(ts_ext_prediction_main_HWLWno['HWLWno'].values - expected_ts_ext_prediction_main_HWLWno_HWLWno) < 10E-9).all()
-    assert (np.abs(ts_ext_prediction_main['HWLWcode'].values - expected_ts_ext_prediction_main_HWLWcode) < 10E-9).all()
-    assert (np.abs(ts_ext_prediction_clean_tomain['HWLWcode'].values - expected_ts_ext_prediction_main_HWLWcode) < 10E-9).all()
-    #assert (np.abs(ts_ext_prediction_all['HWLWcode'].values - expected_ts_ext_prediction_all_HWLWcode) < 10E-9).all()
-    assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWcode'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWcode) < 10E-9).all()
-    assert (np.abs(ts_ext_prediction_clean_HWLWno['HWLWno'].values - expected_ts_ext_prediction_clean_HWLWno_HWLWno) < 10E-9).all()
+    assert np.allclose(ts_ext_prediction_main_HWLWno['HWLWno'].values, expected_ts_ext_prediction_main_HWLWno_HWLWno)
+    assert np.allclose(ts_ext_prediction_main['HWLWcode'].values, expected_ts_ext_prediction_main_HWLWcode)
+    assert np.allclose(ts_ext_prediction_clean_tomain['HWLWcode'].values, expected_ts_ext_prediction_main_HWLWcode)
+    assert np.allclose(ts_ext_prediction_clean_HWLWno['HWLWcode'].values, expected_ts_ext_prediction_clean_HWLWno_HWLWcode)
+    assert np.allclose(ts_ext_prediction_clean_HWLWno['HWLWno'].values, expected_ts_ext_prediction_clean_HWLWno_HWLWno)
 
 
 @pytest.mark.systemtest
@@ -621,7 +652,7 @@ def test_hwlw_numbering_aggers():
         file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
         comp_merged = hatyan.read_components(filename=file_data_comp0)
         
-        ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred)
+        ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
         ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)
         ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)
         ts_ext_prediction_all.loc[ts_ext_prediction_all.index.isin(ts_ext_prediction_345.index),'HWLWcode'] = ts_ext_prediction_345['HWLWcode']
@@ -637,6 +668,7 @@ def test_hwlw_numbering_aggers():
         for irow, pdrow in ts_ext_prediction_345_HWLWno.iterrows():
             ax1.text(pdrow.name,pdrow['values'],pdrow['HWLWno'].astype(int))
         ax1.set_ylim(-1.2,1.7)
+        hatyan.close()
         
 
 @pytest.mark.systemtest

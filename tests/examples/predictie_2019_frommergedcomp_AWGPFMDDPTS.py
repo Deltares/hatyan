@@ -32,6 +32,7 @@ for current_station in selected_stations:
     #prediction and validation
     ts_prediction1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred13)
     ts_prediction2 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred24)
+    COMP_merged.fu_alltimes = True
     ts_prediction3 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred13)
     ts_prediction4 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred24)
     ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)

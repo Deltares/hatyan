@@ -239,6 +239,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     metadata['nodalfactors'] = hatyan_settings.nodalfactors
     metadata['xfac'] = hatyan_settings.xfac
     metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
+    metadata['source'] = hatyan_settings.source
     COMP_mean_pd = metadata_add_to_obj(COMP_mean_pd, metadata)
     
     if hatyan_settings.return_allperiods:
@@ -531,16 +532,18 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
     print('PREDICTION finished')
     
-    #add metadata
-    metadata = metadata_from_obj(comp)
-    if 'grootheid' in metadata:
+    # add metadata (first assert if metadata from comp is same as hatyan_settings
+    metadata_comp = metadata_from_obj(comp)
+    if 'grootheid' in metadata_comp:
         # update metadata
-        if metadata['grootheid'] == 'WATHTE':
-            metadata['grootheid'] = 'WATHTBRKD'
-    metadata['nodalfactors'] = hatyan_settings.nodalfactors
-    metadata['xfac'] = hatyan_settings.xfac
-    metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
-    ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata)
+        if metadata_comp['grootheid'] == 'WATHTE':
+            metadata_comp['grootheid'] = 'WATHTBRKD'
+    
+    assert metadata_comp['nodalfactors'] == hatyan_settings.nodalfactors
+    assert metadata_comp['xfac'] == hatyan_settings.xfac
+    assert metadata_comp['fu_alltimes'] == hatyan_settings.fu_alltimes
+    assert metadata_comp['source'] == hatyan_settings.source
+    ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata_comp)
 
     return ts_prediction_pd
 

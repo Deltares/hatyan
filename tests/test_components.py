@@ -65,7 +65,7 @@ def test_read_write_components_nometadata():
 
 
 @pytest.mark.unittest
-def test_read_write_components_nodalfactorsfalse():
+def test_read_write_components_nondefaultsettings():
     
     current_station = 'HOEKVHLD'
     file_orig = os.path.join(dir_testdata,f'{current_station}_ana.txt')
@@ -73,16 +73,21 @@ def test_read_write_components_nodalfactorsfalse():
     
     comp_orig = hatyan.read_components(filename=file_orig)
     comp_orig.nodalfactors = False
+    with pytest.raises(ValueError) as e:
+        hatyan.write_components(comp_orig, filename=file_new)
+    assert "nodalfactors" in str(e.value)
     
-    hatyan.write_components(comp_orig, filename=file_new)
-    comp_new = hatyan.read_components(filename=file_new)
+    comp_orig = hatyan.read_components(filename=file_orig)
+    comp_orig.fu_alltimes = True
+    with pytest.raises(ValueError) as e:
+        hatyan.write_components(comp_orig, filename=file_new)
+    assert "fu_alltimes" in str(e.value)
     
-    meta_orig = metadata_from_obj(comp_orig)
-    meta_new = metadata_from_obj(comp_new)
-    
-    assert np.allclose(comp_orig, comp_new)
-    assert meta_orig == meta_new
-    os.remove(file_new)
+    comp_orig = hatyan.read_components(filename=file_orig)
+    comp_orig.source = "notschureman"
+    with pytest.raises(ValueError) as e:
+        hatyan.write_components(comp_orig, filename=file_new)
+    assert "source" in str(e.value)
 
 
 @pytest.mark.unittest
