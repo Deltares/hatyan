@@ -9,17 +9,9 @@ import os
 import pytest
 import numpy as np
 import hatyan
-from hatyan.convert import convert_tzone2tzinfo
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
-
-
-@pytest.mark.unittest
-def test_convert_tzone2tzinfo():
-    tzone = "UTC+01:00"
-    tzinfo = convert_tzone2tzinfo(tzone)
-    assert tzinfo.zone == 'Etc/GMT-1'
 
     
 @pytest.mark.unittest
@@ -32,10 +24,9 @@ def test_convert_coordinates():
     values_y_rd_exp = np.array([444000.00275723, 427360.00284566, 385220.0032781 , 576550.00145627])
     
     values_x_rd_int, values_y_rd_int = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out=28992)
-    values_x_rd_str, values_y_rd_str = hatyan.convert_coordinates(coordx_in=values_x, coordy_in=values_y, epsg_in=25831,epsg_out="RD")
     
-    assert np.allclose(values_x_rd_int, values_x_rd_str, values_x_rd_exp)
-    assert np.allclose(values_y_rd_int, values_y_rd_str, values_y_rd_exp)
+    assert np.allclose(values_x_rd_int, values_x_rd_exp)
+    assert np.allclose(values_y_rd_int, values_y_rd_exp)
 
 
 @pytest.mark.unittest
@@ -47,7 +38,6 @@ def test_convert_coordinates_diafile():
     coordy_in = diablocks_pd_extra.loc[0,'y']
     epsg_in = diablocks_pd_extra.loc[0,'epsg']
     wgs84x_int, wgs84y_int = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in=epsg_in, epsg_out=4326)
-    wgs84x_str, wgs84y_str = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in="RD", epsg_out="W84")
 
-    assert np.isclose(wgs84x_int, wgs84x_str, 3.596056794834692)
-    assert np.isclose(wgs84y_int, wgs84y_str, 51.44231093287052)
+    assert np.isclose(wgs84x_int, 3.596056794834692)
+    assert np.isclose(wgs84y_int, 51.44231093287052)
