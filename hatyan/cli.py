@@ -98,7 +98,8 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     # run the configfile
     # we use subprocess instead of exec since this supports oneline list generations
     import subprocess
-    p = subprocess.run(f"{sys.executable} {file_config}", stdout=stdout)
+    file_config_abs = os.path.abspath(file_config)
+    p = subprocess.run(f"{sys.executable} {file_config_abs}", stdout=stdout)
     if p.returncode:
         raise RuntimeError("hatyan run failed, check error messages above")
     
