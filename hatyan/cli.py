@@ -5,7 +5,7 @@ Console script for hatyan.
     - ``hatyan --help``
 """
 import sys
-import logging
+# import logging
 import click
 import hatyan
 import os
@@ -13,6 +13,8 @@ import shutil
 import datetime as dt
 import matplotlib
 import matplotlib.pyplot as plt
+import subprocess
+
 
 @click.command()
 @click.argument(
@@ -76,7 +78,12 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     
     #redirecting stdout, stderr is still printed to console
     if redirect_stdout:
+        # set sys.stdout to redirect prints in this command
         sys.stdout = open('STDOUT.txt', 'w')
+        # set stdout to redirect prints in actual execution of the config_file
+        stdout = sys.stdout
+    else:
+        stdout = None
     
     # initialization print
     print("############### HATYAN INITALIZING ###############")
@@ -88,8 +95,14 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     print("--------------------------------------------------")
     
     # run the configfile
-    with open(file_config) as f:
-        exec(f.read())
+    # exec from within cli somehow does not support oneline list generation with predefined variables
+    # therefore we use subprocess instead, this also requires flushing the print buffer first
+    # with open(file_config) as f:
+    #     exec(f.read())
+    sys.stdout.flush()
+    p = subprocess.run(f"{sys.executable} {file_config}", stdout=stdout, shell=True)
+    if p.returncode:
+        raise RuntimeError("hatyan run failed, check error messages above")
     
     # get stop time
     timer_stop = dt.datetime.now()
@@ -108,6 +121,3 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
         plt.show()
     os.chdir("..")
 
-
-if __name__ == "__main__":
-    sys.exit(cli())  # pragma: no cover

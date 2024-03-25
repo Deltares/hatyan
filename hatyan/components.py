@@ -1,24 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 components.py contains all the definitions related to hatyan components.
-
-hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://github.com/Deltares/hatyan
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 """
 
 import matplotlib.pyplot as plt
@@ -27,12 +9,18 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import pytz
-import warnings
 
 from hatyan.schureman import get_schureman_freqs, get_schureman_v0 #TODO: this is not generic foreman/schureman
 from hatyan.hatyan_core import sort_const_list, get_const_list_hatyan
 from hatyan.metadata import (metadata_add_to_obj, metadata_from_obj, 
                              metadata_compare, wns_from_metadata)
+
+__all__ = ["read_components",
+           "write_components",
+           "plot_components",
+           "merge_componentgroups",
+           "components_timeshift",
+           ]
 
 
 def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs=True):

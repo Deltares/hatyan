@@ -13,11 +13,13 @@ import shutil
 import glob
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-filename = os.path.join(dir_tests,'examples','minimal_example.py')
 
 @pytest.mark.unittest
 def test_command_line_interface():
     """Test the CLI."""
+    filename = os.path.join(dir_tests,'examples','minimal_example.py')
+    assert os.path.exists(filename)
+    
     runner = CliRunner()
     
     result = runner.invoke(cli.cli)

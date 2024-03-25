@@ -25,6 +25,8 @@ jobs:
         python -m pip install toml-to-requirements
         toml-to-req --toml-file pyproject.toml --include-optional --optional-lists dev
         sed -i -E 's/>=/==/' requirements.txt
+        # also install the package itself to enable subprocess to work properly (for cli)
+        python -m pip install -e .[dev]
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip

@@ -36,8 +36,8 @@ def test_astrog_dT():
                             69.184, 69.184, 69.184])
     
     # 3. Run test
-    dTLastOut = hatyan.dT(timeInput,dT_fortran=True)
-    dTExctOut = hatyan.dT(timeInput,dT_fortran=False)
+    dTLastOut = hatyan.astrog.dT(timeInput,dT_fortran=True)
+    dTExctOut = hatyan.astrog.dT(timeInput,dT_fortran=False)
     
     # 4. Vefication
     assert type(dTLastOut) == np.ndarray
@@ -73,7 +73,7 @@ def test_astrog_astrab():
                  'ANM':    np.array([151.15606465])}
     
     # 3. Run test
-    parOutput = hatyan.astrab(timeInput,hatyan.dT(timeInput,dT_fortran=True))
+    parOutput = hatyan.astrog.astrab(timeInput,hatyan.astrog.dT(timeInput,dT_fortran=True))
     
     # 4. Vefication
     assert type(parOutput) == dict
@@ -110,7 +110,7 @@ def test_astrog_astrac():
     # 3. Run test
     timeOutput = []
     for iMode in range(1,17):
-        timeOutput.append(hatyan.astrac(timeInput,dT_fortran=False,mode=np.array(iMode)))
+        timeOutput.append(hatyan.astrog.astrac(timeInput,dT_fortran=False,mode=np.array(iMode)))
     
     # 4. Vefication
     for iMode in range(1,17):
@@ -139,5 +139,5 @@ def test_astrog_moonriseset():
 
 @pytest.mark.systemtest
 def test_astrog_leapsecondslist():
-    leap_seconds_pd, expirydate = hatyan.get_leapsecondslist_fromurlorfile()
+    leap_seconds_pd, expirydate = hatyan.astrog.get_leapsecondslist_fromurlorfile()
     

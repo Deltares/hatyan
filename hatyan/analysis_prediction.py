@@ -1,24 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 analysis_prediction.py contains hatyan definitions related to tidal analysis and prediction. 
-
-hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://github.com/Deltares/hatyan
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 """
 
 import numpy as np
@@ -28,6 +10,11 @@ from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_ti
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
 from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
+
+__all__ = ["HatyanSettings",
+           "analysis",
+           "prediction",
+           ]
 
 
 class PydanticConfig:

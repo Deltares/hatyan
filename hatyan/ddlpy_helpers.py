@@ -7,6 +7,9 @@ Created on Wed Dec  1 17:03:03 2021
 
 import pandas as pd
 
+__all__ = ["ddlpy_to_hatyan",
+           "convert_HWLWstr2num"]
+
 
 def ddlpy_to_hatyan(ddlpy_meas):
     
