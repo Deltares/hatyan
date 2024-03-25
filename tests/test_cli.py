@@ -13,7 +13,7 @@ import shutil
 import glob
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
-filename = os.path.join(dir_tests,'examples','predictie_2019_frommergedcomp.py')
+filename = os.path.join(dir_tests,'examples','predictie_2019_19Ycomp4Ydia_VLISSGN.py')
 
 @pytest.mark.unittest
 def test_command_line_interface():

@@ -14,7 +14,7 @@ import pandas as pd
 import hatyan
 hatyan.close('all')
 
-dir_testdata = 'C:\\DATA\\hatyan\\tests'
+dir_testdata = '..'
 
 selected_stations = ['VLISSGN']
 
@@ -49,7 +49,7 @@ for current_station in selected_stations:
 
     fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allperiods=comp_frommeasurements_all_group0)
     fig.savefig('components_%s_4Y.png'%(current_station))
-    hatyan.write_components(comp_frommeasurements_avg_group0, filename='components_%s_4Y.txt'%(current_station))
+    hatyan.write_components(comp_frommeasurements_avg_group0, filename=f'components_{current_station}_4Y.txt')
     
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
