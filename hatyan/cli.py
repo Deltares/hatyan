@@ -94,13 +94,12 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     print(f"dir_output:  {dir_output}")
     print("--------------------------------------------------")
     
-    # write above prints to file even if buffer it not yet full
-    sys.stdout.flush()
-    
     # run the configfile
-    # we use subprocess instead of exec since this supports oneline list generations
+    # exec from within cli somehow does not support oneline list generation with predefined variables
+    # therefore we use subprocess instead, this also requires flushing the print buffer first
     # with open(file_config) as f:
     #     exec(f.read())
+    sys.stdout.flush()
     p = subprocess.run(f"{sys.executable} {file_config}", stdout=stdout, shell=True)
     if p.returncode:
         raise RuntimeError("hatyan run failed, check error messages above")
