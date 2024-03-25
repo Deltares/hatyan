@@ -29,6 +29,8 @@ import functools
 from hatyan.schureman import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f, get_schureman_table
 from hatyan.foreman import get_foreman_v0_freq, get_foreman_doodson_nodal_harmonic, get_foreman_shallowrelations, get_foreman_nodalfactors
 
+__all__ = ["get_const_list_hatyan"]
+
 
 @functools.lru_cache()
 def check_requestedconsts(const_list_tuple,source):

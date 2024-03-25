@@ -220,10 +220,10 @@ def test_readwrite_diawia():
         assert np.allclose(ts_wia, ts_wia_new) #check if wia and dia input is equal
         
         #meta
-        meta_dia = hatyan.metadata_from_obj(ts_dia)
-        meta_wia = hatyan.metadata_from_obj(ts_wia)
-        meta_dia_new = hatyan.metadata_from_obj(ts_dia_new)
-        meta_wia_new = hatyan.metadata_from_obj(ts_wia_new)
+        meta_dia = metadata_from_obj(ts_dia)
+        meta_wia = metadata_from_obj(ts_wia)
+        meta_dia_new = metadata_from_obj(ts_dia_new)
+        meta_wia_new = metadata_from_obj(ts_wia_new)
         assert (meta_dia == meta_wia == meta_dia_new == meta_wia_new)
         
         #remove files
