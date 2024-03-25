@@ -34,7 +34,6 @@ if 1:
         COMP_merged = hatyan.read_components(filename=file_data_comp0)
         # overwrite metadata to avoid AssertionError from prediction
         COMP_merged.attrs["xfac"] = False
-        COMP_merged.attrs["fu_alltimes"] = True
         
         #prediction and validation
         bool_end1 = COMP_merged.index.astype(str).str.endswith('1')

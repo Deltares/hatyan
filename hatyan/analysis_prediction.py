@@ -529,8 +529,8 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     
     assert metadata_comp['nodalfactors'] == hatyan_settings.nodalfactors
     assert metadata_comp['xfac'] == hatyan_settings.xfac
-    assert metadata_comp['fu_alltimes'] == hatyan_settings.fu_alltimes
     assert metadata_comp['source'] == hatyan_settings.source
+    metadata_comp['fu_alltimes'] = hatyan_settings.fu_alltimes
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata_comp)
 
     return ts_prediction_pd

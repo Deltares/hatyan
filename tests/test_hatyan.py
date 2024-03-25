@@ -214,13 +214,11 @@ def test_predictionsettings():
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     # ts_prediction_nfac1_fualltimes0_xfac1
     _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times=times_pred)
-    COMP_merged.attrs["fu_alltimes"] = True
     # ts_prediction_nfac1_fualltimes1_xfac1
     _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
     COMP_merged.attrs["xfac"] = False
     # ts_prediction_nfac1_fualltimes1_xfac0
     _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
-    COMP_merged.attrs["fu_alltimes"] = False
     # ts_prediction_nfac1_fualltimes0_xfac0
     _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times=times_pred)
     COMP_merged.attrs["nodalfactors"] = False
@@ -235,9 +233,6 @@ def test_predictionsettings_wrongsettings():
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    with pytest.raises(AssertionError):
-        # incorrect fu_alltimes
-        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
     with pytest.raises(AssertionError):
         # incorrect xfac
         _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
