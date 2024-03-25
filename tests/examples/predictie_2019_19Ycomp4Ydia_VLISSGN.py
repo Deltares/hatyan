@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py
-hatyan master configfile
-voor alle stations indien mogelijk:
-    - analyse van 4 jaar aan data
-    - combineren met SA+SM uit analyseresultatenbestand
-    - predictie maken
+for use with test_cli.py, requires files from online source
 
 """
 
@@ -14,7 +9,7 @@ import pandas as pd
 import hatyan
 hatyan.close('all')
 
-dir_testdata = '..'
+dir_testdata = 'C:\\DATA\\hatyan\\tests'
 
 selected_stations = ['VLISSGN']
 
