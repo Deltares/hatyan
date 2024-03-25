@@ -13,6 +13,8 @@ import shutil
 import datetime as dt
 import matplotlib
 import matplotlib.pyplot as plt
+import subprocess
+
 
 @click.command()
 @click.argument(
@@ -97,9 +99,7 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     
     # run the configfile
     # we use subprocess instead of exec since this supports oneline list generations
-    import subprocess
-    file_config_abs = os.path.abspath(file_config)
-    p = subprocess.run(f"{sys.executable} {file_config_abs}", stdout=stdout)
+    p = subprocess.run(f"{sys.executable} {file_config}", stdout=stdout)
     if p.returncode:
         raise RuntimeError("hatyan run failed, check error messages above")
     
