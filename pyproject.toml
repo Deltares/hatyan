@@ -38,6 +38,7 @@ dependencies = [
 	"xarray>=2022.6.0",
 	#rws-ddlpy<0.3.0 is very old and does not support newer pandas versions
 	"rws-ddlpy>=0.3.0",
+	"click",
 ]
 classifiers = [
 	"Development Status :: 5 - Production/Stable",
@@ -79,6 +80,9 @@ examples = [
 	"jupyter",
 	"notebook",
 ]
+
+[project.scripts]
+hatyan = "hatyan.cli:cli"
 
 [tool.setuptools.package-data]
 hatyan = ["data/*"]
