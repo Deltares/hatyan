@@ -36,7 +36,7 @@ def test_convert_coordinates_diafile():
     diablocks_pd_extra = hatyan.get_diablocks(filename=file_pred)
     coordx_in = diablocks_pd_extra.loc[0,'x']
     coordy_in = diablocks_pd_extra.loc[0,'y']
-    epsg_in = diablocks_pd_extra.loc[0,'epsg']
+    epsg_in = int(diablocks_pd_extra.loc[0,'epsg'])
     wgs84x_int, wgs84y_int = hatyan.convert_coordinates(coordx_in=coordx_in, coordy_in=coordy_in, epsg_in=epsg_in, epsg_out=4326)
 
     assert np.isclose(wgs84x_int, 3.596056794834692)

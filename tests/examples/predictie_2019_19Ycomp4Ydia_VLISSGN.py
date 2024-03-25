@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-predictie_2019_19Ycomp4Ydia_VLISSGN_interactive.py
-hatyan master configfile
-voor alle stations indien mogelijk:
-    - analyse van 4 jaar aan data
-    - combineren met SA+SM uit analyseresultatenbestand
-    - predictie maken
+for use with test_cli.py, requires files from online source
 
 """
 
@@ -49,7 +44,7 @@ for current_station in selected_stations:
 
     fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allperiods=comp_frommeasurements_all_group0)
     fig.savefig('components_%s_4Y.png'%(current_station))
-    hatyan.write_components(comp_frommeasurements_avg_group0, filename='components_%s_4Y.txt'%(current_station))
+    hatyan.write_components(comp_frommeasurements_avg_group0, filename=f'components_{current_station}_4Y.txt')
     
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
