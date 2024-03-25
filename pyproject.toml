@@ -39,7 +39,7 @@ dependencies = [
 	#rws-ddlpy<0.3.0 is very old and does not support newer pandas versions
 	"rws-ddlpy>=0.3.0",
 	#click<7.1 is not available on github release page
-	"click>=7.1",
+	"click>7.1",
 ]
 classifiers = [
 	"Development Status :: 5 - Production/Stable",
