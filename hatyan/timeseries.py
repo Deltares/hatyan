@@ -1,24 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 timeseries.py contains all definitions related to hatyan timeseries.
-
-hatyan is a Python program for tidal analysis and prediction, based on the FORTRAN version. 
-Copyright (C) 2019-2021 Rijkswaterstaat.  Maintained by Deltares, contact: Jelmer Veenstra (jelmer.veenstra@deltares.nl). 
-Source code available at: https://github.com/Deltares/hatyan
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 """
 
 import os
@@ -32,7 +14,7 @@ import scipy.signal as ssig
 file_path = os.path.realpath(__file__)
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
-from netCDF4 import Dataset, date2num, stringtoarr#, num2date
+from netCDF4 import Dataset, date2num, stringtoarr
 from hatyan.foreman import get_foreman_v0_freq
 from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
@@ -50,6 +32,7 @@ __all__ = ["get_diablocks",
            "resample_timeseries",
            "crop_timeseries",
            "timeseries_fft",
+           "check_ts",
            "calc_HWLW",
            "calc_HWLWnumbering",
            "calc_HWLW12345to12",

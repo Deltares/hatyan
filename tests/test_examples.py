@@ -23,11 +23,11 @@ os.makedirs(dir_output_general, exist_ok=True)
 def test_run_examples(file_config):
     # 1. Set up test data
     os.chdir(dir_output_general)
-    
-    p = subprocess.Popen(f"python -m hatyan {file_config} --redirect-stdout",
-                         stderr=subprocess.STDOUT, # Merge stdout and stderr
-                         stdout=subprocess.PIPE,
-                         shell=True)
+
+    p = subprocess.Popen(f"hatyan {file_config} --redirect-stdout",
+                          stderr=subprocess.STDOUT, # Merge stdout and stderr
+                          stdout=subprocess.PIPE,
+                          shell=True)
     # max 3 minutes per test, if it hangs longer the test is killed
     p.wait(180)
     

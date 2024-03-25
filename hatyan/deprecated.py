@@ -5,7 +5,7 @@ Created on Wed Aug  9 16:29:16 2023
 @author: veenstra
 """
 
-__all__ = []
+__all__ = ["get_components_from_ts"]
 
 
 def get_components_from_ts(**kwargs):

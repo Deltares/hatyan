@@ -12,12 +12,12 @@ import hatyan
 dood_date = pd.DatetimeIndex([dt.datetime(2014,1,1)])
 
 const_list_allschureman = hatyan.get_const_list_hatyan('all_schureman')
-freqs_pd_schu = hatyan.get_schureman_freqs(const_list=const_list_allschureman,dood_date=dood_date)
-v0_pd_schu = hatyan.get_schureman_v0(const_list=freqs_pd_schu.index,dood_date=dood_date)
+freqs_pd_schu = hatyan.schureman.get_schureman_freqs(const_list=const_list_allschureman,dood_date=dood_date)
+v0_pd_schu = hatyan.schureman.get_schureman_v0(const_list=freqs_pd_schu.index,dood_date=dood_date)
 const_list_foreman = hatyan.get_const_list_hatyan('all_foreman')
 
 #TODO: add translate table for different naming conventions >> or add duplicates to foreman/schureman table?
-v0_pd_for,freqs_pd_for = hatyan.get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date)
+v0_pd_for,freqs_pd_for = hatyan.foreman.get_foreman_v0_freq(const_list=const_list_foreman,dood_date=dood_date)
 
 freqs_pd = pd.concat([freqs_pd_schu['freq'],freqs_pd_for],axis=1)
 freqs_pd['const'] = freqs_pd.index

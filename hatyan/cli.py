@@ -76,7 +76,12 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     
     #redirecting stdout, stderr is still printed to console
     if redirect_stdout:
+        # set sys.stdout to redirect prints in this command
         sys.stdout = open('STDOUT.txt', 'w')
+        # set stdout to redirect prints in actual execution of the config_file
+        stdout = sys.stdout
+    else:
+        stdout = None
     
     # initialization print
     print("############### HATYAN INITALIZING ###############")
@@ -87,9 +92,15 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     print(f"dir_output:  {dir_output}")
     print("--------------------------------------------------")
     
+    # write above prints to file even if buffer it not yet full
+    sys.stdout.flush()
+    
     # run the configfile
-    with open(file_config) as f:
-        exec(f.read())
+    # we use subprocess instead of exec since this supports oneline list generations
+    import subprocess
+    p = subprocess.run(f"{sys.executable} {file_config}", stdout=stdout)
+    if p.returncode:
+        raise RuntimeError("hatyan run failed, check error messages above")
     
     # get stop time
     timer_stop = dt.datetime.now()
@@ -108,6 +119,3 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
         plt.show()
     os.chdir("..")
 
-
-if __name__ == "__main__":
-    sys.exit(cli())  # pragma: no cover

@@ -49,7 +49,7 @@ sunriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, d
 #sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone='UTC', lon=lon,lat=lat)
 datesmoonrise = pd.DatetimeIndex(sunriseset_python.loc[:,'datetime'].dt.tz_localize(None))
 print(sunriseset_python)
-astrabOutput = hatyan.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
+astrabOutput = hatyan.astrog.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
 #print(astrabOutput['ALTSUN'])
 #print(astrabOutput['ALTMOO'])
 #print(astrabOutput['ALTMOO'])
@@ -66,7 +66,7 @@ for lon in range(-180,180+1,45): #30 degrees is 30/360*24=2 hours suntime
         #print('SUCCES')
         print(sunriseset_python.iloc[:3])
         datesmoonrise = pd.DatetimeIndex(sunriseset_python.loc[:,'datetime'].dt.tz_localize(None))
-        astrabOutput = hatyan.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
+        astrabOutput = hatyan.astrog.astrab(datesmoonrise,dT_fortran=dT_fortran,lon=lon,lat=lat)
         print(astrabOutput['ALTMOO'])
     except Exception as e:
         print(f'FAILED: {e}')
