@@ -11,9 +11,6 @@ voor alle stations indien mogelijk:
 import os
 import datetime as dt
 import hatyan
-import logging
-logger = logging.getLogger('hatyan')
-logger.setLevel(logging.DEBUG)
 
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 

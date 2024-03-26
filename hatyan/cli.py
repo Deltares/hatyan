@@ -13,7 +13,7 @@ import shutil
 import datetime as dt
 import matplotlib
 import matplotlib.pyplot as plt
-import subprocess
+import importlib
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
     help="redirecting stdout to dir_output/STDOUT.txt, "
     "warnings/errors are still printed to console"
 )
-@click.option('-v', '--verbose', is_flag=True, help="this is not used")
+@click.option('-v', '--verbose', is_flag=True, help="set logging level to debug instead of info")
 @click.version_option(hatyan.__version__)
 def cli(filename, unique_outputdir, interactive_plots, redirect_stdout, 
         verbose
@@ -50,10 +50,6 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     Then runs the provided configfile (FILENAME).
     Wraps up hatyan by printing a de-initialisation footer with the script runtime.
     """
-    level = logging.INFO
-    if verbose:
-        level = logging.DEBUG
-    logging.basicConfig(level=level)
     
     # get file_config and start time
     file_config = os.path.abspath(filename)
@@ -76,12 +72,13 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     
     #redirecting stdout, stderr is still printed to console
     if redirect_stdout:
-        # set sys.stdout to redirect prints in this command
-        sys.stdout = open('STDOUT.txt', 'w')
-        # set stdout to redirect prints in actual execution of the config_file
-        stdout = sys.stdout
-    else:
-        stdout = None
+        sys.stdout = open('STDOUT.txt', "w")
+    
+    level = logging.INFO
+    if verbose:
+        level = logging.DEBUG
+    logging.basicConfig(level=level, stream=sys.stdout)
+    
     
     # initialization print
     logger.info("############### HATYAN INITALIZING ###############")
@@ -97,10 +94,10 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     # therefore we use subprocess instead, this also requires flushing the print buffer first
     # with open(file_config) as f:
     #     exec(f.read())
-    sys.stdout.flush()
-    p = subprocess.run(f"{sys.executable} {file_config}", stdout=stdout, shell=True)
-    if p.returncode:
-        raise RuntimeError("hatyan run failed, check error messages above")
+    spec = importlib.util.spec_from_file_location("script", file_config)
+    foo = importlib.util.module_from_spec(spec)
+    sys.modules["module.name"] = foo
+    spec.loader.exec_module(foo)
     
     # get stop time
     timer_stop = dt.datetime.now()
@@ -115,7 +112,7 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     
     # show all created plots in case of interactive-plots
     if interactive_plots:
-        logger.warning(f"close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
+        # logger.warning(f"close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
         plt.show()
     os.chdir("..")
 
