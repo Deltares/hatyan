@@ -21,7 +21,7 @@ hat_vallist_allstats = pd.Series(dtype=float)
 lat_vallist_allstats = pd.Series(dtype=float)
 
 for current_station in selected_stations:
-    print(f'processing station: {current_station}')
+    print(f'current_station: {current_station}')
     
     #START OF STATION SETTINGS
     nodalfactors = True

@@ -11,10 +11,11 @@ import pandas as pd
 import datetime as dt
 import pytz
 import scipy.signal as ssig
-file_path = os.path.realpath(__file__)
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr
+import logging
+
 from hatyan.foreman import get_foreman_v0_freq
 from hatyan.schureman import get_schureman_freqs
 from hatyan.hatyan_core import get_const_list_hatyan
@@ -39,8 +40,11 @@ __all__ = ["get_diablocks",
            "calc_HWLWtidalrange",
            ]
 
+file_path = os.path.realpath(__file__)
+logger = logging.getLogger(__name__)
 
-def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_hr=6):
+
+def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, buffer_hr=6):
     """
     
     Calculates extremes (high and low waters) for the provided timeseries. 
@@ -61,8 +65,6 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
         When first/second low waters and aggers are calculated, the local extremes around highwater (eg double highwaters and dips) are filtered out first.
     calc_HWLW345_cleanup1122 : boolean, optional
         Whether to remove HWLWcodes 11 and 22 from DataFrame. The default is True.
-    debug : boolean, optional
-        Whether to print debug information. The default is False.
     
     Raises
     ------
@@ -78,16 +80,16 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     """
     
     if not ts.index.is_monotonic_increasing:
-        raise Exception('ERROR: timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()') #otherwise "ValueError: 'list' argument must have no negative elements"
+        raise Exception('timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()') #otherwise "ValueError: 'list' argument must have no negative elements"
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_sec = get_schureman_freqs(['M2']).loc['M2','period [hr]']*3600
     
     ts_steps_sec_most = np.argmax(np.bincount(pd.Series(np.diff(ts.index)).dt.total_seconds().astype(int).values))
     if ts_steps_sec_most > 60:
-        print(f'WARNING: the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
+        logger.warning(f'the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
     elif ts_steps_sec_most == 0:
-        raise Exception('ERROR: ts_steps_sec_most=0, check rounding issue')
+        raise Exception('ts_steps_sec_most=0, check rounding issue')
     M2period_numsteps = M2_period_sec/ts_steps_sec_most
     minwidth_numsteps = 2*3600/ts_steps_sec_most # minimal width of 2 hours makes peakfinding more robust: https://github.com/Deltares/hatyan/issues/85
 
@@ -95,7 +97,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     #create empty HWLW dataframe
     if data_pd_HWLW['values'].isnull().any():
         data_pd_HWLW = data_pd_HWLW[~data_pd_HWLW['values'].isnull()].reset_index(drop=True)
-        print('WARNING: the provided ts for extreme/HWLW calculation contained NaN values. To avoid unexpected results from scipy.signal.find_peaks(), the %i NaN values were removed from the ts (%.2f%%) before calculating extremes/HWLW.'%(len(ts)-len(data_pd_HWLW), (len(ts)-len(data_pd_HWLW))/len(ts)*100))
+        logger.warning('the provided ts for extreme/HWLW calculation contained NaN values. To avoid unexpected results from scipy.signal.find_peaks(), the %i NaN values were removed from the ts (%.2f%%) before calculating extremes/HWLW.'%(len(ts)-len(data_pd_HWLW), (len(ts)-len(data_pd_HWLW))/len(ts)*100))
 
     min_prominence = 0.01 #minimal prominence to exclude very minor dips/peaks from being seen as aggers.
     
@@ -121,19 +123,19 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, debug=False, buffer_h
     data_pd_HWLW = data_pd_HWLW.dropna(subset=['HWLWcode'])
     data_pd_HWLW['HWLWcode'] = data_pd_HWLW['HWLWcode'].astype(int)
 
-    if debug: #debug statistics
-        prop_list = ['prominences','widths']
-        data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==2,prop_list] = pd.DataFrame(LWid_main_properties,index=LWid_main_raw).loc[LWid_main,prop_list]
-        print('LW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==2]))
-        data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,prop_list] = pd.DataFrame(HWid_main_properties,index=HWid_main_raw).loc[HWid_main,prop_list]
-        print('HW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==1]))
-        if calc_HWLW345 or calc_HWLW1122:
-            LW_local_bool = ~np.in1d(LWid_all, LWid_main)
-            data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==22,prop_list] = pd.DataFrame(LWid_all_properties,index=LWid_all).loc[LW_local_bool,prop_list]
-            print('LW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22]))
-            HW_local_bool = ~np.in1d(HWid_all, HWid_main)
-            data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==11,prop_list] = pd.DataFrame(HWid_all_properties,index=HWid_all).loc[HW_local_bool,prop_list]
-            print('HW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11]))
+    # extensive debugging statistics
+    prop_list = ['prominences','widths']
+    data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==2,prop_list] = pd.DataFrame(LWid_main_properties,index=LWid_main_raw).loc[LWid_main,prop_list]
+    logger.debug('LW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==2]))
+    data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,prop_list] = pd.DataFrame(HWid_main_properties,index=HWid_main_raw).loc[HWid_main,prop_list]
+    logger.debug('HW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==1]))
+    if calc_HWLW345 or calc_HWLW1122:
+        LW_local_bool = ~np.in1d(LWid_all, LWid_main)
+        data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==22,prop_list] = pd.DataFrame(LWid_all_properties,index=LWid_all).loc[LW_local_bool,prop_list]
+        logger.debug('LW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22]))
+        HW_local_bool = ~np.in1d(HWid_all, HWid_main)
+        data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==11,prop_list] = pd.DataFrame(HWid_all_properties,index=HWid_all).loc[HW_local_bool,prop_list]
+        logger.debug('HW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11]))
     
     if calc_HWLW345: #recalculate local LW/HWs between two main HWs to firstLW/agger/secondLW
         data_pd_HWLW = calc_HWLWlocalto345(data_pd_HWLW,HWid_main)
@@ -171,7 +173,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
 
     """
     
-    print('calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...')
+    logger.debug('calculating 1stLW/agger/2ndLW for all tidalperiods (between two HW values)...')
     for iTide, dummy in enumerate(HWid_main[:-1]):
         data_pd_HWLW_1tide = data_pd_HWLW.loc[HWid_main[iTide]:HWid_main[iTide+1],:]
         
@@ -183,7 +185,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
         data_pd_HWLW_1tide_noHWs = data_pd_HWLW_1tide[bool_LWs]
         
         if len(data_pd_HWLW_1tide_noHWs) > 3: #(attempt to) reduce to three values between two HWs
-            print('WARNING: more than 3 values between HWs, removing part of them')
+            logger.warning('more than 3 values between HWs, removing part of them')
             agger35_prim = data_pd_HWLW_1tide_noHWs[data_pd_HWLW_1tide_noHWs['HWLWcode']==2]
             if len(agger35_prim)>1:
                 raise Exception('should be only one HWLWcode=2 per tide period')
@@ -205,7 +207,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
                 raise Exception('3 values between two HW values, but do not correspond to LW/agger/LW:\n%s'%(data_pd_HWLW_1tide))
             data_pd_HWLW.loc[agger345_loc,'HWLWcode'] = [3,4,5]
         elif len(data_pd_HWLW_1tide_noHWs) == 2:
-            print('WARNING: 2 values left between two HWs (slightly unexpected):\n%s'%(data_pd_HWLW_1tide))
+            logger.warning('2 values left between two HWs (slightly unexpected):\n%s'%(data_pd_HWLW_1tide))
         else:
             raise Exception('unexpected number of values between two HWs (0 or more than 3):\n%s'%(data_pd_HWLW_1tide))
     
@@ -213,7 +215,7 @@ def calc_HWLWlocalto345(data_pd_HWLW,HWid_main):
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11].index)
     data_pd_HWLW = data_pd_HWLW.drop(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22].index)
     
-    print('finished calculating 1stLW/agger/2ndLW for all tidalperiods')
+    logger.debug('finished calculating 1stLW/agger/2ndLW for all tidalperiods')
     
     return data_pd_HWLW
 
@@ -233,10 +235,10 @@ def calc_HWLW12345to12(data_HWLW_12345):
     
     """
     if len(data_HWLW_12345['HWLWcode'].unique()) <= 2:
-        print('skipping HWLW 12345 to 12 correction since no 345 found, returning input df')
+        logger.debug('skipping HWLW 12345 to 12 correction since no 345 found, returning input df')
         return data_HWLW_12345.copy()
     
-    print('starting HWLW 12345 to 12 correction')
+    logger.debug('starting HWLW 12345 to 12 correction')
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345['HWLWcode']==1]
     #computing minimum waterlevels after each HW. Using hardcoded 12hour period instead of from one HW to next HW since then we can also assess last LW values
@@ -316,9 +318,9 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
         M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
         # high xTxmat_condition_max value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW.
         comp_M2 = analysis(ts_ext,const_list=['M2'],xTxmat_condition_max=250)
-        print(comp_M2.loc['M2','phi_deg'],M2phase_cadzd)
+        logger.debug(comp_M2.loc['M2','phi_deg'],M2phase_cadzd)
         M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd+90)%360-90
-        print('no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand based on M2phase: ',end='')
+        message_prefix = 'no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand based on M2phase:'
         if corr_tideperiods is not None:
             M2phasediff_deg += corr_tideperiods
     else:
@@ -327,17 +329,17 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
         if station not in stations_M2phasediff.index:
             raise Exception(f'ERROR: station "{station}" not in file_M2phasediff ({file_M2phasediff})')
         M2phasediff_deg = stations_M2phasediff.loc[station,'M2phasediff']
-        print('M2phasediff retrieved from file, correction w.r.t. Cadzand: ',end='')
+        message_prefix = 'M2phasediff retrieved from file, correction w.r.t. Cadzand:'
     M2phasediff_hr = M2phasediff_deg/360*M2_period_hr
-    print(f'{M2phasediff_hr:.2f} hours ({M2phasediff_deg:.2f} degrees)')
+    logger.debug(f'{message_prefix} {M2phasediff_hr:.2f} hours ({M2phasediff_deg:.2f} degrees)')
     HW_tdiff_cadzd = HW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr
     HW_tdiff_div, HW_tdiff_mod_searchwindow = np.divmod(HW_tdiff_cadzd.values, M2_period_hr)
     HW_tdiff_mod = HW_tdiff_mod_searchwindow - searchwindow_hr
     ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
     if not all(np.diff(HW_tdiff_div) > 0):
         idx_toosmall = np.where((np.diff(HW_tdiff_div) <= 0))[0]
-        print(idx_toosmall)
-        print(ts_ext.loc[HW_bool,['values','HWLWcode','HWLWno']].iloc[idx_toosmall[0]:])
+        logger.debug(idx_toosmall)
+        logger.debug(ts_ext.loc[HW_bool,['values','HWLWcode','HWLWno']].iloc[idx_toosmall[0]:])
         raise Exception('tidal wave numbering: HW numbers not always increasing')
     if not all(np.abs(HW_tdiff_mod)<searchwindow_hr):
         raise Exception('tidal wave numbering: not all HW fall into hardcoded search window')
@@ -381,7 +383,7 @@ def calc_HWLWtidalrange(ts_ext):
 
 def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft=True, source='schureman'):
     
-    print('analyzing timeseries with fft and fftfreq')
+    logger.debug('analyzing timeseries with fft and fftfreq')
     
     if ts_residue['values'].isnull().sum() > 0:
         raise Exception('supplied timeseries contains nan values, use pd.interpolate first (dropping them will result in non-constant timestep which is also not possible for fft)')
@@ -423,7 +425,7 @@ def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft
     if max_freqdiff is not None:
         #select below freqdiff treshold
         hatyan_freqs_suggestions = hatyan_freqs_suggestions.loc[hatyan_freqs_suggestions['peak_freqdiff']<max_freqdiff]
-    print('suggested constituents+freqs from hatyan:\n%s'%(hatyan_freqs_suggestions))
+    logger.debug('suggested constituents+freqs from hatyan:\n%s'%(hatyan_freqs_suggestions))
     
     return hatyan_freqs_suggestions
 
@@ -470,7 +472,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.plot(ts.index, ts['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts')
     if ts_validation is not None:
         if ts.index.duplicated().sum() + ts_validation.index.duplicated().sum() >0:
-            print(f'WARNING: duplicated timesteps in ts ({ts.index.duplicated().sum()}) or ts_validation ({ts_validation.index.duplicated().sum()}), timeseries difference computation will probably fail')
+            logger.warning(f'duplicated timesteps in ts ({ts.index.duplicated().sum()}) or ts_validation ({ts_validation.index.duplicated().sum()}), timeseries difference computation will probably fail')
         #overlap between timeseries for difference plots
         times_id_validationinpred = np.where(ts_validation.index.isin(ts.index))[0]
         times_id_predinvalidation = np.where(ts.index.isin(ts_validation.index))[0]
@@ -506,7 +508,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
         try:
             plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext_validation, create_plot=False)        
         except: #TODO: replace this generic except with specific ones, but first convert 'raise Exception()' in plot_HWLW_validatestats() to more specific (maybe custom) ones
-            print('WARNING: plot_HWLW_validatestats() failed, probably due to missing HWLWno where autocalculation failed. Consider adding HWLWno to ts_ext and ts_ext_validation with calc_HWLWnumbering() before plotting.')
+            logger.warning('plot_HWLW_validatestats() failed, probably due to missing HWLWno where autocalculation failed. Consider adding HWLWno to ts_ext and ts_ext_validation with calc_HWLWnumbering() before plotting.')
     ax1.set_ylim(figure_ylim_ts)
     ax2.set_xlabel('Time')
     ax1.set_ylabel('waterlevel [m]')
@@ -555,9 +557,9 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
 
     """
     
-    print('Calculating comparison statistics for extremes')
+    logger.debug('Calculating comparison statistics for extremes')
     if 'HWLWno' not in ts_ext.columns or 'HWLWno' not in ts_ext_validation.columns:
-        print('HWLWno is not present in ts_ext or ts_ext_validation, trying to automatically derive it without M2phasediff argument (this might fail)')
+        logger.debug('HWLWno is not present in ts_ext or ts_ext_validation, trying to automatically derive it without M2phasediff argument (this might fail)')
         try:
             ts_ext_nrs = calc_HWLWnumbering(ts_ext=ts_ext)
             ts_ext_validation_nrs = calc_HWLWnumbering(ts_ext=ts_ext_validation)
@@ -576,18 +578,18 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
     
     tdiff_minutes = HWLW_diff['times'].dt.total_seconds()/60
     vdiff_cm = HWLW_diff['values']*100
-    print('Time differences [minutes]')
-    print('    RMSE: %.2f'%(np.sqrt(np.mean(tdiff_minutes**2))))
-    print('    std: %.2f'%(tdiff_minutes.std()))
-    print('    abs max: %.2f'%(tdiff_minutes.abs().max()))
-    print('    abs mean: %.2f'%(tdiff_minutes.abs().mean()))
-    print('    #NaN: %i of %i'%(tdiff_minutes.isnull().sum(),len(vdiff_cm)))
-    print('Value differences [cm]')
-    print('    RMSE: %.2f'%(np.sqrt(np.mean(vdiff_cm**2))))
-    print('    std: %.2f'%(vdiff_cm.std()))
-    print('    abs max: %.2f'%(vdiff_cm.abs().max()))
-    print('    abs mean: %.2f'%(vdiff_cm.abs().mean()))
-    print('    #NaN: %i of %i'%(vdiff_cm.isnull().sum(),len(vdiff_cm)))
+    logger.debug('Time differences [minutes]')
+    logger.debug('    RMSE: %.2f'%(np.sqrt(np.mean(tdiff_minutes**2))))
+    logger.debug('    std: %.2f'%(tdiff_minutes.std()))
+    logger.debug('    abs max: %.2f'%(tdiff_minutes.abs().max()))
+    logger.debug('    abs mean: %.2f'%(tdiff_minutes.abs().mean()))
+    logger.debug('    #NaN: %i of %i'%(tdiff_minutes.isnull().sum(),len(vdiff_cm)))
+    logger.debug('Value differences [cm]')
+    logger.debug('    RMSE: %.2f'%(np.sqrt(np.mean(vdiff_cm**2))))
+    logger.debug('    std: %.2f'%(vdiff_cm.std()))
+    logger.debug('    abs max: %.2f'%(vdiff_cm.abs().max()))
+    logger.debug('    abs mean: %.2f'%(vdiff_cm.abs().mean()))
+    logger.debug('    #NaN: %i of %i'%(vdiff_cm.isnull().sum(),len(vdiff_cm)))
     
     if create_plot:
         fig, ax1 = plt.subplots()
@@ -689,7 +691,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
     data_nc.variables['waterlevel_astro'][nstat,:] = timeseries
     
     if ts_ext is None:
-        print('no HWLW prediction written')
+        logger.debug('no HWLW prediction written')
         data_nc.close()
         return #this skips the HWLW part of the definition
     
@@ -1066,15 +1068,15 @@ def crop_timeseries(ts, times, onlyfull=True):
     tstart = pd.Timestamp(times.start)
     tstop = pd.Timestamp(times.stop)
     
-    print('cropping timeseries')
+    logger.debug('cropping timeseries')
     if tstart >= tstop:
         raise ValueError(f'the tstart and tstop should be increasing, but they are not: {times}.')
     if (tstart < ts_pd_in.index.min()) or (tstop > ts_pd_in.index.max()):
         message = 'imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s'%(tstart,tstop,ts_pd_in.index[0],ts_pd_in.index[-1])
         if onlyfull:
-            raise Exception('ERROR: %s'%(message))
+            raise Exception(message)
         else:
-            print('WARNING: %s'%(message))
+            logger.warning(message)
             
     ts_pd_out = ts_pd_in.loc[tstart:tstop]
     
@@ -1109,7 +1111,7 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
     """
     
-    print('resampling timeseries to %i minutes'%(timestep_min))
+    logger.debug('resampling timeseries to %i minutes'%(timestep_min))
     
     bool_duplicated_index = ts.index.duplicated()
     if bool_duplicated_index.sum()>0:
@@ -1145,7 +1147,7 @@ def nyquist_folding(ts_pd,t_const_freq_pd):
     if bool_isnyquist.any():
         raise Exception(f'there is a component on the Nyquist frequency ({fn_phr} [1/hr]), this not possible:\n{t_const_freq_pd.loc[bool_isnyquist]}')
     
-    print(f'folding frequencies over Nyquist frequency, which is half of the dominant timestep ({timestep_hr_dominant} hour), there are {len(uniq_counts)} unique timesteps)')
+    logger.debug(f'folding frequencies over Nyquist frequency, which is half of the dominant timestep ({timestep_hr_dominant} hour), there are {len(uniq_counts)} unique timesteps)')
     #folding frequencies over nyquist frequency: https://users.encs.concordia.ca/~kadem/CHAPTER%20V.pdf (fig 5.6)
     freq_div,freq_rem = np.divmod(t_const_freq_pd[['freq']],fn_phr) # remainder gives folded frequencies for even divisions (freqs for odd divisions are not valid yet)
     freq_div_isodd = (freq_div%2).astype(bool)
@@ -1183,18 +1185,18 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
     rayleigh_bool_id = np.where(~rayleigh_bool)[0]
     
     if rayleigh_bool.all():
-        print('Rayleigh criterion OK (always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
-        print('Frequencies are far enough apart (always >%.6f, minimum is %.6f)'%(freq_diff_phr_minimum,np.min(freq_diffs)))
+        logger.debug('Rayleigh criterion OK (always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
+        logger.debug('Frequencies are far enough apart (always >%.6f, minimum is %.6f)'%(freq_diff_phr_minimum,np.min(freq_diffs)))
     else:
-        print('Rayleigh criterion vandalised (not always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
-        print('Frequencies with not enough difference (not always >%.6f, minimum is %.6f)'%(freq_diff_phr_minimum,np.min(freq_diffs)))
+        logger.debug('Rayleigh criterion vandalised (not always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
+        logger.debug('Frequencies with not enough difference (not always >%.6f, minimum is %.6f)'%(freq_diff_phr_minimum,np.min(freq_diffs)))
         for ray_id in rayleigh_bool_id:
             t_const_freq_sel = t_const_freq.iloc[[ray_id,ray_id+1]]
             t_const_freq_sel['diff'] = np.diff(t_const_freq_sel.values)[0]
             t_const_freq_sel['ndays min'] = rayleigh_tresh/np.diff(t_const_freq_sel.values)[0]/24
-            print(t_const_freq_sel)
+            logger.debug(t_const_freq_sel)
             if t_const_freq_sel['diff'] < 1e-9:
-                print(f'WARNING: frequency difference between {t_const_freq_sel.index[0]} and {t_const_freq_sel.index[1]} almost zero, will result in ill conditioned matrix')
+                logger.warning(f'frequency difference between {t_const_freq_sel.index[0]} and {t_const_freq_sel.index[1]} almost zero, will result in ill conditioned matrix')
         
 
 def check_ts(ts):
@@ -1333,7 +1335,7 @@ def get_diablocks_startstopstation(filename):
 
 def get_diablocks(filename):
     
-    print('reading file: %s'%(filename))
+    logger.info('reading file: %s'%(filename))
     diablocks_pd = get_diablocks_startstopstation(filename)
     # add str type columns to avoid "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'min' has dtype incompatible with float64, please explicitly cast to a compatible dtype first."
     columns_str = ['TYP','groepering','grootheid','coordsys',
@@ -1381,7 +1383,7 @@ def get_diablocks(filename):
             elif get_content_sel in ['LOC']: # Locatie. same in all files
                 coords_pd = pd.DataFrame({'epsg_in':[28992,4326,4230], 'factor':[100,1000000,1000000]}, index=['RD','W84','E50'])
                 if len(data_meta_mincontent)<7:
-                    print('no coordinate data available in LOC line of dia file')
+                    logger.warning('no coordinate data available in LOC line of dia file')
                     continue
                 coordsys_str, coord_x, coord_y = data_meta_mincontent[4:]
                 if coordsys_str not in coords_pd.index:
@@ -1532,7 +1534,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
         pd.set_option('display.max_columns', 6) #default was 0, but need more to display groepering
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
         print_cols = ['block_starts', 'station', 'grootheid', 'groepering', 'tstart', 'tstop']
-        print('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))
+        logger.debug('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))
         str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=hatyan.get_diablocks(filename)"'
         
         #get equidistant timeseries from metadata
@@ -1628,7 +1630,7 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
 
     """
     
-    print('reading file: %s'%(filename))
+    logger.info('reading file: %s'%(filename))
     noosheader = []
     noosheader_dict = {} #TODO: this is not returned, could be valuable to do so
     with open(filename) as f:
@@ -1649,6 +1651,6 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     noos_datetime = pd.to_datetime(content_pd['times_str'],format=datetime_format)
     data_pd = pd.DataFrame({'values':content_pd['values'].values},index=noos_datetime)
     
-    print(check_ts(data_pd))
+    logger.debug(check_ts(data_pd))
     return data_pd
 

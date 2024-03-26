@@ -15,11 +15,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import subprocess
 
+logger = logging.getLogger(__name__)
+
 
 @click.command()
 @click.argument(
     'filename',
-    #help="Python script to run, will be copied to `dir_output`"
+    type=click.Path(exists=True),
 )
 @click.option(
     "-u", "--unique-outputdir",
@@ -57,10 +59,6 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     file_config = os.path.abspath(filename)
     timer_start = dt.datetime.now()
     
-    # check for file existence before creating folder
-    if not os.path.isfile(file_config):
-        raise FileNotFoundError(f"file_config not found: {file_config}")
-    
     # create dir_output and chdir
     foldername = os.path.splitext(os.path.basename(file_config))[0]
     if unique_outputdir:
@@ -86,13 +84,13 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
         stdout = None
     
     # initialization print
-    print("############### HATYAN INITALIZING ###############")
-    print("--------------------------------------------------")
-    print(f"hatyan-{hatyan.__version__}: RWS tidal analysis and prediction")
-    print(f"started at:  {timer_start.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"file_config: {file_config}")
-    print(f"dir_output:  {dir_output}")
-    print("--------------------------------------------------")
+    logger.info("############### HATYAN INITALIZING ###############")
+    logger.info("--------------------------------------------------")
+    logger.info(f"hatyan-{hatyan.__version__}: RWS tidal analysis and prediction")
+    logger.info(f"started at:  {timer_start.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"file_config: {file_config}")
+    logger.info(f"dir_output:  {dir_output}")
+    logger.info("--------------------------------------------------")
     
     # run the configfile
     # exec from within cli somehow does not support oneline list generation with predefined variables
@@ -109,15 +107,15 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     timer_elapsed = (timer_stop - timer_start).total_seconds()/60
     
     # de-initialization print
-    print("--------------------------------------------------")
-    print(f"finished at: {timer_stop.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"elapsed time: {timer_elapsed:.2f} minutes {timer_elapsed*60:.2f} seconds")
-    print("--------------------------------------------------")
-    print("################# HATYAN FINISHED ################")
+    logger.info("--------------------------------------------------")
+    logger.info(f"finished at: {timer_stop.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"elapsed time: {timer_elapsed:.2f} minutes {timer_elapsed*60:.2f} seconds")
+    logger.info("--------------------------------------------------")
+    logger.info("################# HATYAN FINISHED ################")
     
     # show all created plots in case of interactive-plots
     if interactive_plots:
-        print(f"WARNING: close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
+        logger.warning(f"close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
         plt.show()
     os.chdir("..")
 

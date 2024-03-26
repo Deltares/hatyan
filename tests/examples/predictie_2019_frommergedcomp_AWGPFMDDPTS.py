@@ -17,6 +17,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 selected_stations = ['AWGPFM']
 
 for current_station in selected_stations:
+    print(f'current_station: {current_station}')
     
     file_data_comp = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     

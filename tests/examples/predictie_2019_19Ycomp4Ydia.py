@@ -31,9 +31,8 @@ stats_noana = []
 stats_no4Y = []
 
 for current_station in selected_stations:
-    print('-'*50)
-    print('%-45s = %s'%('station_name',current_station))
-    print('-'*5)
+    hatyan.close("all")
+    print(f'current_station: {current_station}')
     
     # station settings
     nodalfactors = True
