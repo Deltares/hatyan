@@ -11,6 +11,7 @@ import datetime as dt
 import requests
 import warnings
 import matplotlib.pyplot as plt
+import logging
 
 from hatyan.schureman import get_schureman_freqs
 
@@ -25,6 +26,7 @@ __all__ = ["astrog_culminations",
            ]
 
 
+logger = logging.getLogger(__name__)
 file_path = os.path.realpath(__file__)
 
 
@@ -810,7 +812,6 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
         # nan_to_num to make sure no NaT/inf output in next iteration
         addtime_nonan = np.nan_to_num((ANG-POLD)/RATE, nan=0, posinf=0, neginf=0)
         addtime = pd.to_timedelta(addtime_nonan, unit='D')
-        #print(f'{ITER} timediff in hours:\n%s'%(np.array(addtime.total_seconds()/3600).round(2)))
         if IPAR in ['ALTMOO','ALTSUN'] and (np.abs(np.array(addtime.total_seconds()/3600)) > 24).any(): #catch for ALTMOO and ALTSUN to let the iteration process stop before it escalates
             raise Exception(f'Iteration step resulted in time changes larger than 24 hours (max {np.abs(addtime.total_seconds()).max()/3600:.2f} hours), try using a lower latitude')
         TNEW = TOLD + addtime
@@ -857,9 +858,9 @@ def get_leapsecondslist_fromurlorfile():
         with open(file_leap_seconds_list, 'wb') as f:
             f.write(resp.content)
     except requests.HTTPError as e: #catch raised 404 error
-        print(f'WARNING: leap-seconds.list not retrieved, using local copy. Error message: "{e}"')
+        logger.warning(f'WARNING: leap-seconds.list not retrieved, using local copy. Error message: "{e}"')
     except (FileNotFoundError, PermissionError) as e: #catch problems with writing to file
-        print(f'WARNING: leap-seconds.list not written, using local copy. Error message: "{e}"')
+        logger.warning(f'leap-seconds.list not written, using local copy. Error message: "{e}"')
         
     #get expiry date from file
     with open(file_leap_seconds_list) as f:

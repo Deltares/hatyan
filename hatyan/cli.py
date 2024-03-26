@@ -5,7 +5,7 @@ Console script for hatyan.
     - ``hatyan --help``
 """
 import sys
-# import logging
+import logging
 import click
 import hatyan
 import os
@@ -37,10 +37,10 @@ import subprocess
     help="redirecting stdout to dir_output/STDOUT.txt, "
     "warnings/errors are still printed to console"
 )
-# @click.option('-v', '--verbose', is_flag=True, help="this is not used")
+@click.option('-v', '--verbose', is_flag=True, help="this is not used")
 @click.version_option(hatyan.__version__)
 def cli(filename, unique_outputdir, interactive_plots, redirect_stdout, 
-        # verbose
+        verbose
         ):
     """
     Initializes hatyan by creating a `dir_output`, setting current and matplotlib
@@ -48,10 +48,10 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     Then runs the provided configfile (FILENAME).
     Wraps up hatyan by printing a de-initialisation footer with the script runtime.
     """
-    # level = logging.INFO
-    # if verbose:
-    #     level = logging.DEBUG
-    # logging.basicConfig(level=level)
+    level = logging.INFO
+    if verbose:
+        level = logging.DEBUG
+    logging.basicConfig(level=level)
     
     # get file_config and start time
     file_config = os.path.abspath(filename)
