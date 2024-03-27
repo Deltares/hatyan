@@ -78,9 +78,6 @@ def cli(filename, overwrite, interactive_plots, redirect_stdout, loglevel):
     # set logging level and stdout
     if loglevel is None:
         loglevel = "INFO"
-    loglevel_dict = logging.getLevelNamesMapping()
-    if loglevel not in loglevel_dict:
-        raise ValueError(f"Unknown loglevel: {loglevel}, available are {list(loglevel_dict.keys())}")
     logging.basicConfig(level=loglevel, stream=sys.stdout)
     
     # initialization print
