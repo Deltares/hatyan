@@ -23,11 +23,12 @@ locations = ddlpy.locations()
 
 # retrieval for one station including comparison to DONAR validation dataset
 if 1: # for RWS
+    import os
     import hatyan
     import urllib
     
     # use time range available in validation data, passing winter/summertime date
-    current_station = 'HOEKVHLD'
+    current_station = "HOEKVHLD"
     start_date = "2020-03-22"
     end_date = "2020-03-29"
     
@@ -68,6 +69,7 @@ if 1: # for RWS
     ax.set_title(f'waterlevels for {stat_code} ({stat_name})')
     ax.legend(loc=1)
     fig.tight_layout()
+    os.remove(file_vali)
 
 
 ######### online waterlevel data retrieval for one station
