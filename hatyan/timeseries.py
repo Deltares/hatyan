@@ -579,18 +579,18 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
     tdiff_minutes = HWLW_diff['times'].dt.total_seconds()/60
     vdiff_cm = HWLW_diff['values']*100
     message = ('Time differences [minutes]\n'
-               f'    RMSE: {(np.sqrt(np.mean(tdiff_minutes**2))):.2f}\n'
-               f'    std: {tdiff_minutes.std():.2f}\n'
-               f'    abs max: {tdiff_minutes.abs().max():.2f}\n'
-               f'    abs mean: {tdiff_minutes.abs().mean():.2f}\n'
-               f'    #NaN: {tdiff_minutes.isnull().sum()} of {len(vdiff_cm)}')
+               f'  RMSE: {(np.sqrt(np.mean(tdiff_minutes**2))):.2f}\n'
+               f'  std: {tdiff_minutes.std():.2f}\n'
+               f'  abs max: {tdiff_minutes.abs().max():.2f}\n'
+               f'  abs mean: {tdiff_minutes.abs().mean():.2f}\n'
+               f'  #NaN: {tdiff_minutes.isnull().sum()} of {len(vdiff_cm)}')
     logger.info(message)
     message = ('Value differences [cm]\n'
-               f'    RMSE: {(np.sqrt(np.mean(vdiff_cm**2))):.2f}\n'
-               f'    std: {vdiff_cm.std():.2f}\n'
-               f'    abs max: {vdiff_cm.abs().max():.2f}\n'
-               f'    abs mean: {vdiff_cm.abs().mean():.2f}\n'
-               f'    #NaN: {vdiff_cm.isnull().sum()} of {len(vdiff_cm)}')
+               f'  RMSE: {(np.sqrt(np.mean(vdiff_cm**2))):.2f}\n'
+               f'  std: {vdiff_cm.std():.2f}\n'
+               f'  abs max: {vdiff_cm.abs().max():.2f}\n'
+               f'  abs mean: {vdiff_cm.abs().mean():.2f}\n'
+               f'  #NaN: {vdiff_cm.isnull().sum()} of {len(vdiff_cm)}')
     logger.info(message)
     
     if create_plot:

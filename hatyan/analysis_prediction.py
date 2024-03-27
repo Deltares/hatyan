@@ -252,9 +252,8 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
-    logger.info('ANALYSIS initializing')
-    logger.info(hatyan_settings)
-        
+    logger.info('ANALYSIS initializing\n{hatyan_settings}')
+            
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
     ts_pd = ts.copy() #TODO: this is not necessary
@@ -459,8 +458,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         raise Exception("both arguments hatyan_settings and other settings "
                         "(e.g. nodalfactors) are provided, this is not valid")
     
-    logger.info('PREDICTION initializing')
-    logger.info(hatyan_settings)
+    logger.info('PREDICTION initializing\n{hatyan_settings}')
     
     if times is None:
         metadata = metadata_from_obj(comp)
