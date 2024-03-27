@@ -10,16 +10,65 @@ import matplotlib.pyplot as plt
 plt.close("all")
 
 # input parameters
-tstart_dt = "2022-12-19"
-tstop_dt = "2022-12-31"
-#tstart_dt = "2020-11-25 09:47:00" #quite recent period
-#tstop_dt = "2021-01-30 09:50:00"
-#tstart_dt = "1993-08-25 09:47:00" #VLISSGN got new Waardebepalingsmethode in this year
-#tstop_dt = "1994-11-30 09:50:00"
-#tstart_dt = "2009-01-01" #common RWS retrieval period
-#tstop_dt = "2012-12-31 23:50:00"
+start_date = "2022-12-19"
+end_date = "2022-12-31"
+#start_date = "2020-11-25 09:47:00" #quite recent period
+#end_date = "2021-01-30 09:50:00"
+#start_date = "1993-08-25 09:47:00" #VLISSGN got new Waardebepalingsmethode in this year
+#end_date = "1994-11-30 09:50:00"
+#start_date = "2009-01-01" #common RWS retrieval period
+#end_date = "2012-12-31 23:50:00"
 
 locations = ddlpy.locations()
+
+# retrieval for one station including comparison to DONAR validation dataset
+if 1: # for RWS
+    import hatyan
+    import urllib
+    
+    # use time range available in validation data, passing winter/summertime date
+    current_station = 'HOEKVHLD'
+    start_date = "2020-03-22"
+    end_date = "2020-03-29"
+    
+    # first download validation data
+    url_hatyan = "https://raw.githubusercontent.com/Deltares/hatyan/main/tests/data_unitsystemtests/"
+    file_vali = f'diawia_{current_station}_astro_tijdreeks.dia'
+    url = url_hatyan+file_vali
+    with urllib.request.urlopen(url) as response:
+        data = response.read()
+    with open(file_vali, "w") as f:
+        f.write(data.decode('utf-8'))
+    ts_vali = hatyan.readts_dia(file_vali)
+    ts_vali = hatyan.crop_timeseries(ts_vali, times=slice(start_date, end_date))
+    
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTBRKD']) # measured waterlevels (not astro)
+    bool_groepering = locations['Groepering.Code'].isin(['NVT']) # timeseries (not extremes)
+    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP']) # vertical reference
+    locs_wathte = locations.loc[bool_grootheid & bool_groepering & bool_hoedanigheid]
+    
+    locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
+    
+    # no support for multiple rows, so pass one at a time
+    if len(locs_wathte_one) > 1:
+        raise Exception("duplicate stations for wathte")
+
+    # get the measurements and drop the timezone for correct comparison with validation data
+    # TODO: add timezone to hatyan dataframes: https://github.com/Deltares/hatyan/issues/238
+    # >> this would also prevent the currently shifted extents of the timeseries
+    meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
+    meas_wathte_hat = hatyan.ddlpy_to_hatyan(meas_wathte)
+    meas_wathte_hat.index = meas_wathte_hat.index.tz_localize(None)
+    
+    stat_name = locs_wathte_one.iloc[0]["Naam"]
+    stat_code = current_station
+    fig, ax = plt.subplots(figsize=(8,5))
+    ax.plot(ts_vali["values"], label="donar timeseries")
+    ax.plot(meas_wathte_hat["values"], "--", label="ddlpy timeseries")
+    ax.set_title(f'waterlevels for {stat_code} ({stat_name})')
+    ax.legend(loc=1)
+    fig.tight_layout()
+
 
 ######### online waterlevel data retrieval for one station
 if 1: #for RWS
@@ -58,8 +107,8 @@ if 1: #for RWS
             raise Exception("multiple stations in locs_wathte dataframe")
         if len(locs_wathtbrkd_one) > 1:
             raise Exception("multiple stations in locs_wathtbrkd dataframe")
-        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-        meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
+        meas_wathtbrkd = ddlpy.measurements(locs_wathtbrkd_one.iloc[0], start_date=start_date, end_date=end_date)
         # hatyan timeseries
         ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte)
         ts_astro = hatyan.ddlpy_to_hatyan(meas_wathtbrkd)
@@ -78,10 +127,10 @@ if 1: #for RWS
                 raise Exception("multiple stations in locs_wathte_exttypes dataframe")
             if len(locs_wathtbrkd_exttypes_one) > 1:
                 raise Exception("multiple stations in locs_wathtbrkd_exttypes dataframe")
-            meas_wathte_ext = ddlpy.measurements(locs_wathte_ext_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-            meas_wathtbrkd_ext = ddlpy.measurements(locs_wathtbrkd_ext_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-            meas_wathte_exttypes = ddlpy.measurements(locs_wathte_exttypes_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
-            meas_wathtbrkd_exttypes = ddlpy.measurements(locs_wathtbrkd_exttypes_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+            meas_wathte_ext = ddlpy.measurements(locs_wathte_ext_one.iloc[0], start_date=start_date, end_date=end_date)
+            meas_wathtbrkd_ext = ddlpy.measurements(locs_wathtbrkd_ext_one.iloc[0], start_date=start_date, end_date=end_date)
+            meas_wathte_exttypes = ddlpy.measurements(locs_wathte_exttypes_one.iloc[0], start_date=start_date, end_date=end_date)
+            meas_wathtbrkd_exttypes = ddlpy.measurements(locs_wathtbrkd_exttypes_one.iloc[0], start_date=start_date, end_date=end_date)
             # hatyan timeseries
             ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext)
             ts_astroHWLW = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ext)
@@ -118,7 +167,7 @@ if 1: #for CMEMS
         if len(locs_wathte_one) > 1:
             raise Exception("duplicate stations for wathte")
         
-        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
+        meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
         
         stat_name = locs_wathte_one.iloc[0]["Naam"]
         stat_code = current_station
