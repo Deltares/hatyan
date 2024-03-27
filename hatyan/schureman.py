@@ -8,8 +8,10 @@ import pandas as pd
 import functools #to Memoize v0uf table (https://en.wikipedia.org/wiki/Memoization)
 import numpy as np
 import datetime as dt
+import logging
 
 file_path = os.path.realpath(__file__)
+logger = logging.getLogger(__name__)
 
 
 @functools.lru_cache()
@@ -390,7 +392,7 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
     """
     
     if isinstance(xfac,dict):
-        print('xfac dictionary provided: %s'%(xfac))
+        logger.info(f'xfac dictionary provided: {xfac}')
         xfac_values = xfac
     else: #use default xfactor values
         xfac_values = {'MU2': 0.00, # 0 betekent knoopfactor uit, 1 is helemaal aan

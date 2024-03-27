@@ -120,7 +120,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             ts_prediction_CADZD = hatyan.prediction(comp=COMP_merged_CADZD, nodalfactors=True, xfac=xfac_cadzd, fu_alltimes=False, times=times_pred)
             ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, nodalfactors=True, xfac=xfac_cadzd, fu_alltimes=False, times=times_pred)
             ax1.plot(ts_prediction_CADZD_M2.index, ts_prediction_CADZD_M2['values'], label='CADZD_M2', color='k')
-            ts_ext_prediction_CADZD = hatyan.calc_HWLW(ts=ts_prediction_CADZD, debug=True)
+            ts_ext_prediction_CADZD = hatyan.calc_HWLW(ts=ts_prediction_CADZD)
             bool_newyear = (ts_ext_prediction_CADZD.index>dt.datetime(yr,1,1)) & (ts_ext_prediction_CADZD['HWLWcode']==1)
             firstHWcadz = ts_ext_prediction_CADZD.loc[bool_newyear].index[0].to_pydatetime()
             #firstHWcadz = dt.datetime(2000,1,1,9,45,0)#dt.datetime(2010,1,1,13,40,0)
@@ -202,7 +202,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     stats_M2phasediff_out = stats.sort_values('M2phasediff_hr')['M2phasediff']
     #stats_M2phasediff_out.to_csv(r'c:\DATA\hatyan_github\hatyan\data_M2phasediff_perstation_new.txt', sep=' ', header=False, float_format='%.2f')
     
-    print(stats)    
+    print(stats)
     print('')
     print(hatyan.schureman.get_schureman_freqs(['M2']))
     

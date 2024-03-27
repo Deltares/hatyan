@@ -2,7 +2,7 @@
 
 ### Feat
 - reading/writing analysis settings (xfac, nodalfactors, fu_alltimes) from/to component file in [#175](https://github.com/Deltares/hatyan/pull/175)
-- made hatyan callable via `python -m hatyan script.py` (deprecates `init_RWS()` and `exit_RWS()`) in [#113](https://github.com/Deltares/hatyan/pull/113)
+- made hatyan callable via `hatyan /path/to/script.py` (deprecates `init_RWS()` and `exit_RWS()`) in [#113](https://github.com/Deltares/hatyan/pull/113) and [#226](https://github.com/Deltares/hatyan/issues/226)
 - retained `freq` attribute of `ts.index` in case of multifile equidistant dia in [#118](https://github.com/Deltares/hatyan/pull/118)
 - added support for file patterns in `hatyan.readts_dia()` in [#118](https://github.com/Deltares/hatyan/pull/120)
 - uniform usage of `analysis` (deprecates `get_components_from_ts`) in [#125](https://github.com/Deltares/hatyan/pull/125)
@@ -12,6 +12,7 @@
 - integrated ddlpy to in ddl example script in [#202](https://github.com/Deltares/hatyan/pull/202) and [#213](https://github.com/Deltares/hatyan/pull/213)
 - prevent writing components with non-standard settings to file and prevent prediction with different settings than provided components in [#218](https://github.com/Deltares/hatyan/pull/218)
 - use `pandas.DataFrame.attrs` instead of separate metadata attrs in [#219](https://github.com/Deltares/hatyan/pull/219)
+- moved from prints to logging in [#236](https://github.com/Deltares/hatyan/pull/236)
 
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)

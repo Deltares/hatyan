@@ -5,7 +5,7 @@ Console script for hatyan.
     - ``hatyan --help``
 """
 import sys
-# import logging
+import logging
 import click
 import hatyan
 import os
@@ -13,18 +13,20 @@ import shutil
 import datetime as dt
 import matplotlib
 import matplotlib.pyplot as plt
-import subprocess
+import importlib
+
+logger = logging.getLogger(__name__)
 
 
 @click.command()
 @click.argument(
     'filename',
-    #help="Python script to run, will be copied to `dir_output`"
+    type=click.Path(exists=True),
 )
 @click.option(
-    "-u", "--unique-outputdir",
+    "-o", "--overwrite",
     is_flag=True,
-    help="add timestamp to `dir_output` so output is never overwritten"
+    help="overwrite `dir_output` if it exists"
 )
 @click.option(
     "-i", "--interactive-plots",
@@ -37,87 +39,79 @@ import subprocess
     help="redirecting stdout to dir_output/STDOUT.txt, "
     "warnings/errors are still printed to console"
 )
-# @click.option('-v', '--verbose', is_flag=True, help="this is not used")
+@click.option(
+    '-l',
+    '--loglevel',
+    type=str,
+    help="set logging level to ERROR/WARNING/INFO/DEBUG, default is INFO",
+)
 @click.version_option(hatyan.__version__)
-def cli(filename, unique_outputdir, interactive_plots, redirect_stdout, 
-        # verbose
-        ):
+def cli(filename, overwrite, interactive_plots, redirect_stdout, loglevel):
     """
     Initializes hatyan by creating a `dir_output`, setting current and matplotlib
     savefig directory to `dir_output` and printing the initialisation header.
     Then runs the provided configfile (FILENAME).
     Wraps up hatyan by printing a de-initialisation footer with the script runtime.
     """
-    # level = logging.INFO
-    # if verbose:
-    #     level = logging.DEBUG
-    # logging.basicConfig(level=level)
     
     # get file_config and start time
     file_config = os.path.abspath(filename)
     timer_start = dt.datetime.now()
     
-    # check for file existence before creating folder
-    if not os.path.isfile(file_config):
-        raise FileNotFoundError(f"file_config not found: {file_config}")
-    
     # create dir_output and chdir
-    foldername = os.path.splitext(os.path.basename(file_config))[0]
-    if unique_outputdir:
-        dir_output = f"{foldername}__{timer_start.strftime('%Y%m%d_%H%M%S')}"
-    else:
-        dir_output = foldername
+    dir_output = os.path.splitext(os.path.basename(file_config))[0]
+    if os.path.exists(dir_output) and not overwrite:
+        raise FileExistsError(f"Directory '{dir_output}' already exists. Use '--overwrite' if you want to overwrite existing results.")
     os.makedirs(dir_output, exist_ok=True)
     os.chdir(dir_output)
     
     #copy configfile to cwd (=dir_output)
-    shutil.copyfile(file_config,os.path.basename(file_config))
+    shutil.copyfile(file_config, os.path.basename(file_config))
     
     #set the storage location of interactive plots
     matplotlib.rcParams["savefig.directory"] = dir_output
     
     #redirecting stdout, stderr is still printed to console
     if redirect_stdout:
-        # set sys.stdout to redirect prints in this command
-        sys.stdout = open('STDOUT.txt', 'w')
-        # set stdout to redirect prints in actual execution of the config_file
-        stdout = sys.stdout
-    else:
-        stdout = None
+        sys.stdout = open('STDOUT.txt', "w")
+    
+    # set logging level and stdout
+    if loglevel is None:
+        loglevel = "INFO"
+    logging.basicConfig(level=loglevel, stream=sys.stdout)
     
     # initialization print
-    print("############### HATYAN INITALIZING ###############")
-    print("--------------------------------------------------")
-    print(f"hatyan-{hatyan.__version__}: RWS tidal analysis and prediction")
-    print(f"started at:  {timer_start.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"file_config: {file_config}")
-    print(f"dir_output:  {dir_output}")
-    print("--------------------------------------------------")
+    logger.info("############### HATYAN INITALIZING ###############")
+    logger.info("--------------------------------------------------")
+    logger.info(f"hatyan-{hatyan.__version__}: RWS tidal analysis and prediction")
+    logger.info(f"started at:  {timer_start.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"file_config: {file_config}")
+    logger.info(f"dir_output:  {dir_output}")
+    logger.info("--------------------------------------------------")
     
     # run the configfile
     # exec from within cli somehow does not support oneline list generation with predefined variables
-    # therefore we use subprocess instead, this also requires flushing the print buffer first
     # with open(file_config) as f:
     #     exec(f.read())
-    sys.stdout.flush()
-    p = subprocess.run(f"{sys.executable} {file_config}", stdout=stdout, shell=True)
-    if p.returncode:
-        raise RuntimeError("hatyan run failed, check error messages above")
+    # therefore we use importlib instead: https://stackoverflow.com/questions/67631/how-can-i-import-a-module-dynamically-given-the-full-path
+    spec = importlib.util.spec_from_file_location("arbitrary.name", file_config)
+    foo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(foo)
     
     # get stop time
     timer_stop = dt.datetime.now()
     timer_elapsed = (timer_stop - timer_start).total_seconds()/60
     
     # de-initialization print
-    print("--------------------------------------------------")
-    print(f"finished at: {timer_stop.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"elapsed time: {timer_elapsed:.2f} minutes {timer_elapsed*60:.2f} seconds")
-    print("--------------------------------------------------")
-    print("################# HATYAN FINISHED ################")
+    logger.info("--------------------------------------------------")
+    logger.info(f"finished at: {timer_stop.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"elapsed time: {timer_elapsed:.2f} minutes {timer_elapsed*60:.2f} seconds")
+    logger.info("--------------------------------------------------")
+    logger.info("################# HATYAN FINISHED ################")
     
     # show all created plots in case of interactive-plots
     if interactive_plots:
-        print(f"WARNING: close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
+        logger.warning(f"close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
         plt.show()
     os.chdir("..")
 

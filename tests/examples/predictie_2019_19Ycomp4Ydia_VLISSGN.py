@@ -17,6 +17,7 @@ file_slotgemiddelden = os.path.join(dir_testdata,'data_unitsystemtests','_slotge
 stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
 
 for current_station in selected_stations:
+    print(f'current_station: {current_station}')
     
     # station settings
     nodalfactors = True

@@ -7,11 +7,14 @@ import pandas as pd
 import datetime as dt
 import numpy as np
 import functools
+import logging
 
 from hatyan.schureman import get_schureman_freqs, get_schureman_v0, get_schureman_u, get_schureman_f, get_schureman_table
 from hatyan.foreman import get_foreman_v0_freq, get_foreman_doodson_nodal_harmonic, get_foreman_shallowrelations, get_foreman_nodalfactors
 
 __all__ = ["get_const_list_hatyan"]
+
+logger = logging.getLogger(__name__)
 
 
 @functools.lru_cache()
@@ -35,8 +38,8 @@ def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_sta
         const_list = get_const_list_hatyan(const_list)
 
     #retrieve frequency and v0
-    print(f'freq is calculated at mid of period: {dood_date_mid[0]}')
-    print(f'v0 is calculated for start of period: {dood_date_start[0]}')
+    logger.debug(f'freq is calculated at mid of period: {dood_date_mid[0]}')
+    logger.debug(f'v0 is calculated for start of period: {dood_date_start[0]}')
     if hatyan_settings.source=='schureman':
         t_const_freq_pd = get_schureman_freqs(const_list, dood_date=dood_date_mid)
         v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
@@ -53,9 +56,9 @@ def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
     #get f and u
     if hatyan_settings.nodalfactors:
         if len(dood_date_fu)==1: #dood_date_mid
-            print('nodal factors (f and u) are calculated for center of period: %s'%(dood_date_fu[0]))
+            logger.info('nodal factors (f and u) are calculated for center of period: %s'%(dood_date_fu[0]))
         else: #times_pred_all_pdDTI
-            print('nodal factors (f and u) are calculated for all timesteps')
+            logger.info('nodal factors (f and u) are calculated for all timesteps')
         if hatyan_settings.source=='schureman':
             f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
             u_i_rad = get_schureman_u(const_list=const_list, dood_date=dood_date_fu).T
@@ -63,7 +66,7 @@ def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
             f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
             f_i, u_i_rad = f_i.T, u_i_rad.T
     else:
-        print('no nodal factors (f and u) correction applied (f=1, u=0)')
+        logger.info('no nodal factors (f and u) correction applied (f=1, u=0)')
         f_i = pd.DataFrame(np.ones(len(const_list)),index=const_list).T
         u_i_rad = pd.DataFrame(np.zeros(len(const_list)),index=const_list).T
     return u_i_rad, f_i

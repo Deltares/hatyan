@@ -61,7 +61,7 @@ for yr, ax in zip([2020,2021],[ax1,ax2]):
     #hatyan.write_tsdia(ts=ts_ext_prediction_clean, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_agger345.dia'%(times_step_pred, current_station))
 fig.tight_layout()
 fig.savefig('prediction_WSdwarsstroming')
-    
+
 for yr, pd_matig, pd_sterk in zip([2020,2021],list_matig,list_sterk):
     print('matige vervaloverschrijdingen in', yr)
     print(pd_matig)

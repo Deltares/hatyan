@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import pytz
+import logging
 
 from hatyan.schureman import get_schureman_freqs, get_schureman_v0 #TODO: this is not generic foreman/schureman
 from hatyan.hatyan_core import sort_const_list, get_const_list_hatyan
@@ -21,6 +22,8 @@ __all__ = ["read_components",
            "merge_componentgroups",
            "components_timeshift",
            ]
+
+logger = logging.getLogger(__name__)
 
 
 def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs=True):
@@ -292,21 +295,21 @@ def _read_components_analysis_settings(filename):
     elif xfac_guessed is not None:
         xfac = xfac_guessed
     else:
-        print("xfactor not found in starcomments of components file, guessing xfac=True")
+        logger.warning("xfactor not found in starcomments of components file, guessing xfac=True")
         xfac = True
     
     # # derive nodalfactors, although nodalfactors=False is not supported by write_components()
     # if 'nodalfactors' in metadata_starcomments.keys():
     #     nodalfactors = metadata_starcomments.pop('nodalfactors')
     # else:
-    #     print("nodalfactors not found in starcomments of components file, guessing nodalfactors=True")
+    #     logger.warning("nodalfactors not found in starcomments of components file, guessing nodalfactors=True")
     #     nodalfactors = True
     
     # # derive fu_alltimes, although fu_alltimes=True is not supported by write_components()
     # if 'fu_alltimes' in metadata_starcomments.keys():
     #     fu_alltimes = metadata_starcomments.pop('fu_alltimes')
     # else:
-    #     print("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False")
+    #     logger.warning("fu_alltimes not found in starcomments of components file, guessing fu_alltimes=False")
     #     fu_alltimes = False
     settings_dict = {'xfac':xfac, 'nodalfactors':True, 'fu_alltimes':False, 'source':'schureman'}
     return settings_dict
@@ -336,10 +339,10 @@ def _guess_xfactor_from_starcomments(filename):
             if line.startswith('*'):
                 # TODO: also get xfac=True if none of these lines is found. Also derive xfac from metadata header
                 if 'theoretische' in line:
-                    print(f"xfac=False derived from headerline: '{line.strip()}'")
+                    logger.info(f"xfac=False derived from headerline: '{line.strip()}'")
                     xfac_guessed = False
                 elif 'empirisch' in line:
-                    print(f"xfac=True derived from headerline: '{line.strip()}'")
+                    logger.info(f"xfac=True derived from headerline: '{line.strip()}'")
                     xfac_guessed = True
     return xfac_guessed
 
@@ -365,7 +368,7 @@ def read_components(filename):
 
     """
     
-    print('reading file: %s'%(filename))
+    logger.info('reading file: %s'%(filename))
     
     line_compstart = None
     stat_available = False

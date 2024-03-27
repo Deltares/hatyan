@@ -414,7 +414,7 @@ def test_frommergedcomp_HWLW_toomuch():
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
     ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
-    ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, debug=True)
+    ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
     
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
     
@@ -496,7 +496,7 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=False, times=times_pred)
     #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
     #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
-    ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction, debug=True)
+    ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     
     #calculate tidal wave number
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=current_station)
@@ -560,8 +560,8 @@ def test_frommergedcomp_HWLW_345(current_station):
     # times_pred = slice(dt.datetime(2019,2,1),dt.datetime(2019,2,2), 1) #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
     
     ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
-    ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)#, debug=True)
-    #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)#, debug=True)
+    ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
+    #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)
     ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
     ts_ext_prediction_clean_tomain = hatyan.calc_HWLW12345to12(ts_ext_prediction_clean)
     

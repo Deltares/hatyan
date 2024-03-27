@@ -49,9 +49,6 @@ def metadata_from_diablocks(diablocks_pd, block_id):
 
 def metadata_from_obj(obj):
     metadata = obj.attrs.copy()
-    if len(metadata) == 0:
-        print('no metadata found on object')
-        # raise ValueError('no metadata found on object')
     return metadata
 
 
