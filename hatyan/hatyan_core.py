@@ -56,9 +56,9 @@ def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
     #get f and u
     if hatyan_settings.nodalfactors:
         if len(dood_date_fu)==1: #dood_date_mid
-            logger.debug('nodal factors (f and u) are calculated for center of period: %s'%(dood_date_fu[0]))
+            logger.info('nodal factors (f and u) are calculated for center of period: %s'%(dood_date_fu[0]))
         else: #times_pred_all_pdDTI
-            logger.debug('nodal factors (f and u) are calculated for all timesteps')
+            logger.info('nodal factors (f and u) are calculated for all timesteps')
         if hatyan_settings.source=='schureman':
             f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
             u_i_rad = get_schureman_u(const_list=const_list, dood_date=dood_date_fu).T
@@ -66,7 +66,7 @@ def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
             f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
             f_i, u_i_rad = f_i.T, u_i_rad.T
     else:
-        logger.debug('no nodal factors (f and u) correction applied (f=1, u=0)')
+        logger.info('no nodal factors (f and u) correction applied (f=1, u=0)')
         f_i = pd.DataFrame(np.ones(len(const_list)),index=const_list).T
         u_i_rad = pd.DataFrame(np.zeros(len(const_list)),index=const_list).T
     return u_i_rad, f_i

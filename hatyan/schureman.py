@@ -392,7 +392,7 @@ def correct_fwith_xfac(f_i_pd, f_i_M2_pd, xfac):
     """
     
     if isinstance(xfac,dict):
-        logger.debug(f'xfac dictionary provided: {xfac}')
+        logger.info(f'xfac dictionary provided: {xfac}')
         xfac_values = xfac
     else: #use default xfactor values
         xfac_values = {'MU2': 0.00, # 0 betekent knoopfactor uit, 1 is helemaal aan

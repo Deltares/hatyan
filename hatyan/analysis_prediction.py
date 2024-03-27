@@ -185,7 +185,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
     
-    logger.debug('running: analysis')
+    logger.info('running: analysis')
     
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
@@ -198,7 +198,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
 
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
-        logger.debug(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
+        logger.info(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
         ts_periods_dt = ts_pd.index.to_period(period).unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
@@ -206,7 +206,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
         A_i_all = np.zeros((n_const,n_periods))*np.nan
         phi_i_deg_all = np.zeros((n_const,n_periods))*np.nan
         for iP, period_dt in enumerate(ts_periods_dt):
-            logger.debug('analyzing %s of sequence %s'%(period_dt,ts_periods_strlist))
+            logger.info('analyzing %s of sequence %s'%(period_dt,ts_periods_strlist))
             ts_oneperiod_pd = ts_pd[ts_pd.index.to_period(period)==period_dt]
             try:
                 COMP_one = analysis_singleperiod(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
@@ -218,7 +218,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
             raise ValueError('all nans: analysis perperiod failed for all periods, check warnings above')
         
         COMP_all_pd = pd.DataFrame(data=np.hstack([A_i_all,phi_i_deg_all]), columns=pd.MultiIndex.from_product([['A','phi_deg'],ts_periods_dt]), index=COMP_one.index)
-        logger.debug('vector averaging analysis results')
+        logger.info('vector averaging analysis results')
         A_i_mean, phi_i_deg_mean = vectoravg(A_all=A_i_all, phi_deg_all=phi_i_deg_all)
         COMP_mean_pd = pd.DataFrame({ 'A': A_i_mean, 'phi_deg': phi_i_deg_mean},index=COMP_one.index)
     else: #dummy values, COMP_years should be equal to COMP_mean
@@ -252,8 +252,8 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     elif len(kwargs)>0:
         raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
-    logger.debug('ANALYSIS initializing')
-    logger.debug(hatyan_settings)
+    logger.info('ANALYSIS initializing')
+    logger.info(hatyan_settings)
         
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
@@ -262,11 +262,12 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         raise TypeError(f'ts.index is not of expected type ({type(ts.index[0])} instead of pd.Timestamp or dt.datetime)')
     if bool_ts_duplicated.any():
         raise Exception(f'ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
-    logger.debug(f'#timesteps           = {len(ts)}')
-    logger.debug(f'tstart               = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}')
-    logger.debug(f'tstop                = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
+    message = (f'#timesteps    = {len(ts)}\n'
+               f'tstart        = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}'
+               f'tstop         = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
     if hasattr(ts.index,'freq'):
-        logger.debug(f'timestep             = {ts.index.freq}')
+        message += f'\ntimestep      = {ts.index.freq}'
+    logger.info(message)
     
     #retrieving and sorting const_list
     if type(const_list) is str:
@@ -274,7 +275,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     elif type(const_list) is not list:
         const_list = const_list.tolist()
     const_list = sort_const_list(const_list)
-    logger.debug(f'components analyzed  = {len(const_list)}')
+    logger.info(f'components analyzed  = {len(const_list)}')
     
     #check for duplicate components (results in singular matrix)
     if len(const_list) != len(np.unique(const_list)):
@@ -292,7 +293,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         raise Exception('provided timeseries only contains nan values, analysis not possible')
     times_pred_all_pdDTI = ts_pd_nonan.index.copy() #pd.DatetimeIndex(ts_pd_nonan.index) #TODO: this will not work for OutOfBoundsDatetime
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
-    logger.debug(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
+    logger.info(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
     
     #get times and time array
     dood_date_mid = pd.Index([ts_pd.index[len(ts_pd.index)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan #TODO: this is incorrect in case of e.g. more missings in first half of year than second half
@@ -324,7 +325,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     xmat[:,N:] = f_i.values * np.sin(omega_i_rads*times_from0_s+v_u)
     
     xTmat = xmat.T
-    logger.debug('calculating xTx matrix')
+    logger.info('calculating xTx matrix')
     tic = dt.datetime.now()
     xTxmat = np.dot(xTmat,xmat)
     
@@ -333,14 +334,14 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         logger.debug('condition of xTx matrix before center adjustment for A0: %.2f'%(xTxmat_condition))
         xTxmat[N,N] = m
     xTxmat_condition = np.linalg.cond(xTxmat)
-    logger.debug('condition of xTx matrix: %.2f'%(xTxmat_condition))
+    logger.info('condition of xTx matrix: %.2f'%(xTxmat_condition))
     if xTxmat_condition > hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
         raise MatrixConditionTooHigh(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}')
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
     #solve matrix to get beta_roof_mat (and thus a, b)
     beta_roof_mat = np.linalg.solve(xTxmat,xTymat)
-    logger.debug('matrix system solved, elapsed time: %s'%(dt.datetime.now()-tic))
+    logger.info('matrix system solved, elapsed time: %s'%(dt.datetime.now()-tic))
 
     phi_i_rad = np.arctan2(beta_roof_mat[N:],beta_roof_mat[:N]) #(a,b) arctan_ab
     A_i = np.sqrt(beta_roof_mat[N:]**2 + beta_roof_mat[:N]**2) #(a,b) sqsqrt_ab
@@ -354,7 +355,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     if hatyan_settings.CS_comps is not None:
         COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid, hatyan_settings=hatyan_settings)
         
-    logger.debug('ANALYSIS finished')
+    logger.info('ANALYSIS finished')
     
     return COMP_pd
 
@@ -386,7 +387,7 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
         bool_CS_maincomp = hatyan_settings.CS_comps['CS_comps_from'] == comp_main #boolean of which rows of CS_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
         CS_comps_formain = hatyan_settings.CS_comps.loc[bool_CS_maincomp]
         comp_slave_list = CS_comps_formain['CS_comps_derive'].tolist()
-        logger.debug(f'splitting component {comp_main} into {comp_slave_list}')
+        logger.info(f'splitting component {comp_main} into {comp_slave_list}')
         
         #first update main components based on degincrs/ampfacs of all components that are to be derived
         DBETA = 0
@@ -458,8 +459,8 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         raise Exception("both arguments hatyan_settings and other settings "
                         "(e.g. nodalfactors) are provided, this is not valid")
     
-    logger.debug('PREDICTION initializing')
-    logger.debug(hatyan_settings)
+    logger.info('PREDICTION initializing')
+    logger.info(hatyan_settings)
     
     if times is None:
         metadata = metadata_from_obj(comp)
@@ -478,11 +479,12 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     if len(times_pred_all_pdDTI) <= 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
     
-    logger.debug('%-20s = %s'%('components used',len(comp)))
-    logger.debug('%-20s = %s'%('tstart',times_pred_all_pdDTI[0].strftime('%Y-%m-%d %H:%M:%S')))
-    logger.debug('%-20s = %s'%('tstop',times_pred_all_pdDTI[-1].strftime('%Y-%m-%d %H:%M:%S')))
+    message = (f'components used = {len(comp)}\n'
+               f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
+               f'tstop = {times_pred_all_pdDTI[-1].strftime("%Y-%m-%d %H:%M:%S")}')
     if hasattr(times_pred_all_pdDTI,'freq'):
-        logger.debug('%-20s = %s'%('timestep',times_pred_all_pdDTI.freq))
+        message += f'\ntimestep = {times_pred_all_pdDTI.freq}'
+    logger.info(message)
     
     # middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
     dood_date_mid = times_pred_all_pdDTI[[len(times_pred_all_pdDTI)//2]]
@@ -506,7 +508,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         dood_date_fu = dood_date_mid
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
 
-    logger.debug('PREDICTION started')
+    logger.info('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
     if not isinstance(times_pred_all_pdDTI,pd.DatetimeIndex): #support for years<1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
         tdiff = pd.TimedeltaIndex(times_pred_all_pdDTI-dood_date_start) #pd.TimedeltaIndex is around it to avoid it being an Index in case of outofbounds timesteps (necessary from pandas 2.0.0)
@@ -522,7 +524,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     ht_res = np.sum(np.multiply(f_A,np.cos(omeg_t_v_u_phi)),axis=1) #not necessary to add A0, since it is already part of the component list
     
     ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
-    logger.debug('PREDICTION finished')
+    logger.info('PREDICTION finished')
     
     # add metadata (first assert if metadata from comp is same as hatyan_settings
     metadata_comp = metadata_from_obj(comp)
@@ -570,7 +572,7 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
     
     ts_prediction_perperiod_list = []
     for period_dt in ts_periods_dt:
-        logger.debug(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
+        logger.info(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
         comp_oneyear = comp_allperiods.loc[:,(slice(None),period_dt)]
         comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
         if period_dt.freqstr in ['A-DEC']: #year frequency

@@ -24,7 +24,7 @@ def test_run_examples(file_config):
     # 1. Set up test data
     os.chdir(dir_output_general)
 
-    p = subprocess.Popen(f"hatyan {file_config} --redirect-stdout",
+    p = subprocess.Popen(f"hatyan {file_config} --redirect-stdout --overwrite",
                           stderr=subprocess.STDOUT, # Merge stdout and stderr
                           stdout=subprocess.PIPE,
                           shell=True)

@@ -339,10 +339,10 @@ def _guess_xfactor_from_starcomments(filename):
             if line.startswith('*'):
                 # TODO: also get xfac=True if none of these lines is found. Also derive xfac from metadata header
                 if 'theoretische' in line:
-                    logger.debug(f"xfac=False derived from headerline: '{line.strip()}'")
+                    logger.info(f"xfac=False derived from headerline: '{line.strip()}'")
                     xfac_guessed = False
                 elif 'empirisch' in line:
-                    logger.debug(f"xfac=True derived from headerline: '{line.strip()}'")
+                    logger.info(f"xfac=True derived from headerline: '{line.strip()}'")
                     xfac_guessed = True
     return xfac_guessed
 
@@ -368,7 +368,7 @@ def read_components(filename):
 
     """
     
-    logger.debug('reading file: %s'%(filename))
+    logger.info('reading file: %s'%(filename))
     
     line_compstart = None
     stat_available = False

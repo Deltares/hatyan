@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
     type=click.Path(exists=True),
 )
 @click.option(
-    "-u", "--unique-outputdir",
+    "-o", "--overwrite",
     is_flag=True,
-    help="add timestamp to `dir_output` so output is never overwritten"
+    help="overwrite `dir_output` if it exists"
 )
 @click.option(
     "-i", "--interactive-plots",
@@ -39,11 +39,14 @@ logger = logging.getLogger(__name__)
     help="redirecting stdout to dir_output/STDOUT.txt, "
     "warnings/errors are still printed to console"
 )
-@click.option('-v', '--verbose', is_flag=True, help="set logging level to debug instead of info")
+@click.option(
+    '-l',
+    '--loglevel',
+    type=str,
+    help="set logging level to ERROR/WARNING/INFO/DEBUG, default is INFO",
+)
 @click.version_option(hatyan.__version__)
-def cli(filename, unique_outputdir, interactive_plots, redirect_stdout, 
-        verbose
-        ):
+def cli(filename, overwrite, interactive_plots, redirect_stdout, loglevel):
     """
     Initializes hatyan by creating a `dir_output`, setting current and matplotlib
     savefig directory to `dir_output` and printing the initialisation header.
@@ -56,16 +59,14 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     timer_start = dt.datetime.now()
     
     # create dir_output and chdir
-    foldername = os.path.splitext(os.path.basename(file_config))[0]
-    if unique_outputdir:
-        dir_output = f"{foldername}__{timer_start.strftime('%Y%m%d_%H%M%S')}"
-    else:
-        dir_output = foldername
+    dir_output = os.path.splitext(os.path.basename(file_config))[0]
+    if os.path.exists(dir_output) and not overwrite:
+        raise FileExistsError(f"Directory '{dir_output}' already exists. Use '--overwrite' if you want to overwrite existing results.")
     os.makedirs(dir_output, exist_ok=True)
     os.chdir(dir_output)
     
     #copy configfile to cwd (=dir_output)
-    shutil.copyfile(file_config,os.path.basename(file_config))
+    shutil.copyfile(file_config, os.path.basename(file_config))
     
     #set the storage location of interactive plots
     matplotlib.rcParams["savefig.directory"] = dir_output
@@ -74,11 +75,13 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     if redirect_stdout:
         sys.stdout = open('STDOUT.txt', "w")
     
-    level = logging.INFO
-    if verbose:
-        level = logging.DEBUG
-    logging.basicConfig(level=level, stream=sys.stdout)
-    
+    # set logging level and stdout
+    if loglevel is None:
+        loglevel = "INFO"
+    loglevel_dict = logging.getLevelNamesMapping()
+    if loglevel not in loglevel_dict:
+        raise ValueError(f"Unknown loglevel: {loglevel}, available are {list(loglevel_dict.keys())}")
+    logging.basicConfig(level=loglevel, stream=sys.stdout)
     
     # initialization print
     logger.info("############### HATYAN INITALIZING ###############")
@@ -91,12 +94,11 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     
     # run the configfile
     # exec from within cli somehow does not support oneline list generation with predefined variables
-    # therefore we use subprocess instead, this also requires flushing the print buffer first
     # with open(file_config) as f:
     #     exec(f.read())
-    spec = importlib.util.spec_from_file_location("script", file_config)
+    # therefore we use importlib instead: https://stackoverflow.com/questions/67631/how-can-i-import-a-module-dynamically-given-the-full-path
+    spec = importlib.util.spec_from_file_location("arbitrary.name", file_config)
     foo = importlib.util.module_from_spec(spec)
-    sys.modules["module.name"] = foo
     spec.loader.exec_module(foo)
     
     # get stop time
@@ -112,7 +114,7 @@ def cli(filename, unique_outputdir, interactive_plots, redirect_stdout,
     
     # show all created plots in case of interactive-plots
     if interactive_plots:
-        # logger.warning(f"close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
+        logger.warning(f"close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
         plt.show()
     os.chdir("..")
 
