@@ -11,12 +11,6 @@ voor alle stations indien mogelijk:
 import os
 import datetime as dt
 import hatyan
-import logging
-logging.basicConfig(level="INFO", format='%(levelname)s: '
-                                # '%(filename)s: '    
-                                # '%(funcName)s(): '
-                                # '%(lineno)d:\t'
-                                '%(message)s')
 
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
