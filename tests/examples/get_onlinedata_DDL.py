@@ -10,8 +10,10 @@ import matplotlib.pyplot as plt
 plt.close("all")
 
 # input parameters
-start_date = "2022-12-19"
-end_date = "2022-12-31"
+# start_date = "2022-12-19"
+# end_date = "2022-12-31"
+start_date = "2020-03-22" # DONAR validation data available for hoekvhld
+end_date = "2020-03-29"
 #start_date = "2020-11-25 09:47:00" #quite recent period
 #end_date = "2021-01-30 09:50:00"
 #start_date = "1993-08-25 09:47:00" #VLISSGN got new Waardebepalingsmethode in this year
@@ -29,8 +31,6 @@ if 1: # for RWS
     
     # use time range available in validation data, passing winter/summertime date
     current_station = "HOEKVHLD"
-    start_date = "2020-03-22"
-    end_date = "2020-03-29"
     
     # first download validation data
     url_hatyan = "https://raw.githubusercontent.com/Deltares/hatyan/main/tests/data_unitsystemtests/"
@@ -54,11 +54,12 @@ if 1: # for RWS
     if len(locs_wathte_one) > 1:
         raise Exception("duplicate stations for wathte")
 
-    # get the measurements and drop the timezone for correct comparison with validation data
-    # TODO: add timezone to hatyan dataframes: https://github.com/Deltares/hatyan/issues/238
-    # >> this would also prevent the currently shifted extents of the timeseries
+    # get the measurements
     meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
     meas_wathte_hat = hatyan.ddlpy_to_hatyan(meas_wathte)
+    # drop the ddlpy timezone for correct comparison with validation data
+    # TODO: add timezone to hatyan dataframes: https://github.com/Deltares/hatyan/issues/238
+    # prevent the 1-hour shift of the time extents: https://github.com/Deltares/ddlpy/issues/40
     meas_wathte_hat.index = meas_wathte_hat.index.tz_localize(None)
     
     stat_name = locs_wathte_one.iloc[0]["Naam"]
