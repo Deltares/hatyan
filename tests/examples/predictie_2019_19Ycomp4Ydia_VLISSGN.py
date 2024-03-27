@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-for use with test_cli.py, requires files from online source
+predictie_2019_19Ycomp4Ydia.py
+hatyan master configfile
+voor alle stations indien mogelijk:
+    - lees opgegeven data in
+    - analyse van de ingelezen data, eventueel met componentensplitsing
+    - combineren met SA+SM uit analyseresultatenbestand
+    - predictie maken
 
 """
 
