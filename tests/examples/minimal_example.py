@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 25 11:45:29 2024
+for use with test_cli.py, requires files from online source
 
-@author: veenstra
 """
 
 import hatyan
