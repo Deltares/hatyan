@@ -54,12 +54,20 @@ if 1: # for RWS
     if len(locs_wathte_one) > 1:
         raise Exception("duplicate stations for wathte")
 
+<<<<<<< HEAD
     # get the measurements
     meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
     meas_wathte_hat = hatyan.ddlpy_to_hatyan(meas_wathte)
     # drop the ddlpy timezone for correct comparison with validation data
     # TODO: add timezone to hatyan dataframes: https://github.com/Deltares/hatyan/issues/238
     # prevent the 1-hour shift of the time extents: https://github.com/Deltares/ddlpy/issues/40
+=======
+    # get the measurements and drop the timezone for correct comparison with validation data
+    # TODO: add timezone to hatyan dataframes: https://github.com/Deltares/hatyan/issues/238
+    # >> this would also prevent the currently shifted extents of the timeseries
+    meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
+    meas_wathte_hat = hatyan.ddlpy_to_hatyan(meas_wathte)
+>>>>>>> main
     meas_wathte_hat.index = meas_wathte_hat.index.tz_localize(None)
     
     stat_name = locs_wathte_one.iloc[0]["Naam"]
