@@ -25,8 +25,6 @@ locations = ddlpy.locations()
 if 1: #for RWS
     import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
     include_extremes = True
-
-    locations["Code"] = locations.index
     
     bool_grootheid_meas = locations['Grootheid.Code'].isin(['WATHTE'])
     bool_grootheid_astro = locations['Grootheid.Code'].isin(['WATHTBRKD'])
@@ -52,8 +50,8 @@ if 1: #for RWS
         locs_exttypes_wathtbrkd = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_astro]
     
     for current_station in ['HOEKVHLD']:
-        locs_wathte_one = locs_wathte.loc[locs_wathte['Code'].isin([current_station])]
-        locs_wathtbrkd_one = locs_wathtbrkd.loc[locs_wathtbrkd['Code'].isin([current_station])]
+        locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
+        locs_wathtbrkd_one = locs_wathtbrkd.loc[locs_wathtbrkd.index.isin([current_station])]
         
         # no support for multiple rows, so pass one at a time
         if len(locs_wathte_one) > 1:
@@ -67,10 +65,10 @@ if 1: #for RWS
         ts_astro = hatyan.ddlpy_to_hatyan(meas_wathtbrkd)
         
         if include_extremes:
-            locs_wathte_ext_one = locs_wathte_ext.loc[locs_wathte_ext['Code'].isin([current_station])]
-            locs_wathtbrkd_ext_one = locs_wathtbrkd_ext.loc[locs_wathtbrkd_ext['Code'].isin([current_station])]
-            locs_wathte_exttypes_one = locs_exttypes_wathte.loc[locs_exttypes_wathte['Code'].isin([current_station])]
-            locs_wathtbrkd_exttypes_one = locs_exttypes_wathtbrkd.loc[locs_exttypes_wathtbrkd['Code'].isin([current_station])]
+            locs_wathte_ext_one = locs_wathte_ext.loc[locs_wathte_ext.index.isin([current_station])]
+            locs_wathtbrkd_ext_one = locs_wathtbrkd_ext.loc[locs_wathtbrkd_ext.index.isin([current_station])]
+            locs_wathte_exttypes_one = locs_exttypes_wathte.loc[locs_exttypes_wathte.index.isin([current_station])]
+            locs_wathtbrkd_exttypes_one = locs_exttypes_wathtbrkd.loc[locs_exttypes_wathtbrkd.index.isin([current_station])]
             # no support for multiple rows, so pass one at a time
             if len(locs_wathte_ext_one) > 1:
                 raise Exception("multiple stations in locs_wathte_ext dataframe")
@@ -93,8 +91,8 @@ if 1: #for RWS
             ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
             ts_astrolHWLW = hatyan.convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
     
-    stat_name = locs_wathte_one["Naam"]
-    stat_code = locs_wathte_one["Code"]
+    stat_name = locs_wathte_one["Naam"].iloc[0]
+    stat_code = locs_wathte_one.index[0]
     if include_extremes:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro,ts_validation=ts_measwl,ts_ext=ts_astroHWLW,ts_ext_validation=ts_measwlHWLW)
         ax1.set_title(f'waterlevels for {stat_code} ({stat_name})')
