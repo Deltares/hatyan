@@ -80,7 +80,7 @@ docs = [
 	"sphinx_mdinclude",
 	"nbsphinx",
 	"pydata-sphinx-theme",
-	"pandoc",
+	"pandoc", # installed with choco on github
 ]
 examples = [
 	"jupyter",
