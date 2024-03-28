@@ -10,7 +10,7 @@ hatyan.cli module
    :show-inheritance:
 
 
-hatyan analysis/prediction functions
+hatyan.hatyan_core module
 ------------------------------------
 
 .. automodule:: hatyan.hatyan_core
@@ -18,13 +18,17 @@ hatyan analysis/prediction functions
    :undoc-members:
    :show-inheritance:
 
+
+hatyan.analysis_prediction module
+------------------------------------
+
 .. automodule:: hatyan.analysis_prediction
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-hatyan components functions
+hatyan.components module
 ---------------------------
 
 .. automodule:: hatyan.components
@@ -33,7 +37,7 @@ hatyan components functions
    :show-inheritance:
 
 
-hatyan timeseries functions
+hatyan.timeseries module
 ---------------------------
 
 .. automodule:: hatyan.timeseries
@@ -42,13 +46,8 @@ hatyan timeseries functions
    :show-inheritance:
 
 
-hatyan converter functions
+hatyan.ddlpy_helpers module
 --------------------------
-
-.. automodule:: hatyan.convert
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 .. automodule:: hatyan.ddlpy_helpers
    :members:
@@ -56,7 +55,7 @@ hatyan converter functions
    :show-inheritance:
 
 
-astrog module
+hatyan.astrog module
 -------------
 
 .. automodule:: hatyan.astrog
