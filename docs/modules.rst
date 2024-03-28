@@ -10,18 +10,31 @@ hatyan.cli module
    :show-inheritance:
 
 
-hatyan module
--------------
+hatyan analysis/prediction functions
+------------------------------------
+
+.. automodule:: hatyan.hatyan_core
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. automodule:: hatyan.analysis_prediction
    :members:
    :undoc-members:
    :show-inheritance:
 
+
+hatyan components functions
+---------------------------
+
 .. automodule:: hatyan.components
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+hatyan timeseries functions
+---------------------------
 
 .. automodule:: hatyan.timeseries
    :members:
@@ -29,13 +42,8 @@ hatyan module
    :show-inheritance:
 
 
-hatyan helper functions
------------------------
-
-.. automodule:: hatyan.hatyan_core
-   :members:
-   :undoc-members:
-   :show-inheritance:
+hatyan converter functions
+--------------------------
 
 .. automodule:: hatyan.convert
    :members:
