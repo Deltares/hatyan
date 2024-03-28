@@ -80,6 +80,7 @@ docs = [
 	"sphinx_mdinclude",
 	"nbsphinx",
 	"pydata-sphinx-theme",
+	"pandoc",
 ]
 examples = [
 	"jupyter",
