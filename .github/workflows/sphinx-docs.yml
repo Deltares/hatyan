@@ -2,8 +2,7 @@ name: documentation
 
 on:
   push:
-    branches: []
-  #  branches: ["main"]
+    branches: ["main"]
 
 permissions:
   contents: read
