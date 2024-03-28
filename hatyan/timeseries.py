@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr
 import logging
+from pyproj import Transformer
 
 from hatyan.foreman import get_foreman_v0_freq
 from hatyan.schureman import get_schureman_freqs
@@ -23,10 +24,11 @@ from hatyan.metadata import (metadata_from_diablocks, metadata_add_to_obj,
                              metadata_from_obj, metadata_compare, 
                              wns_from_metadata)
 
-__all__ = ["get_diablocks",
+__all__ = ["get_diaxycoords",
            "readts_dia",
            "readts_noos",
            "write_tsdia",
+           "writets_noos",
            "write_tsnetcdf",
            "plot_timeseries",
            "plot_HWLW_validatestats",
@@ -1286,6 +1288,18 @@ class Timeseries_Statistics:
 ###############################
 ################# READING FILES
 ###############################
+
+
+def get_diaxycoords(filename, crs):
+    diablocks_pd_extra = get_diablocks(filename=filename)
+    dia_x = diablocks_pd_extra.loc[0,'x']
+    dia_y = diablocks_pd_extra.loc[0,'y']
+    dia_epsg = int(diablocks_pd_extra.loc[0,'epsg'])
+    
+    transformer = Transformer.from_crs(f'epsg:{dia_epsg}', f'epsg:{crs}', always_xy=True)
+    stat_x, stat_y = transformer.transform(dia_x, dia_y)
+    
+    return stat_x, stat_y
 
 
 def get_diablocks_startstopstation(filename):

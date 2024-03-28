@@ -10,7 +10,6 @@ __version__ = "2.7.3"
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
 from hatyan.components import *
-from hatyan.convert import *
 from hatyan.deprecated import *
 from hatyan.ddlpy_helpers import *
 from hatyan.hatyan_core import *
