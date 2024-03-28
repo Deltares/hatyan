@@ -44,15 +44,13 @@ class HatyanSettings:
     xfac : bool, optional
         Whether or not to apply x-factors. The default is False.
     
-    #following are only for analysis
     CS_comps : pandas.DataFrame, optional
-        contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. The default is None.
+        contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. Only relevant for analysis. The default is None.
     
-    #following are only relevant if analysis_perperiod is not None
     analysis_perperiod : False or Y/Q/W, optional
         caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
     return_allperiods : bool, optional
-        DESCRIPTION. The default is False.
+        Only relevant if analysis_perperiod is not None. The default is False.
     
     """
     #TODO: analysis_perperiod,return_allyears only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
@@ -429,7 +427,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
     hatyan_settings : HatyanSettings, optional
         DESCRIPTION. The default is None.
-    **kwargs : TYPE
+    kwargs : TYPE
         DESCRIPTION.
 
     Raises

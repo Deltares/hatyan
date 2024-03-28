@@ -1,14 +1,16 @@
+# What's new
+
 ## Unreleased
 
 ### Feat
 - reading/writing analysis settings (xfac, nodalfactors, fu_alltimes) from/to component file in [#175](https://github.com/Deltares/hatyan/pull/175)
 - made hatyan callable via `hatyan /path/to/script.py` (deprecates `init_RWS()` and `exit_RWS()`) in [#113](https://github.com/Deltares/hatyan/pull/113) and [#226](https://github.com/Deltares/hatyan/issues/226)
 - retained `freq` attribute of `ts.index` in case of multifile equidistant dia in [#118](https://github.com/Deltares/hatyan/pull/118)
-- added support for file patterns in `hatyan.readts_dia()` in [#118](https://github.com/Deltares/hatyan/pull/120)
+- added support for file patterns in `hatyan.readts_dia()` in [#120](https://github.com/Deltares/hatyan/pull/120)
 - uniform usage of `analysis` (deprecates `get_components_from_ts`) in [#125](https://github.com/Deltares/hatyan/pull/125)
 - added metadata to timeseries and components and passing it between those objects in the hatyan process in [#131](https://github.com/Deltares/hatyan/pull/131)
 - improved metadata in component files in [#131](https://github.com/Deltares/hatyan/pull/131)
-- replaced `times_ext` `timestep_min` and `times_pred_all` for `prediction()` with `times` argument in [#131](https://github.com/Deltares/hatyan/pull/143)
+- replaced `times_ext` `timestep_min` and `times_pred_all` for `prediction()` with `times` argument in [#143](https://github.com/Deltares/hatyan/pull/143)
 - integrated ddlpy to in ddl example script in [#202](https://github.com/Deltares/hatyan/pull/202) and [#213](https://github.com/Deltares/hatyan/pull/213)
 - prevent writing components with non-standard settings to file and prevent prediction with different settings than provided components in [#218](https://github.com/Deltares/hatyan/pull/218)
 - use `pandas.DataFrame.attrs` instead of separate metadata attrs in [#219](https://github.com/Deltares/hatyan/pull/219)

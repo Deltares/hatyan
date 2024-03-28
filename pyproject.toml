@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "hatyan"
 version = "2.7.3"
 maintainers = [{ name = "Jelmer Veenstra", email = "jelmer.veenstra@deltares.nl" }]
-description = "hatyan is a tidal analysis and prediction tool of Rijkswaterstaat"
+description = "Tidal analysis and prediction tool of Rijkswaterstaat"
 readme = "README.md"
 keywords = ["hatyan", "tidal analysis", "tidal prediction"]
 license = { text = "LGPLv3" }
@@ -76,6 +76,10 @@ docs = [
 	"mkdocs-jupyter",
 	"mkdocstrings-python",
 	"mkdocs-exclude",
+	"sphinx>=1.8.1",
+	"sphinx_mdinclude",
+	"nbsphinx",
+	"pydata-sphinx-theme",
 ]
 examples = [
 	"jupyter",

@@ -1,5 +1,4 @@
-Information for developers
---------
+# Contributing
 
 ## Checkout hatyan git repository
 
