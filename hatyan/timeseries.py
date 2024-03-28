@@ -35,7 +35,7 @@ __all__ = ["get_diaxycoords",
            "resample_timeseries",
            "crop_timeseries",
            "timeseries_fft",
-           "check_ts",
+           "Timeseries_Statistics",
            "calc_HWLW",
            "calc_HWLWnumbering",
            "calc_HWLW12345to12",
@@ -1204,9 +1204,9 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
             logger.info(t_const_freq_sel)
             if t_const_freq_sel['diff'] < 1e-9:
                 logger.warning(f'frequency difference between {t_const_freq_sel.index[0]} and {t_const_freq_sel.index[1]} almost zero, will result in ill conditioned matrix')
-        
 
-def check_ts(ts):
+
+class Timeseries_Statistics:
     """
     returns several statistics of the provided timeseries as a Timeseries_Statistics class, which is a like a dict that pretty prints automatically.
 
@@ -1221,12 +1221,6 @@ def check_ts(ts):
         Timeseries_Statistics is a like a dict that pretty prints automatically.
 
     """
-    
-    stats = Timeseries_Statistics(ts=ts)
-    return stats
-
-
-class Timeseries_Statistics:
     #TODO: make like a dict with different __str__ method, instead of this mess https://stackoverflow.com/questions/4014621/a-python-class-that-acts-like-dict
     #TODO: improve output dict, keys are now not convenient to use. Maybe make keys and longname?
     def __init__(self,ts):
