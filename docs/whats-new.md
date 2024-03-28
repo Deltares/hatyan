@@ -15,11 +15,14 @@
 - prevent writing components with non-standard settings to file and prevent prediction with different settings than provided components in [#218](https://github.com/Deltares/hatyan/pull/218)
 - use `pandas.DataFrame.attrs` instead of separate metadata attrs in [#219](https://github.com/Deltares/hatyan/pull/219)
 - moved from prints to logging in [#236](https://github.com/Deltares/hatyan/pull/236)
+- made `hatyan.get_diablocks()` private and added public `hatyan.get_diaxycoords()` instead [#244](https://github.com/Deltares/hatyan/pull/244)
+- made `hatyan.Timeseries_Statistics()` public [#244](https://github.com/Deltares/hatyan/pull/244)
 
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)
 - moved kenmerkendewaarden functions and examples to https://github.com/Deltares-research/kenmerkendewaarden in [#211](https://github.com/Deltares/hatyan/pull/211)
 - deprecated `hatyan.write_tsdia_HWLW()` in favor of `hatyan.write_tsdia()` in [#223](https://github.com/Deltares/hatyan/pull/223)
+- deprecated `hatyan.convert_coords()` and `hatyan.check_ts()` in [#244](https://github.com/Deltares/hatyan/pull/244)
 
 
 ## 2.7.0 (2023-08-03)

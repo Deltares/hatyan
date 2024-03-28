@@ -12,6 +12,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.close('all')
 import hatyan
+try:
+    import dfm_tools as dfmt # pip install dfm_tools
+    add_coastlines = True
+except ModuleNotFoundError:
+    add_coastlines = False
+
+create_spatialplot = True
+crs = 28992
 
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
@@ -31,11 +39,6 @@ selected_stations = ['AUKFPFM']
 selected_stations = ['WICK','ABDN','LEITH','WHITBY','IMMHM','CROMR','FELSWE','CADZD','VLISSGN','TERNZN','ROOMPBTN','HARVT10','HOEKVHLD','ROTTDM','DORDT','SCHEVNGN','IJMDBTHVN','PETTZD','DENHDR','DENOVBTN','HARLGN','HOLWD','SCHIERMNOG','LAUWOG','EEMSHVN','DELFZL']#,'CUXHVN']
 #selected_stations = ['CROMR','CADZD','HOEKVHLD','DENHDR','CUXHVN']
 #selected_stations = ['CADZD','DENHDR']
-
-file_ldb = os.path.join(dir_testdata,'other','wvs_coastline3.ldb') #WGS84 ldb is converted to RD, but does not change anything wrt to matlab converted ldb, which is good
-ldb_pd_wgs = pd.read_csv(file_ldb, delim_whitespace=True,skiprows=4,names=['x','y'],na_values=[999.999])
-x_out, y_out = hatyan.convert_coordinates(coordx_in=ldb_pd_wgs['x'].values, coordy_in=ldb_pd_wgs['y'].values, epsg_in=4326, epsg_out=28992)
-ldb_pd = pd.DataFrame({'RDx':x_out/1000, 'RDy':y_out/1000})
 
 if 0:
     """
@@ -66,8 +69,6 @@ if 0:
         selected_stations.remove(stat_remove)
     selected_stations.remove('LITHDP') #problem station for at least 2018
     selected_stations.remove('ZALTBML') #no ana file available
-
-create_spatialplot = True
 
 yr=2000
 yr_HWLWno = 2010
@@ -147,10 +148,9 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         #print('tdiff %s:'%(current_station), ts_firstlocalHW.index-firstHWcadz)
         pdrow = pd.DataFrame({'time': [ts_firstlocalHW.name], 'HWtdiff_hr': [(ts_firstlocalHW.name-firstHWcadz).total_seconds()/3600], 'M2phase':COMP_merged.loc['M2','phi_deg'], 'M2phasediff':M2phasediff}, index=[current_station])
         if create_spatialplot:
-            diablocks_pd_extra = hatyan.get_diablocks(filename=file_data_predvali)
-            RDx, RDy = hatyan.convert_coordinates(coordx_in=diablocks_pd_extra.loc[0,'x'], coordy_in=diablocks_pd_extra.loc[0,'y'], epsg_in=diablocks_pd_extra.loc[0,'epsg'], epsg_out=28992)
-            pdrow['RDx'] = RDx/1000 #from m to km
-            pdrow['RDy'] = RDy/1000 #from m to km
+            RDx, RDy = hatyan.get_diaxycoords(filename=file_data_predvali, crs=crs)
+            pdrow['RDx'] = RDx
+            pdrow['RDy'] = RDy
         stats = pd.concat([stats,pdrow])
             
         #hatyan.write_tsdia(ts=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
@@ -221,23 +221,20 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
 
 if create_spatialplot:
     fig2, (fig2_ax1) = plt.subplots(1,1,figsize=(10,9))
-    fig2_ax1.plot(ldb_pd['RDx'],ldb_pd['RDy'],'-k',linewidth=0.4)
     fig2_ax1.plot(stats.loc['CADZD','RDx'], stats.loc['CADZD','RDy'],'xk')
     pc = fig2_ax1.scatter(stats['RDx'], stats['RDy'],10,stats['M2phasediff'], vmin=-360,vmax=360, cmap='hsv')
     fig2.colorbar(pc, ax=fig2_ax1)
-    fig2_ax1.set_xlim([-400,360])
-    fig2_ax1.set_ylim([200,1200])
-    fig2_ax1.set_aspect('equal')
+    fig2_ax1.set_xlim(-400000,360000)
+    fig2_ax1.set_ylim(200000,1200000)
+    if add_coastlines:
+        dfmt.plot_coastlines(ax=fig2_ax1, res='i', min_area=50, linewidth=0.5, crs=crs)
+        dfmt.plot_borders(ax=fig2_ax1, crs=crs)
+        
     for irow, pdrow in stats.iterrows():
         fig2_ax1.text(pdrow['RDx'], pdrow['RDy'], '%.1f'%(pdrow['M2phasediff']))
         #fig2_ax1.text(pdrow['RDx'], pdrow['RDy'], '%.1f (%s)'%(pdrow['M2phasediff'],pdrow.name))
     fig2.tight_layout()
     if 0:
         import contextily as ctx
-        source_list = [ctx.providers.Stamen.Terrain, #default source
-                   ctx.providers.Esri.WorldImagery,
-                   ctx.providers.CartoDB.Voyager,
-                   #ctx.providers.NASAGIBS.ViirsEarthAtNight2012,
-                   ctx.providers.Stamen.Watercolor]
-        ctx.add_basemap(fig2_ax1, source=source_list[1], crs="EPSG:28992", attribution_size=5)
+        ctx.add_basemap(fig2_ax1, source=ctx.providers.Esri.WorldImagery, crs=crs, attribution=False)
     fig2.savefig('tide_numbering_phasediff.png', dpi=250)

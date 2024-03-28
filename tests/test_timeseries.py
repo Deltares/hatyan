@@ -18,6 +18,14 @@ dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 
 
 @pytest.mark.unittest
+def test_get_diaxycoords():
+    file_pred = os.path.join(dir_testdata,"VLISSGN_pre.txt")
+    stat_x, stat_y = hatyan.get_diaxycoords(filename=file_pred, crs=28992)
+    assert np.isclose(stat_x, 30480.0)
+    assert np.isclose(stat_y, 385220.0)
+
+
+@pytest.mark.unittest
 def test_readwrite_tsdia_rounding():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
     file_new = 'temp_dia.txt'

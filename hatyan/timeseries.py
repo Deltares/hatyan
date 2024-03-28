@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr
 import logging
+from pyproj import Transformer
 
 from hatyan.foreman import get_foreman_v0_freq
 from hatyan.schureman import get_schureman_freqs
@@ -23,17 +24,18 @@ from hatyan.metadata import (metadata_from_diablocks, metadata_add_to_obj,
                              metadata_from_obj, metadata_compare, 
                              wns_from_metadata)
 
-__all__ = ["get_diablocks",
+__all__ = ["get_diaxycoords",
            "readts_dia",
            "readts_noos",
            "write_tsdia",
+           "writets_noos",
            "write_tsnetcdf",
            "plot_timeseries",
            "plot_HWLW_validatestats",
            "resample_timeseries",
            "crop_timeseries",
            "timeseries_fft",
-           "check_ts",
+           "Timeseries_Statistics",
            "calc_HWLW",
            "calc_HWLWnumbering",
            "calc_HWLW12345to12",
@@ -1202,9 +1204,9 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
             logger.info(t_const_freq_sel)
             if t_const_freq_sel['diff'] < 1e-9:
                 logger.warning(f'frequency difference between {t_const_freq_sel.index[0]} and {t_const_freq_sel.index[1]} almost zero, will result in ill conditioned matrix')
-        
 
-def check_ts(ts):
+
+class Timeseries_Statistics:
     """
     returns several statistics of the provided timeseries as a Timeseries_Statistics class, which is a like a dict that pretty prints automatically.
 
@@ -1219,12 +1221,6 @@ def check_ts(ts):
         Timeseries_Statistics is a like a dict that pretty prints automatically.
 
     """
-    
-    stats = Timeseries_Statistics(ts=ts)
-    return stats
-
-
-class Timeseries_Statistics:
     #TODO: make like a dict with different __str__ method, instead of this mess https://stackoverflow.com/questions/4014621/a-python-class-that-acts-like-dict
     #TODO: improve output dict, keys are now not convenient to use. Maybe make keys and longname?
     def __init__(self,ts):
@@ -1286,6 +1282,18 @@ class Timeseries_Statistics:
 ###############################
 ################# READING FILES
 ###############################
+
+
+def get_diaxycoords(filename, crs):
+    diablocks_pd_extra = get_diablocks(filename=filename)
+    dia_x = diablocks_pd_extra.loc[0,'x']
+    dia_y = diablocks_pd_extra.loc[0,'y']
+    dia_epsg = int(diablocks_pd_extra.loc[0,'epsg'])
+    
+    transformer = Transformer.from_crs(f'epsg:{dia_epsg}', f'epsg:{crs}', always_xy=True)
+    stat_x, stat_y = transformer.transform(dia_x, dia_y)
+    
+    return stat_x, stat_y
 
 
 def get_diablocks_startstopstation(filename):
@@ -1605,7 +1613,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     if allow_duplicates:
         return data_pd_all
     
-    #check overlapping timesteps, sort values on time and check_ts
+    #check overlapping timesteps, sort values on time
     if data_pd_all.index.duplicated().any():
         raise ValueError("Merged datasets have duplicate/overlapping timesteps, "
                          "clean up your input data or provide one file instead of a list")
