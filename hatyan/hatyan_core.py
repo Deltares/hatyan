@@ -243,6 +243,7 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
             - 'day': list of 10 components to be used when analyzing one day
             - 'day_tidegui': list of 5 components to be used when analyzing one day ir two tidal cycles (from tidegui)
             - 'tidalcycle': list of 6 components to be used when analyzing one tidal cycle (approximately 12 hours and 25 minutes)
+    
     Raises
     ------
     Exception

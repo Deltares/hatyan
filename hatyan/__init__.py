@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-.. include:: ../README.md
+Tidal analysis and prediction tool of Rijkswaterstaat
 """
 
 __author__ = """Jelmer Veenstra"""
