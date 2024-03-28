@@ -1613,7 +1613,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     if allow_duplicates:
         return data_pd_all
     
-    #check overlapping timesteps, sort values on time and check_ts
+    #check overlapping timesteps, sort values on time
     if data_pd_all.index.duplicated().any():
         raise ValueError("Merged datasets have duplicate/overlapping timesteps, "
                          "clean up your input data or provide one file instead of a list")

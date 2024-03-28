@@ -11,7 +11,7 @@ hatyan.cli module
 
 
 hatyan.hatyan_core module
-------------------------------------
+-------------------------
 
 .. automodule:: hatyan.hatyan_core
    :members:
@@ -20,7 +20,7 @@ hatyan.hatyan_core module
 
 
 hatyan.analysis_prediction module
-------------------------------------
+---------------------------------
 
 .. automodule:: hatyan.analysis_prediction
    :members:
@@ -29,7 +29,7 @@ hatyan.analysis_prediction module
 
 
 hatyan.components module
----------------------------
+------------------------
 
 .. automodule:: hatyan.components
    :members:
@@ -38,7 +38,7 @@ hatyan.components module
 
 
 hatyan.timeseries module
----------------------------
+------------------------
 
 .. automodule:: hatyan.timeseries
    :members:
@@ -47,7 +47,7 @@ hatyan.timeseries module
 
 
 hatyan.ddlpy_helpers module
---------------------------
+---------------------------
 
 .. automodule:: hatyan.ddlpy_helpers
    :members:
@@ -56,7 +56,7 @@ hatyan.ddlpy_helpers module
 
 
 hatyan.astrog module
--------------
+--------------------
 
 .. automodule:: hatyan.astrog
    :members:

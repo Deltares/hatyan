@@ -10,7 +10,7 @@ import logging
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, get_tstart_tstop_tstep
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
-from hatyan.timeseries import check_ts, nyquist_folding, check_rayleigh
+from hatyan.timeseries import Timeseries_Statistics, nyquist_folding, check_rayleigh
 from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
 
 __all__ = ["HatyanSettings",
@@ -333,7 +333,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     xTxmat_condition = np.linalg.cond(xTxmat)
     logger.info('condition of xTx matrix: %.2f'%(xTxmat_condition))
     if xTxmat_condition > hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
-        raise MatrixConditionTooHigh(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {check_ts(ts_pd)}')
+        raise MatrixConditionTooHigh(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {Timeseries_Statistics(ts_pd)}')
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
     #solve matrix to get beta_roof_mat (and thus a, b)
