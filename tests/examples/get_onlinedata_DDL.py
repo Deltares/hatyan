@@ -10,16 +10,17 @@ import matplotlib.pyplot as plt
 plt.close("all")
 
 # input parameters
-# start_date = "2022-12-19"
-# end_date = "2022-12-31"
-start_date = "2020-03-22" # DONAR validation data available for hoekvhld
-end_date = "2020-03-29"
-#start_date = "2020-11-25 09:47:00" #quite recent period
-#end_date = "2021-01-30 09:50:00"
-#start_date = "1993-08-25 09:47:00" #VLISSGN got new Waardebepalingsmethode in this year
-#end_date = "1994-11-30 09:50:00"
-#start_date = "2009-01-01" #common RWS retrieval period
-#end_date = "2012-12-31 23:50:00"
+# start_date = "2022-12-19 00:00:00 +01:00"
+# end_date = "2022-12-31 00:00:00 +01:00"
+start_date = "2020-03-22 00:00:00 +01:00" # DONAR validation data available for hoekvhld
+end_date = "2020-03-29 00:00:00 +01:00"
+#start_date = "2020-11-25 09:47:00 +01:00" #quite recent period
+#end_date = "2021-01-30 09:50:00 +01:00"
+#start_date = "1993-08-25 09:47:00 +01:00" #VLISSGN got new Waardebepalingsmethode in this year
+#end_date = "1994-11-30 09:50:00 +01:00"
+#start_date = "2009-01-01 00:00:00 +01:00" #common RWS retrieval period
+#end_date = "2012-12-31 23:50:00 +01:00"
+
 
 locations = ddlpy.locations()
 
@@ -41,6 +42,9 @@ if 1: # for RWS
     with open(file_vali, "w") as f:
         f.write(data.decode('utf-8'))
     ts_vali = hatyan.readts_dia(file_vali)
+    
+    # add MET timezone without conversion (make timezone-aware)
+    ts_vali.index = ts_vali.index.tz_localize("UTC+01:00")
     ts_vali = hatyan.crop_timeseries(ts_vali, times=slice(start_date, end_date))
     
     bool_grootheid = locations['Grootheid.Code'].isin(['WATHTBRKD']) # measured waterlevels (not astro)
@@ -57,10 +61,6 @@ if 1: # for RWS
     # get the measurements
     meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
     meas_wathte_hat = hatyan.ddlpy_to_hatyan(meas_wathte)
-    # drop the ddlpy timezone for correct comparison with validation data
-    # TODO: add timezone to hatyan dataframes: https://github.com/Deltares/hatyan/issues/238
-    # prevent the 1-hour shift of the time extents: https://github.com/Deltares/ddlpy/issues/40
-    meas_wathte_hat.index = meas_wathte_hat.index.tz_localize(None)
     
     stat_name = locs_wathte_one.iloc[0]["Naam"]
     stat_code = current_station
