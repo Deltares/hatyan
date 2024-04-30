@@ -39,7 +39,6 @@ __all__ = ["get_diaxycoords",
            "calc_HWLW",
            "calc_HWLWnumbering",
            "calc_HWLW12345to12",
-           "calc_HWLWtidalrange",
            ]
 
 file_path = os.path.realpath(__file__)
@@ -367,19 +366,6 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
     
     ts_ext['HWLWno'] = ts_ext['HWLWno'].astype(int)
     
-    return ts_ext
-
-
-def calc_HWLWtidalrange(ts_ext):
-    """
-    creates column 'tidalrange' in ts_ext dataframe
-    """
-    ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
-    ts_ext['times_backup'] = ts_ext.index
-    ts_ext_idxHWLWno = ts_ext.set_index('HWLWno',drop=False)
-    ts_ext_idxHWLWno['tidalrange'] = ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno['HWLWcode']==1,'values'] - ts_ext_idxHWLWno.loc[ts_ext_idxHWLWno['HWLWcode']==2,'values']
-    ts_ext = ts_ext_idxHWLWno.set_index('times_backup')
-    ts_ext.index.name = 'times'
     return ts_ext
 
 
