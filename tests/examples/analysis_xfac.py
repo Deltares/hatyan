@@ -15,7 +15,7 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 current_station = 'VLISSGN'
 
 #file_slotgemiddelden = os.path.join(dir_testdata,'predictie2019','_slotgemiddelden_predictie2019.txt')
-#stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
+#stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', sep="\s+"=True)
 
 for fu_alltimes in [True,False]:
     const_list = hatyan.get_const_list_hatyan('springneap')

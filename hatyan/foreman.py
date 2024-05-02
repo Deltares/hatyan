@@ -43,7 +43,7 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     """
     
     foreman_file = os.path.join(os.path.dirname(file_path),'data','data_foreman_harmonic.txt')
-    foreman_harmonic_raw = pd.read_csv(foreman_file, comment='#', names=range(16), index_col=0, skip_blank_lines=True, delim_whitespace=True)
+    foreman_harmonic_raw = pd.read_csv(foreman_file, comment='#', names=range(16), index_col=0, skip_blank_lines=True, sep="\s+"=True)
     bool_dupl_index = foreman_harmonic_raw.index.duplicated(keep='first')
     
     lat_rad = np.deg2rad(lat_deg)
@@ -97,7 +97,7 @@ def get_foreman_shallowrelations():
     """
     
     foreman_file = os.path.join(os.path.dirname(file_path),'data','data_foreman_shallowrelations.txt')
-    foreman_shallowrelations = pd.read_csv(foreman_file, comment='#', names=range(10), index_col=0, delim_whitespace=True)
+    foreman_shallowrelations = pd.read_csv(foreman_file, comment='#', names=range(10), index_col=0, sep="\s+"=True)
     foreman_shallowrelations.index.name = None
     
     #check for internal numdependencies consistency

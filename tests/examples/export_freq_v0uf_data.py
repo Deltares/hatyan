@@ -59,7 +59,7 @@ def get_hatyan55_values(file_hatyan55):
     
     #######################
     colnames_freq = ['RANGNR.','NAAM','HOEKSNELHEID[deg/hr]']
-    hatyan55_freq_raw = pd.read_csv(file_hatyan55, names=colnames_freq, skiprows=21, nrows=207, delim_whitespace=True, on_bad_lines='skip')
+    hatyan55_freq_raw = pd.read_csv(file_hatyan55, names=colnames_freq, skiprows=21, nrows=207, sep="\s+"=True, on_bad_lines='skip')
     bool_droprowsbegin = np.where(hatyan55_freq_raw.iloc[:,0].str.startswith('+++'))[0] #start of this year
     bool_droprowsend = np.where(hatyan55_freq_raw.iloc[:,1]=='GRADEN/UUR')[0] #start of this year
     drop_idx = []
@@ -75,7 +75,7 @@ def get_hatyan55_values(file_hatyan55):
     hatyan55_v0u = pd.DataFrame()
     hatyan55_f = pd.DataFrame()
     colnames_v0uf = ['RANGNR.','VU-FAKTOR','F-FAKTOR']
-    hatyan55_v0uf_raw_allyears = pd.read_csv(file_hatyan55, names=colnames_v0uf, skiprows=270, delim_whitespace=True, on_bad_lines='skip')
+    hatyan55_v0uf_raw_allyears = pd.read_csv(file_hatyan55, names=colnames_v0uf, skiprows=270, sep="\s+"=True, on_bad_lines='skip')
     line_startyears = np.where(hatyan55_v0uf_raw_allyears.iloc[:,0]=='JAAR')[0]
     yearnos = hatyan55_v0uf_raw_allyears.iloc[line_startyears,2].astype(int).tolist()
     dood_date_hatyan55 = pd.DatetimeIndex([dt.datetime(x,7,2) for x in yearnos])
@@ -103,7 +103,7 @@ hatyan55_freq, hatyan55_v0u, hatyan55_f, dood_date_hatyan55, dood_date_hatyan55_
 
 #######################
 file_fwithxfac = os.path.join(dir_testdata,'other','vuf2016.txt')
-v0uffile_2016 = pd.read_csv(file_fwithxfac, skiprows=3, delim_whitespace=True, names=['Nr.','Hoeksnelh.','V0+u','f(xfac1)','Naam'])
+v0uffile_2016 = pd.read_csv(file_fwithxfac, skiprows=3, sep="\s+"=True, names=['Nr.','Hoeksnelh.','V0+u','f(xfac1)','Naam'])
 v0uffile_2016 = v0uffile_2016.set_index('Naam')
 
 hatyan55_freq_conv = np.array([0]+(hatyan55_freq.loc[const_list_freqv0uf_hat55,'HOEKSNELHEID[deg/hr]'].values/360).tolist())
