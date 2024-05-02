@@ -13,6 +13,7 @@ import pandas as pd
 import datetime as dt
 from netCDF4 import Dataset, num2date
 import hatyan
+import pytz
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -282,13 +283,14 @@ def test_prediction_1018():
                                     dt.datetime(1018, 7, 21, 2, 40),
                                     dt.datetime(1018, 7, 21, 2, 50),
                                     dt.datetime(1018, 7, 21, 3, 0)], dtype=np.datetime64)
+    ts_prediction_times_pd = pd.DatetimeIndex(ts_prediction_times).tz_localize("UTC+01:00")
     ts_prediction_vals = np.array([-0.77416669, -0.78821831, -0.79718123, -0.80126649, -0.80055319,
                                    -0.79466499, -0.78252257, -0.76226094, -0.73136835, -0.68705389,
                                    -0.62679467, -0.54896408, -0.4534113 , -0.34185962, -0.218017  ,
                                    -0.08734459,  0.04350389,  0.16749106,  0.27811846])
     
     assert (np.abs(ts_prediction['values'].values-ts_prediction_vals) < 10E-9).all()
-    assert (np.abs(ts_prediction.index.values-ts_prediction_times) < dt.timedelta(days=10E-9)).all()
+    assert (np.abs(ts_prediction.index-ts_prediction_times_pd) < dt.timedelta(days=10E-9)).all()
 
 
 @pytest.mark.systemtest
@@ -328,8 +330,9 @@ def test_frommergedcomp():
     
     # 4. Vefiry final expectations
     assert type(ts_prediction_direct) == pd.core.frame.DataFrame
-    assert ts_prediction_direct.index[0].to_pydatetime() == times_pred.start
-    assert ts_prediction_direct.index[-1].to_pydatetime() == times_pred.stop
+    assert ts_prediction_direct.index.tz==pytz.FixedOffset(60)
+    assert ts_prediction_direct.index[0].tz_localize(None) == times_pred.start
+    assert ts_prediction_direct.index[-1].tz_localize(None) == times_pred.stop
     assert len(ts_prediction_direct_values) == len(expected_ts_prediction_data_pd_values)
     assert type(ts_prediction_direct_values) == type(expected_ts_prediction_data_pd_values)
     assert (np.abs(ts_prediction_direct_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
@@ -777,7 +780,7 @@ def test_19Ycomp4Ydia_compsplitsing():
                                                      -0.29615745, -0.24552815, -0.19141437])
     
     # 4. Vefiry final expectations
-    assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()        
+    assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
 
 
 @pytest.mark.systemtest

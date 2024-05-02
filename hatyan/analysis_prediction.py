@@ -357,7 +357,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
             COMP_pd.loc['A0','phi_deg'] = 0
     
     if hatyan_settings.CS_comps is not None:
-        COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid, hatyan_settings=hatyan_settings)
+        COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid_naive, hatyan_settings=hatyan_settings)
         
     logger.info('ANALYSIS finished')
     
