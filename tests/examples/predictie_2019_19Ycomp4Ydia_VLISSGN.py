@@ -20,7 +20,7 @@ dir_testdata = 'C:\\DATA\\hatyan\\tests'
 selected_stations = ['VLISSGN']
 
 file_slotgemiddelden = os.path.join(dir_testdata,'data_unitsystemtests','_slotgemiddelden_predictie2019.txt')
-stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
+stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', sep="\s+")
 
 for current_station in selected_stations:
     print(f'current_station: {current_station}')

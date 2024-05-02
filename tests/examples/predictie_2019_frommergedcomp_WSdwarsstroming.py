@@ -14,7 +14,7 @@ import hatyan
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 file_slotgemiddelden = os.path.join(dir_testdata,'predictie2019','_slotgemiddelden_predictie2019.txt')
-stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', delim_whitespace=True)
+stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', sep="\s+")
 
 fig, (ax1, ax2) = plt.subplots(2,1,figsize=(15,9))#, sharex=True, gridspec_kw={'height_ratios':[2,1]})
 list_matig = []
