@@ -42,9 +42,6 @@ if 1: # for RWS
     with open(file_vali, "w") as f:
         f.write(data.decode('utf-8'))
     ts_vali = hatyan.readts_dia(file_vali)
-    
-    # add MET timezone without conversion (make timezone-aware)
-    ts_vali.index = ts_vali.index.tz_localize("UTC+01:00")
     ts_vali = hatyan.crop_timeseries(ts_vali, times=slice(start_date, end_date))
     
     bool_grootheid = locations['Grootheid.Code'].isin(['WATHTBRKD']) # measured waterlevels (not astro)
