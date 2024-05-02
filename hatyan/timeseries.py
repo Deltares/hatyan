@@ -326,7 +326,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
             M2phasediff_deg += corr_tideperiods
     else:
         file_M2phasediff = os.path.join(os.path.dirname(file_path),'data','data_M2phasediff_perstation.txt')
-        stations_M2phasediff = pd.read_csv(file_M2phasediff, names=['M2phasediff'], comment='#', delim_whitespace=True)
+        stations_M2phasediff = pd.read_csv(file_M2phasediff, names=['M2phasediff'], comment='#', sep="\s+")
         if station not in stations_M2phasediff.index:
             raise Exception(f'ERROR: station "{station}" not in file_M2phasediff ({file_M2phasediff})')
         M2phasediff_deg = stations_M2phasediff.loc[station,'M2phasediff']
@@ -1658,7 +1658,7 @@ def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
                 startdata = linenum
                 break
     
-    content_pd = pd.read_csv(filename,header=startdata-1,delim_whitespace=True,names=['times_str','values'], na_values=na_values)
+    content_pd = pd.read_csv(filename,header=startdata-1, sep="\s+",names=['times_str','values'], na_values=na_values)
     noos_datetime = pd.to_datetime(content_pd['times_str'],format=datetime_format)
     data_pd = pd.DataFrame({'values':content_pd['values'].values},index=noos_datetime)
     
