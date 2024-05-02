@@ -197,7 +197,8 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
         logger.info(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
-        ts_periods_dt = ts_pd.index.to_period(period).unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+        ts_periods_dt_all = ts_pd.index.tz_localize(None).to_period(period)
+        ts_periods_dt = ts_periods_dt_all.unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
         n_periods = len(ts_periods_dt)
@@ -205,7 +206,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
         phi_i_deg_all = np.zeros((n_const,n_periods))*np.nan
         for iP, period_dt in enumerate(ts_periods_dt):
             logger.info('analyzing %s of sequence %s'%(period_dt,ts_periods_strlist))
-            ts_oneperiod_pd = ts_pd[ts_pd.index.to_period(period)==period_dt]
+            ts_oneperiod_pd = ts_pd[ts_periods_dt_all==period_dt]
             try:
                 COMP_one = analysis_singleperiod(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iP] = COMP_one.loc[:,'A']
