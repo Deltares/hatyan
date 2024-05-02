@@ -646,7 +646,7 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosi
     if 'analysis_time' not in ncdimlist:
         data_nc.createDimension('analysis_time',1)
     
-    refdate_tz = dt.datetime(1900,1,1,tzinfo=dt.timezone(dt.timedelta(hours=tzone_hr)))
+    refdate_tz = dt.datetime(1900,1,1,tzinfo=ts.index.tz)
     dict_statattr = {'cf_role': 'timeseries_id'}
     dict_anatimattr = {'units': 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z')), 'standard_name':'forecast_reference_time', 'long_name':'forecast_reference_time'}
     dict_timattr = {'units': 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z'))}

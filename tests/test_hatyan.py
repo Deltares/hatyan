@@ -42,8 +42,8 @@ def test_writenetcdf():
     
     assert list(data_nc.dimensions.keys()) == ['stations', 'statname_len', 'time', 'analysis_time', 'time_HW', 'time_LW']
     assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 'time_HW', 'waterlevel_astro_HW', 'time_LW', 'waterlevel_astro_LW']
-    assert timevar_dt[0] == ts_prediction.index[0]
-    assert timevar_dt[-1] == ts_prediction.index[-1]
+    assert timevar_dt[0] == ts_prediction.index[0].tz_convert(None)
+    assert timevar_dt[-1] == ts_prediction.index[-1].tz_convert(None)
     assert 'title' in data_nc.__dict__.keys()
     assert 'institution' in data_nc.__dict__.keys()
     assert 'source' in data_nc.__dict__.keys()
@@ -78,8 +78,8 @@ def test_writenetcdf_nosidx():
     assert list(data_nc.dimensions.keys()) == ['stations', 'statname_len', 'time', 'analysis_time', 'HWLWno']
     assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 
                                               'HWLWno', 'times_astro_HW', 'waterlevel_astro_HW', 'times_astro_LW', 'waterlevel_astro_LW']
-    assert timevar_dt[0] == ts_prediction.index[0]
-    assert timevar_dt[-1] == ts_prediction.index[-1]
+    assert timevar_dt[0] == ts_prediction.index[0].tz_convert(None)
+    assert timevar_dt[-1] == ts_prediction.index[-1].tz_convert(None)
     assert 'title' in data_nc.__dict__.keys()
     assert 'institution' in data_nc.__dict__.keys()
     assert 'source' in data_nc.__dict__.keys()
