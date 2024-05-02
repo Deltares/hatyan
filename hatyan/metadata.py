@@ -6,7 +6,6 @@ Created on Wed Aug  9 20:48:46 2023
 """
 
 import numpy as np
-import pytz
 
 
 def metadata_add_to_obj(obj,metadata):

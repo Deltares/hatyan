@@ -34,10 +34,11 @@ def test_readts_dia_metadata_multifile():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     'tzone': pytz.FixedOffset(60),
+     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file'}
     
     assert meta_fromts == meta_expected
+    assert ts_measurements_group0.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest
@@ -67,7 +68,7 @@ def test_anapred_metadata():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     'tzone': pytz.FixedOffset(60),
+     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,
@@ -79,6 +80,8 @@ def test_anapred_metadata():
     
     assert meta_fromts_xfac0 == meta_expected_xfac0
     assert meta_fromts_xfac1 == meta_expected_xfac1
+    assert pred_xfac0.index.tz == pytz.FixedOffset(60)
+    assert pred_xfac1.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest
@@ -108,7 +111,7 @@ def test_hwlw_metadata():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     'tzone': pytz.FixedOffset(60),
+     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file'}
     
     pred_ext_meta_expected = {'station': 'VLISSGN',
@@ -121,7 +124,7 @@ def test_hwlw_metadata():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     'tzone': pytz.FixedOffset(60),
+     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,
@@ -130,6 +133,10 @@ def test_hwlw_metadata():
     
     assert pred_ext_meta == pred_ext_meta_expected
     assert meas_ext_meta == meas_ext_meta_expected
+    assert ts_measurements_group0.index.tz == pytz.FixedOffset(60)
+    assert meas_ext.index.tz == pytz.FixedOffset(60)
+    assert pred.index.tz == pytz.FixedOffset(60)
+    assert pred_ext.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest
@@ -148,10 +155,11 @@ def test_readts_dia_metadata_multiblock():
      'timestep_unit': None,
      'TYP': 'TN',
      'groepering': 'GETETM2',
-     'tzone': pytz.FixedOffset(60),
+     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file'}
     
     assert meta_fromts == meta_expected
+    assert ts_measurements_group0.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest
