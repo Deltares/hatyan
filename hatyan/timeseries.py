@@ -298,7 +298,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
     """
         
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]']
-    firstHWcadz_fixed = dt.datetime(2000, 1, 1, 9, 45)
+    firstHWcadz_fixed = pd.Timestamp("2000-01-01 09:45:00 +01:00") #dt.datetime(2000, 1, 1, 9, 45)
     searchwindow_hr = M2_period_hr/2
     
     if len(ts_ext) == 0:
@@ -816,7 +816,7 @@ def write_tsdia_ts(ts, filename, headerformat='dia'):
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
-    tzone = metadata['tzone']
+    tzone = ts.index.tz
     if tzone != pytz.FixedOffset(60):
         raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
@@ -902,7 +902,7 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
-    tzone = metadata['tzone']
+    tzone = ts_ext.index.tz
     if tzone != pytz.FixedOffset(60):
         raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
@@ -1453,6 +1453,7 @@ def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
     
     data_pd = data_pd_HWLW
     data_pd = data_pd.set_index('times')
+    data_pd.index = data_pd.index.tz_localize(pytz.FixedOffset(60))
     
     # add metadata
     metadata = metadata_from_diablocks(diablocks_pd, block_id)
@@ -1467,10 +1468,11 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     datestop = diablocks_pd.loc[block_id,'tstop']
     timestep_min = diablocks_pd.loc[block_id,'timestep_min']
     timestep_unit = diablocks_pd.loc[block_id,'timestep_unit']
+    tzone = pytz.FixedOffset(60)
     if timestep_unit=='min':
-        times_fromfile = pd.date_range(start=datestart,end=datestop,freq='%dmin'%(timestep_min))
+        times_fromfile = pd.date_range(start=datestart,end=datestop,freq='%dmin'%(timestep_min), tz=tzone)
     else:
-        times_fromfile = pd.date_range(start=datestart,end=datestop,freq=f'{timestep_min*10000000} ns')
+        times_fromfile = pd.date_range(start=datestart,end=datestop,freq=f'{timestep_min*10000000} ns', tz=tzone)
     
     # get data for station
     data_nrows = diablocks_pd.loc[block_id,'data_ends'] - diablocks_pd.loc[block_id,'data_starts']

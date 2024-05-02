@@ -175,7 +175,8 @@ def test_readts_dia_equidistant_multifile_hasfreq():
     assert len(ts_pd) == 35064
     
     # check index dtype
-    assert ts_pd.index.dtype == '<M8[ns]'
+    # assert ts_pd.index.dtype == '<M8[ns]'
+    assert ts_pd.index.dtype == "datetime64[ns, pytz.FixedOffset(60)]"
     
     # checks for freq attribute
     assert hasattr(ts_pd.index,'freq')
@@ -197,7 +198,8 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
     assert len(ts_pd) == 35064
 
     # check index dtype
-    assert ts_pd.index.dtype == '<M8[ns]'
+    # assert ts_pd.index.dtype == '<M8[ns]'
+    assert ts_pd.index.dtype == "datetime64[ns, pytz.FixedOffset(60)]"
     
     # checks for freq attribute
     assert hasattr(ts_pd.index,'freq')
@@ -248,7 +250,7 @@ def test_readwrite_diawia():
 def test_crop_timeseries():
     
     current_station = 'VLISSGN'
-    times_ext = slice(dt.datetime(2019,1,1),dt.datetime(2019,6,1))
+    times_ext = slice("2019-01-01 00:00:00 +00:00", "2019-06-01 00:00:00 +00:00")
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
     ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
@@ -279,7 +281,7 @@ def test_resample_timeseries():
     
     assert len(ts_prediction_res) == 4380
     assert ts_prediction_res.index[0] == pd.Timestamp(ts_prediction.index[0])
-    assert ts_prediction_res.index[-1] == pd.Timestamp("2019-12-31 22:00")
+    assert ts_prediction_res.index[-1] == pd.Timestamp("2019-12-31 22:00 +01:00")
     
     pred_meta = metadata_from_obj(ts_prediction)
     pred_meta.pop('timestep_min')
