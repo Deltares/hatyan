@@ -132,6 +132,9 @@ def write_components(comp, filename):
     metadata = metadata_from_obj(comp)
     waarnemingssoort = wns_from_metadata(metadata)
     
+    xfac = metadata["xfac"]
+    if not isinstance(xfac, bool):
+        raise TypeError(f'write_components() expects xfac of type boolean, but {type(xfac)} ({xfac}) was provided.')
     nodalfactors = metadata.pop('nodalfactors')
     if nodalfactors is not True:
         raise ValueError(f'write_components() expects nodalfactors=True, but {nodalfactors} was provided.')
