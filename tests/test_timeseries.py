@@ -23,6 +23,11 @@ def test_get_diaxycoords():
     stat_x, stat_y = hatyan.get_diaxycoords(filename=file_pred, crs=28992)
     assert np.isclose(stat_x, 30480.0)
     assert np.isclose(stat_y, 385220.0)
+    
+    file_pred = os.path.join(dir_testdata,"hoek_har.dia")
+    stat_x, stat_y = hatyan.get_diaxycoords(filename=file_pred, crs=28992)
+    assert np.allclose(stat_x, [67930., 67930., 67930., 49862.])
+    assert np.allclose(stat_y, [444000., 444000., 444000., 431612.])
 
 
 @pytest.mark.unittest

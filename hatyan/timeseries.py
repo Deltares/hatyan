@@ -1272,9 +1272,19 @@ class Timeseries_Statistics:
 
 def get_diaxycoords(filename, crs):
     diablocks_pd_extra = get_diablocks(filename=filename)
-    dia_x = diablocks_pd_extra.loc[0,'x']
-    dia_y = diablocks_pd_extra.loc[0,'y']
-    dia_epsg = int(diablocks_pd_extra.loc[0,'epsg'])
+    dia_x = diablocks_pd_extra['x'].values
+    dia_y = diablocks_pd_extra['y'].values
+    dia_epsg = diablocks_pd_extra['epsg'].astype(int).values
+    
+    # check if all epsg codes are the same
+    if not (dia_epsg==dia_epsg[0]).all():
+        raise ValueError(f"The diafile contains multiple EPSG codes, not supported yet: {dia_epsg}")
+    dia_epsg = dia_epsg[0]
+    
+    if len(dia_x)==1:
+        # to avoid DeprecationWarning: Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future.
+        dia_x = dia_x[0]
+        dia_y = dia_y[0]
     
     transformer = Transformer.from_crs(f'epsg:{dia_epsg}', f'epsg:{crs}', always_xy=True)
     stat_x, stat_y = transformer.transform(dia_x, dia_y)
