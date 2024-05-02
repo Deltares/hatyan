@@ -594,7 +594,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         return fig, axs
 
 
-def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, tzone_hr=1, nosidx=False, mode='w'):
+def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, nosidx=False, mode='w'):
     """
     Writes the timeseries to a netCDF file
 

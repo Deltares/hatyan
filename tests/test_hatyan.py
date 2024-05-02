@@ -29,7 +29,7 @@ def test_writenetcdf():
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     
     file_nc = 'prediction_10m_%s.nc'%(current_station)
-    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, tzone_hr=1)
+    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc)
     
     data_nc = Dataset(file_nc,'r')
     
@@ -64,7 +64,7 @@ def test_writenetcdf_nosidx():
     ts_ext_prediction = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction)
     
     file_nc = 'prediction_10m_%s.nc'%(current_station)
-    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, tzone_hr=1, nosidx=True)
+    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, nosidx=True)
     
     data_nc = Dataset(file_nc,'r')
     
