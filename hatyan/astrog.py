@@ -872,7 +872,7 @@ def get_leapsecondslist_fromurlorfile():
     expirydate = refdate + pd.Timedelta(seconds=int(expirydate_line.iloc[0].split()[1]))
     
     #get leapsecond list from file
-    resp_pd = pd.read_csv(file_leap_seconds_list,comment='#',names=['seconds_since_19000101','leap_seconds'],delim_whitespace=True)
+    resp_pd = pd.read_csv(file_leap_seconds_list, comment='#', names=['seconds_since_19000101','leap_seconds'], sep="\\s+")
     resp_pd['datetime'] = refdate + pd.to_timedelta(resp_pd['seconds_since_19000101'],unit='s')
     resp_pd['datetime_str'] = resp_pd['datetime'].dt.strftime('%Y-%m-%d')
     leap_seconds_pd = resp_pd.set_index('datetime_str')
