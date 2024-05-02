@@ -217,12 +217,12 @@ def test_predictionsettings():
     # ts_prediction_nfac1_fualltimes1_xfac1
     COMP_merged.attrs["fu_alltimes"] = True
     _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
-    # ts_prediction_nfac1_fualltimes1_xfac0
-    COMP_merged.attrs["xfac"] = False
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
     # ts_prediction_nfac1_fualltimes1_xfaccustom
     COMP_merged.attrs["xfac"] = {"M2":0.8}
     _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac={"M2":0.8}, times=times_pred)
+    # ts_prediction_nfac1_fualltimes1_xfac0
+    COMP_merged.attrs["xfac"] = False
+    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
     # ts_prediction_nfac1_fualltimes0_xfac0
     COMP_merged.attrs["fu_alltimes"] = False
     _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times=times_pred)
