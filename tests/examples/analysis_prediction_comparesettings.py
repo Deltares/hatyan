@@ -40,7 +40,7 @@ for current_station in selected_stations:
             for source in ['schureman','foreman']:
                 COMP_merged = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, analysis_perperiod='Y', fu_alltimes=fu_alltimes, xfac=xfac, source=source)
                 #print(COMP_merged)
-                ts_prediction = hatyan.prediction(comp=COMP_merged, fu_alltimes=fu_alltimes, xfac=xfac, times=ts_measurements_group0_lastyear.index, source=source)
+                ts_prediction = hatyan.prediction(comp=COMP_merged, times=ts_measurements_group0_lastyear.index)
                 overlapdiff = ts_prediction['values']-ts_measurements_group0_lastyear['values']
                 rmse = np.sqrt(np.nanmean(overlapdiff ** 2))
                 #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_measurements_group0)

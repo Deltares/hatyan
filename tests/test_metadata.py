@@ -41,6 +41,20 @@ def test_readts_dia_metadata_multifile():
 
 
 @pytest.mark.unittest
+def test_metadata_compare_valueerror():
+    file_data_comp = os.path.join(dir_testdata,'VLISSGN_ana.txt')
+    comp_fromfile = hatyan.read_components(filename=file_data_comp)
+    comp_fromfile_fake = comp_fromfile.copy()
+    comp_fromfile_fake.attrs["nodalfactors"] = False
+    
+    meta1 = metadata_from_obj(comp_fromfile)
+    meta2 = metadata_from_obj(comp_fromfile_fake)
+    with pytest.raises(ValueError) as e:
+        metadata_compare([meta1,meta2])
+    assert "equal" in str(e.value)
+
+
+@pytest.mark.unittest
 def test_anapred_metadata():
     
     current_station = 'VLISSGN'
@@ -49,10 +63,10 @@ def test_anapred_metadata():
     
     comp = hatyan.analysis(ts_measurements_group0,const_list='month')
     
-    pred_xfac0 = hatyan.prediction(comp, xfac=False)
+    pred_xfac0 = hatyan.prediction(comp, times=ts_measurements_group0.index)
     # we also test if metadata is correctly passed if e.g. xfac is not in line with xfac in components file
     comp.attrs["xfac"] = True
-    pred_xfac1 = hatyan.prediction(comp, xfac=True)
+    pred_xfac1 = hatyan.prediction(comp, times=ts_measurements_group0.index)
     
     meta_fromts_xfac0 = metadata_from_obj(pred_xfac0)
     meta_fromts_xfac1 = metadata_from_obj(pred_xfac1)
@@ -76,8 +90,10 @@ def test_anapred_metadata():
     meta_expected_xfac1 = meta_expected_xfac0.copy()
     meta_expected_xfac1["xfac"] = True
     
-    assert meta_fromts_xfac0 == meta_expected_xfac0
-    assert meta_fromts_xfac1 == meta_expected_xfac1
+    # compare metadata (raises ValueError if not equal)
+    metadata_compare([meta_fromts_xfac0, meta_expected_xfac0])
+    metadata_compare([meta_fromts_xfac1, meta_expected_xfac1])
+
     assert pred_xfac0.index.tz == pytz.FixedOffset(60)
     assert pred_xfac1.index.tz == pytz.FixedOffset(60)
 
@@ -89,7 +105,7 @@ def test_hwlw_metadata():
     file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
     comp = hatyan.analysis(ts_measurements_group0,const_list='month')
-    pred = hatyan.prediction(comp)
+    pred = hatyan.prediction(comp, times=ts_measurements_group0.index)
     
     meas_ext = hatyan.calc_HWLW(ts_measurements_group0)
     meas_ext = hatyan.calc_HWLWnumbering(meas_ext)
@@ -127,8 +143,10 @@ def test_hwlw_metadata():
      'fu_alltimes': True,
      'source': 'schureman'}
     
-    assert pred_ext_meta == pred_ext_meta_expected
-    assert meas_ext_meta == meas_ext_meta_expected
+    # compare metadata (raises ValueError if not equal)
+    metadata_compare([pred_ext_meta, pred_ext_meta_expected])
+    metadata_compare([meas_ext_meta, meas_ext_meta_expected])
+    
     assert ts_measurements_group0.index.tz == pytz.FixedOffset(60)
     assert meas_ext.index.tz == pytz.FixedOffset(60)
     assert pred.index.tz == pytz.FixedOffset(60)

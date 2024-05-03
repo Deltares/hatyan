@@ -32,7 +32,7 @@ def check_requestedconsts(const_list_tuple,source):
         raise Exception(f'ERROR: not all requested components available in schureman harmonics or shallowrelations:\n{pd.Series(const_list_tuple).loc[~bool_constavailable]}')
 
 
-def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start):
+def get_freqv0_generic(const_list, dood_date_mid, dood_date_start, source):
 
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
@@ -40,10 +40,10 @@ def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_sta
     #retrieve frequency and v0
     logger.debug(f'freq is calculated at mid of period: {dood_date_mid[0]}')
     logger.debug(f'v0 is calculated for start of period: {dood_date_start[0]}')
-    if hatyan_settings.source=='schureman':
+    if source=='schureman':
         t_const_freq_pd = get_schureman_freqs(const_list, dood_date=dood_date_mid)
         v_0i_rad = get_schureman_v0(const_list, dood_date_start).T #at start of timeseries
-    elif hatyan_settings.source=='foreman': #TODO: this is probably quite slow since foreman is not cached
+    elif source=='foreman': #TODO: this is probably quite slow since foreman is not cached
         dummy, t_const_freq_pd = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_mid) #TODO: does this really matter, maybe just retrieve on dood_date_start? Otherwise maybe split definition?
         v_0i_rad, dummy = get_foreman_v0_freq(const_list=const_list, dood_date=dood_date_start)
         v_0i_rad = v_0i_rad.T
@@ -51,18 +51,18 @@ def get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_sta
     return t_const_freq_pd, v_0i_rad
 
 
-def get_uf_generic(hatyan_settings, const_list, dood_date_fu):
+def get_uf_generic(const_list, dood_date_fu, nodalfactors, xfac, source):
 
     #get f and u
-    if hatyan_settings.nodalfactors:
+    if nodalfactors:
         if len(dood_date_fu)==1: #dood_date_mid
             logger.info('nodal factors (f and u) are calculated for center of period: %s'%(dood_date_fu[0]))
         else: #times_pred_all_pdDTI
             logger.info('nodal factors (f and u) are calculated for all timesteps')
-        if hatyan_settings.source=='schureman':
-            f_i = get_schureman_f(xfac=hatyan_settings.xfac, const_list=const_list, dood_date=dood_date_fu).T
+        if source=='schureman':
+            f_i = get_schureman_f(xfac=xfac, const_list=const_list, dood_date=dood_date_fu).T
             u_i_rad = get_schureman_u(const_list=const_list, dood_date=dood_date_fu).T
-        elif hatyan_settings.source=='foreman': #TODO: this is probably quite slow since foreman is not cached
+        elif source=='foreman': #TODO: this is probably quite slow since foreman is not cached
             f_i, u_i_rad = get_foreman_nodalfactors(const_list=const_list, dood_date=dood_date_fu)
             f_i, u_i_rad = f_i.T, u_i_rad.T
     else:

@@ -71,7 +71,7 @@ for current_station in selected_stations:
         
         #prediction and validation
         times_pred = slice(dt.datetime(2008,1,1),dt.datetime(2010,1,1), 10)
-        ts_prediction = hatyan.prediction(comp=comp_frommeasurements, nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction = hatyan.prediction(comp=comp_frommeasurements, times=times_pred)
         fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_measurements)
         ax1.set_ylim(-2.5,2.5)
         ax2.set_ylim(-0.5,0.5)

@@ -39,15 +39,15 @@ file_ncout_nosidx = '%s_getijnummers_nosidx.nc'%(station_name)
 
 if analyse_ts_bool:
     # results in weird difference line in timeseries plot
-    COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year', xfac=True)
-    ts_prediction_fromcomp = hatyan.prediction(comp=COMP_merged, times=ts_prediction.index, xfac=True)#, fu_alltimes=False)
+    COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year', xfac=True, fu_alltimes=False)
+    ts_prediction_fromcomp = hatyan.prediction(comp=COMP_merged, times=ts_prediction.index)
     
 else:
     COMP_merged = hatyan.read_components(filename=file_comp)
     times_pred_2019 = slice(dt.datetime(2019,1,1),dt.datetime(2019,12,31,23,50), 10)
     times_pred_2020 = slice(dt.datetime(2020,1,1),dt.datetime(2020,12,31,23,50), 10)
-    ts_prediction_fromcomp_2019 = hatyan.prediction(comp=COMP_merged, times=times_pred_2019, xfac=True, fu_alltimes=False)
-    ts_prediction_fromcomp_2020 = hatyan.prediction(comp=COMP_merged, times=times_pred_2020, xfac=True, fu_alltimes=False)
+    ts_prediction_fromcomp_2019 = hatyan.prediction(comp=COMP_merged, times=times_pred_2019)
+    ts_prediction_fromcomp_2020 = hatyan.prediction(comp=COMP_merged, times=times_pred_2020)
     ts_prediction_fromcomp = pd.concat([ts_prediction_fromcomp_2019,ts_prediction_fromcomp_2020],axis=0)
     # convert from MET to UTC
     ts_prediction_fromcomp.index = ts_prediction_fromcomp.index.tz_convert(None)

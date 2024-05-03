@@ -32,8 +32,8 @@ for yr, ax in zip([2020,2021],[ax1,ax2]):
     COMP_merged_HANSWT = hatyan.read_components(filename=file_data_comp_HANSWT)
     COMP_merged_TERNZN = hatyan.read_components(filename=file_data_comp_TERNZN)
     
-    ts_prediction_HANSWT = hatyan.prediction(comp=COMP_merged_HANSWT, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
-    ts_prediction_TERNZN = hatyan.prediction(comp=COMP_merged_TERNZN, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+    ts_prediction_HANSWT = hatyan.prediction(comp=COMP_merged_HANSWT, times=times_pred)
+    ts_prediction_TERNZN = hatyan.prediction(comp=COMP_merged_TERNZN, times=times_pred)
     
     ts_prediction_diff = ts_prediction_TERNZN-ts_prediction_HANSWT # TODO: metadata is dropped
     ts_prediction_diff['values'] = ts_prediction_diff['values'].round(2) #round to cm

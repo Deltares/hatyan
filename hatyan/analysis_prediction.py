@@ -307,9 +307,9 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     times_from0_s = times_from0_s[:,np.newaxis]
     
     #get frequency and v0
-    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(const_list, dood_date_mid, dood_date_start, hatyan_settings.source)
     omega_i_rads = t_const_freq_pd[['freq']].values.T*(2*np.pi)/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
+    u_i_rad, f_i = get_uf_generic(const_list, dood_date_fu, hatyan_settings.nodalfactors, hatyan_settings.xfac, hatyan_settings.source)
     v_u = v_0i_rad.values + u_i_rad.values
     
     #check rayleigh frequency after nyquist frequency folding process.
@@ -378,8 +378,8 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     const_list_inclCS = sort_const_list(const_list=const_list_inclCS_raw)
 
     #retrieve freq and speed
-    _, CS_v_0i_rad = get_freqv0_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    CS_u_i_rad, CS_f_i = get_uf_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_fu=dood_date_mid)
+    _, CS_v_0i_rad = get_freqv0_generic(const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid, source=hatyan_settings.source) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
+    CS_u_i_rad, CS_f_i = get_uf_generic(const_list=const_list_inclCS, dood_date_fu=dood_date_mid, nodalfactors=hatyan_settings.nodalfactors, xfac=hatyan_settings.xfac, source=hatyan_settings.source)
     
     comp_inclCS = pd.DataFrame(comp,index=const_list_inclCS,columns=comp.columns)
     #comp_inclCS_preCS = comp_inclCS.copy()
@@ -417,68 +417,15 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     return comp_inclCS
 
 
-def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_settings:HatyanSettings = None, **kwargs) -> pd.DataFrame:
-    """
-    generates a tidal prediction from a set of components A and phi values.
-    The component set has the same timezone as the timeseries used to create it, therefore the resulting prediction will also be in that original timezone.
-
-    Parameters
-    ----------
-    comp : pd.DataFrame
-        The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
-    times : (pd.DatetimeIndex,slice), optional
-        pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
-        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
-    hatyan_settings : HatyanSettings, optional
-        DESCRIPTION. The default is None.
-    kwargs : TYPE
-        DESCRIPTION.
-
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
-    KeyError
-        DESCRIPTION.
-
-    Returns
-    -------
-    ts_prediction_pd : TYPE
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the prediction times and values.
-
-    """
-    
-    if "times_pred_all" in kwargs:
-        raise DeprecationWarning("Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead")
-    if "timestep_min" in kwargs or "times_ext" in kwargs:
-        raise DeprecationWarning("Arguments 'times_ext' and 'timestep_min' for prediction() are deprecated, "
-                                 "pass times=slice(start,stop,step) instead")
-    
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception("both arguments hatyan_settings and other settings "
-                        "(e.g. nodalfactors) are provided, this is not valid")
-    
-    logger.info('PREDICTION initializing\n{hatyan_settings}')
+def prediction_singleperiod(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice), hatyan_settings) -> pd.DataFrame:
     
     metadata_comp = metadata_from_obj(comp)
     tzone_comp = metadata_comp.pop("tzone")
     
-    if times is None:
-        metadata = metadata_from_obj(comp)
-        if not set(['tstart','tstop','timestep_min']).issubset(metadata.keys()):
-            raise KeyError('arguments times is not provided to prediction(). Also components metadata does not contain tstart, tstop and timestep_min')
-        times = slice(metadata['tstart'], metadata['tstop'], metadata['timestep_min'])
-    
-    if isinstance(times, pd.DatetimeIndex):
-        times_pred_all_pdDTI = times
-    elif isinstance(times,slice):
-        tstart, tstop, tstep = get_tstart_tstop_tstep(times)
-        times_pred_all_pdDTI = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
-    else:
+    if not isinstance(times, pd.DatetimeIndex):
         raise TypeError(f'times argument can be of type, pd.DatetimeIndex or slice, not {type(times)}')
-    
+    times_pred_all_pdDTI = times
+        
     if len(times_pred_all_pdDTI) <= 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
     
@@ -507,14 +454,14 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     A = np.array(COMP['A'])
     phi_rad = np.array(np.deg2rad(COMP['phi_deg']))
 
-    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(const_list, dood_date_mid, dood_date_start, hatyan_settings.source)
     t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
 
     if hatyan_settings.fu_alltimes:
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
+    u_i_rad, f_i = get_uf_generic(const_list, dood_date_fu, hatyan_settings.nodalfactors, hatyan_settings.xfac, hatyan_settings.source)
 
     logger.info('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
@@ -534,71 +481,110 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
     logger.info('PREDICTION finished')
     
-    # add metadata (first assert if metadata from comp is same as hatyan_settings
+    # add timezone to timeseries again
+    ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
+    
+    return ts_prediction_pd
+
+
+def prediction(comp, timestep_min=None, times=None, **kwargs):
+    """
+    generates a tidal prediction from a set of components A and phi values.
+    The component set has the same timezone as the timeseries used to create it, 
+    therefore the resulting prediction will also be in that original timezone.
+    If a components dataframe contains multiple column levels (multiple periods),
+    The prediction is a concatenation of predictions of all periods (based on the respective A/phi values).
+
+    Parameters
+    ----------
+    comp : pd.DataFrame
+        The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
+    timestep_min : TYPE
+        DESCRIPTION.
+    times : (pd.DatetimeIndex,slice), optional
+        pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
+        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
+    hatyan_settings : hatyan.HatyanSettings()
+        Contains the used settings
+    kwargs : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    ts_prediction : TYPE
+        The DataFrame contains a 'values' column and a pd.DatetimeIndex as index, it contains the prediction times and values.
+
+    """
+    
+    if "times_pred_all" in kwargs:
+        raise DeprecationWarning("Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead")
+    if "times_ext" in kwargs:
+        raise DeprecationWarning("Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead")
+    if len(kwargs)>0:
+        raise DeprecationWarning(f"prediction settings are now read from the attrs of the component dataframe, received additional arguments: {kwargs}")
+    
+    # get settings from component attribute and validate their values
+    settings_kwargs = {}
+    for setting in ['nodalfactors', 'xfac', 'fu_alltimes', 'source']:
+        settings_kwargs[setting] = comp.attrs[setting]
+    hatyan_settings = HatyanSettings(**settings_kwargs)
+    
+    logger.info('PREDICTION initializing\n{hatyan_settings}')
+    
+    if hasattr(comp.columns,"levels"):
+        prediction_perperiod = True
+    else:
+        prediction_perperiod = False
+    logger.info(f'prediction_perperiod={prediction_perperiod}')
+    
+    if prediction_perperiod:
+        if timestep_min is None:
+            raise TypeError("prediction() has prediction_perperiod=True, so 'timestep_min' argument is required")
+        if times is not None:
+            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument not allowed")
+        # convert timestep_min to tstep of proper type (tstart/tstop are dummies here)
+        times_slice = slice("1900-01-01", "1900-01-01", timestep_min)
+        _, _, tstep = get_tstart_tstop_tstep(times_slice)
+        
+        ts_periods_dt = comp.columns.levels[1]
+        ts_periods_strlist = [str(x) for x in ts_periods_dt]
+                
+        ts_prediction_perperiod_list = []
+        for period_dt in ts_periods_dt:
+            logger.info(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
+            comp_oneyear = comp.loc[:,(slice(None),period_dt)]
+            comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
+            if period_dt.freqstr in ['A-DEC']: #year frequency
+                tstart = dt.datetime(period_dt.year,1,1)
+                tstop = dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)
+            elif period_dt.freqstr in ['M']: #month frequency
+                tstart = period_dt.to_timestamp().to_pydatetime()
+                tstop = period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)
+            else:
+                raise Exception(f'unknown freqstr: {period_dt.freqstr}')
+            # generate date range and do prediction
+            times_pred = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
+            ts_prediction_oneperiod = prediction_singleperiod(comp=comp_oneyear, times=times_pred, hatyan_settings=hatyan_settings)
+            ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
+        ts_prediction = pd.concat(ts_prediction_perperiod_list)
+    else:
+        if timestep_min is not None:
+            raise TypeError("prediction() has prediction_perperiod=False, so 'timestep_min' argument not allowed")
+        if times is None:
+            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument is required")
+        if isinstance(times,slice):
+            tstart, tstop, tstep = get_tstart_tstop_tstep(times)
+            times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
+        ts_prediction = prediction_singleperiod(comp=comp, times=times, hatyan_settings=hatyan_settings)
+    
+    # add metadata (and update grootheid)
+    metadata_comp = metadata_from_obj(comp)
     if 'grootheid' in metadata_comp:
         # update metadata
         if metadata_comp['grootheid'] == 'WATHTE':
             metadata_comp['grootheid'] = 'WATHTBRKD'
-    
-    # add timezone to timeseries again
-    ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
-    
-    assert metadata_comp['nodalfactors'] == hatyan_settings.nodalfactors
-    assert metadata_comp['xfac'] == hatyan_settings.xfac
-    assert metadata_comp['fu_alltimes'] == hatyan_settings.fu_alltimes
-    assert metadata_comp['source'] == hatyan_settings.source
-    ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata_comp)
-    return ts_prediction_pd
+    if 'tzone' in metadata_comp.keys():
+        metadata_comp.pop('tzone')
+    ts_prediction = metadata_add_to_obj(ts_prediction, metadata_comp)
 
-
-def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **kwargs):
-    """
-    Wrapper around prediction(), to use component set of multiple years/months to generate multi-year/month timeseries.
-
-    Parameters
-    ----------
-    comp_allperiods : TYPE
-        DESCRIPTION.
-    timestep_min : TYPE
-        DESCRIPTION.
-    hatyan_settings : hatyan.HatyanSettings()
-        Contains the used settings
-        
-    Returns
-    -------
-    ts_prediction_perperiod : pd.DataFrame
-        DESCRIPTION.
-
-    """
-    
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
-
-    ts_periods_dt = comp_allperiods.columns.levels[1]
-    ts_periods_strlist = [str(x) for x in ts_periods_dt]
-    
-    ts_prediction_perperiod_list = []
-    for period_dt in ts_periods_dt:
-        logger.info(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
-        comp_oneyear = comp_allperiods.loc[:,(slice(None),period_dt)]
-        comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
-        if period_dt.freqstr in ['A-DEC']: #year frequency
-            tstart = dt.datetime(period_dt.year,1,1)
-            tstop = dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)
-        elif period_dt.freqstr in ['M']: #month frequency
-            tstart = period_dt.to_timestamp().to_pydatetime()
-            tstop = period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)
-        else:
-            raise Exception(f'unknown freqstr: {period_dt.freqstr}')
-        times_pred = slice(tstart, tstop, timestep_min)
-        ts_prediction_oneperiod = prediction(comp=comp_oneyear, times=times_pred, hatyan_settings=hatyan_settings)
-        ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
-    ts_prediction_perperiod = pd.concat(ts_prediction_perperiod_list)
-    
-    #add metadata
-    metadata = metadata_from_obj(comp_allperiods)
-    ts_prediction_perperiod = metadata_add_to_obj(ts_prediction_perperiod, metadata)
-
-    return ts_prediction_perperiod
+    return ts_prediction

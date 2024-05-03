@@ -104,7 +104,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         COMP_merged = hatyan.read_components(filename=file_data_comp0)
         
         #prediction and validation
-        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=False, times=times_pred)
+        ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
 
         #ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
         #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
@@ -118,8 +118,8 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
                 xfac_cadzd=True
             COMP_merged_CADZD = hatyan.read_components(filename=file_data_comp0.replace(current_station,'CADZD'))
             COMP_merged_CADZD_M2 = COMP_merged_CADZD.loc[['A0','M2']]
-            ts_prediction_CADZD = hatyan.prediction(comp=COMP_merged_CADZD, nodalfactors=True, xfac=xfac_cadzd, fu_alltimes=False, times=times_pred)
-            ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, nodalfactors=True, xfac=xfac_cadzd, fu_alltimes=False, times=times_pred)
+            ts_prediction_CADZD = hatyan.prediction(comp=COMP_merged_CADZD, times=times_pred)
+            ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, times=times_pred)
             ax1.plot(ts_prediction_CADZD_M2.index, ts_prediction_CADZD_M2['values'], label='CADZD_M2', color='k')
             ts_ext_prediction_CADZD = hatyan.calc_HWLW(ts=ts_prediction_CADZD)
             ts_ext_prediction_CADZD_newyr = ts_ext_prediction_CADZD.loc[str(yr):]
@@ -167,7 +167,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             #calculate tidal wave number
             times_pred_HWLWno = slice(dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12), 1)
             #COMP_merged_temp.loc['M2','A']=0.05
-            ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=False, times=times_pred_HWLWno)
+            ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged, times=times_pred_HWLWno)
             ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
             #fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_HWLWno_pre)
             #breakit

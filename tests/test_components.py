@@ -132,4 +132,35 @@ def test_components_timeshift():
     comp_shift_tz_min = comp_shift_meta['tzone']._minutes
     
     assert comp_merged_tz_min + timeshift_hr*60 == comp_shift_tz_min
+
+
+@pytest.mark.unittest
+def test_merge_componentgroups_comparesettings():
+    file_data_comp = os.path.join(dir_testdata,'VLISSGN_ana.txt')
+    comp_fromfile = hatyan.read_components(filename=file_data_comp)
     
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["nodalfactors"] = False
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["xfac"] = False
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["fu_alltimes"] = True
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["source"] = 'foreman'
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
+    # also check if we can merge component dataframes with different settings in case meta_allow_different is provided
+    comp_fromfile_fake = comp_fromfile.copy()
+    comp_fromfile_fake.attrs["xfac"] = False
+    _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'],
+                                     meta_allow_different=["xfac"])

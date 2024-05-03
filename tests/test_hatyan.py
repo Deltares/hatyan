@@ -213,48 +213,58 @@ def test_predictionsettings():
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    # ts_prediction_nfac1_fualltimes0_xfac1
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times=times_pred)
-    # ts_prediction_nfac1_fualltimes1_xfac1
-    COMP_merged.attrs["fu_alltimes"] = True
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
-    # ts_prediction_nfac1_fualltimes1_xfaccustom
-    COMP_merged.attrs["xfac"] = {"M2":0.8}
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac={"M2":0.8}, times=times_pred)
-    # ts_prediction_nfac1_fualltimes1_xfac0
-    COMP_merged.attrs["xfac"] = False
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
-    # ts_prediction_nfac1_fualltimes0_xfac0
+    COMP_merged.attrs["nodalfactors"] = True
     COMP_merged.attrs["fu_alltimes"] = False
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times=times_pred)
-    # ts_prediction_nfac0_fualltimes0_xfac0
-    COMP_merged.attrs["nodalfactors"] = False
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times=times_pred)
-
-
-@pytest.mark.unittest
-def test_predictionsettings_wrongsettings():
-    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), 1)
-    current_station = 'DENHDR'
+    COMP_merged.attrs["xfac"] = True
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55761625, -0.55022362, -0.54263955, -0.53486334, -0.52689445,
+       -0.51873254, -0.51037744, -0.50182919, -0.49308803, -0.48415438])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
     
-    file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    with pytest.raises(AssertionError):
-        # incorrect fu_alltimes
-        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
-    with pytest.raises(AssertionError):
-        # incorrect xfac
-        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
-    with pytest.raises(AssertionError):
-        # incorrect nodalfactors
-        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times=times_pred)
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = True
+    COMP_merged.attrs["xfac"] = True
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55758197, -0.55018925, -0.54260512, -0.53482887, -0.52685996,
+           -0.51869805, -0.51034297, -0.50179476, -0.49305366, -0.4841201 ])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = True
+    COMP_merged.attrs["xfac"] = {"M2":0.8}
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55220418, -0.54482864, -0.53726402, -0.52950961, -0.52156487,
+           -0.51342947, -0.50510324, -0.49658621, -0.48787861, -0.47898087])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = True
+    COMP_merged.attrs["xfac"] = False
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55115935, -0.54379567, -0.53624298, -0.52850057, -0.52056791,
+           -0.51244465, -0.50413063, -0.49562589, -0.48693065, -0.47804533])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = False
+    COMP_merged.attrs["xfac"] = False
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55120816, -0.54384448, -0.53629177, -0.52854932, -0.52061659,
+           -0.51249324, -0.5041791 , -0.49567421, -0.4869788 , -0.47809328])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = False
+    COMP_merged.attrs["fu_alltimes"] = False
+    COMP_merged.attrs["xfac"] = False
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.61931214, -0.61234662, -0.60517618, -0.59779951, -0.59021548,
+           -0.58242314, -0.57442171, -0.56621065, -0.55778958, -0.54915834])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
 
 
 @pytest.mark.unittest
 def test_prediction_1018():
     current_station = 'DENHDR'
-    nodalfactors = True
-    xfac=True
     
     times_pred = slice(dt.datetime(1018,7,21),dt.datetime(1018,7,21,3), 10)
     
@@ -262,7 +272,7 @@ def test_prediction_1018():
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
     
     ts_prediction_times = np.array([dt.datetime(1018, 7, 21, 0, 0),
                                     dt.datetime(1018, 7, 21, 0, 10),
@@ -296,8 +306,6 @@ def test_prediction_1018():
 @pytest.mark.systemtest
 def test_frommergedcomp():
     # 1. define test data
-    nodalfactors = True
-    xfac = True
     current_station = 'VLISSGN'
     
     #comp
@@ -325,7 +333,7 @@ def test_frommergedcomp():
     
     # 3. run test
     COMP_mergedfromfile = hatyan.read_components(filename=file_data_comp)
-    ts_prediction_direct = hatyan.prediction(COMP_mergedfromfile, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction_direct = hatyan.prediction(COMP_mergedfromfile, times=times_pred)
     ts_prediction_direct_values = ts_prediction_direct['values'].values
     
     # 4. Vefiry final expectations
@@ -419,7 +427,7 @@ def test_frommergedcomp_HWLW_toomuch():
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
     ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
     
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
@@ -497,9 +505,10 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
+    assert COMP_merged.attrs["xfac"] == xfac
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
     #ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
@@ -565,7 +574,7 @@ def test_frommergedcomp_HWLW_345(current_station):
     # times_pred = slice(dt.datetime(2010,6,26),dt.datetime(2010,6,28), 1) #lokale extremen tussen twee laagste LWs
     # times_pred = slice(dt.datetime(2019,2,1),dt.datetime(2019,2,2), 1) #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
     #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)
     ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
@@ -668,7 +677,7 @@ def test_hwlw_numbering_aggers():
         file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
         comp_merged = hatyan.read_components(filename=file_data_comp0)
         
-        ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+        ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
         ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)
         ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)
         ts_ext_prediction_all.loc[ts_ext_prediction_all.index.isin(ts_ext_prediction_345.index),'HWLWcode'] = ts_ext_prediction_345['HWLWcode']
@@ -710,7 +719,7 @@ def test_19Ycomp4Ydia():
     
     #prediction and validation
     times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), 10)
-    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations (VLISSGN)
@@ -759,7 +768,7 @@ def test_19Ycomp4Ydia_compsplitsing():
     COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations (D15)
@@ -804,7 +813,7 @@ def test_allfromdia():
     COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations
@@ -859,7 +868,7 @@ def test_allfromdia_2008xfac0():
     comp_frommeasurements_avg_group0 = hatyan.analysis(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_perperiod='Y', fu_alltimes=False)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group0, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations
@@ -912,3 +921,70 @@ def test_prediction_comp_and_times_different_timezones():
     assert ts_prediction1.index[0] == pd.Timestamp('2019-01-01 00:00:00 +01:00')
     assert ts_prediction2.index[0] == pd.Timestamp('2018-12-31 23:00:00 +01:00')
     assert ((ts_prediction1-ts_prediction2).dropna()["values"] < 1e-9).all()
+
+
+def test_prediction_perperiod():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="M", return_allperiods=True)
+    
+    ts_pred_atonce = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index)
+    ts_pred_allmonths = hatyan.prediction(comp=comp_all, timestep_min=60)
+    
+    expected_atonce = np.array([-1.39664945, -0.85846188, -0.22419191,  0.7596607 ,  1.91604743,
+            2.17294986,  1.57508019,  0.88085591, -0.01977715, -1.01827975])
+    expected_allmonths = np.array([-1.51643013, -1.06743931, -0.51656439,  0.40987597,  1.66862452,
+            2.09709427,  1.60408414,  0.9891484 ,  0.13523824, -0.89396145])
+    
+    assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
+    assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
+    assert len(ts_pred_atonce) == len(ts_pred_allmonths)
+
+
+def test_prediction_hasrequiredargs():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="M", return_allperiods=True)
+    
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.prediction(comp=comp_mean)
+    assert str(e.value) == "prediction() has prediction_perperiod=False, so 'times' argument is required"
+    
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.prediction(comp=comp_all)
+    assert str(e.value) == "prediction() has prediction_perperiod=True, so 'timestep_min' argument is required"
+
+
+def test_prediction_deprecatedsettings():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, times_pred_all="")
+    assert str(e.value) == "Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead"
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, times_ext="")
+    assert str(e.value) == "Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead"
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, nodalfactors=False)
+    assert "prediction settings are now read from the attrs" in str(e.value)
+        
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, xfac=False)
+    assert "prediction settings are now read from the attrs" in str(e.value)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, fu_alltimes=False)
+    assert "prediction settings are now read from the attrs" in str(e.value)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, source=False)
+    assert "prediction settings are now read from the attrs" in str(e.value)

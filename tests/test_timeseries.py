@@ -306,8 +306,7 @@ def test_write_tsdia_rounding():
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, 
-                                      times=times_pred)
+    ts_prediction = hatyan.prediction(comp=comp_merged, times=times_pred)
     
     #write to file
     fname_pred = 'prediction_%im_%s.dia'%(times_pred.step,current_station)

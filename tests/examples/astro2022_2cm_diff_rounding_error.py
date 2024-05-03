@@ -65,7 +65,7 @@ for pred_year in year_list:
         
         comp_merged = hatyan.merge_componentgroups(comp_main=comp_4y, comp_sec=comp_19y, comp_sec_list=['SA','SM'])
         
-        pred = hatyan.prediction(comp=comp_merged,times=slice(tstart_pred,tstop_pred,10),fu_alltimes=False,xfac=True)
+        pred = hatyan.prediction(comp=comp_merged,times=slice(tstart_pred,tstop_pred,10))
         
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=pred,ts_validation=ts_astro)
         ax2.set_ylim(None,0.035)
