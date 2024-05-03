@@ -27,9 +27,9 @@ from hatyan.metadata import (metadata_from_diablocks, metadata_add_to_obj,
 __all__ = ["get_diaxycoords",
            "readts_dia",
            "readts_noos",
-           "write_tsdia",
-           "writets_noos",
-           "write_tsnetcdf",
+           "write_dia",
+           "write_noos",
+           "write_netcdf",
            "plot_timeseries",
            "plot_HWLW_validatestats",
            "resample_timeseries",
@@ -595,7 +595,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         return fig, axs
 
 
-def write_tsnetcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
+def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     """
     Writes the timeseries to a netCDF file
 
@@ -783,7 +783,7 @@ def write_tsnetcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     return
 
 
-def write_tsdia(ts, filename, headerformat='dia'):
+def write_dia(ts, filename, headerformat='dia'):
     """
     Writes the timeseries to an equidistant dia file or the extremes to 
     a non-equidistant dia file. This is only supported 
@@ -813,24 +813,24 @@ def write_tsdia(ts, filename, headerformat='dia'):
 
     """
     if "HWLWcode" in ts.columns:
-        write_tsdia_HWLW(ts_ext=ts, filename=filename, headerformat=headerformat)
+        write_dia_HWLW(ts_ext=ts, filename=filename, headerformat=headerformat)
     else:
-        write_tsdia_ts(ts=ts, filename=filename, headerformat=headerformat)
+        write_dia_ts(ts=ts, filename=filename, headerformat=headerformat)
 
     
-def write_tsdia_ts(ts, filename, headerformat='dia'):
+def write_dia_ts(ts, filename, headerformat='dia'):
     if "HWLWcode" in ts.columns:
-        raise TypeError("a timeseries with extremes (HWLW) was passed to write_tsdia, use `write_tsdia_HWLW()` instead")
+        raise TypeError("a timeseries with extremes (HWLW) was passed to write_dia, use `write_dia_HWLW()` instead")
     metadata = metadata_from_obj(ts)
     waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
     station = metadata['station']
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = ts.index.tz
     if tzone != pytz.FixedOffset(60):
-        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
+        raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
@@ -905,7 +905,7 @@ def write_tsdia_ts(ts, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
+def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
     
     metadata = metadata_from_obj(ts_ext)
     waarnemingssoort = wns_from_metadata(metadata)
@@ -913,10 +913,10 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     station = metadata['station']
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = ts_ext.index.tz
     if tzone != pytz.FixedOffset(60):
-        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
+        raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
@@ -1004,7 +1004,7 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def writets_noos(ts, filename, metadata=None):
+def write_noos(ts, filename, metadata=None):
     """
     Writes the timeseries to a noos file
 

@@ -38,7 +38,7 @@ def test_readwrite_tsdia_rounding():
     for diff in [0,0.004, -0.004]:
         ts_pred_rounddiff = hatyan.readts_dia(file_pred)
         ts_pred_rounddiff['values'] = ts_pred['values'] + diff
-        hatyan.write_tsdia(ts=ts_pred_rounddiff, filename=file_new)
+        hatyan.write_dia(ts=ts_pred_rounddiff, filename=file_new)
         ts_new = hatyan.readts_dia(file_new)
         
         assert np.allclose(ts_pred, ts_new)
@@ -53,7 +53,7 @@ def test_readwrite_tsdia_ext_rounding():
     for diff in [0, 0.004, -0.004]:
         ts_pred_rounddiff = hatyan.readts_dia(file_pred)
         ts_pred_rounddiff['values'] = ts_pred['values'] + diff
-        hatyan.write_tsdia(ts=ts_pred_rounddiff, filename=file_new)
+        hatyan.write_dia(ts=ts_pred_rounddiff, filename=file_new)
         ts_new = hatyan.readts_dia(file_new)
         
         assert np.allclose(ts_pred, ts_new)
@@ -223,8 +223,8 @@ def test_readwrite_diawia():
         assert (ts_dia==ts_wia).all().all() #check if wia and dia input is equal
         
         #write to files
-        hatyan.write_tsdia(ts=ts_dia, filename=file_dia_out)
-        hatyan.write_tsdia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
+        hatyan.write_dia(ts=ts_dia, filename=file_dia_out)
+        hatyan.write_dia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
         
         #read from new files
         ts_dia_new = hatyan.readts_dia(filename=file_dia_out, station=current_station)
@@ -311,7 +311,7 @@ def test_write_tsdia_rounding():
     
     #write to file
     fname_pred = 'prediction_%im_%s.dia'%(times_pred.step,current_station)
-    hatyan.write_tsdia(ts=ts_prediction, filename=fname_pred)
+    hatyan.write_dia(ts=ts_prediction, filename=fname_pred)
     
     #read from file
     ts_prediction_fromfile = hatyan.readts_dia(filename=fname_pred, station=current_station)

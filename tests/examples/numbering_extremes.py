@@ -108,7 +108,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
 
         #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
         #ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
-        #hatyan.write_tsdia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
+        #hatyan.write_dia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
         ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
         
         if i_stat == 0:
@@ -153,7 +153,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             pdrow['RDy'] = RDy
         stats = pd.concat([stats,pdrow])
             
-        #hatyan.write_tsdia(ts=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
+        #hatyan.write_dia(ts=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
         #fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
