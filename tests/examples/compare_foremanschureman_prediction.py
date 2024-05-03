@@ -20,8 +20,8 @@ for current_station in selected_stations:
     const_list = hatyan.get_const_list_hatyan('year')
     file_data_comp0_lastyear = os.path.join(dir_testdata,'predictie2019','%s_obs1.txt'%(current_station))
     
-    ts_measurements_group0_lastyear = hatyan.readts_dia(filename=file_data_comp0_lastyear, station=current_station)
-    #ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements_group0_lastyear = hatyan.read_dia(filename=file_data_comp0_lastyear, station=current_station)
+    #ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
     #ts_measurements_group0 = hatyan.crop_timeseries(ts_measurements_group0, times_ext=[dt.datetime(2012,1,1),dt.datetime(2013,1,1)])
 
     stats_row = pd.DataFrame(index=[current_station])

@@ -104,7 +104,7 @@ def test_plot_components_validation():
 def test_plot_components_allyears():
     current_station = 'VLISSGN'
     file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_obs?.txt')
-    ts_measurements = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements = hatyan.read_dia(filename=file_data_comp0, station=current_station)
     
     ts_comp, ts_comp_all = hatyan.analysis(ts=ts_measurements, const_list='month', analysis_perperiod="Y", return_allperiods=True)
     _ = hatyan.plot_components(comp=ts_comp, comp_allperiods=ts_comp_all)

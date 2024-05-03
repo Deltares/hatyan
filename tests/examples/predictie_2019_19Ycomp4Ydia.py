@@ -88,7 +88,7 @@ for current_station in selected_stations:
         continue
         
     #component groups
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
     
     comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, CS_comps=CS_comps)
 
@@ -111,9 +111,9 @@ for current_station in selected_stations:
     
     #prediction and validation
     ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
-    ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
+    ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     if os.path.exists(file_data_predvaliHWLW):
-        ts_ext_validation = hatyan.readts_dia(filename=file_data_predvaliHWLW, station=current_station)
+        ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
     else:
         ts_ext_validation = None
     hatyan.write_dia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_pred.step,current_station))
