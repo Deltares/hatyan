@@ -19,6 +19,7 @@
 - made `hatyan.Timeseries_Statistics()` public [#244](https://github.com/Deltares/hatyan/pull/244)
 - support for timezones in hatyan timeseries in [#258](https://github.com/Deltares/hatyan/pull/258)
 - simplified `hatyan.write_tsnetcdf()` by reading metadata from timeseries dataframes in [#260](https://github.com/Deltares/hatyan/pull/260)
+- made all read/write timeserie function names consistent by dropping "ts" in [#265](https://github.com/Deltares/hatyan/pull/265)
 
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)
