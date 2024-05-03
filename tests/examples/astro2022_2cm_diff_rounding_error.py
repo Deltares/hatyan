@@ -15,7 +15,7 @@ hatyan.close('all')
 # TODO: difference with 2022 astro ts from ddl for 2022/2023, not with 2019.
 # probably due to bug in older version of hatyan2 that was used for 2022/2023 prediction (2019 was computed with hatyan1)
 
-dir_meas = r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
+dir_meas = r'p:\archivedprojects\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
 
 # year_list = [2019, 2020, 2021, 2022, 2023]
 year_list = [2019, 2023]
