@@ -201,7 +201,7 @@ def analysis(ts, const_list,
         const_list = const_list.tolist()
     
     n_const = len(const_list)
-    if hatyan_settings.CS_comps is not None:
+    if hasattr(hatyan_settings, "CS_comps"):
         n_const = len(const_list) + len(hatyan_settings.CS_comps)
 
     if hatyan_settings.analysis_perperiod:
@@ -356,7 +356,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
             COMP_pd.loc['A0','A'] = -COMP_pd.loc['A0','A']
             COMP_pd.loc['A0','phi_deg'] = 0
     
-    if hatyan_settings.CS_comps is not None:
+    if hasattr(hatyan_settings, "CS_comps"):
         COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid, hatyan_settings=hatyan_settings)
         
     return COMP_pd
