@@ -303,19 +303,14 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-    
-    #drop timezone for dood_dates # TODO: should it not be converted? maybe move to get_freqv0_generic() instead
-    dood_date_mid_naive = dood_date_mid#.tz_localize(None)
-    dood_date_start_naive = dood_date_start#.tz_localize(None)
-    dood_date_fu_naive = dood_date_fu#.tz_localize(None)
 
     times_from0_s = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
     times_from0_s = times_from0_s[:,np.newaxis]
     
     #get frequency and v0
-    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid_naive, dood_date_start_naive)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
     omega_i_rads = t_const_freq_pd[['freq']].values.T*(2*np.pi)/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu_naive)
+    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
     v_u = v_0i_rad.values + u_i_rad.values
     
     #check rayleigh frequency after nyquist frequency folding process.
@@ -506,10 +501,6 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     # first date (for v0, also freq?)
     dood_date_start = times_pred_all_pdDTI[:1]
     
-    #drop timezone for dood_dates # TODO: should it not be converted? maybe move to get_freqv0_generic() instead
-    dood_date_mid_naive = dood_date_mid#.tz_localize(None)
-    dood_date_start_naive = dood_date_start#.tz_localize(None)
-    
     # sort component list and component dataframe
     if np.isnan(comp.values).any():
         raise Exception('provided component set contains nan values, prediction not possible')
@@ -518,16 +509,15 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     A = np.array(COMP['A'])
     phi_rad = np.array(np.deg2rad(COMP['phi_deg']))
 
-    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid_naive, dood_date_start_naive)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
     t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
 
     if hatyan_settings.fu_alltimes:
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-    dood_date_fu_naive = dood_date_fu#.tz_localize(None)
     
-    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu_naive)
+    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
 
     logger.info('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
