@@ -544,10 +544,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, **kwarg
     # add timezone to timeseries again
     ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
     
-    assert metadata_comp['nodalfactors'] == hatyan_settings.nodalfactors
-    assert metadata_comp['xfac'] == hatyan_settings.xfac
-    assert metadata_comp['fu_alltimes'] == hatyan_settings.fu_alltimes
-    assert metadata_comp['source'] == hatyan_settings.source
+    # add analysis/comp metadata to prediction # TODO: this can be avoided, since we cannot write it to diafile anyway (except for WATHTHE etc)
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata_comp)
     return ts_prediction_pd
 

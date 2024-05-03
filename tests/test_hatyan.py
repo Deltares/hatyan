@@ -263,24 +263,6 @@ def test_predictionsettings():
 
 
 @pytest.mark.unittest
-def test_predictionsettings_wrongsettings():
-    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), 1)
-    current_station = 'DENHDR'
-    
-    file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    with pytest.raises(AssertionError):
-        # incorrect fu_alltimes
-        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
-    with pytest.raises(AssertionError):
-        # incorrect xfac
-        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
-    with pytest.raises(AssertionError):
-        # incorrect nodalfactors
-        _ = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times=times_pred)
-
-
-@pytest.mark.unittest
 def test_prediction_1018():
     current_station = 'DENHDR'
     nodalfactors = True
