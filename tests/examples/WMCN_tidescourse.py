@@ -206,7 +206,7 @@ if 0:
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
     A0_allyears = ts_prediction.groupby(by=pd.Grouper(freq='Y')).mean()
     
     #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
@@ -214,6 +214,7 @@ if 0:
     ax1.plot(ts_prediction,linewidth=0.7)
     ax2.plot(A0_allyears.index,A0_allyears)
     fig.tight_layout()
+    fig.savefig(f'lat_indication_{current_station}')
 
 
 
@@ -222,7 +223,7 @@ if 0:
 # analysis form long meas, tried to show Nodal cycle >> failed
 if 0:
     current_station = 'HOEKVHLD'
-    file_pkl = os.path.join(r'p:\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101',f'{current_station}_measwl.pkl')
+    file_pkl = os.path.join(r'p:\archivedprojects\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101',f'{current_station}_measwl.pkl')
     data_pkl = pd.read_pickle(file_pkl)
     ts_meas = data_pkl[['values']]
     ts_meas.index = ts_meas.index.tz_localize(None)
