@@ -176,7 +176,9 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     COMP_all_pd : pandas.DataFrame, optional
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
-    ts_pd = ts #TODO: this is not necessary
+    # ts_pd = ts #TODO: this is not necessary
+    ts_pd = ts.copy()
+    ts_pd.index = ts_pd.index.tz_localize(None)
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
@@ -197,7 +199,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
         logger.info(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
-        ts_periods_dt_all = ts_pd.index.tz_localize(None).to_period(period)
+        ts_periods_dt_all = ts_pd.index.to_period(period)
         ts_periods_dt = ts_periods_dt_all.unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
@@ -303,9 +305,9 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         dood_date_fu = dood_date_mid
     
     #drop timezone for dood_dates # TODO: should it not be converted? maybe move to get_freqv0_generic() instead
-    dood_date_mid_naive = dood_date_mid.tz_localize(None)
-    dood_date_start_naive = dood_date_start.tz_localize(None)
-    dood_date_fu_naive = dood_date_fu.tz_localize(None)
+    dood_date_mid_naive = dood_date_mid#.tz_localize(None)
+    dood_date_start_naive = dood_date_start#.tz_localize(None)
+    dood_date_fu_naive = dood_date_fu#.tz_localize(None)
 
     times_from0_s = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
     times_from0_s = times_from0_s[:,np.newaxis]
@@ -467,7 +469,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     logger.info('PREDICTION initializing\n{hatyan_settings}')
     
     metadata_comp = metadata_from_obj(comp)
-    tzone = metadata_comp.pop("tzone")
+    tzone_comp = metadata_comp.pop("tzone")
     
     if times is None:
         metadata = metadata_from_obj(comp)
@@ -477,15 +479,20 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     
     if isinstance(times, pd.DatetimeIndex):
         times_pred_all_pdDTI = times
-        assert times.tz == tzone # TODO: this will probably fail in several cases
+        # assert times.tz == tzone # TODO: this will probably fail in several cases
     elif isinstance(times,slice):
         tstart, tstop, tstep = get_tstart_tstop_tstep(times)
-        times_pred_all_pdDTI = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us", tz=tzone)
+        times_pred_all_pdDTI = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
     else:
         raise TypeError(f'times argument can be of type, pd.DatetimeIndex or slice, not {type(times)}')
     
     if len(times_pred_all_pdDTI) <= 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
+    
+    # localize times datetimeindex, first convert times to tzone of components, then drop timezone
+    if times_pred_all_pdDTI.tz is not None:
+        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_convert(tzone_comp)
+        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(None)
     
     message = (f'components used = {len(comp)}\n'
                f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
@@ -500,8 +507,8 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     dood_date_start = times_pred_all_pdDTI[:1]
     
     #drop timezone for dood_dates # TODO: should it not be converted? maybe move to get_freqv0_generic() instead
-    dood_date_mid_naive = dood_date_mid.tz_localize(None)
-    dood_date_start_naive = dood_date_start.tz_localize(None)
+    dood_date_mid_naive = dood_date_mid#.tz_localize(None)
+    dood_date_start_naive = dood_date_start#.tz_localize(None)
     
     # sort component list and component dataframe
     if np.isnan(comp.values).any():
@@ -518,7 +525,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-    dood_date_fu_naive = dood_date_fu.tz_localize(None)
+    dood_date_fu_naive = dood_date_fu#.tz_localize(None)
     
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu_naive)
 
@@ -546,12 +553,15 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         if metadata_comp['grootheid'] == 'WATHTE':
             metadata_comp['grootheid'] = 'WATHTBRKD'
     
+    
+    ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
+    
     assert metadata_comp['nodalfactors'] == hatyan_settings.nodalfactors
     assert metadata_comp['xfac'] == hatyan_settings.xfac
     assert metadata_comp['fu_alltimes'] == hatyan_settings.fu_alltimes
     assert metadata_comp['source'] == hatyan_settings.source
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata_comp)
-
+    
     return ts_prediction_pd
 
 

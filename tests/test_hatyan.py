@@ -881,3 +881,34 @@ def test_allfromdia_2008xfac0():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
+
+
+def test_prediction_comp_and_times_different_timezones():
+    """
+    it is possible to supply a timezone via times, but the comp dataframe also contains a timezone already.
+    The components timezone is leading, but the times will be converted to that timezone also.
+    From the below test, both predictions are therefore UTC+01:00, but the times are shifted
+    """
+    
+    current_station = 'VLISSGN'
+    
+    const_list = hatyan.get_const_list_hatyan('year') # 94 constituents
+    
+    file_data_comp0 = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_obs1.txt')
+    
+    times_pred1 = slice("2019-01-01","2020-01-01", 10)
+    times_pred2 = pd.date_range("2019-01-01","2020-01-01", freq="10min", unit="us", tz="UTC+02:00")
+
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    
+    comp_frommeasurements_avg_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list)
+    
+    #prediction and validation
+    ts_prediction1 = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred1)
+    ts_prediction2 = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred2)
+    
+    assert ts_prediction1.index.tz == pytz.FixedOffset(60)
+    assert ts_prediction2.index.tz == pytz.FixedOffset(60)
+    assert ts_prediction1.index[0] == pd.Timestamp('2019-01-01 00:00:00 +01:00')
+    assert ts_prediction2.index[0] == pd.Timestamp('2018-12-31 23:00:00 +01:00')
+    assert ((ts_prediction1-ts_prediction2).dropna()["values"] < 1e-9).all()
