@@ -532,9 +532,9 @@ def prediction(comp, timestep_min=None, times=None):
     
     if prediction_perperiod:
         if timestep_min is None:
-            raise TypeError("prediction() has prediction_perperiod=True, so 'timestep_min' should not be None")
+            raise TypeError("prediction_perperiod=True in prediction(), so 'timestep_min' argument should not be None")
         if times is not None:
-            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument not allowed")
+            raise TypeError("prediction_perperiod=True in prediction(), so 'times' argument not allowed")
         # convert timestep_min to tstep of proper type (tstart/tstop are dummies here)
         times_slice = slice("1900-01-01", "1900-01-01", timestep_min)
         _, _, tstep = get_tstart_tstop_tstep(times_slice)
@@ -562,9 +562,9 @@ def prediction(comp, timestep_min=None, times=None):
         ts_prediction = pd.concat(ts_prediction_perperiod_list)
     else:
         if timestep_min is not None:
-            raise TypeError("prediction() has prediction_perperiod=False, so 'timestep_min' argument not allowed")
+            raise TypeError("prediction_perperiod=False in prediction(), so 'timestep_min' argument not allowed")
         if times is None:
-            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument should not be None")
+            raise TypeError("prediction_perperiod=False in prediction(), so 'times' argument should not be None")
         if isinstance(times,slice):
             tstart, tstop, tstep = get_tstart_tstop_tstep(times)
             times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
