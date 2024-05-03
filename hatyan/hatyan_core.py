@@ -225,7 +225,7 @@ def sort_const_list(const_list):
     return const_list_sorted
 
 
-def get_const_list_hatyan(listtype, return_listoptions=False):
+def get_const_list_hatyan(listtype):
     """
     Definition of several hatyan components lists, taken from the tidegui initializetide.m code, often originating from corresponcence with Koos Doekes
 
@@ -424,14 +424,8 @@ def get_const_list_hatyan(listtype, return_listoptions=False):
                         }
     
     const_list_options = const_lists_dict.keys()
-    if listtype in const_list_options:
-        const_list_hatyan = const_lists_dict[listtype]
-    else:
-        raise Exception('ERROR: listtype "%s" is not implemented in get_const_list_hatyan, choose from: %s'%(str(listtype),const_list_options))
-        
-    if return_listoptions:
-        return const_list_hatyan, const_list_options
-    else:
-        return const_list_hatyan
-
-
+    if listtype not in const_list_options:
+        raise KeyError(f'listtype "{listtype}" is not implemented in hatyan.get_const_list_hatyan(), choose from: [{", ".join(const_list_options)}]')
+    
+    const_list_hatyan = const_lists_dict[listtype]
+    return const_list_hatyan
