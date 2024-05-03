@@ -31,11 +31,11 @@ for current_station in selected_stations:
     COMP_validation = hatyan.read_components(filename=file_data_comp)
     
     #prediction and validation
-    ts_prediction1 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred13)
-    ts_prediction2 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred24)
+    ts_prediction1 = hatyan.prediction(comp=COMP_merged, times=times_pred13)
+    ts_prediction2 = hatyan.prediction(comp=COMP_merged, times=times_pred24)
     COMP_merged.attrs["fu_alltimes"] = True
-    ts_prediction3 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred13)
-    ts_prediction4 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred24)
+    ts_prediction3 = hatyan.prediction(comp=COMP_merged, times=times_pred13)
+    ts_prediction4 = hatyan.prediction(comp=COMP_merged, times=times_pred24)
     ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
 
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction1, ts_validation=ts_validation)

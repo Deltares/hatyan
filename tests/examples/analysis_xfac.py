@@ -44,16 +44,14 @@ for fu_alltimes in [True,False]:
     #fig, (ax1,ax2) = hatyan.plot_components(COMP_merged, comp_validation=COMP_validation)
     
     #prediction and validation
-    #ts_prediction = hatyan.prediction(comp=COMP_merged, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-    ts_prediction_xfac0_xfac0 = hatyan.prediction(comp=COMP_merged_xfac0, fu_alltimes=fu_alltimes, xfac=False, times=times_pred)
-    ts_prediction_xfac1_xfac1 = hatyan.prediction(comp=COMP_merged_xfac1, fu_alltimes=fu_alltimes, xfac=True, times=times_pred)
+    ts_prediction_xfac0_xfac0 = hatyan.prediction(comp=COMP_merged_xfac0, times=times_pred)
+    ts_prediction_xfac1_xfac1 = hatyan.prediction(comp=COMP_merged_xfac1, times=times_pred)
     # deliberately set xfac to wrong settings to allow predictions to succeed
     COMP_merged_xfac0.attrs["xfac"] = True
     COMP_merged_xfac1.attrs["xfac"] = False
-    ts_prediction_xfac0_xfac1 = hatyan.prediction(comp=COMP_merged_xfac0, fu_alltimes=fu_alltimes, xfac=True, times=times_pred)
-    ts_prediction_xfac1_xfac0 = hatyan.prediction(comp=COMP_merged_xfac1, fu_alltimes=fu_alltimes, xfac=False, times=times_pred)
+    ts_prediction_xfac0_xfac1 = hatyan.prediction(comp=COMP_merged_xfac0, times=times_pred)
+    ts_prediction_xfac1_xfac0 = hatyan.prediction(comp=COMP_merged_xfac1, times=times_pred)
 
-    #ts_prediction1min = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=1)
     #ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac0_xfac0, ts_validation=ts_prediction_xfac1_xfac1)
     fig.savefig('fualltimes%d_anaxfac0_predxfac1.png'%(fu_alltimes))

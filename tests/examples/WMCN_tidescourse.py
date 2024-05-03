@@ -45,19 +45,19 @@ if 1:
         bool_Msome = COMP_merged.index.isin([f'M{num}' for num in [1,2,3,5,6,7,8,9,12,11,12]])
         
         #ts_prediction_M2_nonodal = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=False, xfac=False, fu_alltimes=True, times_ext=times_ext_pred, timestep_min=times_step_pred)
-        ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_20 = hatyan.prediction(comp=COMP_merged.loc[['M2','S2','M4','N2','O1','MS4','A0','SA','MU2','K1','2MN2','MN4','K2','NU2','M6','Q1','2MS6','MK4','P1','3MS8']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_M2 = hatyan.prediction(comp=COMP_merged.loc[['M2']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_M4 = hatyan.prediction(comp=COMP_merged.loc[['M4']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_end1 = hatyan.prediction(comp=COMP_merged.loc[bool_end1], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_end2 = hatyan.prediction(comp=COMP_merged.loc[bool_end2], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_end4 = hatyan.prediction(comp=COMP_merged.loc[bool_end4], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        #ts_prediction_M1 = hatyan.prediction(comp=COMP_merged.loc[['M1']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_S2 = hatyan.prediction(comp=COMP_merged.loc[['S2']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_S4 = hatyan.prediction(comp=COMP_merged.loc[['S4']], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_Mstar = hatyan.prediction(comp=COMP_merged.loc[bool_Mstar], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_Sstar = hatyan.prediction(comp=COMP_merged.loc[bool_Sstar], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
-        ts_prediction_Msome = hatyan.prediction(comp=COMP_merged.loc[bool_Msome], nodalfactors=True, xfac=False, fu_alltimes=True, times=times_pred)
+        ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
+        ts_prediction_20 = hatyan.prediction(comp=COMP_merged.loc[['M2','S2','M4','N2','O1','MS4','A0','SA','MU2','K1','2MN2','MN4','K2','NU2','M6','Q1','2MS6','MK4','P1','3MS8']], times=times_pred)
+        ts_prediction_M2 = hatyan.prediction(comp=COMP_merged.loc[['M2']], times=times_pred)
+        ts_prediction_M4 = hatyan.prediction(comp=COMP_merged.loc[['M4']], times=times_pred)
+        ts_prediction_end1 = hatyan.prediction(comp=COMP_merged.loc[bool_end1], times=times_pred)
+        ts_prediction_end2 = hatyan.prediction(comp=COMP_merged.loc[bool_end2], times=times_pred)
+        ts_prediction_end4 = hatyan.prediction(comp=COMP_merged.loc[bool_end4], times=times_pred)
+        #ts_prediction_M1 = hatyan.prediction(comp=COMP_merged.loc[['M1']], times=times_pred)
+        ts_prediction_S2 = hatyan.prediction(comp=COMP_merged.loc[['S2']], times=times_pred)
+        ts_prediction_S4 = hatyan.prediction(comp=COMP_merged.loc[['S4']], times=times_pred)
+        ts_prediction_Mstar = hatyan.prediction(comp=COMP_merged.loc[bool_Mstar], times=times_pred)
+        ts_prediction_Sstar = hatyan.prediction(comp=COMP_merged.loc[bool_Sstar], times=times_pred)
+        ts_prediction_Msome = hatyan.prediction(comp=COMP_merged.loc[bool_Msome], times=times_pred)
         
         #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=None)
         fig,(ax1) = plt.subplots(1,1,figsize=(10,4),sharex=True,sharey=True)
@@ -301,7 +301,7 @@ if 0:
     colors = plt.cm.jet(np.linspace(0,1,n_colors))
     for i_stat, current_station in enumerate(selected_stations):
         comp_frommeasurements_avg_group = hatyan.read_components(filename=os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station)))
-        ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times=times_pred, xfac=True, fu_alltimes=False)
+        ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group, times=times_pred)
         vals_real = ts_prediction['values']
         times_real = ts_prediction.index
         ax1.plot(times_real, vals_real, label=current_station, color=colors[i_stat])
@@ -334,12 +334,12 @@ if 0:
     # tidal analysis and prediction based on model TS waterlevels
     ts_TS = pd.DataFrame({'values':wl_HvH_TS.to_numpy()},index=wl_HvH_TS.time)
     comp_set = hatyan.analysis(ts_TS,const_list='year',xfac=True)
-    ts_pred = hatyan.prediction(comp_set,times_pred_all=ts_TS.index)
+    ts_pred = hatyan.prediction(comp_set,times=ts_TS.index)
     
     # tidal prediction based RWS TA components
     # file_comp = r"c:\DATA\hatyan_github\tests\data_unitsystemtests\HOEKVHLD_ana.txt"
     # comp_set_rws = hatyan.read_components(file_comp)
-    # ts_pred_rws = hatyan.prediction(comp_set_rws,times_pred_all=ts_TS.index)
+    # ts_pred_rws = hatyan.prediction(comp_set_rws,times=ts_TS.index)
     # ts_pred_rws.index = ts_pred_rws.index - pd.Timedelta(hours=1)
     
     fig,ax = plt.subplots(figsize=(7,5))

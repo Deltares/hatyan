@@ -60,7 +60,7 @@ for current_station in selected_stations:
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
     ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
     hatyan.write_dia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_pred.step,current_station))

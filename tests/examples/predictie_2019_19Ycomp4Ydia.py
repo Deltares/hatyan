@@ -110,7 +110,7 @@ for current_station in selected_stations:
     hatyan.write_components(COMP_merged, filename='components_%s_merged.txt'%(current_station))
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
     ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     if os.path.exists(file_data_predvaliHWLW):
         ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
