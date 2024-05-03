@@ -54,7 +54,8 @@ for current_station in selected_stations:
     hatyan.write_components(comp_frommeasurements_avg_group0, filename=f'components_{current_station}_4Y.txt')
     
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
-    
+    assert comp_fromfile_group1.attrs["xfac"] == xfac
+
     #merge component groups (SA/SM from 19Y, rest from 4Y)
     COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
     #replace A0 amplitude (middenstand) by slotgemiddelde
@@ -62,6 +63,7 @@ for current_station in selected_stations:
         COMP_merged.loc['A0','A'] = stations_slotgem.loc[current_station,'slotgemiddelde']
 
     COMP_validation = hatyan.read_components(filename=file_data_compvali)
+    assert COMP_validation.attrs["xfac"] == xfac
     fig, (ax1,ax2) = hatyan.plot_components(COMP_merged, comp_validation=COMP_validation)
     fig.savefig('components_%s_merged.png'%(current_station))
     hatyan.write_components(COMP_merged, filename='components_%s_merged.txt'%(current_station))

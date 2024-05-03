@@ -92,6 +92,7 @@ for current_station in selected_stations:
         COMP_merged.loc['A0','A'] = stations_slotgem.loc[current_station,'slotgemiddelde']
 
     COMP_validation = hatyan.read_components(filename=file_data_compvali)
+    assert COMP_validation.attrs["xfac"] == xfac
     fig, (ax1,ax2) = hatyan.plot_components(COMP_merged, comp_validation=COMP_validation)
     fig.savefig('components_%s_merged.png'%(current_station))
     hatyan.write_components(COMP_merged, filename='components_%s_merged.txt'%(current_station))

@@ -58,6 +58,7 @@ for current_station in selected_stations:
     
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
+    assert COMP_merged.attrs["xfac"] == xfac
     
     #prediction and validation
     ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
