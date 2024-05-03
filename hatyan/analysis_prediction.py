@@ -135,7 +135,8 @@ def analysis(ts, const_list,
              nodalfactors=True, fu_alltimes=True, xfac=False, 
              source='schureman',
              CS_comps=None,
-             analysis_perperiod=False, return_allperiods=False):
+             analysis_perperiod=False, return_allperiods=False,
+             xTxmat_condition_max=12):
     """
     Analysis of timeseries.
     Optionally processes a timeseries per year and vector averages the results afterwards.
