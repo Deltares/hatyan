@@ -17,18 +17,22 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 analyse_ts_bool = False
 
+#station_name = data_pred.var_stations.loc[0,'node_id']
+station_name = 'HOEKVHLD'
+
 file_meas = os.path.join(dir_testdata,'other','FEWS_202010221200_testdata_S_2.nc')
 data_nc_meas = xr.open_dataset(file_meas)
 ts_meas = data_nc_meas.water_level.to_pandas().rename(columns={0:"values"})
+ts_meas.attrs["station"] = station_name
+ts_meas.attrs["vertref"] = "NAP"
 
 file_pred = os.path.join(dir_testdata,'other','FEWS_202010221200_testdata_S_4.nc')
 data_nc_pred = xr.open_dataset(file_pred)
 ts_prediction = data_nc_pred.water_level.to_pandas().rename(columns={0:"values"})
+ts_prediction.attrs["station"] = station_name
+ts_prediction.attrs["vertref"] = "NAP"
 
 file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
-
-#station_name = data_pred.var_stations.loc[0,'node_id']
-station_name = 'HOEKVHLD'
 
 file_ncout = '%s_getijnummers_new.nc'%(station_name)
 file_ncout_nosidx = '%s_getijnummers_nosidx.nc'%(station_name)
@@ -73,8 +77,12 @@ data_ncout = Dataset(file_ncout)
 data_ncout.variables['waterlevel_astro_LW_numbers']
 data_ncout.variables['waterlevel_astro_HW_numbers']
 """
-hatyan.write_netcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True)
-hatyan.write_netcdf(ts=ts_prediction, station='HOEKVHLD_copy', vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True, mode='a')
+hatyan.write_netcdf(ts=ts_prediction, filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True)
+# add fake extra station to show how this works
+ts_prediction.attrs["station"] = station_name+"_COPY"
+ts_ext_prediction_nos.attrs["station"] = station_name+"_COPY"
+hatyan.write_netcdf(ts=ts_prediction, filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True, mode='a')
+
 data_ncout = Dataset(file_ncout_nosidx)
 data_ncout.variables['waterlevel_astro_HW']
 data_ncout.variables['HWLWno']
