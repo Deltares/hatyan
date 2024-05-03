@@ -251,7 +251,6 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     comp_main_meta = metadata_from_obj(comp_main).copy()
     comp_sec_meta = metadata_from_obj(comp_sec).copy()
     
-    meta_settings_list = ['origin','nodalfactors','xfac','fu_alltimes','groepering','timestep_min','timestep_unit','TYP']
     meta_settings_list = ['origin','groepering','timestep_min','timestep_unit','TYP']
     comp_main_meta_others = {}
     for key in meta_settings_list:
