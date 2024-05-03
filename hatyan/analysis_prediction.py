@@ -36,11 +36,10 @@ class HatyanSettings:
     hatyan_settings = hatyan.HatyanSettings(nodalfactors=False)
 
     """
-    #TODO: analysis_perperiod,return_allyears only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
     def __init__(self, 
                  nodalfactors, fu_alltimes, xfac, source, #prediction/analysis 
-                 CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
+                 CS_comps=None, analysis_perperiod=False, return_allperiods=False, #analysis only
                  xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
             raise Exception('invalid source type, should be str')
