@@ -1448,7 +1448,11 @@ def read_dia_nonequidistant(filename, diablocks_pd, block_id):
     skiprows = diablocks_pd.loc[block_id,'data_starts']
     data_pd_HWLW = pd.read_csv(filename, skiprows=skiprows,nrows=data_nrows, header=None, sep=';',
                                names=['date','time','HWLWcode/qualitycode','valuecm:'], 
-                               parse_dates={'times':[0,1]})
+                               dtype={'date':str,'time':str},
+                               )
+    dates_pd = data_pd_HWLW.pop('date')
+    times_pd = data_pd_HWLW.pop('time')
+    data_pd_HWLW['times'] = pd.to_datetime(dates_pd+times_pd)
     
     #convert HWLW+quality code to separate columns
     data_pd_HWLWtemp = data_pd_HWLW.loc[:,'HWLWcode/qualitycode'].str.split('/', expand=True)
