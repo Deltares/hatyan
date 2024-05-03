@@ -16,6 +16,7 @@ from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
 __all__ = ["HatyanSettings",
            "analysis",
            "prediction",
+           "prediction_perperiod"
            ]
 
 logger = logging.getLogger(__name__)
@@ -549,7 +550,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, **kwarg
     return ts_prediction_pd
 
 
-def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **kwargs):
+def prediction_perperiod(comp_allperiods, timestep_min, **kwargs):
     """
     Wrapper around prediction(), to use component set of multiple years/months to generate multi-year/month timeseries.
 
@@ -569,10 +570,10 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
 
     """
     
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
+    # if hatyan_settings is None:
+    #     hatyan_settings = HatyanSettings(**kwargs)
+    # elif len(kwargs)>0:
+    #     raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
 
     ts_periods_dt = comp_allperiods.columns.levels[1]
     ts_periods_strlist = [str(x) for x in ts_periods_dt]
@@ -591,7 +592,7 @@ def prediction_perperiod(comp_allperiods, timestep_min, hatyan_settings=None, **
         else:
             raise Exception(f'unknown freqstr: {period_dt.freqstr}')
         times_pred = slice(tstart, tstop, timestep_min)
-        ts_prediction_oneperiod = prediction(comp=comp_oneyear, times=times_pred, hatyan_settings=hatyan_settings)
+        ts_prediction_oneperiod = prediction(comp=comp_oneyear, times=times_pred, **kwargs)
         ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
     ts_prediction_perperiod = pd.concat(ts_prediction_perperiod_list)
     

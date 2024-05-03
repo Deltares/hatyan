@@ -921,3 +921,25 @@ def test_prediction_comp_and_times_different_timezones():
     assert ts_prediction1.index[0] == pd.Timestamp('2019-01-01 00:00:00 +01:00')
     assert ts_prediction2.index[0] == pd.Timestamp('2018-12-31 23:00:00 +01:00')
     assert ((ts_prediction1-ts_prediction2).dropna()["values"] < 1e-9).all()
+
+
+def test_prediction_perperiod():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="M", return_allperiods=True)
+    
+    ts_pred_atonce = hatyan.prediction(comp_mean, times=ts_measurements_group0.index)
+    ts_pred_allmonths = hatyan.prediction_perperiod(comp_all, timestep_min=10)
+    
+    expected_atonce = np.array([-1.39664945, -0.85846188, -0.22419191,  0.7596607 ,  1.91604743,
+            2.17294986,  1.57508019,  0.88085591, -0.01977715, -1.01827975])
+    expected_allmonths = np.array([-1.51643013, -1.45386396, -1.38487984, -1.31060335, -1.23221232,
+           -1.15084044, -1.06743931, -0.98261367, -0.8964542 , -0.8083996 ])
+    
+    assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
+    assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
+    
+    # TODO: ValueError: operands could not be broadcast together with shapes (1,22) (22,12) 
+    # ts_pred_atonce = hatyan.prediction(comp_all, times=ts_measurements_group0.index)
