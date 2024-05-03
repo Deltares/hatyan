@@ -930,16 +930,61 @@ def test_prediction_perperiod():
     comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
                                           analysis_perperiod="M", return_allperiods=True)
     
-    ts_pred_atonce = hatyan.prediction(comp_mean, times=ts_measurements_group0.index)
-    ts_pred_allmonths = hatyan.prediction_perperiod(comp_all, timestep_min=10)
+    ts_pred_atonce = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index)
+    ts_pred_allmonths = hatyan.prediction(comp=comp_all, timestep_min=60)
     
     expected_atonce = np.array([-1.39664945, -0.85846188, -0.22419191,  0.7596607 ,  1.91604743,
             2.17294986,  1.57508019,  0.88085591, -0.01977715, -1.01827975])
-    expected_allmonths = np.array([-1.51643013, -1.45386396, -1.38487984, -1.31060335, -1.23221232,
-           -1.15084044, -1.06743931, -0.98261367, -0.8964542 , -0.8083996 ])
+    expected_allmonths = np.array([-1.51643013, -1.06743931, -0.51656439,  0.40987597,  1.66862452,
+            2.09709427,  1.60408414,  0.9891484 ,  0.13523824, -0.89396145])
     
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
+    assert len(ts_pred_atonce) == len(ts_pred_allmonths)
+
+
+def test_prediction_hasrequiredargs():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
     
-    # TODO: ValueError: operands could not be broadcast together with shapes (1,22) (22,12) 
-    # ts_pred_atonce = hatyan.prediction(comp_all, times=ts_measurements_group0.index)
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="M", return_allperiods=True)
+    
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.prediction(comp=comp_mean)
+        assert str(e) == "prediction() has prediction_perperiod=False, so 'times' argument is required"
+    
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.prediction(comp=comp_all)
+        assert str(e) == "prediction() has prediction_perperiod=True, so 'timestep_min' argument is required"
+
+
+def test_prediction_deprecatedsettings():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, times_pred_all="")
+        assert str(e) == "Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead"
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, times_ext="")
+        assert str(e) == "Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead"
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, nodalfactors=False)
+        assert "prediction settings are now read from the attrs" in str(e)
+        
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, xfac=False)
+        assert "prediction settings are now read from the attrs" in str(e)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, fu_alltimes=False)
+        assert "prediction settings are now read from the attrs" in str(e)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, source=False)
+        assert "prediction settings are now read from the attrs" in str(e)

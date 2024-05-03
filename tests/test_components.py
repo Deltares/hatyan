@@ -139,7 +139,6 @@ def test_merge_componentgroups_comparesettings():
     file_data_comp = os.path.join(dir_testdata,'VLISSGN_ana.txt')
     comp_fromfile = hatyan.read_components(filename=file_data_comp)
     
-    #merge component groups (SA/SM from 19Y, rest from 4Y)
     with pytest.raises(ValueError):
         comp_fromfile_fake = comp_fromfile.copy()
         comp_fromfile_fake.attrs["nodalfactors"] = False
