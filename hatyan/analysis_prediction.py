@@ -44,50 +44,50 @@ class HatyanSettings:
                  xTxmat_condition_max=None): #analysis only
         
         if not isinstance(nodalfactors,bool):
-            raise Exception(f'invalid nodalfactors={nodalfactors} type, should be bool')
+            raise TypeError(f'invalid nodalfactors={nodalfactors} type, should be bool')
         self.nodalfactors = nodalfactors
         
         if not isinstance(fu_alltimes,bool):
-            raise Exception(f'invalid fu_alltimes={fu_alltimes} type, should be bool')
+            raise TypeError(f'invalid fu_alltimes={fu_alltimes} type, should be bool')
         self.fu_alltimes = fu_alltimes
         
         if not (isinstance(xfac,bool) or isinstance(xfac,dict)):
-            raise Exception(f'invalid xfac={xfac} type, should be bool or dict')
+            raise TypeError(f'invalid xfac={xfac} type, should be bool or dict')
         self.xfac = xfac
         
         if not isinstance(source,str):
-            raise Exception('invalid source type, should be str')
+            raise TypeError('invalid source type, should be str')
         source = source.lower()
         if source not in ['schureman','foreman']:
-            raise Exception('invalid source {source}, should be "schureman" or "foreman")')
+            raise TypeError('invalid source {source}, should be "schureman" or "foreman")')
         self.source = source
                 
         if return_allperiods is not None:
             if not isinstance(return_allperiods,bool):
-                raise Exception(f'invalid {return_allperiods} type, should be bool')
+                raise TypeError(f'invalid {return_allperiods} type, should be bool')
             self.return_allperiods = return_allperiods
         
         if analysis_perperiod is not None:
             if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
-                raise Exception(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
+                raise TypeError(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
             self.analysis_perperiod = analysis_perperiod
         
         if CS_comps is not None:
             if not isinstance(CS_comps,(dict,pd.DataFrame)):
-                raise Exception('invalid CS_comps type, should be dict')
+                raise TypeError('invalid CS_comps type, should be dict')
             CS_comps = pd.DataFrame(CS_comps) #TODO: convert all to dict or pd.DataFrame
             CS_comps_expectedkeys = ['CS_comps_derive', 'CS_comps_from', 'CS_ampfacs', 'CS_degincrs']
             for CS_comps_key in CS_comps_expectedkeys:
                 if CS_comps_key not in CS_comps.keys():
-                    raise Exception(f'CS_comps does not contain {CS_comps_key}')
+                    raise KeyError(f'CS_comps does not contain {CS_comps_key}')
             CS_comps_lenvals = [len(CS_comps[key]) for key in CS_comps]
             if len(np.unique(CS_comps_lenvals)) != 1:
-                raise Exception(f'CS_comps keys do not have equal lengths:\n{CS_comps}')
+                raise ValueError(f'CS_comps keys do not have equal lengths:\n{CS_comps}')
             self.CS_comps = CS_comps
         
         if xTxmat_condition_max is not None:
             if not isinstance(xTxmat_condition_max,Union[int,float]):
-                raise Exception(f'invalid {xTxmat_condition_max} type, should be Union[int,float]')
+                raise TypeError(f'invalid {xTxmat_condition_max} type, should be int or float')
             self.xTxmat_condition_max = xTxmat_condition_max
         
     def __str__(self):
