@@ -518,10 +518,8 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
     
     if "times_pred_all" in kwargs:
         raise DeprecationWarning("Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead")
-        kwargs.pop("times_pred_all")
     if "times_ext" in kwargs:
         raise DeprecationWarning("Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead")
-        kwargs.pop("times_ext")
     if len(kwargs)>0:
         raise DeprecationWarning(f"prediction settings are now read from the attrs of the component dataframe, received additional arguments: {kwargs}")
     
