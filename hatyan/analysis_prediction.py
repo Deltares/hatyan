@@ -501,11 +501,12 @@ def prediction(comp, timestep_min=None, times=None):
     ----------
     comp : pd.DataFrame
         The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
-    timestep_min : TYPE
-        DESCRIPTION.
+    timestep_min : int
+        Only allowed/relevant for component dataframes with multi-level columns (different periods). The default is None.
     times : (pd.DatetimeIndex,slice), optional
         pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
-        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
+        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. 
+        Only allowed/relevant for component dataframes with single-level columns (single period). The default is None.
 
     Returns
     -------
