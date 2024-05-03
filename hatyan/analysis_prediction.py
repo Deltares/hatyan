@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import logging
+from typing import Union
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, get_tstart_tstop_tstep
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
@@ -39,23 +40,37 @@ class HatyanSettings:
     
     def __init__(self, 
                  nodalfactors, fu_alltimes, xfac, source, #prediction/analysis 
-                 CS_comps=None, analysis_perperiod=False, return_allperiods=False, #analysis only
-                 xTxmat_condition_max=12): #analysis only
+                 CS_comps=None, analysis_perperiod=None, return_allperiods=None, #analysis only
+                 xTxmat_condition_max=None): #analysis only
+        
+        if not isinstance(nodalfactors,bool):
+            raise Exception(f'invalid nodalfactors={nodalfactors} type, should be bool')
+        self.nodalfactors = nodalfactors
+        
+        if not isinstance(fu_alltimes,bool):
+            raise Exception(f'invalid fu_alltimes={fu_alltimes} type, should be bool')
+        self.fu_alltimes = fu_alltimes
+        
+        if not (isinstance(xfac,bool) or isinstance(xfac,dict)):
+            raise Exception(f'invalid xfac={xfac} type, should be bool or dict')
+        self.xfac = xfac
+        
         if not isinstance(source,str):
             raise Exception('invalid source type, should be str')
         source = source.lower()
         if source not in ['schureman','foreman']:
-            raise Exception('invalid source {source}, should be schureman or foreman)')
+            raise Exception('invalid source {source}, should be "schureman" or "foreman")')
+        self.source = source
                 
-        for var_in in [nodalfactors,fu_alltimes,return_allperiods]:
-            if not isinstance(var_in,bool):
-                raise Exception(f'invalid {var_in} type, should be bool')
+        if return_allperiods is not None:
+            if not isinstance(return_allperiods,bool):
+                raise Exception(f'invalid {return_allperiods} type, should be bool')
+            self.return_allperiods = return_allperiods
         
-        if not (isinstance(xfac,bool) or isinstance(xfac,dict)):
-            raise Exception(f'invalid xfac={xfac} type, should be bool or dict')
-        
-        if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
-            raise Exception(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
+        if analysis_perperiod is not None:
+            if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
+                raise Exception(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
+            self.analysis_perperiod = analysis_perperiod
         
         if CS_comps is not None:
             if not isinstance(CS_comps,(dict,pd.DataFrame)):
@@ -68,21 +83,18 @@ class HatyanSettings:
             CS_comps_lenvals = [len(CS_comps[key]) for key in CS_comps]
             if len(np.unique(CS_comps_lenvals)) != 1:
                 raise Exception(f'CS_comps keys do not have equal lengths:\n{CS_comps}')
+            self.CS_comps = CS_comps
         
-        self.source = source
-        self.nodalfactors = nodalfactors
-        self.fu_alltimes = fu_alltimes
-        self.xfac = xfac
-        self.CS_comps = CS_comps
-        self.analysis_perperiod = analysis_perperiod
-        self.return_allperiods = return_allperiods
-        self.xTxmat_condition_max = xTxmat_condition_max
+        if xTxmat_condition_max is not None:
+            if not isinstance(xTxmat_condition_max,Union[int,float]):
+                raise Exception(f'invalid {xTxmat_condition_max} type, should be Union[int,float]')
+            self.xTxmat_condition_max = xTxmat_condition_max
         
     def __str__(self):
         self_dict = vars(self)
         str_append = ''
         for key,val in self_dict.items():
-            if key=='CS_comps' and self.CS_comps is not None:
+            if key=='CS_comps':
                 str_append += f'{key:20s} = \n{val}\n'
             else:
                 str_append += f'{key:20s} = {val}\n'
