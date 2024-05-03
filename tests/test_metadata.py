@@ -49,10 +49,10 @@ def test_anapred_metadata():
     
     comp = hatyan.analysis(ts_measurements_group0,const_list='month')
     
-    pred_xfac0 = hatyan.prediction(comp, xfac=False)
+    pred_xfac0 = hatyan.prediction(comp)
     # we also test if metadata is correctly passed if e.g. xfac is not in line with xfac in components file
     comp.attrs["xfac"] = True
-    pred_xfac1 = hatyan.prediction(comp, xfac=True)
+    pred_xfac1 = hatyan.prediction(comp)
     
     meta_fromts_xfac0 = metadata_from_obj(pred_xfac0)
     meta_fromts_xfac1 = metadata_from_obj(pred_xfac1)
