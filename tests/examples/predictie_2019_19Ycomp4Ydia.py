@@ -21,8 +21,9 @@ stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','B
 stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','L9PFM','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','Q1','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
 
 #selected_stations = stats_all
-selected_stations = ['VLISSGN','CUXHVN','D15','FISHGD','ABDN','BAALHK']
+selected_stations = ['VLISSGN','D15','FISHGD','ABDN','BAALHK'] #'CUXHVN',
 # TODO: stations ABDN and BAALHK currently fail
+# TODO: CUXHVN xfac is incorrect from component file: https://github.com/Deltares/hatyan/issues/197
 
 file_slotgemiddelden = os.path.join(dir_testdata,'predictie2019','_slotgemiddelden_predictie2019.txt')
 stations_slotgem = pd.read_csv(file_slotgemiddelden, names=['slotgemiddelde'], comment='#', sep="\\s+")
@@ -97,10 +98,11 @@ for current_station in selected_stations:
     #hatyan.write_components(comp_frommeasurements_avg_group0, filename='components_%s_4Y.txt'%(current_station))
     
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
+    assert comp_fromfile_group1.attrs["xfac"] == xfac
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'],
-                                               meta_allow_different=["xfac"])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    
     #replace A0 amplitude (middenstand) by slotgemiddelde
     if current_station in stations_slotgem.index.tolist():
         COMP_merged.loc['A0','A'] = stations_slotgem.loc[current_station,'slotgemiddelde']
