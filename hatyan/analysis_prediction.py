@@ -506,8 +506,6 @@ def prediction(comp, timestep_min=None, times=None):
     times : (pd.DatetimeIndex,slice), optional
         pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
         If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
-    hatyan_settings : hatyan.HatyanSettings()
-        Contains the used settings
 
     Returns
     -------
