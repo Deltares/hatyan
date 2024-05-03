@@ -51,7 +51,7 @@ def test_metadata_compare_valueerror():
     meta2 = metadata_from_obj(comp_fromfile_fake)
     with pytest.raises(ValueError) as e:
         metadata_compare([meta1,meta2])
-        assert "equal" in str(e)
+    assert "equal" in str(e.value)
 
 
 @pytest.mark.unittest

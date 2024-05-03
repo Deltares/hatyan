@@ -952,11 +952,11 @@ def test_prediction_hasrequiredargs():
     
     with pytest.raises(TypeError) as e:
         _ = hatyan.prediction(comp=comp_mean)
-        assert str(e) == "prediction() has prediction_perperiod=False, so 'times' argument is required"
+    assert str(e.value) == "prediction() has prediction_perperiod=False, so 'times' argument is required"
     
     with pytest.raises(TypeError) as e:
         _ = hatyan.prediction(comp=comp_all)
-        assert str(e) == "prediction() has prediction_perperiod=True, so 'timestep_min' argument is required"
+    assert str(e.value) == "prediction() has prediction_perperiod=True, so 'timestep_min' argument is required"
 
 
 def test_prediction_deprecatedsettings():
@@ -967,24 +967,24 @@ def test_prediction_deprecatedsettings():
     
     with pytest.raises(DeprecationWarning) as e:
         _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, times_pred_all="")
-        assert str(e) == "Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead"
+    assert str(e.value) == "Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead"
     
     with pytest.raises(DeprecationWarning) as e:
         _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, times_ext="")
-        assert str(e) == "Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead"
+    assert str(e.value) == "Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead"
     
     with pytest.raises(DeprecationWarning) as e:
         _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, nodalfactors=False)
-        assert "prediction settings are now read from the attrs" in str(e)
+    assert "prediction settings are now read from the attrs" in str(e.value)
         
     with pytest.raises(DeprecationWarning) as e:
         _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, xfac=False)
-        assert "prediction settings are now read from the attrs" in str(e)
+    assert "prediction settings are now read from the attrs" in str(e.value)
     
     with pytest.raises(DeprecationWarning) as e:
         _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, fu_alltimes=False)
-        assert "prediction settings are now read from the attrs" in str(e)
+    assert "prediction settings are now read from the attrs" in str(e.value)
     
     with pytest.raises(DeprecationWarning) as e:
         _ = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index, source=False)
-        assert "prediction settings are now read from the attrs" in str(e)
+    assert "prediction settings are now read from the attrs" in str(e.value)
