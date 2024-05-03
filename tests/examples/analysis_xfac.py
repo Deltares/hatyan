@@ -29,7 +29,7 @@ for fu_alltimes in [True,False]:
     file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
     #file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
     
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
     ts_measurements_group0['values'] -=.1
     #ts_measurements_group0 = hatyan.crop_timeseries(ts_measurements_group0, times_ext=[dt.datetime(2012,1,1),dt.datetime(2012,2,1)])
     
@@ -54,7 +54,7 @@ for fu_alltimes in [True,False]:
     ts_prediction_xfac1_xfac0 = hatyan.prediction(comp=COMP_merged_xfac1, fu_alltimes=fu_alltimes, xfac=False, times=times_pred)
 
     #ts_prediction1min = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times_ext=times_ext_pred, timestep_min=1)
-    #ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
+    #ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac0_xfac0, ts_validation=ts_prediction_xfac1_xfac1)
     fig.savefig('fualltimes%d_anaxfac0_predxfac1.png'%(fu_alltimes))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_xfac1_xfac1, ts_validation=ts_prediction_xfac0_xfac0)

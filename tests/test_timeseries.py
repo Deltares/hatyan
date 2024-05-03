@@ -34,12 +34,12 @@ def test_get_diaxycoords():
 def test_readwrite_tsdia_rounding():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
     file_new = 'temp_dia.txt'
-    ts_pred = hatyan.readts_dia(file_pred)
+    ts_pred = hatyan.read_dia(file_pred)
     for diff in [0,0.004, -0.004]:
-        ts_pred_rounddiff = hatyan.readts_dia(file_pred)
+        ts_pred_rounddiff = hatyan.read_dia(file_pred)
         ts_pred_rounddiff['values'] = ts_pred['values'] + diff
-        hatyan.write_tsdia(ts=ts_pred_rounddiff, filename=file_new)
-        ts_new = hatyan.readts_dia(file_new)
+        hatyan.write_dia(ts=ts_pred_rounddiff, filename=file_new)
+        ts_new = hatyan.read_dia(file_new)
         
         assert np.allclose(ts_pred, ts_new)
     os.remove(file_new)
@@ -49,12 +49,12 @@ def test_readwrite_tsdia_rounding():
 def test_readwrite_tsdia_ext_rounding():
     file_pred = os.path.join(dir_testdata, "VLISSGN_ext.txt")
     file_new = 'temp_dia_ext.txt'
-    ts_pred = hatyan.readts_dia(file_pred)
+    ts_pred = hatyan.read_dia(file_pred)
     for diff in [0, 0.004, -0.004]:
-        ts_pred_rounddiff = hatyan.readts_dia(file_pred)
+        ts_pred_rounddiff = hatyan.read_dia(file_pred)
         ts_pred_rounddiff['values'] = ts_pred['values'] + diff
-        hatyan.write_tsdia(ts=ts_pred_rounddiff, filename=file_new)
-        ts_new = hatyan.readts_dia(file_new)
+        hatyan.write_dia(ts=ts_pred_rounddiff, filename=file_new)
+        ts_new = hatyan.read_dia(file_new)
         
         assert np.allclose(ts_pred, ts_new)
     os.remove(file_new)
@@ -63,7 +63,7 @@ def test_readwrite_tsdia_ext_rounding():
 @pytest.mark.unittest
 def test_readts_dia_multifile():
     file_data_comp0 = [os.path.join(dir_testdata,f'VLISSGN_obs{file_id}.txt') for file_id in [1,2,3,4]]
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station='VLISSGN')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station='VLISSGN')
     
     assert len(ts_measurements_group0) == 35064
     assert np.isclose(ts_measurements_group0['values'].iloc[0], -1.24)
@@ -76,12 +76,12 @@ def test_readts_dia_multifile():
 def test_readts_dia_multiblock():
     
     file1 = os.path.join(dir_testdata,'hoek_har.dia')
-    #ts_measurements_group0_extno = hatyan.readts_dia(filename=file1, station='HOEKVHLD')
-    ts_measurements_group0_ext0 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=0)
-    ts_measurements_group0_ext1 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=1)
-    ts_measurements_group0_ext2 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=2)
-    ts_measurements_group0_ext012 = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids=[0,1,2])
-    ts_measurements_group0_extall = hatyan.readts_dia(filename=file1, station='HOEKVHLD', block_ids='allstation')
+    #ts_measurements_group0_extno = hatyan.read_dia(filename=file1, station='HOEKVHLD')
+    ts_measurements_group0_ext0 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=0)
+    ts_measurements_group0_ext1 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=1)
+    ts_measurements_group0_ext2 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=2)
+    ts_measurements_group0_ext012 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=[0,1,2])
+    ts_measurements_group0_extall = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids='allstation')
     
     assert len(ts_measurements_group0_ext0) == 3977
     assert len(ts_measurements_group0_ext1) == 9913
@@ -97,7 +97,7 @@ def test_readts_noos_resamplecrop():
     times_ext_comp0 = slice(dt.datetime(2018,1,1),dt.datetime(2018,4,1))
 
     #component groups
-    ts_measurements_group0 = hatyan.readts_noos(filename=file_data_comp0)
+    ts_measurements_group0 = hatyan.read_noos(filename=file_data_comp0)
     ts_measurements_group0_res = hatyan.resample_timeseries(ts_measurements_group0, timestep_min=10)
     ts_measurements_group0_rescrop = hatyan.crop_timeseries(ts_measurements_group0_res, times=times_ext_comp0)
     
@@ -118,7 +118,7 @@ def test_readts_dia_equidistant_singlefile_hasfreq():
     """
     file_ts = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     
-    ts_pd = hatyan.readts_dia(filename=file_ts)
+    ts_pd = hatyan.read_dia(filename=file_ts)
     
     # check ts length (all four files are added)
     assert len(ts_pd) == 8760
@@ -169,7 +169,7 @@ def test_readts_dia_equidistant_multifile_hasfreq():
     """
     file_ts = [os.path.join(dir_testdata,f'VLISSGN_obs{i}.txt') for i in [1,2,3,4]]
     
-    ts_pd = hatyan.readts_dia(filename=file_ts)
+    ts_pd = hatyan.read_dia(filename=file_ts)
     
     # check ts length (all four files are added)
     assert len(ts_pd) == 35064
@@ -192,7 +192,7 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
     """
     file_ts = os.path.join(dir_testdata,'VLISSGN_obs?.txt')
     
-    ts_pd = hatyan.readts_dia(filename=file_ts)
+    ts_pd = hatyan.read_dia(filename=file_ts)
     
     assert len(ts_pd) == 35064
 
@@ -218,17 +218,17 @@ def test_readwrite_diawia():
         file_wia = file_dia.replace('.dia','.wia')
         file_dia_out = file_dia.replace('.dia','_out.dia')
         file_wia_out = file_dia.replace('.dia','_out.wia')
-        ts_dia = hatyan.readts_dia(filename=file_dia, station=current_station)
-        ts_wia = hatyan.readts_dia(filename=file_wia, station=current_station)
+        ts_dia = hatyan.read_dia(filename=file_dia, station=current_station)
+        ts_wia = hatyan.read_dia(filename=file_wia, station=current_station)
         assert (ts_dia==ts_wia).all().all() #check if wia and dia input is equal
         
         #write to files
-        hatyan.write_tsdia(ts=ts_dia, filename=file_dia_out)
-        hatyan.write_tsdia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
+        hatyan.write_dia(ts=ts_dia, filename=file_dia_out)
+        hatyan.write_dia(ts=ts_wia, filename=file_wia_out, headerformat='wia')
         
         #read from new files
-        ts_dia_new = hatyan.readts_dia(filename=file_dia_out, station=current_station)
-        ts_wia_new = hatyan.readts_dia(filename=file_wia_out, station=current_station)
+        ts_dia_new = hatyan.read_dia(filename=file_dia_out, station=current_station)
+        ts_wia_new = hatyan.read_dia(filename=file_wia_out, station=current_station)
         assert np.allclose(ts_dia, ts_dia_new) #check if wia and dia input is equal
         assert np.allclose(ts_wia, ts_wia_new) #check if wia and dia input is equal
         
@@ -251,7 +251,7 @@ def test_crop_timeseries():
     times_ext = slice("2019-01-01 00:00:00 +00:00", "2019-06-01 00:00:00 +00:00")
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
-    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_prediction = hatyan.read_dia(filename=file_pred, station=current_station)
     ts_prediction_cropped = hatyan.crop_timeseries(ts_prediction, times=times_ext)
     
     assert len(ts_prediction_cropped) == 21745
@@ -274,7 +274,7 @@ def test_resample_timeseries():
     timestep_min = 120
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
-    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_prediction = hatyan.read_dia(filename=file_pred, station=current_station)
     ts_prediction_res = hatyan.resample_timeseries(ts_prediction, timestep_min=timestep_min)
     
     assert len(ts_prediction_res) == 4380
@@ -311,10 +311,10 @@ def test_write_tsdia_rounding():
     
     #write to file
     fname_pred = 'prediction_%im_%s.dia'%(times_pred.step,current_station)
-    hatyan.write_tsdia(ts=ts_prediction, filename=fname_pred)
+    hatyan.write_dia(ts=ts_prediction, filename=fname_pred)
     
     #read from file
-    ts_prediction_fromfile = hatyan.readts_dia(filename=fname_pred, station=current_station)
+    ts_prediction_fromfile = hatyan.read_dia(filename=fname_pred, station=current_station)
     os.remove(fname_pred)
     
     # assert max differences
@@ -325,7 +325,7 @@ def test_write_tsdia_rounding():
 @pytest.mark.unittest
 def test_timeseries_fft():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
-    ts_pred = hatyan.readts_dia(file_pred)
+    ts_pred = hatyan.read_dia(file_pred)
         
     hatyan_freqs_suggestions_schureman = hatyan.timeseries_fft(ts_pred, min_prominence=2000, plot_fft=True, source="schureman")
     hatyan_freqs_suggestions_foreman = hatyan.timeseries_fft(ts_pred, min_prominence=2000, plot_fft=True, source="foreman")
@@ -340,15 +340,15 @@ def test_timeseries_fft():
 def test_plot_timeseries():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
     file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
-    ts_pred = hatyan.readts_dia(file_pred)
-    ts_ext = hatyan.readts_dia(file_ext)
+    ts_pred = hatyan.read_dia(file_pred)
+    ts_ext = hatyan.read_dia(file_ext)
     hatyan.plot_timeseries(ts=ts_pred, ts_validation=ts_pred, ts_ext=ts_ext, ts_ext_validation=ts_ext)
 
 
 @pytest.mark.unittest
 def test_plot_HWLW_validatestats():
     file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
-    ts_ext = hatyan.readts_dia(file_ext)
+    ts_ext = hatyan.read_dia(file_ext)
     ts_ext_nos = hatyan.calc_HWLWnumbering(ts_ext)
 
     hatyan.plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext, create_plot=True)

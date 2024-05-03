@@ -36,7 +36,7 @@ for current_station in selected_stations:
     COMP_merged.attrs["fu_alltimes"] = True
     ts_prediction3 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred13)
     ts_prediction4 = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=True, fu_alltimes=True, times=times_pred24)
-    ts_validation = hatyan.readts_dia(filename=file_data_predvali, station=current_station)
+    ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
 
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction1, ts_validation=ts_validation)
     fig.savefig('prediction_%im_%s_validation_default'%(times_pred13.step, current_station))

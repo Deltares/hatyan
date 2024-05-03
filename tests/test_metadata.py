@@ -21,7 +21,7 @@ def test_readts_dia_metadata_multifile():
     
     current_station = 'VLISSGN'
     file_ts = [os.path.join(dir_testdata, f'{current_station}_obs{i}.txt') for i in [1,2,3,4]]
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station=current_station)
+    ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
     meta_fromts = metadata_from_obj(ts_measurements_group0)
     
     meta_expected = {'station': 'VLISSGN',
@@ -45,7 +45,7 @@ def test_anapred_metadata():
     
     current_station = 'VLISSGN'
     file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station=current_station)
+    ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
     
     comp = hatyan.analysis(ts_measurements_group0,const_list='month')
     
@@ -87,7 +87,7 @@ def test_hwlw_metadata():
     
     current_station = 'VLISSGN'
     file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station=current_station)
+    ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
     comp = hatyan.analysis(ts_measurements_group0,const_list='month')
     pred = hatyan.prediction(comp)
     
@@ -138,7 +138,7 @@ def test_hwlw_metadata():
 @pytest.mark.unittest
 def test_readts_dia_metadata_multiblock():
     file_ts = os.path.join(dir_testdata, 'hoek_har.dia')
-    ts_measurements_group0 = hatyan.readts_dia(filename=file_ts, station='HOEKVHLD', block_ids='allstation')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station='HOEKVHLD', block_ids='allstation')
     meta_fromts = metadata_from_obj(ts_measurements_group0)
     
     meta_expected = {'station': 'HOEKVHLD',

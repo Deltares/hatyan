@@ -25,11 +25,11 @@ from hatyan.metadata import (metadata_from_diablocks, metadata_add_to_obj,
                              wns_from_metadata)
 
 __all__ = ["get_diaxycoords",
-           "readts_dia",
-           "readts_noos",
-           "write_tsdia",
-           "writets_noos",
-           "write_tsnetcdf",
+           "read_dia",
+           "read_noos",
+           "write_dia",
+           "write_noos",
+           "write_netcdf",
            "plot_timeseries",
            "plot_HWLW_validatestats",
            "resample_timeseries",
@@ -595,7 +595,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         return fig, axs
 
 
-def write_tsnetcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
+def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     """
     Writes the timeseries to a netCDF file
 
@@ -783,7 +783,7 @@ def write_tsnetcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     return
 
 
-def write_tsdia(ts, filename, headerformat='dia'):
+def write_dia(ts, filename, headerformat='dia'):
     """
     Writes the timeseries to an equidistant dia file or the extremes to 
     a non-equidistant dia file. This is only supported 
@@ -813,24 +813,24 @@ def write_tsdia(ts, filename, headerformat='dia'):
 
     """
     if "HWLWcode" in ts.columns:
-        write_tsdia_HWLW(ts_ext=ts, filename=filename, headerformat=headerformat)
+        write_dia_HWLW(ts_ext=ts, filename=filename, headerformat=headerformat)
     else:
-        write_tsdia_ts(ts=ts, filename=filename, headerformat=headerformat)
+        write_dia_ts(ts=ts, filename=filename, headerformat=headerformat)
 
     
-def write_tsdia_ts(ts, filename, headerformat='dia'):
+def write_dia_ts(ts, filename, headerformat='dia'):
     if "HWLWcode" in ts.columns:
-        raise TypeError("a timeseries with extremes (HWLW) was passed to write_tsdia, use `write_tsdia_HWLW()` instead")
+        raise TypeError("a timeseries with extremes (HWLW) was passed to write_dia, use `write_dia_HWLW()` instead")
     metadata = metadata_from_obj(ts)
     waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
     station = metadata['station']
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = ts.index.tz
     if tzone != pytz.FixedOffset(60):
-        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
+        raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
@@ -905,7 +905,7 @@ def write_tsdia_ts(ts, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
+def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
     
     metadata = metadata_from_obj(ts_ext)
     waarnemingssoort = wns_from_metadata(metadata)
@@ -913,10 +913,10 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
     station = metadata['station']
     quantity = metadata['grootheid']
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_tsdia() expects quantity WATHTBRKD, but {quantity} was provided.')
+        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = ts_ext.index.tz
     if tzone != pytz.FixedOffset(60):
-        raise ValueError(f'write_tsdia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
+        raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
@@ -1004,7 +1004,7 @@ def write_tsdia_HWLW(ts_ext, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def writets_noos(ts, filename, metadata=None):
+def write_noos(ts, filename, metadata=None):
     """
     Writes the timeseries to a noos file
 
@@ -1386,7 +1386,7 @@ def get_diablocks(filename):
             mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #,WNSCPM,HDH,ANA
             diablocks_pd.loc[block_id,'groepering'] = 'NVT'
         else:
-            raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.readts_dia()')
+            raise Exception(f'TYP "{row_TYP}" not implemented in hatyan.read_dia()')
         
         #read all required metadata
         for get_content_sel in mincontent:
@@ -1442,7 +1442,7 @@ def get_diablocks(filename):
     return diablocks_pd
 
 
-def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
+def read_dia_nonequidistant(filename, diablocks_pd, block_id):
 
     data_nrows = diablocks_pd.loc[block_id,'data_ends'] - diablocks_pd.loc[block_id,'data_starts']
     skiprows = diablocks_pd.loc[block_id,'data_starts']
@@ -1474,7 +1474,7 @@ def readts_dia_nonequidistant(filename, diablocks_pd, block_id):
     return data_pd
 
 
-def readts_dia_equidistant(filename, diablocks_pd, block_id):
+def read_dia_equidistant(filename, diablocks_pd, block_id):
     
     datestart = diablocks_pd.loc[block_id,'tstart']
     datestop = diablocks_pd.loc[block_id,'tstop']
@@ -1517,7 +1517,7 @@ def readts_dia_equidistant(filename, diablocks_pd, block_id):
     return data_pd
 
 
-def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_duplicates=False):
+def read_dia(filename, station=None, block_ids=None, get_status=False, allow_duplicates=False):
     """
     Reads an equidistant or non-equidistant dia file, or a list of dia files. Also works for diafiles containing multiple blocks for one station.
 
@@ -1573,7 +1573,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
                 raise ValueError(f"No data block with requested station ({station}) present in dia file. {str_getdiablockspd}")
             elif len(ids_station)>1 and block_ids is None:
                 raise ValueError(f"More than one data block with requested station ({station}) "
-                                 "present in dia file. Provide block_ids argument to readts_dia() (int, list of int or 'allstation'). "
+                                 "present in dia file. Provide block_ids argument to read_dia() (int, list of int or 'allstation'). "
                                  f"{str_getdiablockspd}")
             else: #exactly one occurrence or block_ids is provided or block_ids='allstation'
                 block_ids = ids_station
@@ -1598,9 +1598,9 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
             
         for block_id in block_ids:
             if np.isnan(diablocks_pd.loc[block_id,'timestep_min']):
-                data_pd_oneblock = readts_dia_nonequidistant(filename_one, diablocks_pd, block_id)
+                data_pd_oneblock = read_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
-                data_pd_oneblock = readts_dia_equidistant(filename_one, diablocks_pd, block_id)
+                data_pd_oneblock = read_dia_equidistant(filename_one, diablocks_pd, block_id)
             if get_status: #TODO: this can be more generic (eg add additional metadata) or more neat. Also in get_diablocks()
                 block_status_list = diablocks_pd.loc[block_id,'STA'].split('!')
                 for block_status_one in block_status_list:
@@ -1633,7 +1633,7 @@ def readts_dia(filename, station=None, block_ids=None, get_status=False, allow_d
     return data_pd_all
 
 
-def readts_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
+def read_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
     """
     Reads a noos file
 

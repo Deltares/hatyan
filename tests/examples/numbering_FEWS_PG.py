@@ -65,7 +65,7 @@ ax2.set_ylim(-1,2)
 fig.savefig(file_ncout.replace('.nc','_nrs.png'))
 
 """
-hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=0, nosidx=False)
+hatyan.write_netcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout, ts_ext=ts_ext_prediction_nos, tzone_hr=0, nosidx=False)
 #from dfm_tools.get_nc_helpers import get_ncvardimlist
 #vars_pd, dims_pd = get_ncvardimlist(file_nc=file_ncout)
 #data_nc_checkLWval = get_ncmodeldata(file_nc=file_ncout,varname='time_LW',timestep='all',station=0)
@@ -73,8 +73,8 @@ data_ncout = Dataset(file_ncout)
 data_ncout.variables['waterlevel_astro_LW_numbers']
 data_ncout.variables['waterlevel_astro_HW_numbers']
 """
-hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True)
-hatyan.write_tsnetcdf(ts=ts_prediction, station='HOEKVHLD_copy', vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True, mode='a')
+hatyan.write_netcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True)
+hatyan.write_netcdf(ts=ts_prediction, station='HOEKVHLD_copy', vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True, mode='a')
 data_ncout = Dataset(file_ncout_nosidx)
 data_ncout.variables['waterlevel_astro_HW']
 data_ncout.variables['HWLWno']
