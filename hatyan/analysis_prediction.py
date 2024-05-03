@@ -307,9 +307,9 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
     times_from0_s = times_from0_s[:,np.newaxis]
     
     #get frequency and v0
-    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(const_list, dood_date_mid, dood_date_start, hatyan_settings.source)
     omega_i_rads = t_const_freq_pd[['freq']].values.T*(2*np.pi)/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
+    u_i_rad, f_i = get_uf_generic(const_list, dood_date_fu, hatyan_settings.nodalfactors, hatyan_settings.xfac, hatyan_settings.source)
     v_u = v_0i_rad.values + u_i_rad.values
     
     #check rayleigh frequency after nyquist frequency folding process.
@@ -378,8 +378,8 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     const_list_inclCS = sort_const_list(const_list=const_list_inclCS_raw)
 
     #retrieve freq and speed
-    _, CS_v_0i_rad = get_freqv0_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    CS_u_i_rad, CS_f_i = get_uf_generic(hatyan_settings, const_list=const_list_inclCS, dood_date_fu=dood_date_mid)
+    _, CS_v_0i_rad = get_freqv0_generic(const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid, source=hatyan_settings.source) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
+    CS_u_i_rad, CS_f_i = get_uf_generic(const_list=const_list_inclCS, dood_date_fu=dood_date_mid, nodalfactors=hatyan_settings.nodalfactors, xfac=hatyan_settings.xfac, source=hatyan_settings.source)
     
     comp_inclCS = pd.DataFrame(comp,index=const_list_inclCS,columns=comp.columns)
     #comp_inclCS_preCS = comp_inclCS.copy()
@@ -417,7 +417,7 @@ def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
     return comp_inclCS
 
 
-def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_settings:HatyanSettings = None, **kwargs) -> pd.DataFrame:
+def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, **kwargs) -> pd.DataFrame:
     """
     generates a tidal prediction from a set of components A and phi values.
     The component set has the same timezone as the timeseries used to create it, therefore the resulting prediction will also be in that original timezone.
@@ -429,10 +429,6 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     times : (pd.DatetimeIndex,slice), optional
         pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
         If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
-    hatyan_settings : HatyanSettings, optional
-        DESCRIPTION. The default is None.
-    kwargs : TYPE
-        DESCRIPTION.
 
     Raises
     ------
@@ -450,15 +446,20 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     
     if "times_pred_all" in kwargs:
         raise DeprecationWarning("Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead")
-    if "timestep_min" in kwargs or "times_ext" in kwargs:
-        raise DeprecationWarning("Arguments 'times_ext' and 'timestep_min' for prediction() are deprecated, "
-                                 "pass times=slice(start,stop,step) instead")
+        kwargs.pop("times_pred_all")
+    if "timestep_min" in kwargs:
+        raise DeprecationWarning("Argument 'timestep_min' for prediction() is deprecated, pass times=slice(start,stop,step) instead")
+        kwargs.pop("timestep_min")
+    if "times_ext" in kwargs:
+        raise DeprecationWarning("Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead")
+        kwargs.pop("times_ext")
+    if len(kwargs)>0:
+        raise DeprecationWarning(f"prediction settings are now read from the attrs of the component dataframe, received additional arguments: {kwargs}")
     
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception("both arguments hatyan_settings and other settings "
-                        "(e.g. nodalfactors) are provided, this is not valid")
+    settings_kwargs = {}
+    for setting in ['nodalfactors', 'xfac', 'fu_alltimes', 'source']:
+        settings_kwargs[setting] = comp.attrs[setting]
+    hatyan_settings = HatyanSettings(**settings_kwargs)
     
     logger.info('PREDICTION initializing\n{hatyan_settings}')
     
@@ -507,14 +508,14 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     A = np.array(COMP['A'])
     phi_rad = np.array(np.deg2rad(COMP['phi_deg']))
 
-    t_const_freq_pd, v_0i_rad = get_freqv0_generic(hatyan_settings, const_list, dood_date_mid, dood_date_start)
+    t_const_freq_pd, v_0i_rad = get_freqv0_generic(const_list, dood_date_mid, dood_date_start, hatyan_settings.source)
     t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
 
     if hatyan_settings.fu_alltimes:
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-    u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
+    u_i_rad, f_i = get_uf_generic(const_list, dood_date_fu, hatyan_settings.nodalfactors, hatyan_settings.xfac, hatyan_settings.source)
 
     logger.info('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
