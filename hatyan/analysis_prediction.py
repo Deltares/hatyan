@@ -179,7 +179,7 @@ def analysis(ts, const_list,
     # validate settings
     hatyan_settings = HatyanSettings(source=source, nodalfactors=nodalfactors, fu_alltimes=fu_alltimes, xfac=xfac,
                                      analysis_perperiod=analysis_perperiod, return_allperiods=return_allperiods,
-                                     CS_comps=CS_comps)
+                                     CS_comps=CS_comps,xTxmat_condition_max=xTxmat_condition_max)
     
     logger.info('running: analysis')
     
@@ -238,19 +238,15 @@ def analysis(ts, const_list,
     return COMP_mean_pd
 
 
-def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, source='schureman'):
+def analysis_singleperiod(ts, const_list, hatyan_settings):
     """
     harmonic analysis with matrix transformations (least squares fit), optionally with component splitting
     for details about arguments and return variables, see analysis() definition
     
     """
     
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
-
     logger.info('ANALYSIS initializing\n{hatyan_settings}')
+    #TODO: print analysis_perperiod, return_allyears etc only for analysis (not singleperiod)
             
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
@@ -517,6 +513,7 @@ def prediction(comp, timestep_min=None, times=None):
     hatyan_settings = HatyanSettings(**settings_kwargs)
     
     logger.info('PREDICTION initializing\n{hatyan_settings}')
+    #TODO: print analysis_perperiod, return_allyears etc only for analysis (not at prediction)
         
     if hasattr(comp.columns,"levels"):
         logger.info('prediction() per period due to levels in component dataframe columns')
