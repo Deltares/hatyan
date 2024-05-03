@@ -121,7 +121,6 @@ def test_hwlw_metadata():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,

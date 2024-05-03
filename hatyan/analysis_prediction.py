@@ -176,6 +176,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     COMP_all_pd : pandas.DataFrame, optional
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
+    # remove timezone from timeseries (is added to components dataframe after analysis)
     ts_pd = ts.copy()
     ts_pd.index = ts_pd.index.tz_localize(None)
     
@@ -302,7 +303,6 @@ def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodal
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-
     times_from0_s = robust_timedelta_sec(ts_pd_nonan.index,refdate_dt=dood_date_start[0])
     times_from0_s = times_from0_s[:,np.newaxis]
     
@@ -514,7 +514,6 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         dood_date_fu = times_pred_all_pdDTI
     else:
         dood_date_fu = dood_date_mid
-    
     u_i_rad, f_i = get_uf_generic(hatyan_settings, const_list, dood_date_fu)
 
     logger.info('PREDICTION started')
@@ -541,7 +540,7 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
         if metadata_comp['grootheid'] == 'WATHTE':
             metadata_comp['grootheid'] = 'WATHTBRKD'
     
-    
+    # add timezone to timeseries again
     ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
     
     assert metadata_comp['nodalfactors'] == hatyan_settings.nodalfactors
@@ -549,7 +548,6 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     assert metadata_comp['fu_alltimes'] == hatyan_settings.fu_alltimes
     assert metadata_comp['source'] == hatyan_settings.source
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata_comp)
-    
     return ts_prediction_pd
 
 
