@@ -176,7 +176,9 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     COMP_all_pd : pandas.DataFrame, optional
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
-    ts_pd = ts #TODO: this is not necessary
+    # remove timezone from timeseries (is added to components dataframe after analysis)
+    ts_pd = ts.copy()
+    ts_pd.index = ts_pd.index.tz_localize(None)
     
     if hatyan_settings is None:
         hatyan_settings = HatyanSettings(**kwargs)
@@ -197,7 +199,8 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod
         logger.info(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
-        ts_periods_dt = ts_pd.index.to_period(period).unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+        ts_periods_dt_all = ts_pd.index.to_period(period)
+        ts_periods_dt = ts_periods_dt_all.unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
         n_periods = len(ts_periods_dt)
@@ -205,7 +208,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
         phi_i_deg_all = np.zeros((n_const,n_periods))*np.nan
         for iP, period_dt in enumerate(ts_periods_dt):
             logger.info('analyzing %s of sequence %s'%(period_dt,ts_periods_strlist))
-            ts_oneperiod_pd = ts_pd[ts_pd.index.to_period(period)==period_dt]
+            ts_oneperiod_pd = ts_pd[ts_periods_dt_all==period_dt]
             try:
                 COMP_one = analysis_singleperiod(ts_oneperiod_pd, const_list=const_list, hatyan_settings=hatyan_settings)
                 A_i_all[:,iP] = COMP_one.loc[:,'A']
@@ -229,6 +232,7 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     metadata['xfac'] = hatyan_settings.xfac
     metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
     metadata['source'] = hatyan_settings.source
+    metadata['tzone'] = ts.index.tz
     COMP_mean_pd = metadata_add_to_obj(COMP_mean_pd, metadata)
     
     if hatyan_settings.return_allperiods:
@@ -458,6 +462,9 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     
     logger.info('PREDICTION initializing\n{hatyan_settings}')
     
+    metadata_comp = metadata_from_obj(comp)
+    tzone_comp = metadata_comp.pop("tzone")
+    
     if times is None:
         metadata = metadata_from_obj(comp)
         if not set(['tstart','tstop','timestep_min']).issubset(metadata.keys()):
@@ -474,6 +481,11 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     
     if len(times_pred_all_pdDTI) <= 1:
         raise Exception('ERROR: requested prediction period is not more than one timestep_min')
+    
+    # localize times datetimeindex, first convert times to tzone of components, then drop timezone
+    if times_pred_all_pdDTI.tz is not None:
+        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_convert(tzone_comp)
+        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(None)
     
     message = (f'components used = {len(comp)}\n'
                f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
@@ -523,18 +535,19 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     logger.info('PREDICTION finished')
     
     # add metadata (first assert if metadata from comp is same as hatyan_settings
-    metadata_comp = metadata_from_obj(comp)
     if 'grootheid' in metadata_comp:
         # update metadata
         if metadata_comp['grootheid'] == 'WATHTE':
             metadata_comp['grootheid'] = 'WATHTBRKD'
+    
+    # add timezone to timeseries again
+    ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
     
     assert metadata_comp['nodalfactors'] == hatyan_settings.nodalfactors
     assert metadata_comp['xfac'] == hatyan_settings.xfac
     assert metadata_comp['fu_alltimes'] == hatyan_settings.fu_alltimes
     assert metadata_comp['source'] == hatyan_settings.source
     ts_prediction_pd = metadata_add_to_obj(ts_prediction_pd, metadata_comp)
-
     return ts_prediction_pd
 
 

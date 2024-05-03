@@ -13,6 +13,7 @@ import pandas as pd
 import datetime as dt
 from netCDF4 import Dataset, num2date
 import hatyan
+import pytz
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -28,7 +29,7 @@ def test_writenetcdf():
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     
     file_nc = 'prediction_10m_%s.nc'%(current_station)
-    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, tzone_hr=1)
+    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc)
     
     data_nc = Dataset(file_nc,'r')
     
@@ -41,8 +42,8 @@ def test_writenetcdf():
     
     assert list(data_nc.dimensions.keys()) == ['stations', 'statname_len', 'time', 'analysis_time', 'time_HW', 'time_LW']
     assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 'time_HW', 'waterlevel_astro_HW', 'time_LW', 'waterlevel_astro_LW']
-    assert timevar_dt[0] == ts_prediction.index[0]
-    assert timevar_dt[-1] == ts_prediction.index[-1]
+    assert timevar_dt[0] == ts_prediction.index[0].tz_convert(None)
+    assert timevar_dt[-1] == ts_prediction.index[-1].tz_convert(None)
     assert 'title' in data_nc.__dict__.keys()
     assert 'institution' in data_nc.__dict__.keys()
     assert 'source' in data_nc.__dict__.keys()
@@ -63,7 +64,7 @@ def test_writenetcdf_nosidx():
     ts_ext_prediction = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction)
     
     file_nc = 'prediction_10m_%s.nc'%(current_station)
-    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, tzone_hr=1, nosidx=True)
+    hatyan.write_tsnetcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, station=current_station, vertref='NAP', filename=file_nc, nosidx=True)
     
     data_nc = Dataset(file_nc,'r')
     
@@ -77,8 +78,8 @@ def test_writenetcdf_nosidx():
     assert list(data_nc.dimensions.keys()) == ['stations', 'statname_len', 'time', 'analysis_time', 'HWLWno']
     assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 
                                               'HWLWno', 'times_astro_HW', 'waterlevel_astro_HW', 'times_astro_LW', 'waterlevel_astro_LW']
-    assert timevar_dt[0] == ts_prediction.index[0]
-    assert timevar_dt[-1] == ts_prediction.index[-1]
+    assert timevar_dt[0] == ts_prediction.index[0].tz_convert(None)
+    assert timevar_dt[-1] == ts_prediction.index[-1].tz_convert(None)
     assert 'title' in data_nc.__dict__.keys()
     assert 'institution' in data_nc.__dict__.keys()
     assert 'source' in data_nc.__dict__.keys()
@@ -282,13 +283,14 @@ def test_prediction_1018():
                                     dt.datetime(1018, 7, 21, 2, 40),
                                     dt.datetime(1018, 7, 21, 2, 50),
                                     dt.datetime(1018, 7, 21, 3, 0)], dtype=np.datetime64)
+    ts_prediction_times_pd = pd.DatetimeIndex(ts_prediction_times).tz_localize("UTC+01:00")
     ts_prediction_vals = np.array([-0.77416669, -0.78821831, -0.79718123, -0.80126649, -0.80055319,
                                    -0.79466499, -0.78252257, -0.76226094, -0.73136835, -0.68705389,
                                    -0.62679467, -0.54896408, -0.4534113 , -0.34185962, -0.218017  ,
                                    -0.08734459,  0.04350389,  0.16749106,  0.27811846])
     
     assert (np.abs(ts_prediction['values'].values-ts_prediction_vals) < 10E-9).all()
-    assert (np.abs(ts_prediction.index.values-ts_prediction_times) < dt.timedelta(days=10E-9)).all()
+    assert (np.abs(ts_prediction.index-ts_prediction_times_pd) < dt.timedelta(days=10E-9)).all()
 
 
 @pytest.mark.systemtest
@@ -328,8 +330,9 @@ def test_frommergedcomp():
     
     # 4. Vefiry final expectations
     assert type(ts_prediction_direct) == pd.core.frame.DataFrame
-    assert ts_prediction_direct.index[0].to_pydatetime() == times_pred.start
-    assert ts_prediction_direct.index[-1].to_pydatetime() == times_pred.stop
+    assert ts_prediction_direct.index.tz==pytz.FixedOffset(60)
+    assert ts_prediction_direct.index[0].tz_localize(None) == times_pred.start
+    assert ts_prediction_direct.index[-1].tz_localize(None) == times_pred.stop
     assert len(ts_prediction_direct_values) == len(expected_ts_prediction_data_pd_values)
     assert type(ts_prediction_direct_values) == type(expected_ts_prediction_data_pd_values)
     assert (np.abs(ts_prediction_direct_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
@@ -777,7 +780,7 @@ def test_19Ycomp4Ydia_compsplitsing():
                                                      -0.29615745, -0.24552815, -0.19141437])
     
     # 4. Vefiry final expectations
-    assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()        
+    assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
 
 
 @pytest.mark.systemtest
@@ -878,3 +881,34 @@ def test_allfromdia_2008xfac0():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
+
+
+def test_prediction_comp_and_times_different_timezones():
+    """
+    it is possible to supply a timezone via times, but the comp dataframe also contains a timezone already.
+    The components timezone is leading, but the times will be converted to that timezone also.
+    From the below test, both predictions are therefore UTC+01:00, but the times are shifted
+    """
+    
+    current_station = 'VLISSGN'
+    
+    const_list = hatyan.get_const_list_hatyan('year') # 94 constituents
+    
+    file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_obs1.txt')
+    
+    times_pred1 = slice("2019-01-01","2020-01-01", 10)
+    times_pred2 = pd.date_range("2019-01-01","2020-01-01", freq="10min", unit="us", tz="UTC+02:00")
+
+    ts_measurements_group0 = hatyan.readts_dia(filename=file_data_comp0, station=current_station)
+    
+    comp_frommeasurements_avg_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list)
+    
+    #prediction and validation
+    ts_prediction1 = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred1)
+    ts_prediction2 = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred2)
+    
+    assert ts_prediction1.index.tz == pytz.FixedOffset(60)
+    assert ts_prediction2.index.tz == pytz.FixedOffset(60)
+    assert ts_prediction1.index[0] == pd.Timestamp('2019-01-01 00:00:00 +01:00')
+    assert ts_prediction2.index[0] == pd.Timestamp('2018-12-31 23:00:00 +01:00')
+    assert ((ts_prediction1-ts_prediction2).dropna()["values"] < 1e-9).all()

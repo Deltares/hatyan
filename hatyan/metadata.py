@@ -6,7 +6,6 @@ Created on Wed Aug  9 20:48:46 2023
 """
 
 import numpy as np
-import pytz
 
 
 def metadata_add_to_obj(obj,metadata):
@@ -31,10 +30,6 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     
     #TODO: align with metadata from hatyan.read_components()
     metadata = {key:diablocks_pd_onerow[key] for key in metadata_keys}
-    
-    # add hardcodedtzone
-    #TODO: is this documented in the dia file?
-    metadata['tzone'] = pytz.FixedOffset(60)
     
     # add origin
     metadata['origin'] = 'from timeseries dia file'

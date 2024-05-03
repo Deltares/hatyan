@@ -122,9 +122,9 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             ts_prediction_CADZD_M2 = hatyan.prediction(comp=COMP_merged_CADZD_M2, nodalfactors=True, xfac=xfac_cadzd, fu_alltimes=False, times=times_pred)
             ax1.plot(ts_prediction_CADZD_M2.index, ts_prediction_CADZD_M2['values'], label='CADZD_M2', color='k')
             ts_ext_prediction_CADZD = hatyan.calc_HWLW(ts=ts_prediction_CADZD)
-            bool_newyear = (ts_ext_prediction_CADZD.index>dt.datetime(yr,1,1)) & (ts_ext_prediction_CADZD['HWLWcode']==1)
-            firstHWcadz = ts_ext_prediction_CADZD.loc[bool_newyear].index[0].to_pydatetime()
-            #firstHWcadz = dt.datetime(2000,1,1,9,45,0)#dt.datetime(2010,1,1,13,40,0)
+            ts_ext_prediction_CADZD_newyr = ts_ext_prediction_CADZD.loc[str(yr):]
+            bool_newyr_hw = ts_ext_prediction_CADZD_newyr['HWLWcode']==1
+            firstHWcadz = ts_ext_prediction_CADZD_newyr.loc[bool_newyr_hw].index[0]
         
         M2phasediff_raw = (COMP_merged.loc['M2','phi_deg']-COMP_merged_CADZD.loc['M2','phi_deg'])%360
         

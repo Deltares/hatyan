@@ -17,6 +17,7 @@
 - moved from prints to logging in [#236](https://github.com/Deltares/hatyan/pull/236)
 - made `hatyan.get_diablocks()` private and added public `hatyan.get_diaxycoords()` instead [#244](https://github.com/Deltares/hatyan/pull/244)
 - made `hatyan.Timeseries_Statistics()` public [#244](https://github.com/Deltares/hatyan/pull/244)
+- support for timezones in hatyan timeseries in [#258](https://github.com/Deltares/hatyan/pull/258)
 
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)
