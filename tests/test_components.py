@@ -132,4 +132,35 @@ def test_components_timeshift():
     comp_shift_tz_min = comp_shift_meta['tzone']._minutes
     
     assert comp_merged_tz_min + timeshift_hr*60 == comp_shift_tz_min
+
+
+@pytest.mark.unittest
+def test_merge_componentgroups_comparesettings():
+    current_station = 'VLISSGN'
     
+    #comp1
+    file_data_comp = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
+    
+    comp_fromfile = hatyan.read_components(filename=file_data_comp)
+    
+    #merge component groups (SA/SM from 19Y, rest from 4Y)
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["nodalfactors"] = False
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["xfac"] = False
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["fu_alltimes"] = True
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
+    with pytest.raises(ValueError):
+        comp_fromfile_fake = comp_fromfile.copy()
+        comp_fromfile_fake.attrs["source"] = 'foreman'
+        _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
+
