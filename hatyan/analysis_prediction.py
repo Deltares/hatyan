@@ -523,18 +523,13 @@ def prediction(comp, timestep_min=None, times=None):
     hatyan_settings = HatyanSettings(**settings_kwargs)
     
     logger.info('PREDICTION initializing\n{hatyan_settings}')
-    
+        
     if hasattr(comp.columns,"levels"):
-        prediction_perperiod = True
-    else:
-        prediction_perperiod = False
-    logger.info(f'prediction_perperiod={prediction_perperiod}')
-    
-    if prediction_perperiod:
+        logger.info('prediction() per period due to levels in component dataframe columns')
         if timestep_min is None:
-            raise TypeError("prediction_perperiod=True in prediction(), so 'timestep_min' argument should not be None")
+            raise TypeError("prediction() per period, so 'timestep_min' argument should not be None")
         if times is not None:
-            raise TypeError("prediction_perperiod=True in prediction(), so 'times' argument not allowed")
+            raise TypeError("prediction() per period, so 'times' argument not allowed")
         # convert timestep_min to tstep of proper type (tstart/tstop are dummies here)
         times_slice = slice("1900-01-01", "1900-01-01", timestep_min)
         _, _, tstep = get_tstart_tstop_tstep(times_slice)
@@ -561,10 +556,11 @@ def prediction(comp, timestep_min=None, times=None):
             ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
         ts_prediction = pd.concat(ts_prediction_perperiod_list)
     else:
+        logger.info('prediction() atonce')
         if timestep_min is not None:
-            raise TypeError("prediction_perperiod=False in prediction(), so 'timestep_min' argument not allowed")
+            raise TypeError("prediction() atonce, so 'timestep_min' argument not allowed")
         if times is None:
-            raise TypeError("prediction_perperiod=False in prediction(), so 'times' argument should not be None")
+            raise TypeError("prediction() atonce, so 'times' argument should not be None")
         if isinstance(times,slice):
             tstart, tstop, tstep = get_tstart_tstop_tstep(times)
             times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
