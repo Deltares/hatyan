@@ -160,3 +160,8 @@ def test_merge_componentgroups_comparesettings():
         comp_fromfile_fake.attrs["source"] = 'foreman'
         _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'])
 
+    # also check if we can merge component dataframes with different settings in case meta_allow_different is provided
+    comp_fromfile_fake = comp_fromfile.copy()
+    comp_fromfile_fake.attrs["xfac"] = False
+    _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake, comp_sec_list=['SA','SM'],
+                                     meta_allow_different=["xfac"])

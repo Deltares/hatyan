@@ -99,7 +99,8 @@ for current_station in selected_stations:
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'],
+                                               meta_allow_different=["xfac"])
     #replace A0 amplitude (middenstand) by slotgemiddelde
     if current_station in stations_slotgem.index.tolist():
         COMP_merged.loc['A0','A'] = stations_slotgem.loc[current_station,'slotgemiddelde']

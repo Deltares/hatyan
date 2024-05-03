@@ -6,6 +6,7 @@ Created on Wed Aug  9 20:48:46 2023
 """
 
 import numpy as np
+import pandas as pd
 
 
 def metadata_add_to_obj(obj,metadata):
@@ -64,7 +65,9 @@ def metadata_compare(metadata_list):
         meta1 = metadata_list_notstartstop[i-1]
         meta2 = metadata_list_notstartstop[i]
         if meta1!=meta2:
-            raise ValueError(f'metadata for two datasets is not equal, cannot be merged:\n{meta1}\n{meta2}')
+            meta_12_df = pd.concat([pd.Series(meta1), pd.Series(meta2)],axis=1)
+            meta_12_df["equal"] = meta_12_df[0]==meta_12_df[1]
+            raise ValueError(f'metadata for two datasets is not equal, cannot be merged:\n{meta_12_df}')
 
 
 def wns_from_metadata(metadata):

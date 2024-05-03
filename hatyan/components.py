@@ -223,7 +223,7 @@ def write_components(comp, filename):
                                                               compname))
 
 
-def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
+def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM'], meta_allow_different=None):
     """
     Merges the provided component groups into one
 
@@ -233,8 +233,10 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
         DESCRIPTION.
     comp_sec : TYPE
         DESCRIPTION.
-    comp_sec_list : TYPE, optional
+    comp_sec_list : list of strings, optional
         DESCRIPTION. The default is ['SA','SM'].
+    meta_allow_different : list of strings, optional
+        List of metadata keys that are allowed to be different. The default is None.
 
     Raises
     ------
@@ -252,6 +254,9 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     comp_sec_meta = metadata_from_obj(comp_sec).copy()
     
     meta_settings_list = ['origin','groepering','timestep_min','timestep_unit','TYP']
+    if meta_allow_different is not None:
+        meta_settings_list += meta_allow_different
+    
     comp_main_meta_others = {}
     for key in meta_settings_list:
         if key in comp_main_meta:
