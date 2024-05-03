@@ -181,8 +181,8 @@ def analysis(ts, const_list,
                                      analysis_perperiod=analysis_perperiod, return_allperiods=return_allperiods,
                                      CS_comps=CS_comps,xTxmat_condition_max=xTxmat_condition_max)
     
-    logger.info('running: analysis')
-    
+    logger.info(f'ANALYSIS initializing\n{hatyan_settings}')
+        
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
     elif type(const_list) is not list:
@@ -235,6 +235,8 @@ def analysis(ts, const_list,
         COMP_all_pd = metadata_add_to_obj(COMP_all_pd, metadata)
         return COMP_mean_pd, COMP_all_pd
     
+    logger.info('ANALYSIS finished')
+    
     return COMP_mean_pd
 
 
@@ -245,9 +247,6 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     
     """
     
-    logger.info(f'ANALYSIS initializing\n{hatyan_settings}')
-    #TODO: print analysis_perperiod, return_allyears etc only for analysis (not singleperiod)
-            
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
     ts_pd = ts.copy() #TODO: this is not necessary
@@ -348,8 +347,6 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     if hatyan_settings.CS_comps is not None:
         COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid, hatyan_settings=hatyan_settings)
         
-    logger.info('ANALYSIS finished')
-    
     return COMP_pd
 
 
@@ -514,7 +511,7 @@ def prediction(comp, timestep_min=None, times=None):
     
     logger.info(f'PREDICTION initializing\n{hatyan_settings}')
     #TODO: print analysis_perperiod, return_allyears etc only for analysis (not at prediction)
-        
+    
     if hasattr(comp.columns,"levels"):
         logger.info('prediction() per period due to levels in component dataframe columns')
         if timestep_min is None:
