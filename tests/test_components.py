@@ -136,11 +136,7 @@ def test_components_timeshift():
 
 @pytest.mark.unittest
 def test_merge_componentgroups_comparesettings():
-    current_station = 'VLISSGN'
-    
-    #comp1
-    file_data_comp = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    
+    file_data_comp = os.path.join(dir_testdata,'VLISSGN_ana.txt')
     comp_fromfile = hatyan.read_components(filename=file_data_comp)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
