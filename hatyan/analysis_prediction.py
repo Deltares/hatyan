@@ -12,6 +12,7 @@ from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_ti
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import Timeseries_Statistics, nyquist_folding, check_rayleigh
 from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
+from hatyan.deprecated import deprecated_python_option, DEPRECATED_OPTIONS_PREDICTION_DICT
 
 __all__ = ["HatyanSettings",
            "analysis",
@@ -487,7 +488,8 @@ def prediction_singleperiod(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice), h
     return ts_prediction_pd
 
 
-def prediction(comp, timestep_min=None, times=None, **kwargs):
+@deprecated_python_option(**DEPRECATED_OPTIONS_PREDICTION_DICT)
+def prediction(comp, timestep_min=None, times=None):
     """
     generates a tidal prediction from a set of components A and phi values.
     The component set has the same timezone as the timeseries used to create it, 
@@ -506,8 +508,6 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
         If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
     hatyan_settings : hatyan.HatyanSettings()
         Contains the used settings
-    kwargs : TYPE
-        DESCRIPTION.
 
     Returns
     -------
@@ -515,13 +515,6 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
         The DataFrame contains a 'values' column and a pd.DatetimeIndex as index, it contains the prediction times and values.
 
     """
-    
-    if "times_pred_all" in kwargs:
-        raise DeprecationWarning("Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead")
-    if "times_ext" in kwargs:
-        raise DeprecationWarning("Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead")
-    if len(kwargs)>0:
-        raise DeprecationWarning(f"prediction settings are now read from the attrs of the component dataframe, received additional arguments: {kwargs}")
     
     # get settings from component attribute and validate their values
     settings_kwargs = {}
@@ -539,7 +532,7 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
     
     if prediction_perperiod:
         if timestep_min is None:
-            raise TypeError("prediction() has prediction_perperiod=True, so 'timestep_min' argument is required")
+            raise TypeError("prediction() has prediction_perperiod=True, so 'timestep_min' should not be None")
         if times is not None:
             raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument not allowed")
         # convert timestep_min to tstep of proper type (tstart/tstop are dummies here)
@@ -571,7 +564,7 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
         if timestep_min is not None:
             raise TypeError("prediction() has prediction_perperiod=False, so 'timestep_min' argument not allowed")
         if times is None:
-            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument is required")
+            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument should not be None")
         if isinstance(times,slice):
             tstart, tstop, tstep = get_tstart_tstop_tstep(times)
             times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
