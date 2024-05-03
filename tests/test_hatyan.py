@@ -894,7 +894,7 @@ def test_prediction_comp_and_times_different_timezones():
     
     const_list = hatyan.get_const_list_hatyan('year') # 94 constituents
     
-    file_data_comp0 = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_obs1.txt')
+    file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_obs1.txt')
     
     times_pred1 = slice("2019-01-01","2020-01-01", 10)
     times_pred2 = pd.date_range("2019-01-01","2020-01-01", freq="10min", unit="us", tz="UTC+02:00")
