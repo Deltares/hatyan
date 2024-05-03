@@ -10,7 +10,7 @@ import pytest
 import pytz
 import pandas as pd
 import hatyan
-from hatyan.metadata import metadata_from_obj, metadata_compare, wns_from_metadata #, metadata_from_diablocks, metadata_add_to_obj
+from hatyan.metadata import metadata_from_obj, metadata_compare, wns_from_metadata
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -34,7 +34,6 @@ def test_readts_dia_metadata_multifile():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file'}
     
     assert meta_fromts == meta_expected
@@ -68,7 +67,6 @@ def test_anapred_metadata():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,
@@ -111,7 +109,6 @@ def test_hwlw_metadata():
      'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
-     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file'}
     
     pred_ext_meta_expected = {'station': 'VLISSGN',
@@ -155,7 +152,6 @@ def test_readts_dia_metadata_multiblock():
      'timestep_unit': None,
      'TYP': 'TN',
      'groepering': 'GETETM2',
-     # 'tzone': pytz.FixedOffset(60),
      'origin': 'from timeseries dia file'}
     
     assert meta_fromts == meta_expected

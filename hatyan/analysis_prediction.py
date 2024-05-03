@@ -176,7 +176,6 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     COMP_all_pd : pandas.DataFrame, optional
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
-    # ts_pd = ts #TODO: this is not necessary
     ts_pd = ts.copy()
     ts_pd.index = ts_pd.index.tz_localize(None)
     
@@ -474,7 +473,6 @@ def prediction(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice) = None, hatyan_
     
     if isinstance(times, pd.DatetimeIndex):
         times_pred_all_pdDTI = times
-        # assert times.tz == tzone # TODO: this will probably fail in several cases
     elif isinstance(times,slice):
         tstart, tstop, tstep = get_tstart_tstop_tstep(times)
         times_pred_all_pdDTI = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
