@@ -28,11 +28,9 @@ for current_station in selected_stations:
     for fu_alltimes in [True,False]:
         xfac = False
         #prediction and comparison to measurements
-        settings_schu = hatyan.HatyanSettings(source='schureman',fu_alltimes=fu_alltimes,xfac=xfac)
-        settings_for = hatyan.HatyanSettings(source='foreman',fu_alltimes=fu_alltimes,xfac=xfac)
-        COMP_schu = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, hatyan_settings=settings_schu)
+        COMP_schu = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, source='schureman', fu_alltimes=fu_alltimes, xfac=xfac)
         ts_prediction_schu = hatyan.prediction(comp=COMP_schu, times=ts_measurements_group0_lastyear.index)
-        COMP_for = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, hatyan_settings=settings_for)
+        COMP_for = hatyan.analysis(ts=ts_measurements_group0_lastyear, const_list=const_list, source='foreman', fu_alltimes=fu_alltimes, xfac=xfac)
         ts_prediction_for = hatyan.prediction(comp=COMP_for, times=ts_measurements_group0_lastyear.index)
         
         fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_schu, ts_validation=ts_prediction_for)
