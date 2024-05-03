@@ -12,9 +12,9 @@ from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_ti
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import Timeseries_Statistics, nyquist_folding, check_rayleigh
 from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
+from hatyan.deprecated import deprecated_python_option, DEPRECATED_OPTIONS_PREDICTION_DICT
 
-__all__ = ["HatyanSettings",
-           "analysis",
+__all__ = ["analysis",
            "prediction",
            ]
 
@@ -35,28 +35,11 @@ class HatyanSettings:
     Settings class containing default hatyan settings, to be overwritten by input, initiate with:
     hatyan_settings = hatyan.HatyanSettings(nodalfactors=False)
 
-    source : TYPE, optional
-        DESCRIPTION. The default is 'schureman'.
-    nodalfactors : bool, optional
-        Whether or not to apply nodal factors. The default is True.
-    fu_alltimes : bool, optional
-        Whether to calculate nodal factors in middle of the analysis/prediction period (default) or on every timestep. The default is True.
-    xfac : bool, optional
-        Whether or not to apply x-factors. The default is False.
-    
-    CS_comps : pandas.DataFrame, optional
-        contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. Only relevant for analysis. The default is None.
-    
-    analysis_perperiod : False or Y/Q/W, optional
-        caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
-    return_allperiods : bool, optional
-        Only relevant if analysis_perperiod is not None. The default is False.
-    
     """
-    #TODO: analysis_perperiod,return_allyears only for analysis (not singleperiod). Merge analysis and analysis_singleperiod? Remove some from HatyanSettings class or maybe split? Add const_list to HatyanSettings?
     
-    def __init__(self, source='schureman', nodalfactors=True, fu_alltimes=True, xfac=False, #prediction/analysis 
-                 CS_comps=None, analysis_perperiod=False, return_allperiods=False, 
+    def __init__(self, 
+                 nodalfactors, fu_alltimes, xfac, source, #prediction/analysis 
+                 CS_comps=None, analysis_perperiod=False, return_allperiods=False, #analysis only
                  xTxmat_condition_max=12): #analysis only
         if not isinstance(source,str):
             raise Exception('invalid source type, should be str')
@@ -147,12 +130,17 @@ def vectoravg(A_all, phi_deg_all):
     return A_mean, phi_deg_mean
 
 
-def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, analysis_perperiod=False, source='schureman'):
+def analysis(ts, const_list, 
+             nodalfactors=True, fu_alltimes=True, xfac=False, 
+             source='schureman',
+             CS_comps=None,
+             analysis_perperiod=False, return_allperiods=False,
+             xTxmat_condition_max=12):
     """
-    Wrapper around the analysis() function, 
-    it optionally processes a timeseries per year and vector averages the results afterwards, 
-    passes the rest of the arguments on to analysis function
-    The timezone of the timeseries, will also be reflected in the phases of the resulting component set, so the resulting component set can be used to make a prediction in the original timezone.
+    Analysis of timeseries.
+    Optionally processes a timeseries per year and vector averages the results afterwards.
+    The timezone of the timeseries, will also be reflected in the phases of the resulting component set, 
+    so the resulting component set can be used to make a prediction in the original timezone.
     
     Parameters
     ----------
@@ -161,13 +149,21 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     const_list : list, pandas.Series or str
         list or pandas.Series: contains the tidal constituent names for which to analyse the provided timeseries ts. 
         str: a predefined name of a component set for hatyan_core.get_const_list_hatyan()
-    hatyan_settings : hatyan.HatyanSettings()
-        Contains the used settings
-
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
+    nodalfactors : bool
+        Whether or not to apply nodal factors. The default is True.
+    fu_alltimes : bool
+        Whether to calculate nodal factors in middle of the analysis/prediction period (default) or on every timestep. The default is True.
+    xfac : bool
+        Whether or not to apply x-factors. The default is False.
+    source : TYPE
+        DESCRIPTION. The default is 'schureman'.
+    CS_comps : pandas.DataFrame, optional
+        contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. Only relevant for analysis. The default is None.
+    analysis_perperiod : False or Y/Q/W, optional
+        caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
+    return_allperiods : bool, optional
+        Only relevant if analysis_perperiod is not None. The default is False.
+    
 
     Returns
     -------
@@ -180,10 +176,10 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     ts_pd = ts.copy()
     ts_pd.index = ts_pd.index.tz_localize(None)
     
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
+    # validate settings
+    hatyan_settings = HatyanSettings(source=source, nodalfactors=nodalfactors, fu_alltimes=fu_alltimes, xfac=xfac,
+                                     analysis_perperiod=analysis_perperiod, return_allperiods=return_allperiods,
+                                     CS_comps=CS_comps,xTxmat_condition_max=xTxmat_condition_max)
     
     logger.info('running: analysis')
     
@@ -242,19 +238,15 @@ def analysis(ts, const_list, hatyan_settings=None, **kwargs): # nodalfactors=Tru
     return COMP_mean_pd
 
 
-def analysis_singleperiod(ts, const_list, hatyan_settings=None, **kwargs):#nodalfactors=True, xfac=False, fu_alltimes=True, CS_comps=None, source='schureman'):
+def analysis_singleperiod(ts, const_list, hatyan_settings):
     """
     harmonic analysis with matrix transformations (least squares fit), optionally with component splitting
     for details about arguments and return variables, see analysis() definition
     
     """
     
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
-
     logger.info('ANALYSIS initializing\n{hatyan_settings}')
+    #TODO: print analysis_perperiod, return_allyears etc only for analysis (not singleperiod)
             
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
@@ -487,7 +479,8 @@ def prediction_singleperiod(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice), h
     return ts_prediction_pd
 
 
-def prediction(comp, timestep_min=None, times=None, **kwargs):
+@deprecated_python_option(**DEPRECATED_OPTIONS_PREDICTION_DICT)
+def prediction(comp, timestep_min=None, times=None):
     """
     generates a tidal prediction from a set of components A and phi values.
     The component set has the same timezone as the timeseries used to create it, 
@@ -499,15 +492,12 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
     ----------
     comp : pd.DataFrame
         The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
-    timestep_min : TYPE
-        DESCRIPTION.
+    timestep_min : int
+        Only allowed/relevant for component dataframes with multi-level columns (different periods). The default is None.
     times : (pd.DatetimeIndex,slice), optional
         pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
-        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. The default is None.
-    hatyan_settings : hatyan.HatyanSettings()
-        Contains the used settings
-    kwargs : TYPE
-        DESCRIPTION.
+        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. 
+        Only allowed/relevant for component dataframes with single-level columns (single period). The default is None.
 
     Returns
     -------
@@ -516,13 +506,6 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
 
     """
     
-    if "times_pred_all" in kwargs:
-        raise DeprecationWarning("Argument 'times_pred_all' for prediction() is deprecated, use 'times' instead")
-    if "times_ext" in kwargs:
-        raise DeprecationWarning("Argument 'times_ext' for prediction() is deprecated, pass times=slice(start,stop,step) instead")
-    if len(kwargs)>0:
-        raise DeprecationWarning(f"prediction settings are now read from the attrs of the component dataframe, received additional arguments: {kwargs}")
-    
     # get settings from component attribute and validate their values
     settings_kwargs = {}
     for setting in ['nodalfactors', 'xfac', 'fu_alltimes', 'source']:
@@ -530,18 +513,14 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
     hatyan_settings = HatyanSettings(**settings_kwargs)
     
     logger.info('PREDICTION initializing\n{hatyan_settings}')
-    
+    #TODO: print analysis_perperiod, return_allyears etc only for analysis (not at prediction)
+        
     if hasattr(comp.columns,"levels"):
-        prediction_perperiod = True
-    else:
-        prediction_perperiod = False
-    logger.info(f'prediction_perperiod={prediction_perperiod}')
-    
-    if prediction_perperiod:
+        logger.info('prediction() per period due to levels in component dataframe columns')
         if timestep_min is None:
-            raise TypeError("prediction() has prediction_perperiod=True, so 'timestep_min' argument is required")
+            raise TypeError("prediction() per period, so 'timestep_min' argument should not be None")
         if times is not None:
-            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument not allowed")
+            raise TypeError("prediction() per period, so 'times' argument not allowed")
         # convert timestep_min to tstep of proper type (tstart/tstop are dummies here)
         times_slice = slice("1900-01-01", "1900-01-01", timestep_min)
         _, _, tstep = get_tstart_tstop_tstep(times_slice)
@@ -568,10 +547,11 @@ def prediction(comp, timestep_min=None, times=None, **kwargs):
             ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
         ts_prediction = pd.concat(ts_prediction_perperiod_list)
     else:
+        logger.info('prediction() atonce')
         if timestep_min is not None:
-            raise TypeError("prediction() has prediction_perperiod=False, so 'timestep_min' argument not allowed")
+            raise TypeError("prediction() atonce, so 'timestep_min' argument not allowed")
         if times is None:
-            raise TypeError("prediction() has prediction_perperiod=False, so 'times' argument is required")
+            raise TypeError("prediction() atonce, so 'times' argument should not be None")
         if isinstance(times,slice):
             tstart, tstop, tstep = get_tstart_tstop_tstep(times)
             times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
