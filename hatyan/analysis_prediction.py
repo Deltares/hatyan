@@ -245,7 +245,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     
     """
     
-    logger.info('ANALYSIS initializing\n{hatyan_settings}')
+    logger.info(f'ANALYSIS initializing\n{hatyan_settings}')
     #TODO: print analysis_perperiod, return_allyears etc only for analysis (not singleperiod)
             
     #drop duplicate times
@@ -512,7 +512,7 @@ def prediction(comp, timestep_min=None, times=None):
         settings_kwargs[setting] = comp.attrs[setting]
     hatyan_settings = HatyanSettings(**settings_kwargs)
     
-    logger.info('PREDICTION initializing\n{hatyan_settings}')
+    logger.info(f'PREDICTION initializing\n{hatyan_settings}')
     #TODO: print analysis_perperiod, return_allyears etc only for analysis (not at prediction)
         
     if hasattr(comp.columns,"levels"):
