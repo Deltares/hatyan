@@ -213,23 +213,53 @@ def test_predictionsettings():
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    # ts_prediction_nfac1_fualltimes0_xfac1
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=True, times=times_pred)
-    # ts_prediction_nfac1_fualltimes1_xfac1
-    COMP_merged.attrs["fu_alltimes"] = True
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=True, times=times_pred)
-    # ts_prediction_nfac1_fualltimes1_xfaccustom
-    COMP_merged.attrs["xfac"] = {"M2":0.8}
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac={"M2":0.8}, times=times_pred)
-    # ts_prediction_nfac1_fualltimes1_xfac0
-    COMP_merged.attrs["xfac"] = False
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=True, xfac=False, times=times_pred)
-    # ts_prediction_nfac1_fualltimes0_xfac0
+    COMP_merged.attrs["nodalfactors"] = True
     COMP_merged.attrs["fu_alltimes"] = False
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=True, fu_alltimes=False, xfac=False, times=times_pred)
-    # ts_prediction_nfac0_fualltimes0_xfac0
+    COMP_merged.attrs["xfac"] = True
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55761625, -0.55022362, -0.54263955, -0.53486334, -0.52689445,
+       -0.51873254, -0.51037744, -0.50182919, -0.49308803, -0.48415438])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = True
+    COMP_merged.attrs["xfac"] = True
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55758197, -0.55018925, -0.54260512, -0.53482887, -0.52685996,
+           -0.51869805, -0.51034297, -0.50179476, -0.49305366, -0.4841201 ])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = True
+    COMP_merged.attrs["xfac"] = {"M2":0.8}
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55220418, -0.54482864, -0.53726402, -0.52950961, -0.52156487,
+           -0.51342947, -0.50510324, -0.49658621, -0.48787861, -0.47898087])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = True
+    COMP_merged.attrs["xfac"] = False
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55115935, -0.54379567, -0.53624298, -0.52850057, -0.52056791,
+           -0.51244465, -0.50413063, -0.49562589, -0.48693065, -0.47804533])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
+    COMP_merged.attrs["nodalfactors"] = True
+    COMP_merged.attrs["fu_alltimes"] = False
+    COMP_merged.attrs["xfac"] = False
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.55120816, -0.54384448, -0.53629177, -0.52854932, -0.52061659,
+           -0.51249324, -0.5041791 , -0.49567421, -0.4869788 , -0.47809328])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
+    
     COMP_merged.attrs["nodalfactors"] = False
-    _ = hatyan.prediction(comp=COMP_merged, nodalfactors=False, fu_alltimes=False, xfac=False, times=times_pred)
+    COMP_merged.attrs["fu_alltimes"] = False
+    COMP_merged.attrs["xfac"] = False
+    ts_pred = hatyan.prediction(comp=COMP_merged, times=times_pred)
+    expected = np.array([-0.61931214, -0.61234662, -0.60517618, -0.59779951, -0.59021548,
+           -0.58242314, -0.57442171, -0.56621065, -0.55778958, -0.54915834])
+    assert np.allclose(ts_pred["values"].values[:10], expected)
 
 
 @pytest.mark.unittest
