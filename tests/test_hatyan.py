@@ -265,8 +265,6 @@ def test_predictionsettings():
 @pytest.mark.unittest
 def test_prediction_1018():
     current_station = 'DENHDR'
-    nodalfactors = True
-    xfac=True
     
     times_pred = slice(dt.datetime(1018,7,21),dt.datetime(1018,7,21,3), 10)
     
@@ -274,7 +272,7 @@ def test_prediction_1018():
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
     
     #prediction
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
     
     ts_prediction_times = np.array([dt.datetime(1018, 7, 21, 0, 0),
                                     dt.datetime(1018, 7, 21, 0, 10),
@@ -308,8 +306,6 @@ def test_prediction_1018():
 @pytest.mark.systemtest
 def test_frommergedcomp():
     # 1. define test data
-    nodalfactors = True
-    xfac = True
     current_station = 'VLISSGN'
     
     #comp
@@ -337,7 +333,7 @@ def test_frommergedcomp():
     
     # 3. run test
     COMP_mergedfromfile = hatyan.read_components(filename=file_data_comp)
-    ts_prediction_direct = hatyan.prediction(COMP_mergedfromfile, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction_direct = hatyan.prediction(COMP_mergedfromfile, times=times_pred)
     ts_prediction_direct_values = ts_prediction_direct['values'].values
     
     # 4. Vefiry final expectations
@@ -431,7 +427,7 @@ def test_frommergedcomp_HWLW_toomuch():
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
     ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
     
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
@@ -509,9 +505,10 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
+    assert COMP_merged.attrs["xfac"] == xfac
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, nodalfactors=True, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
     #ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
@@ -577,7 +574,7 @@ def test_frommergedcomp_HWLW_345(current_station):
     # times_pred = slice(dt.datetime(2010,6,26),dt.datetime(2010,6,28), 1) #lokale extremen tussen twee laagste LWs
     # times_pred = slice(dt.datetime(2019,2,1),dt.datetime(2019,2,2), 1) #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
     
-    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+    ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
     #ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True, calc_HWLW345_cleanup1122=False)
     ts_ext_prediction_clean = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)#, calc_HWLW345_cleanup1122=True) #for numbering, cannot cope with 11/22 HWLWcodes
@@ -680,7 +677,7 @@ def test_hwlw_numbering_aggers():
         file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
         comp_merged = hatyan.read_components(filename=file_data_comp0)
         
-        ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, nodalfactors=True, xfac=True, fu_alltimes=False, times=times_pred)
+        ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
         ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)
         ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)
         ts_ext_prediction_all.loc[ts_ext_prediction_all.index.isin(ts_ext_prediction_345.index),'HWLWcode'] = ts_ext_prediction_345['HWLWcode']
@@ -722,7 +719,7 @@ def test_19Ycomp4Ydia():
     
     #prediction and validation
     times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), 10)
-    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations (VLISSGN)
@@ -771,7 +768,7 @@ def test_19Ycomp4Ydia_compsplitsing():
     COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations (D15)
@@ -816,7 +813,7 @@ def test_allfromdia():
     COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(COMP_merged, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations
@@ -871,7 +868,7 @@ def test_allfromdia_2008xfac0():
     comp_frommeasurements_avg_group0 = hatyan.analysis(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_perperiod='Y', fu_alltimes=False)
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group0, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, times=times_pred)
+    ts_prediction = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
     # 2. define initial expectations
