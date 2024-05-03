@@ -522,7 +522,6 @@ def prediction(comp, timestep_min=None, times=None):
     hatyan_settings = HatyanSettings(**settings_kwargs)
     
     logger.info(f'PREDICTION initializing\n{hatyan_settings}')
-    #TODO: print analysis_perperiod, return_allyears etc only for analysis (not at prediction)
     
     if hasattr(comp.columns,"levels"):
         logger.info('prediction() per period due to levels in component dataframe columns')
