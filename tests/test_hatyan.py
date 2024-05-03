@@ -952,11 +952,11 @@ def test_prediction_hasrequiredargs():
     
     with pytest.raises(TypeError) as e:
         _ = hatyan.prediction(comp=comp_mean)
-    assert str(e.value) == "prediction_perperiod=False in prediction(), so 'times' argument should not be None"
+    assert str(e.value) == "prediction() atonce, so 'times' argument should not be None"
     
     with pytest.raises(TypeError) as e:
         _ = hatyan.prediction(comp=comp_all)
-    assert str(e.value) == "prediction_perperiod=True in prediction(), so 'timestep_min' argument should not be None"
+    assert str(e.value) == "prediction() per period, so 'timestep_min' argument should not be None"
 
 
 def test_prediction_deprecatedsettings():
