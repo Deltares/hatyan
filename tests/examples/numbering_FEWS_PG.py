@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 plt.close('all')
 from netCDF4 import Dataset, num2date
 import hatyan
+import xarray as xr
 
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
@@ -17,16 +18,12 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 analyse_ts_bool = False
 
 file_meas = os.path.join(dir_testdata,'other','FEWS_202010221200_testdata_S_2.nc')
-data_nc_meas = Dataset(file_meas)
-data_meas = data_nc_meas.variables['water_level'][:].flatten()
-data_times = num2date(data_nc_meas.variables['time'],units=data_nc_meas.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
-ts_meas = pd.DataFrame({'values':data_meas},index=data_times)
+data_nc_meas = xr.open_dataset(file_meas)
+ts_meas = data_nc_meas.water_level.to_pandas().rename(columns={0:"values"})
 
 file_pred = os.path.join(dir_testdata,'other','FEWS_202010221200_testdata_S_4.nc')
-data_nc_pred = Dataset(file_pred)
-data_pred = data_nc_pred.variables['water_level'][:].flatten()
-data_times = num2date(data_nc_pred.variables['time'],units=data_nc_pred.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
-ts_prediction = pd.DataFrame({'values':data_pred},index=data_times)
+data_nc_pred = xr.open_dataset(file_pred)
+ts_prediction = data_nc_pred.water_level.to_pandas().rename(columns={0:"values"})
 
 file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
 
@@ -37,8 +34,10 @@ file_ncout = '%s_getijnummers_new.nc'%(station_name)
 file_ncout_nosidx = '%s_getijnummers_nosidx.nc'%(station_name)
 
 if analyse_ts_bool:
-    COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year')
-    ts_prediction_fromcomp = hatyan.prediction(comp=COMP_merged, times_pred_all=ts_prediction.index, xfac=True)#, fu_alltimes=False)
+    # results in weird difference line in timeseries plot
+    COMP_merged = hatyan.analysis(ts=ts_meas, const_list='year', xfac=True)
+    ts_prediction_fromcomp = hatyan.prediction(comp=COMP_merged, times=ts_prediction.index, xfac=True)#, fu_alltimes=False)
+    
 else:
     COMP_merged = hatyan.read_components(filename=file_comp)
     times_pred_2019 = slice(dt.datetime(2019,1,1),dt.datetime(2019,12,31,23,50), 10)
@@ -46,7 +45,8 @@ else:
     ts_prediction_fromcomp_2019 = hatyan.prediction(comp=COMP_merged, times=times_pred_2019, xfac=True, fu_alltimes=False)
     ts_prediction_fromcomp_2020 = hatyan.prediction(comp=COMP_merged, times=times_pred_2020, xfac=True, fu_alltimes=False)
     ts_prediction_fromcomp = pd.concat([ts_prediction_fromcomp_2019,ts_prediction_fromcomp_2020],axis=0)
-    ts_prediction_fromcomp.index = ts_prediction_fromcomp.index-dt.timedelta(hours=1) #convert MET prediction to GMT
+    # convert from MET to UTC
+    ts_prediction_fromcomp.index = ts_prediction_fromcomp.index.tz_convert(None)
 
 print(hatyan.Timeseries_Statistics(ts_prediction))
 ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)#, calc_HWLWlocal=True)
@@ -73,8 +73,8 @@ data_ncout = Dataset(file_ncout)
 data_ncout.variables['waterlevel_astro_LW_numbers']
 data_ncout.variables['waterlevel_astro_HW_numbers']
 """
-hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, tzone_hr=0, nosidx=True)
-hatyan.write_tsnetcdf(ts=ts_prediction, station='HOEKVHLD_copy', vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, tzone_hr=0, nosidx=True, mode='a')
+hatyan.write_tsnetcdf(ts=ts_prediction, station=station_name, vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True)
+hatyan.write_tsnetcdf(ts=ts_prediction, station='HOEKVHLD_copy', vertref='NAP', filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True, mode='a')
 data_ncout = Dataset(file_ncout_nosidx)
 data_ncout.variables['waterlevel_astro_HW']
 data_ncout.variables['HWLWno']

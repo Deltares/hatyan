@@ -299,6 +299,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
         
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]']
     firstHWcadz_fixed = pd.Timestamp("2000-01-01 09:45:00 +01:00") #dt.datetime(2000, 1, 1, 9, 45)
+    firstHWcadz_fixed = firstHWcadz_fixed.tz_convert(ts_ext.index.tz)
     searchwindow_hr = M2_period_hr/2
     
     if len(ts_ext) == 0:
