@@ -595,7 +595,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         return fig, axs
 
 
-def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, nosidx=False, mode='w'):
+def write_tsnetcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     """
     Writes the timeseries to a netCDF file
 
@@ -622,6 +622,17 @@ def write_tsnetcdf(ts, station, vertref, filename, ts_ext=None, nosidx=False, mo
     
     import hatyan
     version_no = hatyan.__version__
+    
+    # get metadata from ts dataframe
+    metadata_ts = metadata_from_obj(ts)
+    station = metadata_ts.pop("station")
+    vertref = metadata_ts.pop("vertref")
+    if ts_ext is not None:
+        metadata_ext = metadata_from_obj(ts_ext)
+        station_ext = metadata_ext.pop("station")
+        vertref_ext = metadata_ext.pop("vertref")
+        assert station==station_ext
+        assert vertref==vertref_ext
     
     times_all = ts.index
     timeseries = ts['values']
