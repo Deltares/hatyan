@@ -152,7 +152,10 @@ def write_components(comp, filename):
     
     tstart = metadata.pop('tstart')
     tstop = metadata.pop('tstop')
-    tzone_min = metadata.pop('tzone')._minutes
+    tzone = metadata.pop('tzone')
+    if tzone is None:
+        raise AttributeError("write_components() encountered tzone=None in components dataframe, not allowed.")
+    tzone_min = tzone._minutes
     tstart_str = tstart.strftime("%Y%m%d  %H%M")
     tstop_str = tstop.strftime("%Y%m%d  %H%M")
     
