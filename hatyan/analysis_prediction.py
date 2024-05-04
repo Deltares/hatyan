@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import logging
-from typing import Union
 
 from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, get_tstart_tstop_tstep
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
@@ -86,7 +85,7 @@ class HatyanSettings:
             self.CS_comps = CS_comps
         
         if xTxmat_condition_max is not None:
-            if not isinstance(xTxmat_condition_max,Union[int,float]):
+            if not isinstance(xTxmat_condition_max,int) or isinstance(xTxmat_condition_max,float):
                 raise TypeError(f'invalid {xTxmat_condition_max} type, should be int or float')
             self.xTxmat_condition_max = xTxmat_condition_max
         
