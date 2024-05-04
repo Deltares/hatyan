@@ -29,7 +29,8 @@
 - deprecated `hatyan.write_tsdia_HWLW()` in favor of `hatyan.write_tsdia()` in [#223](https://github.com/Deltares/hatyan/pull/223)
 - deprecated `hatyan.convert_coords()` and `hatyan.check_ts()` in [#244](https://github.com/Deltares/hatyan/pull/244)
 - deprecated `return_listoptions` argument for `hatyan.get_const_list_hatyan()` in [#262](https://github.com/Deltares/hatyan/pull/262)
-- deprecated `hatyan.HatyanSettings()` in [#270](https://github.com/Deltares/hatyan/pull/270)
+- deprecated public `hatyan.HatyanSettings()` in [#270](https://github.com/Deltares/hatyan/pull/270)
+- deprecated `hatyan.components_timeshift()` in [#281](https://github.com/Deltares/hatyan/pull/281)
 
 
 ## 2.7.0 (2023-08-03)

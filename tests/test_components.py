@@ -110,30 +110,6 @@ def test_plot_components_allyears():
     _ = hatyan.plot_components(comp=ts_comp, comp_allperiods=ts_comp_all)
 
 
-@pytest.mark.systemtest
-def test_components_timeshift():
-    
-    timeshift_hr = 1
-    current_station = 'HOEKVHLD'
-    file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_ana.txt')
-    
-    comp_merged = hatyan.read_components(filename=file_data_comp0)
-    
-    comp_shift = hatyan.components_timeshift(comp_merged,hours=timeshift_hr)
-    
-    # check timeshift shift
-    assert np.abs(comp_shift.loc['SA','phi_deg'] - 221.54106863959504) < 1e-9
-    
-    # check metadata contents
-    comp_merged_meta = metadata_from_obj(comp_merged)
-    comp_shift_meta = metadata_from_obj(comp_shift)
-    
-    comp_merged_tz_min = comp_merged_meta['tzone']._minutes
-    comp_shift_tz_min = comp_shift_meta['tzone']._minutes
-    
-    assert comp_merged_tz_min + timeshift_hr*60 == comp_shift_tz_min
-
-
 @pytest.mark.unittest
 def test_merge_componentgroups_comparesettings():
     file_data_comp = os.path.join(dir_testdata,'VLISSGN_ana.txt')

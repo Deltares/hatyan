@@ -7,11 +7,10 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pandas as pd
-import datetime as dt
 import pytz
 import logging
 
-from hatyan.schureman import get_schureman_freqs, get_schureman_v0 #TODO: this is not generic foreman/schureman
+from hatyan.schureman import get_schureman_freqs #TODO: this is not generic foreman/schureman
 from hatyan.hatyan_core import sort_const_list, get_const_list_hatyan
 from hatyan.metadata import (metadata_add_to_obj, metadata_from_obj, 
                              metadata_compare, wns_from_metadata)
@@ -20,7 +19,6 @@ __all__ = ["read_components",
            "write_components",
            "plot_components",
            "merge_componentgroups",
-           "components_timeshift",
            ]
 
 logger = logging.getLogger(__name__)
@@ -433,25 +431,3 @@ def read_components(filename):
     metadata.update(settings_dict)
     comp_pd = metadata_add_to_obj(comp_pd, metadata)
     return comp_pd
-
-
-def components_timeshift(comp,hours):
-        
-    comp_out = comp.copy()
-    
-    refdate = dt.datetime(2000,1,1)
-    corrdate = refdate+dt.timedelta(hours=hours)
-    
-    v0_twodates = get_schureman_v0(const_list=comp.index, dood_date=pd.DatetimeIndex([refdate,corrdate]))
-    hourcorr_v0_deg = np.rad2deg(v0_twodates[1]-v0_twodates[0])#%360
-    
-    comp_out['phi_deg'] = (comp_out['phi_deg']+hourcorr_v0_deg)%360
-    
-    # add metadata
-    metadata = metadata_from_obj(comp)
-    metadata['tzone'] = pytz.FixedOffset(metadata['tzone']._minutes + hours*60)
-    comp_out = metadata_add_to_obj(comp_out,metadata)
-    
-    return comp_out
-
-
