@@ -1147,7 +1147,7 @@ def nyquist_folding(ts_pd,t_const_freq_pd):
     #check if there is a component with exactly the same frequency as the nyquist frequency #TODO: or its multiples (but with remainder, A0 also gets flagged)
     bool_isnyquist = t_const_freq_pd['freq']==fn_phr
     if bool_isnyquist.any():
-        raise Exception(f'there is a component on the Nyquist frequency ({fn_phr} [1/hr]), '
+        raise ValueError(f'there is a component on the Nyquist frequency ({fn_phr} [1/hr]), '
                         f'this not possible:\n{t_const_freq_pd.loc[bool_isnyquist]}')
     
     logger.info('folding frequencies over Nyquist frequency, which is half '

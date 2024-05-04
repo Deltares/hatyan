@@ -374,7 +374,7 @@ def test_nyquist_folding():
     
     # check if we get "Exception: there is a component on the Nyquist frequency (0.16666666666666666 [1/hr]), this not possible"
     # without doing the nyquist check, we get a MatrixConditionTooHigh error instead
-    with pytest.raises(Exception) as e:
+    with pytest.raises(ValueError) as e:
         hatyan.analysis(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, fu_alltimes=True)
     assert "nyquist" in str(e.value).lower()
 
