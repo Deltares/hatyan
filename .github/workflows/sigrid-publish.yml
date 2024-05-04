@@ -18,5 +18,6 @@ jobs:
           customer: deltares
           system: hatyan
           publishonly: false
+          exclude: /tests/
         env:
           SIGRID_CI_TOKEN: "${{ secrets.SIGRID_CI_TOKEN }}"
