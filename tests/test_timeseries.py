@@ -376,5 +376,5 @@ def test_nyquist_folding():
     # without doing the nyquist check, we get a MatrixConditionTooHigh error instead
     with pytest.raises(Exception) as e:
         hatyan.analysis(ts=ts_meas_raw, const_list=const_list, nodalfactors=True, xfac=True, fu_alltimes=True)
-    assert "nyquist" in str(e).lower()
+    assert "nyquist" in str(e.value).lower()
 
