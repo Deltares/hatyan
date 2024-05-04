@@ -39,50 +39,61 @@ class HatyanSettings:
     
     def __init__(self, 
                  nodalfactors, fu_alltimes, xfac, source, #prediction/analysis 
-                 CS_comps=None, analysis_perperiod=False, return_allperiods=False, #analysis only
-                 xTxmat_condition_max=12): #analysis only
-        if not isinstance(source,str):
-            raise Exception('invalid source type, should be str')
-        source = source.lower()
-        if source not in ['schureman','foreman']:
-            raise Exception('invalid source {source}, should be schureman or foreman)')
-                
-        for var_in in [nodalfactors,fu_alltimes,return_allperiods]:
-            if not isinstance(var_in,bool):
-                raise Exception(f'invalid {var_in} type, should be bool')
+                 CS_comps=None, analysis_perperiod=None, return_allperiods=None, #analysis only
+                 xTxmat_condition_max=None): #analysis only
+        
+        if not isinstance(nodalfactors,bool):
+            raise TypeError(f'invalid nodalfactors={nodalfactors} type, should be bool')
+        self.nodalfactors = nodalfactors
+        
+        if not isinstance(fu_alltimes,bool):
+            raise TypeError(f'invalid fu_alltimes={fu_alltimes} type, should be bool')
+        self.fu_alltimes = fu_alltimes
         
         if not (isinstance(xfac,bool) or isinstance(xfac,dict)):
-            raise Exception(f'invalid xfac={xfac} type, should be bool or dict')
+            raise TypeError(f'invalid xfac={xfac} type, should be bool or dict')
+        self.xfac = xfac
         
-        if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
-            raise Exception(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
+        if not isinstance(source,str):
+            raise TypeError('invalid source type, should be str')
+        source = source.lower()
+        if source not in ['schureman','foreman']:
+            raise TypeError('invalid source {source}, should be "schureman" or "foreman")')
+        self.source = source
+                
+        if return_allperiods is not None:
+            if not isinstance(return_allperiods,bool):
+                raise TypeError(f'invalid {return_allperiods} type, should be bool')
+            self.return_allperiods = return_allperiods
+        
+        if analysis_perperiod is not None:
+            if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
+                raise TypeError(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
+            self.analysis_perperiod = analysis_perperiod
         
         if CS_comps is not None:
             if not isinstance(CS_comps,(dict,pd.DataFrame)):
-                raise Exception('invalid CS_comps type, should be dict')
+                raise TypeError('invalid CS_comps type, should be dict')
             CS_comps = pd.DataFrame(CS_comps) #TODO: convert all to dict or pd.DataFrame
             CS_comps_expectedkeys = ['CS_comps_derive', 'CS_comps_from', 'CS_ampfacs', 'CS_degincrs']
             for CS_comps_key in CS_comps_expectedkeys:
                 if CS_comps_key not in CS_comps.keys():
-                    raise Exception(f'CS_comps does not contain {CS_comps_key}')
+                    raise KeyError(f'CS_comps does not contain {CS_comps_key}')
             CS_comps_lenvals = [len(CS_comps[key]) for key in CS_comps]
             if len(np.unique(CS_comps_lenvals)) != 1:
-                raise Exception(f'CS_comps keys do not have equal lengths:\n{CS_comps}')
+                raise ValueError(f'CS_comps keys do not have equal lengths:\n{CS_comps}')
+            self.CS_comps = CS_comps
         
-        self.source = source
-        self.nodalfactors = nodalfactors
-        self.fu_alltimes = fu_alltimes
-        self.xfac = xfac
-        self.CS_comps = CS_comps
-        self.analysis_perperiod = analysis_perperiod
-        self.return_allperiods = return_allperiods
-        self.xTxmat_condition_max = xTxmat_condition_max
+        if xTxmat_condition_max is not None:
+            if not isinstance(xTxmat_condition_max,int) or isinstance(xTxmat_condition_max,float):
+                raise TypeError(f'invalid {xTxmat_condition_max} type, should be int or float')
+            self.xTxmat_condition_max = xTxmat_condition_max
         
     def __str__(self):
         self_dict = vars(self)
         str_append = ''
         for key,val in self_dict.items():
-            if key=='CS_comps' and self.CS_comps is not None:
+            if key=='CS_comps':
                 str_append += f'{key:20s} = \n{val}\n'
             else:
                 str_append += f'{key:20s} = {val}\n'
@@ -189,7 +200,7 @@ def analysis(ts, const_list,
         const_list = const_list.tolist()
     
     n_const = len(const_list)
-    if hatyan_settings.CS_comps is not None:
+    if hasattr(hatyan_settings, "CS_comps"):
         n_const = len(const_list) + len(hatyan_settings.CS_comps)
 
     if hatyan_settings.analysis_perperiod:
@@ -344,7 +355,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
             COMP_pd.loc['A0','A'] = -COMP_pd.loc['A0','A']
             COMP_pd.loc['A0','phi_deg'] = 0
     
-    if hatyan_settings.CS_comps is not None:
+    if hasattr(hatyan_settings, "CS_comps"):
         COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid, hatyan_settings=hatyan_settings)
         
     return COMP_pd
@@ -510,7 +521,6 @@ def prediction(comp, timestep_min=None, times=None):
     hatyan_settings = HatyanSettings(**settings_kwargs)
     
     logger.info(f'PREDICTION initializing\n{hatyan_settings}')
-    #TODO: print analysis_perperiod, return_allyears etc only for analysis (not at prediction)
     
     if hasattr(comp.columns,"levels"):
         logger.info('prediction() per period due to levels in component dataframe columns')
