@@ -24,7 +24,7 @@ for fu_alltimes in [True,False]:
     
     file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), "10min")
     
     file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
     #file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))

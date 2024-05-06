@@ -302,7 +302,7 @@ def test_write_tsdia_rounding():
     current_station = 'HOEKVHLD'
     file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_ana.txt')
     
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), "10min")
     
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
@@ -310,7 +310,7 @@ def test_write_tsdia_rounding():
     ts_prediction = hatyan.prediction(comp=comp_merged, times=times_pred)
     
     #write to file
-    fname_pred = 'prediction_%im_%s.dia'%(times_pred.step,current_station)
+    fname_pred = 'prediction_%s_%s.dia'%(times_pred.step,current_station)
     hatyan.write_dia(ts=ts_prediction, filename=fname_pred)
     
     #read from file

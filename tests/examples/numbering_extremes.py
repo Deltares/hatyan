@@ -95,7 +95,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
         #file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
-        times_pred = slice(dt.datetime(yr-1,12,31),dt.datetime(yr,1,2,12), 1)
+        times_pred = slice(dt.datetime(yr-1,12,31),dt.datetime(yr,1,2,12), "1min")
         
         file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
         #file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
@@ -165,7 +165,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         
         if 1: #validation case
             #calculate tidal wave number
-            times_pred_HWLWno = slice(dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12), 1)
+            times_pred_HWLWno = slice(dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12), "1min")
             #COMP_merged_temp.loc['M2','A']=0.05
             ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged, times=times_pred_HWLWno)
             ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)

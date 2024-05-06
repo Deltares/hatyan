@@ -23,9 +23,9 @@ if 1:
     
     stat_list = ['HOEKVHLD']#,'DENHDR','IJMDBTHVN'] #'K13APFM'
     
-    times_pred = slice(dt.datetime(2010,1,1),dt.datetime(2010,2,1), 10)
-    times_twoweeks = slice(dt.datetime(2010,1,1),dt.datetime(2010,1,16), 10)
-    times_somedays = slice(dt.datetime(2010,1,9),dt.datetime(2010,1,16), 10)
+    times_pred = slice(dt.datetime(2010,1,1),dt.datetime(2010,2,1), "10min")
+    times_twoweeks = slice(dt.datetime(2010,1,1),dt.datetime(2010,1,16), "10min")
+    times_somedays = slice(dt.datetime(2010,1,9),dt.datetime(2010,1,16), "10min")
     
     for current_station in stat_list:
     
@@ -200,7 +200,7 @@ if 0:
         const_list = hatyan.get_const_list_hatyan('year') #94 const
     
     file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
-    times_pred = slice(dt.datetime(2000,1,1),dt.datetime(2019,12,31,23,50), 60)
+    times_pred = slice(dt.datetime(2000,1,1),dt.datetime(2019,12,31,23,50), "60min")
         
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
@@ -236,7 +236,7 @@ if 0:
     max_allyears_meas = ts_meas['values'].groupby(by=pd.Grouper(freq='Y')).max()
 
     comp_avg, comp_allperiods = hatyan.analysis(ts_meas,const_list='year',analysis_perperiod='Y',return_allperiods=True)
-    ts_pred_py = hatyan.prediction_perperiod(comp_allperiods, timestep_min=20)
+    ts_pred_py = hatyan.prediction(comp_allperiods, timestep=20)
     ts_pred_ext = hatyan.calc_HWLW(ts_pred_py)
     if 0: #dropp close extremes (why do they occur with 5/10/30min interval??)
         idx_smalltdiff = np.where((ts_pred_ext.index[1:]-ts_pred_ext.index[:-1])<dt.timedelta(hours=2))[0]
@@ -295,7 +295,7 @@ if 0:
 
     tstart = dt.datetime(2019,1,6,2,30) #nieuwe maan op 6 jan
     tstart = dt.datetime(2019,1,6,13,1) #midden tussen opkomst en ondergang van de maan, dus maansdoorgang?
-    times_pred = slice(tstart, tstart+dt.timedelta(hours=1.2*24, minutes=49), 1)
+    times_pred = slice(tstart, tstart+dt.timedelta(hours=1.2*24, minutes=49), "1min")
     
     fig, ax1 = plt.subplots(1,1,figsize=(10,5))
     n_colors = len(selected_stations)

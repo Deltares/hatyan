@@ -39,8 +39,8 @@ for current_station in selected_stations:
     
     file_data_compvali = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_ana.txt')
     
-    times_pred = slice("2019-01-01","2020-01-01", 10)
-    times_pred_1min = slice("2019-01-01","2020-01-01", 1)
+    times_pred = slice("2019-01-01","2020-01-01", "10min")
+    times_pred_1min = slice("2019-01-01","2020-01-01", "1min")
 
     file_data_predvali = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_pre.txt')
     file_data_predvaliHWLW = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_ext.txt')
@@ -73,16 +73,16 @@ for current_station in selected_stations:
     ts_prediction1min = hatyan.prediction(comp=COMP_merged, times=times_pred_1min)
     ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
     ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
-    hatyan.write_dia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_pred.step,current_station))
+    hatyan.write_dia(ts=ts_prediction, filename='prediction_%s_%s.dia'%(times_pred.step,current_station))
     ts_ext_prediction1min = hatyan.calc_HWLW(ts=ts_prediction1min)
-    hatyan.write_dia(ts=ts_ext_prediction1min, filename='prediction_HWLW_%im_%s.dia'%(times_pred.step, current_station))
+    hatyan.write_dia(ts=ts_ext_prediction1min, filename='prediction_HWLW_%s_%s.dia'%(times_pred.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction1min, ts_ext_validation=ts_ext_validation)
-    fig.savefig('prediction_%im_%s_HWLW'%(times_pred.step, current_station))
+    fig.savefig('prediction_%s_%s_HWLW'%(times_pred.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_validation)
-    fig.savefig('prediction_%im_%s_validation'%(times_pred.step, current_station))
+    fig.savefig('prediction_%s_%s_validation'%(times_pred.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_measurements_group0)
-    fig.savefig('prediction_%im_%s_measurements'%(times_pred.step, current_station))
+    fig.savefig('prediction_%s_%s_measurements'%(times_pred.step, current_station))
     
     #plot and print HWLW statistics
     fig, ax = hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_prediction1min, ts_ext_validation=ts_ext_validation)
-    fig.savefig('HWLWstats_%im_%s_extvalidation'%(times_pred.step, current_station))
+    fig.savefig('HWLWstats_%s_%s_extvalidation'%(times_pred.step, current_station))

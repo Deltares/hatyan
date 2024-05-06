@@ -23,14 +23,14 @@ for fname in file_list:
 
 file_data_comp1 = f'{current_station}_ana.txt'
 
-times_pred = slice("2019-01-01","2019-02-01", 10)
+times_pred = slice("2019-01-01","2019-02-01", "10min")
 
 comp_fromfile = hatyan.read_components(filename=file_data_comp1)
 
 #prediction and validation
 ts_prediction = hatyan.prediction(comp=comp_fromfile, times=times_pred)
-hatyan.write_dia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_pred.step,current_station))
+hatyan.write_dia(ts=ts_prediction, filename='prediction_%s_%s.dia'%(times_pred.step,current_station))
 ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
-hatyan.write_dia(ts=ts_ext_prediction, filename='prediction_%im_%s_HWLW.dia'%(times_pred.step,current_station))
+hatyan.write_dia(ts=ts_ext_prediction, filename='prediction_%s_%s_HWLW.dia'%(times_pred.step,current_station))
 fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
-fig.savefig('prediction_%im_%s'%(times_pred.step, current_station))
+fig.savefig('prediction_%s_%s'%(times_pred.step, current_station))

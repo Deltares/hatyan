@@ -129,29 +129,6 @@ def get_doodson_eqvals(dood_date, mode=None):
     return doodson_pd
 
 
-def get_tstart_tstop_tstep(times_slice):
-    if not isinstance(times_slice,slice):
-        raise TypeError('times_slice should be of type slice: slice(tstart, tstop, tstep_min)')
-
-    try:
-        tstart = pd.Timestamp(times_slice.start)
-        tstop = pd.Timestamp(times_slice.stop)
-    except pd.errors.OutOfBoundsDatetime: # escape for outofbounds datetimes like 1018
-        tstart = times_slice.start
-        tstop = times_slice.stop
-
-    if times_slice.step is None:
-        raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
-
-    if isinstance(times_slice.step,(int,float)):
-        # assuming minutes
-        tstep = pd.offsets.Minute(times_slice.step)
-    else:
-        tstep = pd.tseries.frequencies.to_offset(times_slice.step)
-
-    return tstart, tstop, tstep
-
-
 def robust_timedelta_sec(dood_date,refdate_dt=None):
     """
     Generate timedelta. Pandas pd.DatetimeIndex subtraction only supports times between 1677-09-21 and 2262-04-11, because of its ns accuracy.
@@ -174,7 +151,7 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
     """
     
     if refdate_dt is None:
-        refdate_dt = dt.datetime(1900,1,1)
+        refdate_dt = pd.Timestamp(1900,1,1)
     
     dood_tstart_sec = ( dood_date-refdate_dt ).total_seconds().values
     return dood_tstart_sec
