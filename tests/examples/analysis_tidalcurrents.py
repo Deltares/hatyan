@@ -26,7 +26,7 @@ const_list = 'springneap' #'year' 'halfyear' 'month' etc
 
 file_stroming = os.path.join(dir_testdata,'other','NZB_N - Stroomsnelheid [cm_s].csv')
 data_stroming = pd.read_csv(file_stroming,sep=';',skipfooter=2, engine='python', parse_dates=[0], index_col=0)
-times_pred = slice(data_stroming.index[0], data_stroming.index[-1]+dt.timedelta(days=7), 10)
+times_pred = slice(data_stroming.index[0], data_stroming.index[-1]+dt.timedelta(days=7), "10min")
 
 meas_mag = data_stroming['stroomsnelheid']
 meas_dir = data_stroming['stroomrichting']
