@@ -54,6 +54,14 @@ def test_analysis_settings():
     assert (np.abs(ts_comp_nfac1_fualltimes0_xfac1_peryear0['phi_deg'].values-comp_phi_expected) < 10E-9).all()
     assert (np.abs(ts_comp_nfac1_fualltimes0_xfac1_peryear0['A'].values-comp_A_expected) < 10E-9).all()
 
+    assert np.allclose(ts_comp_nfac1_fualltimes0_xfac1_peryear0.loc["M2"].values, np.array([ 1.74658516, 59.02752661]))
+    assert np.allclose(ts_comp_onecomp.loc["M2"].values, np.array([ 1.74229247, 58.77828766]))
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1.loc["M2"].values, np.array([ 1.74649803, 59.01827634]))
+    assert np.allclose(ts_comp_nfac1_fualltimes0_xfac1.loc["M2"].values, np.array([ 1.74658516, 59.02752661]))
+    assert np.allclose(ts_comp_nfac1_fualltimes1_xfac0.loc["M2"].values, np.array([ 1.7623892 , 59.01684785]))
+    assert np.allclose(ts_comp_nfac1_fualltimes0_xfac0.loc["M2"].values, np.array([ 1.76257914, 59.02752661]))
+    assert np.allclose(ts_comp_nfac0_fualltimes0_xfac0.loc["M2"].values, np.array([ 1.72889408, 57.192191  ]))
+
 
 @pytest.mark.unittest
 def test_analysis_settings_extended():
@@ -178,6 +186,10 @@ def test_analysis_settings_invalid_values():
     with pytest.raises(TypeError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], xTxmat_condition_max="aa")
     assert str(e.value) == "invalid aa type, should be int or float"
+    
+    with pytest.raises(KeyError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list="M2")
+    assert 'listtype "M2" is not implemented in hatyan.get_const_list_hatyan' in str(e.value)
 
 
 @pytest.mark.unittest
