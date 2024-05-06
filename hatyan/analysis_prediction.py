@@ -8,7 +8,7 @@ import pandas as pd
 import datetime as dt
 import logging
 
-from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec, get_tstart_tstop_tstep
+from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_timedelta_sec
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import Timeseries_Statistics, nyquist_folding, check_rayleigh
 from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
@@ -542,7 +542,8 @@ def prediction(comp, times=None, timestep=None):
         if times is None:
             raise TypeError("prediction() atonce, so 'times' argument should not be None")
         if isinstance(times,slice):
-            tstart, tstop = get_tstart_tstop_tstep(times)
+            tstart = pd.Timestamp(times.start)
+            tstop = pd.Timestamp(times.stop)
             tstep = pd.tseries.frequencies.to_offset(times.step)
             times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
         ts_prediction = prediction_singleperiod(comp=comp, times=times, hatyan_settings=hatyan_settings)
