@@ -183,6 +183,10 @@ def analysis(ts, const_list,
     COMP_all_pd : pandas.DataFrame, optional
         The same as COMP_mean_pd, but with all years added with MultiIndex
     """
+    # check ts.index type, this works better than isinstance(ts.index,pd.DatetimeIndex) since 1018 time indexes are Index instead of DatetimeIndex
+    if not (isinstance(ts.index[0],pd.Timestamp) or isinstance(ts.index[0],dt.datetime)):
+        raise TypeError(f'ts.index is not of expected type ({type(ts.index[0])} instead of pd.Timestamp or dt.datetime)')
+    
     # remove timezone from timeseries (is added to components dataframe after analysis)
     ts_pd = ts.copy()
     ts_pd.index = ts_pd.index.tz_localize(None)
@@ -194,10 +198,17 @@ def analysis(ts, const_list,
     
     logger.info(f'ANALYSIS initializing\n{hatyan_settings}')
         
+    #retrieving and sorting const_list
     if type(const_list) is str:
         const_list = get_const_list_hatyan(const_list)
-    elif type(const_list) is not list:
-        const_list = const_list.tolist()
+    const_list = sort_const_list(const_list)
+    logger.info(f'n components analyzed  = {len(const_list)}')
+    
+    #check for duplicate components (results in singular matrix)
+    if len(const_list) != len(np.unique(const_list)):
+        const_list_uniq, const_list_uniq_counts = np.unique(const_list,return_counts=True)
+        const_list_counts = pd.DataFrame({'constituent':const_list_uniq,'occurences':const_list_uniq_counts})
+        raise ValueError('remove duplicate constituents from const_list:\n%s'%(const_list_counts.loc[const_list_counts['occurences']>1]))
     
     n_const = len(const_list)
     if hasattr(hatyan_settings, "CS_comps"):
@@ -261,8 +272,6 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     #drop duplicate times
     bool_ts_duplicated = ts.index.duplicated(keep='first')
     ts_pd = ts.copy() #TODO: this is not necessary
-    if not (isinstance(ts.index[0],pd.Timestamp) or isinstance(ts.index[0],dt.datetime)): #works better than isinstance(ts.index,pd.DatetimeIndex) since 1018 time indexes are Index instead of DatetimeIndex
-        raise TypeError(f'ts.index is not of expected type ({type(ts.index[0])} instead of pd.Timestamp or dt.datetime)')
     if bool_ts_duplicated.any():
         raise Exception(f'ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
     message = (f'#timesteps    = {len(ts)}\n'
@@ -271,29 +280,11 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     if hasattr(ts.index,'freq'):
         message += f'\ntimestep      = {ts.index.freq}'
     logger.info(message)
-    
-    #retrieving and sorting const_list
-    if type(const_list) is str:
-        const_list = get_const_list_hatyan(const_list)
-    elif type(const_list) is not list:
-        const_list = const_list.tolist()
-    const_list = sort_const_list(const_list)
-    logger.info(f'components analyzed  = {len(const_list)}')
-    
-    #check for duplicate components (results in singular matrix)
-    if len(const_list) != len(np.unique(const_list)):
-        const_list_uniq, const_list_uniq_counts = np.unique(const_list,return_counts=True)
-        const_list_counts = pd.DataFrame({'constituent':const_list_uniq,'occurences':const_list_uniq_counts})
-        raise Exception('remove duplicate constituents from const_list:\n%s'%(const_list_counts.loc[const_list_counts['occurences']>1]))
-    
-    #check for length
-    if len(ts_pd)<2:
-        raise Exception('provided timeseries is less than 2 timesteps long, analysis not possible')
 
     #remove nans
     ts_pd_nonan = ts_pd[~ts_pd['values'].isna()]
-    if len(ts_pd_nonan)==0:
-        raise Exception('provided timeseries only contains nan values, analysis not possible')
+    if len(ts_pd_nonan)<2:
+        raise Exception(f'provided timeseries is less than 2 timesteps long (after dropping potential nans), analysis not possible:\n{ts_pd_nonan}')
     times_pred_all_pdDTI = ts_pd_nonan.index.copy() #pd.DatetimeIndex(ts_pd_nonan.index) #TODO: this will not work for OutOfBoundsDatetime
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
     logger.info(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
@@ -361,18 +352,13 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     return COMP_pd
 
 
-def split_components(comp, dood_date_mid, hatyan_settings=None, **kwargs):
+def split_components(comp, dood_date_mid, hatyan_settings):
     """
     component splitting function
     for details about arguments and return variables, see analysis() definition
 
     """
     
-    if hatyan_settings is None:
-        hatyan_settings = HatyanSettings(**kwargs)
-    elif len(kwargs)>0:
-        raise Exception('both arguments hatyan_settings and other settings (e.g. nodalfactors) are provided, this is not valid')
-        
     #create sorted and complete component list
     const_list_inclCS_raw = comp.index.tolist() + hatyan_settings.CS_comps['CS_comps_derive'].tolist()
     const_list_inclCS = sort_const_list(const_list=const_list_inclCS_raw)
@@ -423,11 +409,8 @@ def prediction_singleperiod(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice), h
     tzone_comp = metadata_comp.pop("tzone")
     
     if not isinstance(times, pd.DatetimeIndex):
-        raise TypeError(f'times argument can be of type, pd.DatetimeIndex or slice, not {type(times)}')
+        raise TypeError(f'times argument can be of type pd.DatetimeIndex or slice, not {type(times)}')
     times_pred_all_pdDTI = times
-        
-    if len(times_pred_all_pdDTI) <= 1:
-        raise Exception('ERROR: requested prediction period is not more than one timestep_min')
     
     # localize times datetimeindex, first convert times to tzone of components, then drop timezone
     if times_pred_all_pdDTI.tz is not None:

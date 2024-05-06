@@ -144,7 +144,7 @@ def test_analysis_foreman():
 
 
 @pytest.mark.unittest
-def test_analysis_settings_matrixconditiontoohigh():
+def test_analysis_settings_timeseries_tooshort():
     file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_pd = hatyan.read_dia(file_dia)
     
@@ -155,6 +155,33 @@ def test_analysis_settings_matrixconditiontoohigh():
     with pytest.raises(ValueError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list="year", analysis_perperiod="M")
     assert "all nans" in str(e.value)
+    
+    # too short
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.analysis(ts=ts_pd.iloc[:1], const_list="year")
+    assert "provided timeseries is less than 2 timesteps long" in str(e.value)
+    
+    ts_pd_manynans = ts_pd.copy()
+    ts_pd_manynans.iloc[1:] = np.nan
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.analysis(ts=ts_pd_manynans, const_list="year")
+    assert "provided timeseries is less than 2 timesteps long" in str(e.value)
+
+    ts_pd_manynans = ts_pd.copy()
+    ts_pd_manynans.iloc[2:] = np.nan
+    with pytest.raises(MatrixConditionTooHigh) as e:
+        _ = hatyan.analysis(ts=ts_pd_manynans, const_list="year")
+    assert "condition of xTx matrix is too high" in str(e.value)
+
+
+@pytest.mark.unittest
+def test_analysis_invalid_timeseries_index():
+    file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_pd = hatyan.read_dia(file_dia)
+    ts_pd_wrongindex = ts_pd.reset_index()
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd_wrongindex, const_list="year")
+    assert "ts.index is not of expected type" in str(e.value)
 
 
 @pytest.mark.unittest
@@ -201,10 +228,20 @@ def test_analysis_settings_invalid_values():
     with pytest.raises(TypeError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], xTxmat_condition_max="aa")
     assert str(e.value) == "invalid aa type, should be int or float"
+
+
+@pytest.mark.unittest
+def test_analysis_invalid_constituent_lists():
+    file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_pd = hatyan.read_dia(file_dia)
     
     with pytest.raises(KeyError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list="M2")
     assert 'listtype "M2" is not implemented in hatyan.get_const_list_hatyan' in str(e.value)
+
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2","M2"])
+    assert "remove duplicate constituents from const_list" in str(e.value)
 
 
 @pytest.mark.unittest
@@ -267,10 +304,9 @@ def test_predictionsettings():
 def test_prediction_settings_invalid_values():
     current_station = 'VLISSGN'
     file_comp = os.path.join(dir_testdata, f'{current_station}_ana.txt')
-    comp = hatyan.read_components(filename=file_comp)
-    assert "nodalfactors" in comp.attrs
     
     # missing xfac attribute
+    comp = hatyan.read_components(filename=file_comp)
     comp.attrs.pop("xfac")
     with pytest.raises(KeyError) as e:
         hatyan.prediction(comp)
@@ -307,6 +343,17 @@ def test_prediction_settings_invalid_values():
     with pytest.raises(TypeError) as e:
         hatyan.prediction(comp)
     assert str(e.value) == 'invalid source aa, should be "schureman" or "foreman"'
+
+
+@pytest.mark.unittest
+def test_prediction_settings_invalid_times():
+    current_station = 'VLISSGN'
+    file_comp = os.path.join(dir_testdata, f'{current_station}_ana.txt')
+    comp = hatyan.read_components(filename=file_comp)
+    
+    with pytest.raises(TypeError) as e:
+        hatyan.prediction(comp, times=1)
+    assert "times argument can be of type" in str(e.value)
 
 
 @pytest.mark.unittest
