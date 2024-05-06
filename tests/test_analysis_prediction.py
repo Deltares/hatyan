@@ -156,7 +156,6 @@ def test_analysis_settings_timeseries_tooshort():
         _ = hatyan.analysis(ts=ts_pd, const_list="year", analysis_perperiod="M")
     assert "all nans" in str(e.value)
     
-    # too short
     with pytest.raises(ValueError) as e:
         _ = hatyan.analysis(ts=ts_pd.iloc[:1], const_list="year")
     assert "provided timeseries is less than 2 timesteps long" in str(e.value)

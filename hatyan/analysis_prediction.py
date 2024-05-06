@@ -284,7 +284,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     #remove nans
     ts_pd_nonan = ts_pd[~ts_pd['values'].isna()]
     if len(ts_pd_nonan)<2:
-        raise Exception(f'provided timeseries is less than 2 timesteps long (after dropping potential nans), analysis not possible:\n{ts_pd_nonan}')
+        raise ValueError(f'provided timeseries is less than 2 timesteps long (after dropping potential nans), analysis not possible:\n{ts_pd_nonan}')
     times_pred_all_pdDTI = ts_pd_nonan.index.copy() #pd.DatetimeIndex(ts_pd_nonan.index) #TODO: this will not work for OutOfBoundsDatetime
     percentage_nan = 100-len(ts_pd_nonan['values'])/len(ts_pd['values'])*100
     logger.info(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
