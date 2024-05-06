@@ -193,11 +193,6 @@ def test_analysis_invalid_timeseries_index():
 def test_analysis_settings_invalid_values():
     file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_pd = hatyan.read_dia(file_dia)
-    cs_comps_valid = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
-                             'CS_comps_from':['K1','N2','2MN2','S2','S2'],
-                             'CS_ampfacs':[0.36,0.38,0.44,0.30,0.07],
-                             'CS_degincrs':[5,-22,180,3,-22]})
-    comp = hatyan.analysis(ts=ts_pd, const_list="year", CS_comps=cs_comps_valid)
     
     with pytest.raises(TypeError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], nodalfactors=1)
@@ -483,6 +478,28 @@ def test_prediction_perperiod_month():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
     assert len(ts_pred_atonce) == len(ts_pred_allmonths)
+
+
+def test_prediction_perperiod_year():
+    # TODO: when the prediction function does not treat Y and M differently, this testcase can be dropped
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="Y", return_allperiods=True)
+    
+    ts_pred_atonce = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index)
+    
+    ts_pred_allyears = hatyan.prediction(comp=comp_all, timestep="60min")
+    
+    expected_atonce = np.array([-1.38346859, -0.84555223, -0.21307598,  0.76601685,  1.91438215,
+            2.16373654,  1.56241672,  0.86686561, -0.0329582 , -1.02668776])
+    expected_allyears = np.array([-1.38346859, -0.84555223, -0.21307598,  0.76601685,  1.91438215,
+            2.16373654,  1.56241672,  0.86686561, -0.0329582 , -1.02668776])
+    
+    assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
+    assert np.allclose(ts_pred_allyears["values"].values[:10], expected_allyears)
+    assert len(ts_pred_atonce) == len(ts_pred_allyears)
 
 
 def test_prediction_hasrequiredargs():
