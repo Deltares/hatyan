@@ -370,7 +370,7 @@ def test_prediction_perperiod_settings_invalid_timestep():
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
     
-    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+    _, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
                                           analysis_perperiod="M", return_allperiods=True)
     
     with pytest.raises(ValueError) as e:
