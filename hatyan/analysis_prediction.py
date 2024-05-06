@@ -67,7 +67,7 @@ class HatyanSettings:
             self.return_allperiods = return_allperiods
         
         if analysis_perperiod is not None:
-            if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
+            if not ((analysis_perperiod is False) or (analysis_perperiod in ['YS','Y','Q','M'])):
                 raise TypeError(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
             self.analysis_perperiod = analysis_perperiod
         
@@ -387,6 +387,7 @@ def split_components(comp, dood_date_mid, hatyan_settings):
             DREEEL = 1+DMU*DTHETA*np.cos(DGAMMA)
             DIMAGI = DMU*DTHETA*np.sin(DGAMMA)  
             DALPHA = np.sqrt(DREEEL*DREEEL+DIMAGI*DIMAGI)
+            print(DALPHA)
             if DALPHA < 1e-50:
                 raise Exception('ERROR: DALPHA too small, component splitting failed?')
             DBETA = np.arctan2(DIMAGI,DREEEL)
@@ -523,7 +524,7 @@ def prediction(comp, times=None, timestep=None):
             logger.info(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
             comp_oneyear = comp.loc[:,(slice(None),period_dt)]
             comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
-            if period_dt.freqstr in ['A-DEC']: #year frequency
+            if period_dt.freqstr in ['A-DEC','Y-DEC']: #year frequency
                 tstart = pd.Timestamp(period_dt.year,1,1)
                 tstop = pd.Timestamp(period_dt.year+1,1,1) - tstep.delta
             elif period_dt.freqstr in ['M']: #month frequency
