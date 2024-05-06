@@ -66,11 +66,9 @@ def ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True):
     if isnumeric: 
         key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
     else:
-        #alfanumeric values for 'Typering.Code':'GETETTPE'
-        # TODO DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
+        # alfanumeric values for 'Typering.Code':'GETETTPE'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
     
-    # TODO DDL IMPROVEMENT: qc conversion should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> now flattened by ddlpy
     ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues],
                           'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
                           'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'],
