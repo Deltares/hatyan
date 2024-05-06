@@ -485,10 +485,11 @@ def prediction(comp, times=None, timestep=None):
         The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
     times : (pd.DatetimeIndex,slice), optional
         pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
-        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. 
+        If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep metadata attrs of the comp object. 
         Only allowed/relevant for component dataframes with single-level columns (single period). The default is None.
-    timestep : int
-        Only allowed/relevant for component dataframes with multi-level columns (different periods). The default is None.
+    timestep : str
+        Only allowed/relevant for component dataframes with multi-level columns (different periods). 
+        The string is parsed with pandas.tseries.frequencies.to_offset(). The default is None.
 
     Returns
     -------
@@ -511,7 +512,7 @@ def prediction(comp, times=None, timestep=None):
             raise TypeError("prediction() per period, so 'timestep' argument should not be None")
         if times is not None:
             raise TypeError("prediction() per period, so 'times' argument not allowed")
-        # convert timestep_min to tstep of proper type
+        # convert timestep to tstep of proper type
         tstep = pd.tseries.frequencies.to_offset(timestep)
         
         ts_periods_dt = comp.columns.levels[1]

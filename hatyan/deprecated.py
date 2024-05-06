@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 DEPRECATED_OPTIONS_PREDICTION_DICT = {
     'times_pred_all':'times',
     'times_ext':'times',
+    'timestep_min':'timestep',
     'nodalfactors':'as attribute of the component dataframe (comp.attrs["nodalfactors"])',
     'xfac':'as attribute of the component dataframe (comp.attrs["xfac"])',
     'fu_alltimes':'as attribute of the component dataframe (comp.attrs["fu_alltimes"])',
