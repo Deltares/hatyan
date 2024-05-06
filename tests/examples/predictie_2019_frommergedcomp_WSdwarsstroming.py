@@ -21,7 +21,7 @@ list_matig = []
 list_sterk = []
 for yr, ax in zip([2020,2021],[ax1,ax2]):
 
-    times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1),1) #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
+    times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1),"1min") #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
     
     if yr == 2020:
         file_data_comp_HANSWT = os.path.join(dir_testdata,'predictie2019','HANSWT_ana.txt') #2009-2012
@@ -57,8 +57,8 @@ for yr, ax in zip([2020,2021],[ax1,ax2]):
     ax.grid()
     ax.set_xlabel('Tijd')
     ax.set_ylabel('astro verval %d [m] (TERNZN-HANSWT)'%yr)
-    #hatyan.write_dia(ts=ts_ext_prediction_main, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_main.dia'%(times_step_pred, current_station))
-    #hatyan.write_dia(ts=ts_ext_prediction_clean, station=current_station, vertref='NAP', filename='prediction_HWLW_%im_%s_agger345.dia'%(times_step_pred, current_station))
+    #hatyan.write_dia(ts=ts_ext_prediction_main, station=current_station, vertref='NAP', filename='prediction_HWLW_%s_%s_main.dia'%(times_step_pred, current_station))
+    #hatyan.write_dia(ts=ts_ext_prediction_clean, station=current_station, vertref='NAP', filename='prediction_HWLW_%s_%s_agger345.dia'%(times_step_pred, current_station))
 fig.tight_layout()
 fig.savefig('prediction_WSdwarsstroming')
 

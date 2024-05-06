@@ -21,8 +21,8 @@ for current_station in selected_stations:
     
     file_data_comp = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
     
-    times_pred13 = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), 10)
-    times_pred24 = slice(dt.datetime(2019,11,1),dt.datetime(2020,3,1), 10)
+    times_pred13 = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), "10min")
+    times_pred24 = slice(dt.datetime(2019,11,1),dt.datetime(2020,3,1), "10min")
     
     file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
     
@@ -39,10 +39,10 @@ for current_station in selected_stations:
     ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
 
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction1, ts_validation=ts_validation)
-    fig.savefig('prediction_%im_%s_validation_default'%(times_pred13.step, current_station))
+    fig.savefig('prediction_%s_%s_validation_default'%(times_pred13.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction1, ts_validation=ts_prediction2)
-    fig.savefig('prediction_%im_%s_validation_default_twoperiods'%(times_pred13.step, current_station))
+    fig.savefig('prediction_%s_%s_validation_default_twoperiods'%(times_pred13.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction3, ts_validation=ts_validation)
-    fig.savefig('prediction_%im_%s_validation_DDPTST'%(times_pred13.step, current_station))
+    fig.savefig('prediction_%s_%s_validation_DDPTST'%(times_pred13.step, current_station))
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction3, ts_validation=ts_prediction4)
-    fig.savefig('prediction_%im_%s_validation_DDPTST_twoperiods'%(times_pred13.step, current_station))
+    fig.savefig('prediction_%s_%s_validation_DDPTST_twoperiods'%(times_pred13.step, current_station))
