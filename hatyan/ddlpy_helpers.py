@@ -38,8 +38,6 @@ def ddlpy_to_hatyan(ddlpy_meas, ddlpy_meas_exttyp=None):
     if ddlpy_meas_exttyp is None:
         return ts_pd
     
-    # continue if ddlpy_meas_exttyp is supplied
-    # combine numeric values from the first and alfanumeric values from the second df
     # check if the contents of this dataframe is in deed extreme types
     assert len(ddlpy_meas) == len(ddlpy_meas_exttyp)
     typering_codes = ddlpy_meas_exttyp["Typering.Code"].drop_duplicates().values
