@@ -10,7 +10,7 @@ import pytest
 import pandas as pd
 import datetime as dt
 import numpy as np
-from netcdf import Dataset, num2date
+from netCDF4 import Dataset, num2date
 import hatyan
 from hatyan.metadata import metadata_from_obj, metadata_compare
 
