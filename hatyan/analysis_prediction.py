@@ -55,15 +55,15 @@ class HatyanSettings:
         self.xfac = xfac
         
         if not isinstance(source,str):
-            raise TypeError('invalid source type, should be str')
+            raise TypeError(f'invalid source={source} type, should be str')
         source = source.lower()
         if source not in ['schureman','foreman']:
-            raise TypeError('invalid source {source}, should be "schureman" or "foreman")')
+            raise TypeError(f'invalid source {source}, should be "schureman" or "foreman"')
         self.source = source
                 
         if return_allperiods is not None:
             if not isinstance(return_allperiods,bool):
-                raise TypeError(f'invalid {return_allperiods} type, should be bool')
+                raise TypeError(f'invalid return_allperiods={return_allperiods} type, should be bool')
             self.return_allperiods = return_allperiods
         
         if analysis_perperiod is not None:
@@ -190,7 +190,7 @@ def analysis(ts, const_list,
     # validate settings
     hatyan_settings = HatyanSettings(source=source, nodalfactors=nodalfactors, fu_alltimes=fu_alltimes, xfac=xfac,
                                      analysis_perperiod=analysis_perperiod, return_allperiods=return_allperiods,
-                                     CS_comps=CS_comps,xTxmat_condition_max=xTxmat_condition_max)
+                                     CS_comps=CS_comps, xTxmat_condition_max=xTxmat_condition_max)
     
     logger.info(f'ANALYSIS initializing\n{hatyan_settings}')
         

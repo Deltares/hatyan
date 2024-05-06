@@ -18,6 +18,52 @@ dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 
 
 @pytest.mark.unittest
+def test_analysis_settings_invalid_values():
+    file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_pd = hatyan.read_dia(file_dia)
+    
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], nodalfactors=1)
+    assert str(e.value) == "invalid nodalfactors=1 type, should be bool"
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], xfac=1)
+    assert str(e.value) == "invalid xfac=1 type, should be bool or dict"
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], fu_alltimes=1)
+    assert str(e.value) == "invalid fu_alltimes=1 type, should be bool"
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], source=1)
+    assert str(e.value) == "invalid source=1 type, should be str"
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], source="aa")
+    assert str(e.value) == 'invalid source aa, should be "schureman" or "foreman"'
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], analysis_perperiod="aa")
+    assert str(e.value) == 'invalid analysis_perperiod=aa type, should be False or Y/Q/M'
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], return_allperiods=1)
+    assert str(e.value) == 'invalid return_allperiods=1 type, should be bool'
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], CS_comps=1)
+    assert str(e.value) == "invalid CS_comps type, should be dict"
+
+    with pytest.raises(KeyError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], CS_comps={})
+    assert str(e.value) == "'CS_comps does not contain CS_comps_derive'"
+
+    with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], xTxmat_condition_max="aa")
+    assert str(e.value) == "invalid aa type, should be int or float"
+
+
+@pytest.mark.unittest
 def test_analysis_settings():
     
     current_station = 'VLISSGN'
