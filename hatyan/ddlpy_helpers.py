@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec  1 17:03:03 2021
-
-@author: veenstra
+ddlpy_helpers.py contains functions to convert ddlpy timeseries dataframes to hatyan timeseries dataframes.
+The package ddlpy is available at https://github.com/Deltares/ddlpy
 """
 
 import pandas as pd
