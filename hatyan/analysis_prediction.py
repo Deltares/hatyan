@@ -403,7 +403,7 @@ def split_components(comp, dood_date_mid, hatyan_settings):
     return comp_inclCS
 
 
-def prediction_singleperiod(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice), hatyan_settings) -> pd.DataFrame:
+def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_settings) -> pd.DataFrame:
     
     metadata_comp = metadata_from_obj(comp)
     tzone_comp = metadata_comp.pop("tzone")
@@ -471,7 +471,7 @@ def prediction_singleperiod(comp:pd.DataFrame, times:(pd.DatetimeIndex,slice), h
 
 
 @deprecated_python_option(**DEPRECATED_OPTIONS_PREDICTION_DICT)
-def prediction(comp, timestep_min=None, times=None):
+def prediction(comp, times=None, timestep=None):
     """
     generates a tidal prediction from a set of components A and phi values.
     The component set has the same timezone as the timeseries used to create it, 
@@ -483,12 +483,12 @@ def prediction(comp, timestep_min=None, times=None):
     ----------
     comp : pd.DataFrame
         The DataFrame contains the component data with component names as index, and colums 'A' and 'phi_deg'.
-    timestep_min : int
-        Only allowed/relevant for component dataframes with multi-level columns (different periods). The default is None.
     times : (pd.DatetimeIndex,slice), optional
         pd.DatetimeIndex with prediction timeseries or slice(tstart,stop,timestep) to construct it from. 
         If None, pd.DatetimeIndex is constructed from the tstart/tstop/timestep_min metadata attrs of the comp object. 
         Only allowed/relevant for component dataframes with single-level columns (single period). The default is None.
+    timestep : int
+        Only allowed/relevant for component dataframes with multi-level columns (different periods). The default is None.
 
     Returns
     -------
@@ -507,13 +507,12 @@ def prediction(comp, timestep_min=None, times=None):
     
     if hasattr(comp.columns,"levels"):
         logger.info('prediction() per period due to levels in component dataframe columns')
-        if timestep_min is None:
+        if timestep is None:
             raise TypeError("prediction() per period, so 'timestep_min' argument should not be None")
         if times is not None:
             raise TypeError("prediction() per period, so 'times' argument not allowed")
-        # convert timestep_min to tstep of proper type (tstart/tstop are dummies here)
-        times_slice = slice("1900-01-01", "1900-01-01", timestep_min)
-        _, _, tstep = get_tstart_tstop_tstep(times_slice)
+        # convert timestep_min to tstep of proper type
+        tstep = pd.tseries.frequencies.to_offset(timestep)
         
         ts_periods_dt = comp.columns.levels[1]
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
@@ -524,11 +523,11 @@ def prediction(comp, timestep_min=None, times=None):
             comp_oneyear = comp.loc[:,(slice(None),period_dt)]
             comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
             if period_dt.freqstr in ['A-DEC']: #year frequency
-                tstart = dt.datetime(period_dt.year,1,1)
-                tstop = dt.datetime(period_dt.year+1,1,1)-dt.timedelta(minutes=timestep_min)
+                tstart = pd.Timestamp(period_dt.year,1,1)
+                tstop = pd.Timestamp(period_dt.year+1,1,1) - pd.Timestamp
             elif period_dt.freqstr in ['M']: #month frequency
-                tstart = period_dt.to_timestamp().to_pydatetime()
-                tstop = period_dt.to_timestamp().to_pydatetime()+dt.timedelta(days=period_dt.days_in_month)-dt.timedelta(minutes=timestep_min)
+                tstart = period_dt.to_timestamp()
+                tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - pd.Timestamp
             else:
                 raise Exception(f'unknown freqstr: {period_dt.freqstr}')
             # generate date range and do prediction
@@ -538,7 +537,7 @@ def prediction(comp, timestep_min=None, times=None):
         ts_prediction = pd.concat(ts_prediction_perperiod_list)
     else:
         logger.info('prediction() atonce')
-        if timestep_min is not None:
+        if timestep is not None:
             raise TypeError("prediction() atonce, so 'timestep_min' argument not allowed")
         if times is None:
             raise TypeError("prediction() atonce, so 'times' argument should not be None")
