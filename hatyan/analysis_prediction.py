@@ -534,7 +534,7 @@ def prediction(comp, timestep_min=None, times=None):
         
         ts_periods_dt = comp.columns.levels[1]
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
-                
+        
         ts_prediction_perperiod_list = []
         for period_dt in ts_periods_dt:
             logger.info(f'generating prediction {period_dt} of sequence {ts_periods_strlist}')
