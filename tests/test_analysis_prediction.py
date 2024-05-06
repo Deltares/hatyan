@@ -109,37 +109,37 @@ def test_analysis_foreman():
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1]]
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
     
-    comp_frommeas_SCHU = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='schureman')
-    comp_frommeas_FOR = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='foreman')
-    SCHU_comp_phi_expected =  np.array([  0.        , 141.68386391, 188.27101759,   7.3992028 ,
+    comp_frommeas_schu = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='schureman')
+    comp_frommeas_for = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, source='foreman')
+    schu_comp_phi_expected =  np.array([  0.        , 141.68386391, 188.27101759,   7.3992028 ,
                                        279.17807514, 122.81257343, 159.77061119,  33.51788732,
                                         59.01827634, 256.05796043, 117.47528038, 345.63438447,
                                        201.05307505,  92.81986396, 115.2820895 , 176.56952991,
                                         77.30925229, 103.43837741, 153.90952097, 110.64017054,
                                        157.30038107, 220.24021917])
-    SCHU_comp_A_expected =    np.array([9.93677030e-04, 3.11102518e-02, 9.74940999e-02, 6.69089179e-02,
+    schu_comp_A_expected =    np.array([9.93677030e-04, 3.11102518e-02, 9.74940999e-02, 6.69089179e-02,
                                        4.01204828e-02, 2.43192049e-02, 1.34386805e-01, 2.69878623e-01,
                                        1.74649803e+00, 1.32976762e-01, 4.79019453e-01, 4.42086557e-02,
                                        1.92695651e-02, 4.29786476e-02, 1.28078709e-01, 8.89513755e-02,
                                        4.67055728e-02, 8.50832246e-02, 9.01742533e-02, 3.06526796e-02,
                                        4.72907179e-02, 1.47366661e-02])
-    FOR_comp_phi_expected =  np.array([  0.        , 321.7403689 ,   8.15729584, 187.40999172,
+    for_comp_phi_expected =  np.array([  0.        , 321.7403689 ,   8.15729584, 187.40999172,
                                        279.42669414, 122.65017113, 160.05967765,  33.32750808,
                                         59.01572119, 256.18495318, 117.35826025, 345.41402817,
                                        201.17575979,  92.60563462, 115.27544986, 176.43679913,
                                         77.08771066, 103.42351654, 153.76456299, 110.600143  ,
                                        157.16101443, 220.13261581])
-    FOR_comp_A_expected =    np.array([9.96058525e-04, 3.01459094e-02, 9.72007804e-02, 6.69287134e-02,
+    for_comp_A_expected =    np.array([9.96058525e-04, 3.01459094e-02, 9.72007804e-02, 6.69287134e-02,
                                        3.99816712e-02, 2.42471615e-02, 1.33778086e-01, 2.75247289e-01,
                                        1.76155491e+00, 1.39007149e-01, 4.85825897e-01, 4.40858825e-02,
                                        1.92198515e-02, 4.29817009e-02, 1.29452749e-01, 9.04975848e-02,
                                        4.66816274e-02, 8.62181973e-02, 9.27486375e-02, 3.13117938e-02,
                                        4.82570962e-02, 1.46874202e-02])
     
-    assert (np.abs(comp_frommeas_SCHU['phi_deg'].values-SCHU_comp_phi_expected) < 10E-9).all()
-    assert (np.abs(comp_frommeas_SCHU['A'].values-SCHU_comp_A_expected) < 10E-9).all()
-    assert (np.abs(comp_frommeas_FOR['phi_deg'].values-FOR_comp_phi_expected) < 10E-9).all()
-    assert (np.abs(comp_frommeas_FOR['A'].values-FOR_comp_A_expected) < 10E-9).all()
+    assert (np.abs(comp_frommeas_schu['phi_deg'].values-schu_comp_phi_expected) < 10E-9).all()
+    assert (np.abs(comp_frommeas_schu['A'].values-schu_comp_A_expected) < 10E-9).all()
+    assert (np.abs(comp_frommeas_for['phi_deg'].values-for_comp_phi_expected) < 10E-9).all()
+    assert (np.abs(comp_frommeas_for['A'].values-for_comp_A_expected) < 10E-9).all()
 
 
 @pytest.mark.unittest
