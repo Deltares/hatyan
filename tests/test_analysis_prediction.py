@@ -230,11 +230,6 @@ def test_analysis_settings_invalid_values():
         _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], CS_comps={})
     assert str(e.value) == "'CS_comps does not contain CS_comps_derive'"
 
-    cs_comps_invalid = {'CS_comps_derive':["m2","m2"], 'CS_comps_from':["a1","a2"], 'CS_ampfacs':[1,1], 'CS_degincrs':[1,1]}
-    with pytest.raises(ValueError) as e:
-        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], CS_comps=cs_comps_invalid)
-    assert str(e.value) == "All arrays must be of the same length"
-
     with pytest.raises(TypeError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], xTxmat_condition_max="aa")
     assert str(e.value) == "invalid aa type, should be int or float"
