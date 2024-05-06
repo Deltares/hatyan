@@ -387,7 +387,6 @@ def split_components(comp, dood_date_mid, hatyan_settings):
             DREEEL = 1+DMU*DTHETA*np.cos(DGAMMA)
             DIMAGI = DMU*DTHETA*np.sin(DGAMMA)  
             DALPHA = np.sqrt(DREEEL*DREEEL+DIMAGI*DIMAGI)
-            print(DALPHA)
             if DALPHA < 1e-50:
                 raise Exception('ERROR: DALPHA too small, component splitting failed?')
             DBETA = np.arctan2(DIMAGI,DREEEL)
