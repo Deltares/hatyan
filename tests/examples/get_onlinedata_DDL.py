@@ -132,13 +132,8 @@ if 1: #for RWS
             meas_wathte_exttypes = ddlpy.measurements(locs_wathte_exttypes_one.iloc[0], start_date=start_date, end_date=end_date)
             meas_wathtbrkd_exttypes = ddlpy.measurements(locs_wathtbrkd_exttypes_one.iloc[0], start_date=start_date, end_date=end_date)
             # hatyan timeseries
-            ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext)
-            ts_astroHWLW = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ext)
-            ts_measwlHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathte_exttypes)
-            ts_astroHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_exttypes)
-            # convert exttype string to num
-            ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
-            ts_astrolHWLW = hatyan.convert_HWLWstr2num(ts_astroHWLW,ts_astroHWLWtype)
+            ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext, meas_wathte_exttypes)
+            ts_astroHWLW = hatyan.ddlpy_to_hatyan(meas_wathtbrkd_ext, meas_wathtbrkd_exttypes)
     
     stat_name = locs_wathte_one["Naam"].iloc[0]
     stat_code = locs_wathte_one.index[0]
