@@ -12,7 +12,7 @@
 - improved metadata in component files in [#131](https://github.com/Deltares/hatyan/pull/131)
 - replaced `times_ext` `timestep_min` and `times_pred_all` for `hatyan.prediction()` with `times` argument in [#143](https://github.com/Deltares/hatyan/pull/143)
 - integrated ddlpy to in ddl example script in [#202](https://github.com/Deltares/hatyan/pull/202) and [#213](https://github.com/Deltares/hatyan/pull/213)
-- conversion from ddlpy to hatyan timeseries dataframe with `hatyan.ddlpy_to_hatyan()` in https://github.com/Deltares/hatyan/pull/284
+- simplified ddlpy to hatyan timeseries dataframe conversoin in `hatyan.ddlpy_to_hatyan()` in https://github.com/Deltares/hatyan/pull/284
 - prevent writing components with non-standard settings to file and prevent prediction with different settings than provided components in [#218](https://github.com/Deltares/hatyan/pull/218)
 - use `pandas.DataFrame.attrs` instead of separate metadata attrs in [#219](https://github.com/Deltares/hatyan/pull/219)
 - moved from prints to logging in [#236](https://github.com/Deltares/hatyan/pull/236)
