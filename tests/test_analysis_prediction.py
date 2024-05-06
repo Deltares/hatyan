@@ -365,7 +365,11 @@ def test_prediction_settings_invalid_times():
         hatyan.prediction(comp, times=1)
     assert "times argument can be of type" in str(e.value)
     
-    
+    with pytest.raises(TypeError) as e:
+        hatyan.prediction(comp, timestep=1)
+    assert str(e.value) == "prediction() atonce, so 'timestep' argument not allowed"
+
+
 @pytest.mark.unittest
 def test_prediction_perperiod_settings_invalid_timestep():
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
@@ -377,6 +381,10 @@ def test_prediction_perperiod_settings_invalid_timestep():
     with pytest.raises(ValueError) as e:
         hatyan.prediction(comp=comp_all, timestep=60)
     assert str(e.value) == "Invalid frequency: 60"
+
+    with pytest.raises(TypeError) as e:
+        hatyan.prediction(comp=comp_all, timestep=60, times=60)
+    assert "prediction() per period, so 'times' argument not allowed" == str(e.value)
 
 
 @pytest.mark.unittest
