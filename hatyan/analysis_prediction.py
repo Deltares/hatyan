@@ -67,7 +67,7 @@ class HatyanSettings:
             self.return_allperiods = return_allperiods
         
         if analysis_perperiod is not None:
-            if not ((analysis_perperiod is False) or (analysis_perperiod in ['YS','Y','Q','M'])):
+            if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
                 raise TypeError(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
             self.analysis_perperiod = analysis_perperiod
         
