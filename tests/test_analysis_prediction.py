@@ -12,6 +12,7 @@ import pandas as pd
 import hatyan
 import pytz
 import datetime as dt
+from hatyan.analysis_prediction import MatrixConditionTooHigh
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -140,6 +141,20 @@ def test_analysis_foreman():
     assert (np.abs(comp_frommeas_schu['A'].values-schu_comp_A_expected) < 10E-9).all()
     assert (np.abs(comp_frommeas_for['phi_deg'].values-for_comp_phi_expected) < 10E-9).all()
     assert (np.abs(comp_frommeas_for['A'].values-for_comp_A_expected) < 10E-9).all()
+
+
+@pytest.mark.unittest
+def test_analysis_settings_matrixconditiontoohigh():
+    file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_pd = hatyan.read_dia(file_dia)
+    
+    with pytest.raises(MatrixConditionTooHigh) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list="all_schureman_originalorder")
+    assert "condition of xTx matrix is too high" in str(e.value)
+
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list="year", analysis_perperiod="M")
+    assert "all nans" in str(e.value)
 
 
 @pytest.mark.unittest
