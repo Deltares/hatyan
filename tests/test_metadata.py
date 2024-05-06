@@ -208,3 +208,16 @@ def test_wns_from_metadata():
     assert wns_54 == 54
     assert wns_18 == 18
     assert wns_55 == 55
+
+
+@pytest.mark.unittest
+def test_metadata_persistence():
+    current_station = 'VLISSGN'
+    file_comp = os.path.join(dir_testdata, f'{current_station}_ana.txt')
+    comp = hatyan.read_components(filename=file_comp)
+    assert len(comp.attrs) > 0
+    
+    assert len(comp.iloc[:10].attrs) > 0
+    assert len(comp["A"].attrs) > 0
+    assert len(comp.max().attrs) > 0
+
