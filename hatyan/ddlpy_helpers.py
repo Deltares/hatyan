@@ -7,11 +7,51 @@ Created on Wed Dec  1 17:03:03 2021
 
 import pandas as pd
 
-__all__ = ["ddlpy_to_hatyan",
-           "convert_HWLWstr2num"]
+__all__ = ["ddlpy_to_hatyan"]
 
 
-def ddlpy_to_hatyan(ddlpy_meas):
+def ddlpy_to_hatyan(ddlpy_meas, ddlpy_meas_exttyp=None):
+    """
+    Convert ddlpy measurements to hatyan timeseries dataframe.
+
+    Parameters
+    ----------
+    ddlpy_meas : pd.DataFrame
+        ddlpy measurements dataframe. It is assumed that it contains numeric values that 
+        represent waterlevel timeseries or waterlevel extremes (measured or astro).
+    ddlpy_meas_exttyp : pd.DataFrame, optional
+        ddlpy measurements dataframe. If it is supplied it is assumed that it contains 
+        alfanumeric values and these represent tidal extreme types (high- and low waters).
+        The default is None.
+
+    Returns
+    -------
+    pd.DataFrame
+        hatyan timeseries DataFrame with values/QC/Status columns. If ddlpy_meas_typ 
+        is supplied, this DataFrame will also include a HWLWcode column.
+
+    """
+    
+    
+    ts_pd = ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True)
+    ts_pd['values'] /= 100 #convert from cm to m
+    if ddlpy_meas_exttyp is None:
+        return ts_pd
+    
+    # check if the contents of this dataframe is in deed extreme types
+    assert len(ddlpy_meas) == len(ddlpy_meas_exttyp)
+    typering_codes = ddlpy_meas_exttyp["Typering.Code"].drop_duplicates().values
+    assert len(typering_codes) == 1
+    assert typering_codes[0] == "GETETTPE"
+    
+    ts_pd_typ = ddlpy_to_hatyan_plain(ddlpy_meas_exttyp, isnumeric=False)
+    
+    ts_pd_combined = convert_exttype_str2num(ts_pd,ts_pd_typ)
+    
+    return ts_pd_combined
+        
+
+def ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True):
     
     if ddlpy_meas.empty:
         raise ValueError("supplied dataframe is empty")
@@ -21,27 +61,20 @@ def ddlpy_to_hatyan(ddlpy_meas):
         if len(ddlpy_meas[col].drop_duplicates()) != 1:
             raise Exception(f"ddlpy_meas['{col}'] is not unique")
     
-    if 'Meetwaarde.Waarde_Numeriek' in ddlpy_meas.columns: 
+    if isnumeric: 
         key_numericvalues = 'Meetwaarde.Waarde_Numeriek'
-        isnumeric = True
     else:
-        #alfanumeric values for 'Typering.Code':'GETETTPE' #DDL IMPROVEMENT: also include numeric values for getijtype. Also, it is quite complex to get this data in the first place, would be convenient if it would be a column when retrieving 'Groepering.Code':'GETETM2' or 'GETETBRKD2'
+        # alfanumeric values for 'Typering.Code':'GETETTPE'
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
-        isnumeric = False
     
-    # DDL IMPROVEMENT: qc conversion should be possible with .astype(int), but pd.to_numeric() is necessary for HARVT10 (eg 2019-09-01 to 2019-11-01) since QC contains None values that cannot be ints (in that case array of floats with some nans is returned) >> now flattened by ddlpy
     ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues],
-                         'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
-                         'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'],
-                         })
-    
-    if isnumeric:
-        ts_pd['values'] /= 100 #convert from cm to m
-    
+                          'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
+                          'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'],
+                          })
     return ts_pd
 
 
-def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
+def convert_exttype_str2num(ts_measwl_ext, ts_measwl_exttype):
     """
     TVL;1;1;hoogwater
     TVL;1;2;laagwater
@@ -49,11 +82,12 @@ def convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype):
     TVL;1;4;topagger
     TVL;1;5;laagwater 2
     """
-    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='hoogwater','HWLWcode'] = 1
-    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater','HWLWcode'] = 2
-    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 1','HWLWcode'] = 3
-    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='topagger','HWLWcode'] = 4
-    ts_measwlHWLW.loc[ts_measwlHWLWtype['values']=='laagwater 2','HWLWcode'] = 5
-    ts_measwlHWLW['HWLWcode'] = ts_measwlHWLW['HWLWcode'].astype(int)
-    return ts_measwlHWLW
+    
+    ts_measwl_ext.loc[ts_measwl_exttype['values']=='hoogwater','HWLWcode'] = 1
+    ts_measwl_ext.loc[ts_measwl_exttype['values']=='laagwater','HWLWcode'] = 2
+    ts_measwl_ext.loc[ts_measwl_exttype['values']=='laagwater 1','HWLWcode'] = 3
+    ts_measwl_ext.loc[ts_measwl_exttype['values']=='topagger','HWLWcode'] = 4
+    ts_measwl_ext.loc[ts_measwl_exttype['values']=='laagwater 2','HWLWcode'] = 5
+    ts_measwl_ext['HWLWcode'] = ts_measwl_ext['HWLWcode'].astype(int)
+    return ts_measwl_ext
 
