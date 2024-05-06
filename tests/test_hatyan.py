@@ -27,7 +27,7 @@ def test_frommergedcomp():
     file_data_comp = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     
     #pred
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), "10min")
     
     # 2. define initial expectations
     expected_ts_prediction_data_pd_values = np.array([1.00809295,  0.89565827,  0.77557688,  0.64880508,  0.51669927,
@@ -136,7 +136,7 @@ def test_frommergedcomp_HWLW_toomuch():
     """
     
     #for testing occurance of invalid low water at start of denhelder timeseries
-    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), 1)
+    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
     current_station = 'DENHDR'
 
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
@@ -216,7 +216,7 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     #END OF STATION SETTINGS
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1), 1)
+    times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1), "1min")
     
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
@@ -284,10 +284,10 @@ def test_frommergedcomp_HWLW_345(current_station):
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     
-    times_pred = slice(dt.datetime(2010,1,31,3),dt.datetime(2010,2,17,12), 1) #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
-    # times_pred = slice(dt.datetime(2010,1,31),dt.datetime(2010,2,3), 1) #extra agger outside of 1stLW/agger/2ndLW sequence
-    # times_pred = slice(dt.datetime(2010,6,26),dt.datetime(2010,6,28), 1) #lokale extremen tussen twee laagste LWs
-    # times_pred = slice(dt.datetime(2019,2,1),dt.datetime(2019,2,2), 1) #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
+    times_pred = slice(dt.datetime(2010,1,31,3),dt.datetime(2010,2,17,12), "1min") #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
+    # times_pred = slice(dt.datetime(2010,1,31),dt.datetime(2010,2,3), "1min") #extra agger outside of 1stLW/agger/2ndLW sequence
+    # times_pred = slice(dt.datetime(2010,6,26),dt.datetime(2010,6,28), "1min") #lokale extremen tussen twee laagste LWs
+    # times_pred = slice(dt.datetime(2019,2,1),dt.datetime(2019,2,2), "1min") #eerste HW wordt als lokaal ipv primair HW gezien (lage prominence door dicht op begin tijdserie) >> warning
     
     ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
     ts_ext_prediction_main = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
@@ -379,7 +379,7 @@ def test_hwlw_numbering_aggers():
     This is probably already tested with other hwlw tests
     """
     
-    times_pred = slice(dt.datetime(2010,1,31,3),dt.datetime(2010,2,17,12), 1) #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
+    times_pred = slice(dt.datetime(2010,1,31,3),dt.datetime(2010,2,17,12), "1min") #longer period with alternating aggers and no aggers, also eerste HW wordt als lokaal ipv primair HW gezien, also extra agger outside of 1stLW/agger/2ndLW sequence
     #HOEKVHLD has alternating aggers, DENHDR has double HW's
     expect_345_len = {'HOEKVHLD':99,'DENHDR':66}
     expect_345_code_sum = {'HOEKVHLD':267,'DENHDR':99}
@@ -433,7 +433,7 @@ def test_19Ycomp4Ydia():
     COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
     
     #prediction and validation
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), "10min")
     ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
     ts_prediction_values = ts_prediction['values'].values
     
@@ -471,7 +471,7 @@ def test_19Ycomp4Ydia_compsplitsing():
                              'CS_ampfacs':[0.33,0.22,0.48,0.29,0.05],
                              'CS_degincrs':[-11,-24,174,1,-24]})
     file_data_comp1 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), "10min")
     
     # 3. run test
     #component groups
@@ -516,7 +516,7 @@ def test_allfromdia():
     current_station = 'VLISSGN'
     file_data_comp0 = [os.path.join(dir_testdata,'%s_obs%i.txt'%(current_station, file_id)) for file_id in [1,2,3,4]]
     file_data_comp1 = os.path.join(dir_testdata,'%s_obs19.txt'%(current_station))
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), "10min")
 
     #component groups
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
@@ -576,7 +576,7 @@ def test_allfromdia_2008xfac0():
     const_list = hatyan.get_const_list_hatyan('year')
     current_station = 'DOVR'
     file_data_comp0 = os.path.join(dir_testdata,'%s_obs1.txt'%(current_station))
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), "10min")
     
     #component groups
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)

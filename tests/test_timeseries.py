@@ -302,7 +302,7 @@ def test_write_tsdia_rounding():
     current_station = 'HOEKVHLD'
     file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_ana.txt')
     
-    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), 10)
+    times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), "10min")
     
     comp_merged = hatyan.read_components(filename=file_data_comp0)
     

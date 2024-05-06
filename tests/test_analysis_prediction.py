@@ -177,10 +177,16 @@ def test_analysis_settings_timeseries_tooshort():
 def test_analysis_invalid_timeseries_index():
     file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_pd = hatyan.read_dia(file_dia)
+    
     ts_pd_wrongindex = ts_pd.reset_index()
     with pytest.raises(TypeError) as e:
         _ = hatyan.analysis(ts=ts_pd_wrongindex, const_list="year")
     assert "ts.index is not of expected type" in str(e.value)
+    
+    ts_pd_duplicated = pd.concat([ts_pd,ts_pd])
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.analysis(ts=ts_pd_duplicated, const_list="year")
+    assert "duplicate timesteps in provided timeseries" in str(e.value)
 
 
 @pytest.mark.unittest
@@ -250,7 +256,7 @@ def test_analysis_invalid_constituent_lists():
 
 @pytest.mark.unittest
 def test_predictionsettings():
-    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), 1)
+    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
     current_station = 'DENHDR'
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
@@ -358,13 +364,26 @@ def test_prediction_settings_invalid_times():
     with pytest.raises(TypeError) as e:
         hatyan.prediction(comp, times=1)
     assert "times argument can be of type" in str(e.value)
+    
+    
+@pytest.mark.unittest
+def test_prediction_perperiod_settings_invalid_timestep():
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="M", return_allperiods=True)
+    
+    with pytest.raises(ValueError) as e:
+        hatyan.prediction(comp=comp_all, timestep=60)
+    assert str(e.value) == "Invalid frequency: 60"
 
 
 @pytest.mark.unittest
 def test_prediction_1018():
     current_station = 'DENHDR'
     
-    times_pred = slice(dt.datetime(1018,7,21),dt.datetime(1018,7,21,3), 10)
+    times_pred = slice(dt.datetime(1018,7,21),dt.datetime(1018,7,21,3), "10min")
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
@@ -414,7 +433,7 @@ def test_prediction_comp_and_times_different_timezones():
     
     file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_obs1.txt')
     
-    times_pred1 = slice("2019-01-01","2020-01-01", 10)
+    times_pred1 = slice("2019-01-01","2020-01-01", "10min")
     times_pred2 = pd.date_range("2019-01-01","2020-01-01", freq="10min", unit="us", tz="UTC+02:00")
 
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
@@ -432,7 +451,7 @@ def test_prediction_comp_and_times_different_timezones():
     assert ((ts_prediction1-ts_prediction2).dropna()["values"] < 1e-9).all()
 
 
-def test_prediction_perperiod():
+def test_prediction_perperiod_month():
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
     
@@ -440,7 +459,8 @@ def test_prediction_perperiod():
                                           analysis_perperiod="M", return_allperiods=True)
     
     ts_pred_atonce = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index)
-    ts_pred_allmonths = hatyan.prediction(comp=comp_all, timestep_min=60)
+    
+    ts_pred_allmonths = hatyan.prediction(comp=comp_all, timestep="60min")
     
     expected_atonce = np.array([-1.39664945, -0.85846188, -0.22419191,  0.7596607 ,  1.91604743,
             2.17294986,  1.57508019,  0.88085591, -0.01977715, -1.01827975])
@@ -450,6 +470,28 @@ def test_prediction_perperiod():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
     assert len(ts_pred_atonce) == len(ts_pred_allmonths)
+
+
+def test_prediction_perperiod_year():
+    # TODO: when the prediction function does not treat Y and M differently, this testcase can be dropped
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
+    
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="Y", return_allperiods=True)
+    
+    ts_pred_atonce = hatyan.prediction(comp=comp_mean, times=ts_measurements_group0.index)
+    
+    ts_pred_allyears = hatyan.prediction(comp=comp_all, timestep="60min")
+    
+    expected_atonce = np.array([-1.38346859, -0.84555223, -0.21307598,  0.76601685,  1.91438215,
+            2.16373654,  1.56241672,  0.86686561, -0.0329582 , -1.02668776])
+    expected_allyears = np.array([-1.38346859, -0.84555223, -0.21307598,  0.76601685,  1.91438215,
+            2.16373654,  1.56241672,  0.86686561, -0.0329582 , -1.02668776])
+    
+    assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
+    assert np.allclose(ts_pred_allyears["values"].values[:10], expected_allyears)
+    assert len(ts_pred_atonce) == len(ts_pred_allyears)
 
 
 def test_prediction_hasrequiredargs():
@@ -465,7 +507,7 @@ def test_prediction_hasrequiredargs():
     
     with pytest.raises(TypeError) as e:
         _ = hatyan.prediction(comp=comp_all)
-    assert str(e.value) == "prediction() per period, so 'timestep_min' argument should not be None"
+    assert str(e.value) == "prediction() per period, so 'timestep' argument should not be None"
 
 
 def test_prediction_deprecatedsettings():

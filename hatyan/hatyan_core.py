@@ -139,17 +139,18 @@ def get_tstart_tstop_tstep(times_slice):
     except pd.errors.OutOfBoundsDatetime: # escape for outofbounds datetimes like 1018
         tstart = times_slice.start
         tstop = times_slice.stop
+        fail
 
-    if times_slice.step is None:
-        raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
+    # if times_slice.step is None:
+    #     raise TypeError('NoneType found for times_ext.step, provide numeric value instead')
 
-    if isinstance(times_slice.step,(int,float)):
-        # assuming minutes
-        tstep = pd.offsets.Minute(times_slice.step)
-    else:
-        tstep = pd.tseries.frequencies.to_offset(times_slice.step)
+    # if isinstance(times_slice.step,(int,float)):
+    #     # assuming minutes
+    #     tstep = pd.offsets.Minute(times_slice.step)
+    # else:
+    #     tstep = pd.tseries.frequencies.to_offset(times_slice.step)
 
-    return tstart, tstop, tstep
+    return tstart, tstop#, tstep
 
 
 def robust_timedelta_sec(dood_date,refdate_dt=None):

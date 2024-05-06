@@ -23,7 +23,7 @@ for fname in file_list:
 
 file_data_comp1 = f'{current_station}_ana.txt'
 
-times_pred = slice("2019-01-01","2019-02-01", 10)
+times_pred = slice("2019-01-01","2019-02-01", "10min")
 
 comp_fromfile = hatyan.read_components(filename=file_data_comp1)
 

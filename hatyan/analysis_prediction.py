@@ -273,7 +273,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     bool_ts_duplicated = ts.index.duplicated(keep='first')
     ts_pd = ts.copy() #TODO: this is not necessary
     if bool_ts_duplicated.any():
-        raise Exception(f'ERROR: {bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
+        raise ValueError(f'{bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
     message = (f'#timesteps    = {len(ts)}\n'
                f'tstart        = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}'
                f'tstop         = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
@@ -508,7 +508,7 @@ def prediction(comp, times=None, timestep=None):
     if hasattr(comp.columns,"levels"):
         logger.info('prediction() per period due to levels in component dataframe columns')
         if timestep is None:
-            raise TypeError("prediction() per period, so 'timestep_min' argument should not be None")
+            raise TypeError("prediction() per period, so 'timestep' argument should not be None")
         if times is not None:
             raise TypeError("prediction() per period, so 'times' argument not allowed")
         # convert timestep_min to tstep of proper type
@@ -524,10 +524,10 @@ def prediction(comp, times=None, timestep=None):
             comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
             if period_dt.freqstr in ['A-DEC']: #year frequency
                 tstart = pd.Timestamp(period_dt.year,1,1)
-                tstop = pd.Timestamp(period_dt.year+1,1,1) - pd.Timestamp
+                tstop = pd.Timestamp(period_dt.year+1,1,1) - tstep.delta
             elif period_dt.freqstr in ['M']: #month frequency
                 tstart = period_dt.to_timestamp()
-                tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - pd.Timestamp
+                tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - tstep.delta
             else:
                 raise Exception(f'unknown freqstr: {period_dt.freqstr}')
             # generate date range and do prediction
@@ -538,11 +538,12 @@ def prediction(comp, times=None, timestep=None):
     else:
         logger.info('prediction() atonce')
         if timestep is not None:
-            raise TypeError("prediction() atonce, so 'timestep_min' argument not allowed")
+            raise TypeError("prediction() atonce, so 'timestep' argument not allowed")
         if times is None:
             raise TypeError("prediction() atonce, so 'times' argument should not be None")
         if isinstance(times,slice):
-            tstart, tstop, tstep = get_tstart_tstop_tstep(times)
+            tstart, tstop = get_tstart_tstop_tstep(times)
+            tstep = pd.tseries.frequencies.to_offset(times.step)
             times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
         ts_prediction = prediction_singleperiod(comp=comp, times=times, hatyan_settings=hatyan_settings)
     
