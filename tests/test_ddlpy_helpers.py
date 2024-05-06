@@ -65,10 +65,7 @@ def test_convert_hwlwstr2num(locations):
     meas_wathte_ext = ddlpy.measurements(locs_wathte_ext.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
     meas_wathte_exttypes = ddlpy.measurements(locs_exttypes_wathte.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
     # hatyan timeseries
-    ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext)
-    ts_measwlHWLWtype = hatyan.ddlpy_to_hatyan(meas_wathte_exttypes)
-    # convert exttype string to num
-    ts_measwlHWLW = hatyan.convert_HWLWstr2num(ts_measwlHWLW,ts_measwlHWLWtype)
+    ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext, meas_wathte_exttypes)
     
     hwlwcode_expected = np.array([2, 1, 2, 1, 2, 1, 3, 4, 5, 1, 2, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4,
             5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1,
