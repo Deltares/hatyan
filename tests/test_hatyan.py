@@ -466,7 +466,7 @@ def test_19Ycomp4Ydia_compsplitsing():
     const_list = hatyan.get_const_list_hatyan('month')
     current_station = 'D15'
     file_data_comp0 = os.path.join(dir_testdata,'%s_obs1.txt'%(current_station))
-    CS_comps = pd.DataFrame({'CS_comps_from':['K1','N2','2MN2','S2','S2'],
+    cs_comps = pd.DataFrame({'CS_comps_from':['K1','N2','2MN2','S2','S2'],
                              'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
                              'CS_ampfacs':[0.33,0.22,0.48,0.29,0.05],
                              'CS_degincrs':[-11,-24,174,1,-24]})
@@ -476,7 +476,9 @@ def test_19Ycomp4Ydia_compsplitsing():
     # 3. run test
     #component groups
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
-    comp_frommeasurements_avg_group0 = hatyan.analysis(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_perperiod=False, fu_alltimes=False, CS_comps=CS_comps)
+    comp_frommeasurements_avg_group0 = hatyan.analysis(ts=ts_measurements_group0, nodalfactors=nodalfactors, xfac=xfac, 
+                                                       const_list=const_list, analysis_perperiod=False, fu_alltimes=False, 
+                                                       cs_comps=cs_comps)
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)

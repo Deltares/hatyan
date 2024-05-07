@@ -14,6 +14,9 @@ __all__ = ["get_components_from_ts",
 
 logger = logging.getLogger(__name__)
 
+DEPRECATED_OPTIONS_ANALYSIS_DICT = {
+    'CS_comps':'cs_comps',
+    'xTxmat_condition_max':'max_matrix_condition'}
 
 DEPRECATED_OPTIONS_PREDICTION_DICT = {
     'times_pred_all':'times',

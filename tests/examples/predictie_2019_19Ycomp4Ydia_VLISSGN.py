@@ -30,7 +30,6 @@ for current_station in selected_stations:
     xfac=True
     analysis_perperiod='Y'
     const_list = hatyan.get_const_list_hatyan('year') # 94 constituents
-    CS_comps = None # component splitting
     
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
     file_data_comp0 = os.path.join(dir_testdata,'data_unitsystemtests',f'{current_station}_obs?.txt')

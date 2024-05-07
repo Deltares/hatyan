@@ -39,9 +39,6 @@ for current_station in selected_stations:
         const_list = hatyan.get_const_list_hatyan('halfyear') #88 const
     else:
         const_list = hatyan.get_const_list_hatyan('year') #94 const
-    #component splitting
-    CS_comps = None
-
 
     file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
 

@@ -46,9 +46,6 @@ for current_station in selected_stations:
         const_list = hatyan.get_const_list_hatyan('halfyear') #88 const
     else:
         const_list = hatyan.get_const_list_hatyan('year') #94 const
-    #component splitting, not necesary for D15/F3PFM/K14PFM, since there is no 19Y data available
-    CS_comps = None
-    
     
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
     file_data_comp0 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs?.txt')
@@ -73,7 +70,7 @@ for current_station in selected_stations:
     #component groups
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
 
-    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, CS_comps=CS_comps)
+    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True)
 
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allperiods=comp_frommeasurements_all_group0)
     #fig.savefig('components_%s_4Y.png'%(current_station))
