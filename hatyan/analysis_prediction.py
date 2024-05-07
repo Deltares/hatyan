@@ -375,7 +375,8 @@ def split_components(comp, dood_date_mid, hatyan_settings):
     comp_inclcs = pd.DataFrame(comp,index=const_list_inclcs,columns=comp.columns)
         
     for comp_main in np.unique(hatyan_settings.cs_comps['CS_comps_from']):
-        bool_cs_maincomp = hatyan_settings.cs_comps['CS_comps_from'] == comp_main #boolean of which rows of CS_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
+        # boolean of which rows of cs_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
+        bool_cs_maincomp = hatyan_settings.cs_comps['CS_comps_from'] == comp_main
         cs_comps_formain = hatyan_settings.cs_comps.loc[bool_cs_maincomp]
         comp_slave_list = cs_comps_formain['CS_comps_derive'].tolist()
         logger.info(f'splitting component {comp_main} into {comp_slave_list}')
