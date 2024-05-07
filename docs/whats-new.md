@@ -24,6 +24,7 @@
 - use prediction settings from `comp` argument instead of settings arguments in `hatyan.prediction()` [#263](https://github.com/Deltares/hatyan/issues/263)
 - re-introduce clear arguments for `hatyan.analysis()` in [#270](https://github.com/Deltares/hatyan/pull/270)
 - dropped support for `ìnt` timesteps in slices and in `hatyan.prediction()` [#288](https://github.com/Deltares/hatyan/pull/288)
+- renamed `cs_comps` and `xTx_condition_max` arguments for `hatyan.prediction` to lowercase [#299](https://github.com/Deltares/hatyan/pull/292)
 
 ### Deprecated
 - hatyan ddl functions `get_DDL_catalog()`, `get_DDL_queryserver()`, `get_DDL_data()`, `get_DDL_stationmetasubset()` in [#206](https://github.com/Deltares/hatyan/pull/206)
