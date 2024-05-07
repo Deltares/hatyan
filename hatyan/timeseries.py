@@ -339,7 +339,7 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
     HW_tdiff_mod = HW_tdiff_mod_searchwindow - searchwindow_hr
     ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
     if not all(np.diff(HW_tdiff_div) > 0):
-        idx_toosmall = np.where((np.diff(HW_tdiff_div) <= 0))[0]
+        idx_toosmall = np.nonzero((np.diff(HW_tdiff_div) <= 0))[0]
         logger.info(idx_toosmall)
         logger.info(ts_ext.loc[HW_bool,['values','HWLWcode','HWLWno']].iloc[idx_toosmall[0]:])
         raise Exception('tidal wave numbering: HW numbers not always increasing')
@@ -463,8 +463,8 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
         if ts.index.duplicated().sum() + ts_validation.index.duplicated().sum() >0:
             logger.warning(f'duplicated timesteps in ts ({ts.index.duplicated().sum()}) or ts_validation ({ts_validation.index.duplicated().sum()}), timeseries difference computation will probably fail')
         #overlap between timeseries for difference plots
-        times_id_validationinpred = np.where(ts_validation.index.isin(ts.index))[0]
-        times_id_predinvalidation = np.where(ts.index.isin(ts_validation.index))[0]
+        times_id_validationinpred = np.nonzero(ts_validation.index.isin(ts.index))[0]
+        times_id_predinvalidation = np.nonzero(ts.index.isin(ts_validation.index))[0]
         ax1.plot(ts_validation.index, ts_validation['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts_validation', alpha=0.7)
         ax1.plot(ts.index[times_id_predinvalidation], ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference', alpha=0.7)
     ax1.plot(times_predval_ext,[0,0],'-k',linewidth=size_line_ts)
@@ -1187,7 +1187,7 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
     rayleigh = ts_period_hr*freq_diffs #TODO: might be better to drop timeseries nan-values first, especially from start/end of series since it decreases ts_period_hr
     freq_diff_phr_minimum = rayleigh_tresh/ts_period_hr
     rayleigh_bool = rayleigh>rayleigh_tresh
-    rayleigh_bool_id = np.where(~rayleigh_bool)[0]
+    rayleigh_bool_id = np.nonzero(~rayleigh_bool)[0]
     
     if rayleigh_bool.all():
         logger.info('Rayleigh criterion OK (always>%.2f, minimum is %.2f)'%(rayleigh_tresh, np.min(rayleigh)))
