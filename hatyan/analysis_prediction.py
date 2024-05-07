@@ -295,7 +295,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     logger.info(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
     
     #get times and time array
-    dood_date_mid = pd.Index([ts_pd.index[len(ts_pd.index)//2]]) #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan #TODO: this is incorrect in case of e.g. more missings in first half of year than second half
+    dood_date_mid = ts_pd.index[[len(ts_pd.index)//2]] #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan #TODO: this is incorrect in case of e.g. more missings in first half of year than second half
     dood_date_start = ts_pd.index[[0]] #first date (for v0, also freq?)
     if hatyan_settings.fu_alltimes:
         dood_date_fu = times_pred_all_pdDTI
