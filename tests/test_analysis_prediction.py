@@ -437,6 +437,29 @@ def test_prediction_perperiod_settings_invalid_timestep():
 
 
 @pytest.mark.unittest
+def test_analysis_1018():
+    """
+    this tests checks if we can do an analysis with timesteps that are outofbounds 
+    in pandas when using unit="ns" (nanoseconds). 
+    We replace the times from a dataframe with these timesteps, but with unit="us" (microseconds). 
+    The analysis succeeds with pandas versions that support the unit argument, so all versions that hatyan supports.
+    However, if a diafile would contain 1018 timestamps, the process will fail since 
+    the dia reader will still read it as nanoseconds. This might also be the case 
+    when writing the prediction to a diafile.
+    """
+    file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_pd = hatyan.read_dia(file_dia)
+    
+    # convert to year 1018
+    ts_pd.index = pd.date_range('1018-01-01 00:00:00+01:00', '1018-12-31 23:00:00+01:00', freq="60min", unit="us")
+    
+    #prediction
+    comp = hatyan.analysis(ts=ts_pd, const_list="year")
+    
+    assert np.allclose(comp.loc["M2"].values, [ 1.78668261, 45.85671448])
+
+
+@pytest.mark.unittest
 def test_prediction_1018():
     current_station = 'DENHDR'
     
