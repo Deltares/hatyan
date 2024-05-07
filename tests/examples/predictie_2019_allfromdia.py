@@ -48,56 +48,60 @@ for current_station in selected_stations:
         const_list = hatyan.get_const_list_hatyan('year') #94 const
     
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
-    file_data_comp0 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs?.txt')
+    file_comp0 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs?.txt')
     
-    file_data_comp1 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs19.txt')
+    file_comp1 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs19.txt')
     
-    file_data_compvali = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ana.txt')
+    file_compvali = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ana.txt')
     
     times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), "10min")
 
-    file_data_predvali = os.path.join(dir_testdata,'predictie2019',f'{current_station}_pre.txt')
-    file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ext.txt')
+    file_predvali = os.path.join(dir_testdata,'predictie2019',f'{current_station}_pre.txt')
+    file_predvaliHWLW = os.path.join(dir_testdata,'predictie2019',f'{current_station}_ext.txt')
     
-    if not os.path.exists(file_data_compvali):
+    if not os.path.exists(file_compvali):
         stats_noana.append(current_station)
         continue
 
-    if file_data_comp0 == []:
+    if file_comp0 == []:
         stats_no4Y.append(current_station)
         continue
         
     #component groups
-    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
+    ts_measurements_group0 = hatyan.read_dia(filename=file_comp0, station=current_station)
 
-    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True)
+    comp_fromts_avg, comp_fromts_all = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, 
+                                                       nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, 
+                                                       analysis_perperiod=analysis_perperiod, return_allperiods=True)
 
-    #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allperiods=comp_frommeasurements_all_group0)
+    #fig,(ax1,ax2) = hatyan.plot_components(comp_fromts_avg, comp_allperiods=comp_fromts_all)
     #fig.savefig('components_%s_4Y.png'%(current_station))
-    #hatyan.write_components(comp_frommeasurements_avg_group0, filename='components_%s_4Y.txt'%(current_station))
-    if not os.path.exists(file_data_comp1): #check if 19Y file is available
+    #hatyan.write_components(comp_fromts_avg, filename='components_%s_4Y.txt'%(current_station))
+    if not os.path.exists(file_comp1): #check if 19Y file is available
         stats_no19Y.append(current_station)
         continue
 
-    ts_measurements_group1 = hatyan.read_dia(filename=file_data_comp1, station=current_station)
-    comp_fromfile_group1 = hatyan.analysis(ts=ts_measurements_group1, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=False)
+    ts_measurements_group1 = hatyan.read_dia(filename=file_comp1, station=current_station)
+    comp_fromts_group1 = hatyan.analysis(ts=ts_measurements_group1, const_list=const_list, 
+                                         nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, 
+                                         analysis_perperiod=False)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    comp_merged = hatyan.merge_componentgroups(comp_main=comp_fromts_avg, comp_sec=comp_fromts_group1, comp_sec_list=['SA','SM'])
     #replace A0 amplitude (middenstand) by slotgemiddelde
     if current_station in stations_slotgem.index.tolist():
-        COMP_merged.loc['A0','A'] = stations_slotgem.loc[current_station,'slotgemiddelde']
+        comp_merged.loc['A0','A'] = stations_slotgem.loc[current_station,'slotgemiddelde']
 
-    COMP_validation = hatyan.read_components(filename=file_data_compvali)
-    assert COMP_validation.attrs["xfac"] == xfac
-    fig, (ax1,ax2) = hatyan.plot_components(COMP_merged, comp_validation=COMP_validation)
+    comp_validation = hatyan.read_components(filename=file_compvali)
+    assert comp_validation.attrs["xfac"] == xfac
+    fig, (ax1,ax2) = hatyan.plot_components(comp_merged, comp_validation=comp_validation)
     fig.savefig('components_%s_merged.png'%(current_station))
-    hatyan.write_components(COMP_merged, filename='components_%s_merged.txt'%(current_station))
+    hatyan.write_components(comp_merged, filename='components_%s_merged.txt'%(current_station))
 
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
-    ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
-    #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
+    ts_prediction = hatyan.prediction(comp=comp_merged, times=times_pred)
+    ts_validation = hatyan.read_dia(filename=file_predvali, station=current_station)
+    #ts_ext_validation = hatyan.read_dia(filename=file_predvaliHWLW, station=current_station)
     hatyan.write_dia(ts=ts_prediction, filename='prediction_%s_%s.dia'%(times_pred.step,current_station))
     #ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     #hatyan.write_dia(ts=ts_ext_prediction, filename='prediction_HWLW_%s_%s.dia'%(times_pred.step, current_station))

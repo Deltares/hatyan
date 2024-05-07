@@ -40,27 +40,26 @@ for current_station in selected_stations:
     else:
         const_list = hatyan.get_const_list_hatyan('year') #94 const
 
-    file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
-
-    file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
+    file_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
+    file_compvali = file_comp0
     
     times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2020,1,1), "10min")
     
-    file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
-    file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
+    file_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
+    file_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
     
-    if not os.path.exists(file_data_compvali):
+    if not os.path.exists(file_compvali):
         stats_noana.append(current_station)
         continue
     
     #component groups
-    COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    assert COMP_merged.attrs["xfac"] == xfac
+    comp_merged = hatyan.read_components(filename=file_comp0)
+    assert comp_merged.attrs["xfac"] == xfac
     
     #prediction and validation
-    ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
-    ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
-    #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
+    ts_prediction = hatyan.prediction(comp=comp_merged, times=times_pred)
+    ts_validation = hatyan.read_dia(filename=file_predvali, station=current_station)
+    #ts_ext_validation = hatyan.read_dia(filename=file_predvaliHWLW, station=current_station)
     hatyan.write_dia(ts=ts_prediction, filename='prediction_%s_%s.dia'%(times_pred.step,current_station))
     #ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     #hatyan.write_dia(ts=ts_ext_prediction, filename='prediction_HWLW_%s_%s.dia'%(times_pred.step, current_station))
