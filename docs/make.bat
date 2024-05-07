@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=ddlpy
+set SPHINXPROJ=hatyan
 
 if "%1" == "" goto help
 

@@ -13,5 +13,5 @@ There are a few tutorials available as `Jupyter Notebooks <https://github.com/De
    :hidden:
    :maxdepth: 2
 
-   notebooks/getting-started.ipynb
+   notebooks/getting-started.ipynb
    minimal_example.rst
