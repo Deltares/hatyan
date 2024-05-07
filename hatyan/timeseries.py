@@ -569,16 +569,15 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
                f'  #NaN: {vdiff_cm.isnull().sum()} of {len(vdiff_cm)}')
     logger.info(message)
     
-    fig, ax1 = plt.subplots()
-    ax1.plot(HWLW_diff.loc[1,'times'].dt.total_seconds()/60,HWLW_diff.loc[1,'values']*100,'+',label='HWdiff')
-    ax1.plot(HWLW_diff.loc[2,'times'].dt.total_seconds()/60,HWLW_diff.loc[2,'values']*100,'.',label='LWdiff')
-    ax1.set_xlabel('Time difference [minutes]')
-    ax1.set_ylabel('Value difference [cm]')
-    ax1.legend(loc=1)
-    ax1.grid()
+    fig, ax = plt.subplots()
+    ax.plot(HWLW_diff.loc[1,'times'].dt.total_seconds()/60,HWLW_diff.loc[1,'values']*100,'+',label='HWdiff')
+    ax.plot(HWLW_diff.loc[2,'times'].dt.total_seconds()/60,HWLW_diff.loc[2,'values']*100,'.',label='LWdiff')
+    ax.set_xlabel('Time difference [minutes]')
+    ax.set_ylabel('Value difference [cm]')
+    ax.legend(loc=1)
+    ax.grid()
 
-    axs = (ax1)
-    return fig, axs
+    return fig, ax
 
 
 def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
