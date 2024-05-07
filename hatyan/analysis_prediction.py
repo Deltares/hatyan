@@ -364,6 +364,10 @@ def split_components(comp, dood_date_mid, hatyan_settings):
 
     """
     
+    for cs_compname in hatyan_settings.cs_comps['CS_comps_derive']:
+        if cs_compname in comp.index:
+            raise ValueError(f"component {cs_compname} requested via component splitting, but already present in const_list")
+    
     #create sorted and complete component list
     const_list_inclcs_raw = comp.index.tolist() + hatyan_settings.cs_comps['CS_comps_derive'].tolist()
     const_list_inclcs = sort_const_list(const_list=const_list_inclcs_raw)

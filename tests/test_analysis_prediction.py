@@ -276,6 +276,19 @@ def test_analysis_invalid_constituent_lists():
 
 
 @pytest.mark.unittest
+def test_analysis_component_splitting_invalid_components():
+    file_dia = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
+    ts_pd = hatyan.read_dia(file_dia)
+    cs_comps_valid = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
+                             'CS_comps_from':['K1','N2','2MN2','S2','S2'],
+                             'CS_ampfacs':[0.36,0.38,0.44,0.30,0.07],
+                             'CS_degincrs':[5,-22,180,3,-22]})
+    with pytest.raises(ValueError) as e:
+        _= hatyan.analysis(ts=ts_pd, const_list="year", cs_comps=cs_comps_valid)
+    assert str(e.value) == "component P1 requested via component splitting, but already present in const_list"
+
+
+@pytest.mark.unittest
 def test_predictionsettings():
     times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
     current_station = 'DENHDR'
