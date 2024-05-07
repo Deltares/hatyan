@@ -247,7 +247,7 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     HW_data_diff1bool = (HW_data['HWLWno'].diff().iloc[1:].values==1)
     print('%i parts of HW array containing gaps:'%((~HW_data_diff1bool).sum()))
     if not HW_data_diff1bool.all():
-        ids_false = np.where(~HW_data_diff1bool)[0]
+        ids_false = np.nonzero(~HW_data_diff1bool)[0]
         for id_false in ids_false: 
             print(HW_data.iloc[id_false-1:id_false+3])
     
@@ -255,7 +255,7 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     LW_data_diff1bool = (LW_data['HWLWno'].diff().iloc[1:].values==1)
     print('%i parts of LW array containing gaps:'%((~LW_data_diff1bool).sum()))
     if not LW_data_diff1bool.all():
-        ids_false = np.where(~LW_data_diff1bool)[0]
+        ids_false = np.nonzero(~LW_data_diff1bool)[0]
         for id_false in ids_false: 
             print(LW_data.iloc[id_false-1:id_false+3])
     
