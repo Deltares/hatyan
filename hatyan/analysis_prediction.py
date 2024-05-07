@@ -95,7 +95,7 @@ class HatyanSettings:
         self_dict = vars(self)
         str_append = ''
         for key,val in self_dict.items():
-            if key=='CS_comps':
+            if key=='cs_comps':
                 str_append += f'{key:20s} = \n{val}\n'
             else:
                 str_append += f'{key:20s} = {val}\n'
@@ -171,7 +171,7 @@ def analysis(ts, const_list,
         Whether or not to apply x-factors. The default is False.
     source : TYPE
         DESCRIPTION. The default is 'schureman'.
-    CS_comps : pandas.DataFrame, optional
+    cs_comps : pandas.DataFrame, optional
         contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. Only relevant for analysis. The default is None.
     max_matrix_condition: float or int
         the maximum condition of the xTx matrix. The default is 12.
@@ -216,8 +216,8 @@ def analysis(ts, const_list,
         raise ValueError('remove duplicate constituents from const_list:\n%s'%(const_list_counts.loc[const_list_counts['occurences']>1]))
     
     n_const = len(const_list)
-    if hasattr(hatyan_settings, "CS_comps"):
-        n_const = len(const_list) + len(hatyan_settings.CS_comps)
+    if hasattr(hatyan_settings, "cs_comps"):
+        n_const = len(const_list) + len(hatyan_settings.cs_comps)
 
     if hatyan_settings.analysis_perperiod:
         period = hatyan_settings.analysis_perperiod

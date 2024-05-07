@@ -75,7 +75,10 @@ def test_analysis_settings_extended():
     
     ts_comp_nfac1_fualltimes1_xfac1_peryear0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod=False)
     
-    ts_comp_nfac1_fualltimes1_xfac1_permonth0 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod='M')
+    ts_comp_nfac1_fualltimes1_xfac1_permonth0, comp_allperiods = hatyan.analysis(ts=ts_measurements_group0, const_list='month', 
+                                                                                 nodalfactors=True, fu_alltimes=True, xfac=True, 
+                                                                                 analysis_perperiod='M', return_allperiods=True)
+    assert comp_allperiods.shape == (22, 48)
     
     ts_comp_nfac1_fualltimes1_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=True, xfac=True, analysis_perperiod='Y')
     ts_comp_nfac1_fualltimes0_xfac1 = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod='Y')
@@ -115,11 +118,14 @@ def test_analysis_component_splitting():
     ts_meas = hatyan.read_dia(filename=file_ts, station=current_station)
     comp_cs_atonce = hatyan.analysis(ts=ts_meas, const_list='month', 
                                      analysis_perperiod=False, cs_comps=cs_comps)
-    assert np.allclose(comp_cs_atonce.loc["M2"].values, [  0.6222659 , 187.24099172])
+    comp_cs_peryear = hatyan.analysis(ts=ts_meas, const_list='month', 
+                                      analysis_perperiod="Y", cs_comps=cs_comps)
+    comp_cs_permonth = hatyan.analysis(ts=ts_meas, const_list='month', 
+                                       analysis_perperiod="M", cs_comps=cs_comps)
     
-    comp_cs_perperiod = hatyan.analysis(ts=ts_meas, const_list='month', 
-                                        analysis_perperiod="Y", cs_comps=cs_comps)
-    assert np.allclose(comp_cs_perperiod.loc["M2"].values, [  0.6222659 , 187.24099172])
+    assert np.allclose(comp_cs_atonce.loc["M2"].values, [  0.6222659 , 187.24099172])
+    assert np.allclose(comp_cs_peryear.loc["M2"].values, [  0.6222659 , 187.24099172])
+    assert np.allclose(comp_cs_permonth.loc["M2"].values, [  0.6222659 , 187.24099172])
 
 
 @pytest.mark.unittest
