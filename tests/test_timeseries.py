@@ -351,8 +351,12 @@ def test_plot_HWLW_validatestats():
     ts_ext = hatyan.read_dia(file_ext)
     ts_ext_nos = hatyan.calc_HWLWnumbering(ts_ext)
 
-    hatyan.plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext, create_plot=True)
-    hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_nos, ts_ext_validation=ts_ext_nos, create_plot=True)
+    hatyan.plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext)
+    hatyan.plot_HWLW_validatestats(ts_ext=ts_ext_nos, ts_ext_validation=ts_ext_nos)
+    
+    # check if original dataframe was not altered
+    assert "HWLWno" not in ts_ext.columns
+    assert "HWLWno" in ts_ext_nos.columns
 
 
 @pytest.mark.unittest

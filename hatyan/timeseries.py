@@ -493,11 +493,6 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
             vali_code_ids = ts_ext_validation['HWLWcode'].values==vali_code
             if any(vali_code_ids): #only plot vali_code in legend if present in HWLW_timeseries
                 ax1.plot(ts_ext_validation.index[vali_code_ids],ts_ext_validation['values'][vali_code_ids],'1',markersize=10,label=vali_codename)
-        #print HWLW statistics
-        try:
-            plot_HWLW_validatestats(ts_ext=ts_ext, ts_ext_validation=ts_ext_validation, create_plot=False)        
-        except: #TODO: replace this generic except with specific ones, but first convert 'raise Exception()' in plot_HWLW_validatestats() to more specific (maybe custom) ones
-            logger.warning('plot_HWLW_validatestats() failed, probably due to missing HWLWno where autocalculation failed. Consider adding HWLWno to ts_ext and ts_ext_validation with calc_HWLWnumbering() before plotting.')
     ax1.set_ylim(figure_ylim_ts)
     ax2.set_xlabel('Time')
     ax1.set_ylabel('waterlevel [m]')
@@ -521,7 +516,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     return fig, axs
 
 
-def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
+def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     """
     This definition calculates (and plots and prints) some statistics when comparing extreme values.
     This is done by calculating the extreme number (sort of relative to Cadzand 1jan2000, but see 'warning') and subtracting the ts_ext and ts_ext_validation dataframes based on these numbers (and HWLWcode).
@@ -534,8 +529,6 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
         The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes.
     ts_ext_validation : pandas.DataFrame
         The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, values and codes of the timeseries that are extremes.
-    create_plot : boolean, optional
-        Whether to plot the time/value differences or only print the statistics. The default is True.
 
     Returns
     -------
@@ -549,21 +542,15 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
     logger.info('Calculating comparison statistics for extremes')
     if 'HWLWno' not in ts_ext.columns or 'HWLWno' not in ts_ext_validation.columns:
         logger.info('HWLWno is not present in ts_ext or ts_ext_validation, trying to automatically derive it without M2phasediff argument (this might fail)')
-        try:
-            ts_ext_nrs = calc_HWLWnumbering(ts_ext=ts_ext)
-            ts_ext_validation_nrs = calc_HWLWnumbering(ts_ext=ts_ext_validation)
-        except: #TODO: replace this generic except with specific ones, but first convert 'raise Exception()' in calc_HWLWnumbering() to more specific (maybe custom) ones
-            raise Exception('ERROR: deriving HWLWno failed, so HWLW statistics cannot be calculated. Add HWLWno with calc_HWLWnumbering() before calling plot_HWLW_validatestats().')
-    else:
-        ts_ext_nrs = ts_ext.copy()
-        ts_ext_validation_nrs = ts_ext_validation.copy()
+        ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
+        ts_ext_validation = calc_HWLWnumbering(ts_ext=ts_ext_validation)
     
     #set HWLWcode and HWLWno as index, to make easy subtraction possible
-    ts_ext_nrs['times'] = ts_ext_nrs.index
-    ts_ext_nrs = ts_ext_nrs.set_index(['HWLWcode','HWLWno'],drop=False)
-    ts_ext_validation_nrs['times'] = ts_ext_validation_nrs.index
-    ts_ext_validation_nrs = ts_ext_validation_nrs.set_index(['HWLWcode','HWLWno'],drop=False)
-    HWLW_diff = ts_ext_nrs.sub(ts_ext_validation_nrs)
+    ts_ext['times'] = ts_ext.index
+    ts_ext = ts_ext.set_index(['HWLWcode','HWLWno'],drop=False)
+    ts_ext_validation['times'] = ts_ext_validation.index
+    ts_ext_validation = ts_ext_validation.set_index(['HWLWcode','HWLWno'],drop=False)
+    HWLW_diff = ts_ext.sub(ts_ext_validation)
     
     tdiff_minutes = HWLW_diff['times'].dt.total_seconds()/60
     vdiff_cm = HWLW_diff['values']*100
@@ -582,17 +569,15 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation, create_plot=True):
                f'  #NaN: {vdiff_cm.isnull().sum()} of {len(vdiff_cm)}')
     logger.info(message)
     
-    if create_plot:
-        fig, ax1 = plt.subplots()
-        ax1.plot(HWLW_diff.loc[1,'times'].dt.total_seconds()/60,HWLW_diff.loc[1,'values']*100,'+',label='HWdiff')
-        ax1.plot(HWLW_diff.loc[2,'times'].dt.total_seconds()/60,HWLW_diff.loc[2,'values']*100,'.',label='LWdiff')
-        ax1.set_xlabel('Time difference [minutes]')
-        ax1.set_ylabel('Value difference [cm]')
-        ax1.legend(loc=1)
-        ax1.grid()
-    
-        axs = (ax1)
-        return fig, axs
+    fig, ax = plt.subplots()
+    ax.plot(HWLW_diff.loc[1,'times'].dt.total_seconds()/60,HWLW_diff.loc[1,'values']*100,'+',label='HWdiff')
+    ax.plot(HWLW_diff.loc[2,'times'].dt.total_seconds()/60,HWLW_diff.loc[2,'values']*100,'.',label='LWdiff')
+    ax.set_xlabel('Time difference [minutes]')
+    ax.set_ylabel('Value difference [cm]')
+    ax.legend(loc=1)
+    ax.grid()
+
+    return fig, ax
 
 
 def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
