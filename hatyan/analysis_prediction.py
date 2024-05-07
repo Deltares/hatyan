@@ -12,7 +12,9 @@ from hatyan.hatyan_core import get_const_list_hatyan, sort_const_list, robust_ti
 from hatyan.hatyan_core import get_freqv0_generic, get_uf_generic
 from hatyan.timeseries import Timeseries_Statistics, nyquist_folding, check_rayleigh
 from hatyan.metadata import metadata_from_obj, metadata_add_to_obj
-from hatyan.deprecated import deprecated_python_option, DEPRECATED_OPTIONS_PREDICTION_DICT
+from hatyan.deprecated import (deprecated_python_option,
+                               DEPRECATED_OPTIONS_PREDICTION_DICT,
+                               DEPRECATED_OPTIONS_ANALYSIS_DICT)
 
 __all__ = ["analysis",
            "prediction",
@@ -39,8 +41,8 @@ class HatyanSettings:
     
     def __init__(self, 
                  nodalfactors, fu_alltimes, xfac, source, #prediction/analysis 
-                 CS_comps=None, analysis_perperiod=None, return_allperiods=None, #analysis only
-                 xTxmat_condition_max=None): #analysis only
+                 cs_comps=None, analysis_perperiod=None, return_allperiods=None, #analysis only
+                 max_matrix_condition=None): #analysis only
         
         if not isinstance(nodalfactors,bool):
             raise TypeError(f'invalid nodalfactors={nodalfactors} type, should be bool')
@@ -71,23 +73,23 @@ class HatyanSettings:
                 raise TypeError(f'invalid analysis_perperiod={analysis_perperiod} type, should be False or Y/Q/M')
             self.analysis_perperiod = analysis_perperiod
         
-        if CS_comps is not None:
-            if not isinstance(CS_comps,(dict,pd.DataFrame)):
-                raise TypeError('invalid CS_comps type, should be dict')
-            CS_comps = pd.DataFrame(CS_comps) #TODO: convert all to dict or pd.DataFrame
-            CS_comps_expectedkeys = ['CS_comps_derive', 'CS_comps_from', 'CS_ampfacs', 'CS_degincrs']
-            for CS_comps_key in CS_comps_expectedkeys:
-                if CS_comps_key not in CS_comps.keys():
-                    raise KeyError(f'CS_comps does not contain {CS_comps_key}')
-            CS_comps_lenvals = [len(CS_comps[key]) for key in CS_comps]
-            if len(np.unique(CS_comps_lenvals)) != 1:
-                raise ValueError(f'CS_comps keys do not have equal lengths:\n{CS_comps}')
-            self.CS_comps = CS_comps
+        if cs_comps is not None:
+            if not isinstance(cs_comps,(dict,pd.DataFrame)):
+                raise TypeError('invalid cs_comps type, should be dict')
+            cs_comps = pd.DataFrame(cs_comps) #TODO: convert all to dict or pd.DataFrame
+            cs_comps_expectedkeys = ['CS_comps_derive', 'CS_comps_from', 'CS_ampfacs', 'CS_degincrs']
+            for cs_comps_key in cs_comps_expectedkeys:
+                if cs_comps_key not in cs_comps.keys():
+                    raise KeyError(f'cs_comps does not contain {cs_comps_key}')
+            cs_comps_lenvals = [len(cs_comps[key]) for key in cs_comps]
+            if len(np.unique(cs_comps_lenvals)) != 1:
+                raise ValueError(f'cs_comps keys do not have equal lengths:\n{cs_comps}')
+            self.cs_comps = cs_comps
         
-        if xTxmat_condition_max is not None:
-            if not isinstance(xTxmat_condition_max,int) or isinstance(xTxmat_condition_max,float):
-                raise TypeError(f'invalid {xTxmat_condition_max} type, should be int or float')
-            self.xTxmat_condition_max = xTxmat_condition_max
+        if max_matrix_condition is not None:
+            if not isinstance(max_matrix_condition,int) or isinstance(max_matrix_condition,float):
+                raise TypeError(f'invalid {max_matrix_condition} type, should be int or float')
+            self.max_matrix_condition = max_matrix_condition
         
     def __str__(self):
         self_dict = vars(self)
@@ -141,12 +143,13 @@ def vectoravg(A_all, phi_deg_all):
     return A_mean, phi_deg_mean
 
 
+@deprecated_python_option(**DEPRECATED_OPTIONS_ANALYSIS_DICT)
 def analysis(ts, const_list, 
              nodalfactors=True, fu_alltimes=True, xfac=False, 
              source='schureman',
-             CS_comps=None,
+             cs_comps=None,
              analysis_perperiod=False, return_allperiods=False,
-             xTxmat_condition_max=12):
+             max_matrix_condition=12):
     """
     Analysis of timeseries.
     Optionally processes a timeseries per year and vector averages the results afterwards.
@@ -170,6 +173,8 @@ def analysis(ts, const_list,
         DESCRIPTION. The default is 'schureman'.
     CS_comps : pandas.DataFrame, optional
         contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. Only relevant for analysis. The default is None.
+    max_matrix_condition: float or int
+        the maximum condition of the xTx matrix. The default is 12.
     analysis_perperiod : False or Y/Q/W, optional
         caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
     return_allperiods : bool, optional
@@ -194,7 +199,7 @@ def analysis(ts, const_list,
     # validate settings
     hatyan_settings = HatyanSettings(source=source, nodalfactors=nodalfactors, fu_alltimes=fu_alltimes, xfac=xfac,
                                      analysis_perperiod=analysis_perperiod, return_allperiods=return_allperiods,
-                                     CS_comps=CS_comps, xTxmat_condition_max=xTxmat_condition_max)
+                                     cs_comps=cs_comps, max_matrix_condition=max_matrix_condition)
     
     logger.info(f'ANALYSIS initializing\n{hatyan_settings}')
         
@@ -329,7 +334,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
         xTxmat[N,N] = m
     xTxmat_condition = np.linalg.cond(xTxmat)
     logger.info('condition of xTx matrix: %.2f'%(xTxmat_condition))
-    if xTxmat_condition > hatyan_settings.xTxmat_condition_max:#10:#100: #random treshold
+    if xTxmat_condition > hatyan_settings.max_matrix_condition:#10:#100: #random treshold
         raise MatrixConditionTooHigh(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {Timeseries_Statistics(ts_pd)}')
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
@@ -346,7 +351,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
             COMP_pd.loc['A0','A'] = -COMP_pd.loc['A0','A']
             COMP_pd.loc['A0','phi_deg'] = 0
     
-    if hasattr(hatyan_settings, "CS_comps"):
+    if hasattr(hatyan_settings, "cs_comps"):
         COMP_pd = split_components(comp=COMP_pd, dood_date_mid=dood_date_mid, hatyan_settings=hatyan_settings)
         
     return COMP_pd
@@ -360,30 +365,32 @@ def split_components(comp, dood_date_mid, hatyan_settings):
     """
     
     #create sorted and complete component list
-    const_list_inclCS_raw = comp.index.tolist() + hatyan_settings.CS_comps['CS_comps_derive'].tolist()
-    const_list_inclCS = sort_const_list(const_list=const_list_inclCS_raw)
+    const_list_inclcs_raw = comp.index.tolist() + hatyan_settings.cs_comps['CS_comps_derive'].tolist()
+    const_list_inclcs = sort_const_list(const_list=const_list_inclcs_raw)
 
     #retrieve freq and speed
-    _, CS_v_0i_rad = get_freqv0_generic(const_list=const_list_inclCS, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid, source=hatyan_settings.source) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    CS_u_i_rad, CS_f_i = get_uf_generic(const_list=const_list_inclCS, dood_date_fu=dood_date_mid, nodalfactors=hatyan_settings.nodalfactors, xfac=hatyan_settings.xfac, source=hatyan_settings.source)
+    _, cs_v_0i_rad = get_freqv0_generic(const_list=const_list_inclcs, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid, source=hatyan_settings.source) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
+    cs_u_i_rad, cs_f_i = get_uf_generic(const_list=const_list_inclcs, dood_date_fu=dood_date_mid, nodalfactors=hatyan_settings.nodalfactors, xfac=hatyan_settings.xfac, source=hatyan_settings.source)
     
-    comp_inclCS = pd.DataFrame(comp,index=const_list_inclCS,columns=comp.columns)
-    #comp_inclCS_preCS = comp_inclCS.copy()
+    comp_inclcs = pd.DataFrame(comp,index=const_list_inclcs,columns=comp.columns)
         
-    for comp_main in np.unique(hatyan_settings.CS_comps['CS_comps_from']):
-        bool_CS_maincomp = hatyan_settings.CS_comps['CS_comps_from'] == comp_main #boolean of which rows of CS_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
-        CS_comps_formain = hatyan_settings.CS_comps.loc[bool_CS_maincomp]
-        comp_slave_list = CS_comps_formain['CS_comps_derive'].tolist()
+    for comp_main in np.unique(hatyan_settings.cs_comps['CS_comps_from']):
+        bool_cs_maincomp = hatyan_settings.cs_comps['CS_comps_from'] == comp_main #boolean of which rows of CS_comps dataframe corresponds to a main constituent, also makes it possible to select two rows
+        cs_comps_formain = hatyan_settings.cs_comps.loc[bool_cs_maincomp]
+        comp_slave_list = cs_comps_formain['CS_comps_derive'].tolist()
         logger.info(f'splitting component {comp_main} into {comp_slave_list}')
         
         #first update main components based on degincrs/ampfacs of all components that are to be derived
         DBETA = 0
-        for iR, CS_comps_row in CS_comps_formain.iterrows():
-            comp_slave = CS_comps_row['CS_comps_derive']
+        for iR, cs_comps_row in cs_comps_formain.iterrows():
+            comp_slave = cs_comps_row['CS_comps_derive']
             #code from resuda.f, line 440 to 455
-            DMU = CS_f_i.loc[0,comp_slave]/CS_f_i.loc[0,comp_main]
-            DTHETA = CS_comps_row['CS_ampfacs']
-            DGAMMA = np.deg2rad(CS_comps_row['CS_degincrs'])-DBETA-(CS_v_0i_rad.loc[0,comp_slave]+CS_u_i_rad.loc[0,comp_slave])+(CS_v_0i_rad.loc[0,comp_main]+CS_u_i_rad.loc[0,comp_main]) #in FORTRAN code, CS_f_i slave/main is also added, this seems wrong
+            DMU = cs_f_i.loc[0,comp_slave]/cs_f_i.loc[0,comp_main]
+            DTHETA = cs_comps_row['CS_ampfacs']
+            DGAMMA = (np.deg2rad(cs_comps_row['CS_degincrs']) - 
+                      DBETA - 
+                      (cs_v_0i_rad.loc[0,comp_slave] + cs_u_i_rad.loc[0,comp_slave]) + 
+                      (cs_v_0i_rad.loc[0,comp_main] + cs_u_i_rad.loc[0,comp_main])) #in FORTRAN code, CS_f_i slave/main is also added, this seems wrong
             DREEEL = 1+DMU*DTHETA*np.cos(DGAMMA)
             DIMAGI = DMU*DTHETA*np.sin(DGAMMA)  
             DALPHA = np.sqrt(DREEEL*DREEEL+DIMAGI*DIMAGI)
@@ -391,16 +398,16 @@ def split_components(comp, dood_date_mid, hatyan_settings):
                 raise Exception('ERROR: DALPHA too small, component splitting failed?')
             DBETA = np.arctan2(DIMAGI,DREEEL)
             
-            comp_inclCS.loc[comp_main,'A'] = comp_inclCS.loc[comp_main,'A']/DALPHA
-            comp_inclCS.loc[comp_main,'phi_deg'] = (comp_inclCS.loc[comp_main,'phi_deg']-np.rad2deg(DBETA))%360 
+            comp_inclcs.loc[comp_main,'A'] = comp_inclcs.loc[comp_main,'A']/DALPHA
+            comp_inclcs.loc[comp_main,'phi_deg'] = (comp_inclcs.loc[comp_main,'phi_deg']-np.rad2deg(DBETA))%360 
         
         #updating slave components after updating main components, this makes a difference when splitting a component into more than two
-        for iR, CS_comps_row in CS_comps_formain.iterrows():
-            comp_slave = CS_comps_row['CS_comps_derive']
-            comp_inclCS.loc[comp_slave,'A'] = comp_inclCS.loc[comp_main,'A'] * CS_comps_row['CS_ampfacs']
-            comp_inclCS.loc[comp_slave,'phi_deg'] = (comp_inclCS.loc[comp_main,'phi_deg'] + CS_comps_row['CS_degincrs'])%360
+        for iR, cs_comps_row in cs_comps_formain.iterrows():
+            comp_slave = cs_comps_row['CS_comps_derive']
+            comp_inclcs.loc[comp_slave,'A'] = comp_inclcs.loc[comp_main,'A'] * cs_comps_row['CS_ampfacs']
+            comp_inclcs.loc[comp_slave,'phi_deg'] = (comp_inclcs.loc[comp_main,'phi_deg'] + cs_comps_row['CS_degincrs'])%360
             
-    return comp_inclCS
+    return comp_inclcs
 
 
 def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_settings) -> pd.DataFrame:

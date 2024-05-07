@@ -318,8 +318,8 @@ def calc_HWLWnumbering(ts_ext, station=None, corr_tideperiods=None, doHWLWcheck=
     if station is None:
         from hatyan.analysis_prediction import analysis #TODO: local import since Importerror: cannot import name 'analysis' from partially initialized module 'hatyan.analysis_prediction' (most likely due to a circular import) 
         M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
-        # high xTxmat_condition_max value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW.
-        comp_M2 = analysis(ts_ext,const_list=['M2'],xTxmat_condition_max=250)
+        # high max_matrix_condition value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW.
+        comp_M2 = analysis(ts_ext,const_list=['M2'],max_matrix_condition=250)
         logger.debug(f"M2phase: {comp_M2.loc['M2','phi_deg']}, comp_M2_cadzd: {M2phase_cadzd}")
         M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd+90)%360-90
         message_prefix = 'no value or None for argument M2phasediff provided, automatically calculated correction w.r.t. Cadzand based on M2phase:'

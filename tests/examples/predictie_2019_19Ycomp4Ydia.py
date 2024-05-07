@@ -50,22 +50,22 @@ for current_station in selected_stations:
         const_list = hatyan.get_const_list_hatyan('year') #94 const
     #component splitting
     if current_station == 'D15':
-        CS_comps = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
+        cs_comps = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
                                  'CS_comps_from':['K1','N2','2MN2','S2','S2'],
                                  'CS_ampfacs':[0.33,0.22,0.48,0.29,0.05],
                                  'CS_degincrs':[-11,-24,174,1,-24]})
     elif current_station == 'F3PFM':  
-        CS_comps = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
+        cs_comps = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
                                  'CS_comps_from':['K1','N2','2MN2','S2','S2'],
                                  'CS_ampfacs':[0.36,0.38,0.44,0.30,0.07],
                                  'CS_degincrs':[5,-22,180,3,-22]})
     elif current_station == 'K14PFM':
-        CS_comps = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
+        cs_comps = pd.DataFrame({'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
                                  'CS_comps_from':['K1','N2','2MN2','S2','S2'],
                                  'CS_ampfacs':[0.33,0.22,0.48,0.29,0.05],
                                  'CS_degincrs':[-11,-24,174,1,-24]})
     else:
-        CS_comps = None
+        cs_comps = None
     
     
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
@@ -91,7 +91,7 @@ for current_station in selected_stations:
     #component groups
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
     
-    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, CS_comps=CS_comps)
+    comp_frommeasurements_avg_group0, comp_frommeasurements_all_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list, nodalfactors=nodalfactors, xfac=xfac, fu_alltimes=False, analysis_perperiod=analysis_perperiod, return_allperiods=True, cs_comps=cs_comps)
 
     #fig,(ax1,ax2) = hatyan.plot_components(comp_frommeasurements_avg_group0, comp_allperiods=comp_frommeasurements_all_group0)
     #fig.savefig('components_%s_4Y.png'%(current_station))
