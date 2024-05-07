@@ -134,7 +134,7 @@ def vectoravg(A_all, phi_deg_all):
     phi_rad_mean[phi_rad_mean<0] = phi_rad_mean[phi_rad_mean<0]+(2*np.pi)
     
     #if phases of all years are exactly 0, it is the A0 component. Overwrite this A0 with mean amplitude and zero phase if present, otherwise negative values will become positive with 180 phase
-    idx_A0, _ = np.nonzero((phi_deg_all==0).any(axis=1))
+    idx_A0 = np.nonzero((phi_deg_all==0).any(axis=1))[0]
     A_mean[idx_A0] = np.mean(A_all[idx_A0,:])
     phi_rad_mean[idx_A0] = 0
     
