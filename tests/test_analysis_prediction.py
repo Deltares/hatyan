@@ -90,16 +90,36 @@ def test_analysis_settings_extended():
     assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac1_fualltimes1_xfac0, rtol=1e-2, atol=1e-2)
     assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac1_fualltimes0_xfac0, rtol=1e-2, atol=1e-2)
     assert np.allclose(ts_comp_nfac1_fualltimes1_xfac1, ts_comp_nfac0_fualltimes0_xfac0, rtol=1e1, atol=1e0)
-    
+
 
 @pytest.mark.unittest
 def test_analysis_settings_perperiod():
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
     
-    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod="M", return_allperiods=True)
+    comp_mean, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
+                                          analysis_perperiod="M", return_allperiods=True)
     assert len(comp_mean.attrs) > 0
     assert len(comp_all.attrs) > 0
+
+
+@pytest.mark.unittest
+def test_analysis_component_splitting():
+    current_station = 'D15'
+    file_ts = os.path.join(dir_testdata,'%s_obs1.txt'%(current_station))
+    cs_comps = pd.DataFrame({'CS_comps_from':['K1','N2','2MN2','S2','S2'],
+                             'CS_comps_derive':['P1','NU2','LABDA2','K2','T2'],
+                             'CS_ampfacs':[0.33,0.22,0.48,0.29,0.05],
+                             'CS_degincrs':[-11,-24,174,1,-24]})
+    
+    ts_meas = hatyan.read_dia(filename=file_ts, station=current_station)
+    comp_cs_atonce = hatyan.analysis(ts=ts_meas, const_list='month', 
+                                     analysis_perperiod=False, cs_comps=cs_comps)
+    assert np.allclose(comp_cs_atonce.loc["M2"].values, [  0.6222659 , 187.24099172])
+    
+    comp_cs_perperiod = hatyan.analysis(ts=ts_meas, const_list='month', 
+                                        analysis_perperiod="Y", cs_comps=cs_comps)
+    assert np.allclose(comp_cs_perperiod.loc["M2"].values, [  0.6222659 , 187.24099172])
 
 
 @pytest.mark.unittest
