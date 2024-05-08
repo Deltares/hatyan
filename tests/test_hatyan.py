@@ -123,6 +123,26 @@ def test_meas_HWLW_toomuch_19y():
     # RUN HATYAN: Assign numbers to the extremes
     wl_pd_ext = hatyan.calc_HWLWnumbering(wl_pd_ext,station=current_station)
 
+    
+@pytest.mark.systemtest
+def test_calc_HWLW_ts_with_gap():
+    """
+    testcase that checks if no extreme is computed at the start/end of a gap
+    like was documented in https://github.com/Deltares/hatyan/issues/97
+    """
+    
+    current_station = 'VLISSGN'
+    
+    file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
+    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_prediction = ts_prediction.loc[slice("2019-01","2019-01")]
+    ts_prediction.loc[slice("2019-01-12 04:00", "2019-01-19 04:00")] = np.nan
+    
+    ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
+    
+    # assert the number of extremes, was 91 before the fix of the issue
+    assert len(ts_ext_prediction) == 90
+
 
 @pytest.mark.systemtest
 def test_frommergedcomp_HWLW_toomuch():
