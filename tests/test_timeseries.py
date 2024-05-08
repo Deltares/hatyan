@@ -108,6 +108,7 @@ def test_readwrite_noos():
     meta1 = metadata_from_obj(ts_noos1)
     meta2 = metadata_from_obj(ts_noos2)
     metadata_compare([meta1, meta2])
+    os.remove(filename_out)
 
 
 @pytest.mark.unittest
