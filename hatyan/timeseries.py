@@ -1495,7 +1495,7 @@ def read_dia_equidistant(filename, diablocks_pd, block_id):
     return data_pd
 
 
-def read_dia(filename, station=None, block_ids=None, get_status=False, allow_duplicates=False):
+def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
     """
     Reads an equidistant or non-equidistant dia file, or a list of dia files. Also works for diafiles containing multiple blocks for one station.
 
@@ -1507,11 +1507,6 @@ def read_dia(filename, station=None, block_ids=None, get_status=False, allow_dup
         DESCRIPTION. The default is None.
     block_ids : int, list of int or 'allstation', optional
         DESCRIPTION. The default is None.
-
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
 
     Returns
     -------
@@ -1544,7 +1539,8 @@ def read_dia(filename, station=None, block_ids=None, get_status=False, allow_dup
                 if len(diablocks_pd)==1:
                     station = diablocks_pd.loc[0,'station']
                 else:
-                    raise ValueError('If block_ids argument is not provided (or None) or is "allstation", station argument should be provided.')
+                    raise ValueError(('If block_ids argument is not provided (or None) or is "allstation", station '
+                                      f'argument should be provided.\n{diablocks_pd[print_cols]}'))
             bool_station = diablocks_pd['station']==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)<1:
@@ -1579,13 +1575,6 @@ def read_dia(filename, station=None, block_ids=None, get_status=False, allow_dup
                 data_pd_oneblock = read_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: #equidistant
                 data_pd_oneblock = read_dia_equidistant(filename_one, diablocks_pd, block_id)
-            if get_status: #TODO: this can be more generic (eg add additional metadata) or more neat. Also in get_diablocks()
-                block_status_list = diablocks_pd.loc[block_id,'STA'].split('!')
-                for block_status_one in block_status_list:
-                    status_tstart = dt.datetime.strptime(block_status_one[4:17],'%Y%m%d;%H%M')
-                    status_tstop = dt.datetime.strptime(block_status_one[18:31],'%Y%m%d;%H%M')
-                    status_val = block_status_one[-1]
-                    data_pd_oneblock.loc[status_tstart:status_tstop,'Status'] = status_val
             data_pd_list.append(data_pd_oneblock)
             metadata = metadata_from_obj(data_pd_oneblock)
             metadata_list.append(metadata)
