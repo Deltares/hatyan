@@ -63,7 +63,7 @@ for pred_year in year_list:
         ts_4y_H = hatyan.crop_timeseries(data_pd_meas_all_H, times=times_ext_4y)
         comp_4y = hatyan.analysis(ts_4y_H,const_list='year',analysis_perperiod='Y',fu_alltimes=False,xfac=True)
         
-        comp_merged = hatyan.merge_componentgroups(comp_main=comp_4y, comp_sec=comp_19y, comp_sec_list=['SA','SM'])
+        comp_merged = hatyan.merge_componentgroups(comp_main=comp_4y, comp_sec=comp_19y.loc[['SA','SM']])
         
         pred = hatyan.prediction(comp=comp_merged,times=slice(tstart_pred,tstop_pred,"10min"))
         

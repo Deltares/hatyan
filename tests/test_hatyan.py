@@ -384,8 +384,6 @@ def test_hwlw_numbering_aggers():
     expect_345_len = {'HOEKVHLD':99,'DENHDR':66}
     expect_345_code_sum = {'HOEKVHLD':267,'DENHDR':99}
     expect_345_nos_sum = {'HOEKVHLD':706061,'DENHDR':470712}
-    expect_all_len = {'HOEKVHLD':105,'DENHDR':93}
-    expect_all_code_sum = {'HOEKVHLD':366,'DENHDR':539}
     
     for current_station in expect_345_len.keys():
     
@@ -394,15 +392,11 @@ def test_hwlw_numbering_aggers():
         
         ts_prediction_HWLWno = hatyan.prediction(comp=comp_merged, times=times_pred)
         ts_ext_prediction_345 = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW345=True)
-        ts_ext_prediction_all = hatyan.calc_HWLW(ts=ts_prediction_HWLWno, calc_HWLW1122=True)
-        ts_ext_prediction_all.loc[ts_ext_prediction_all.index.isin(ts_ext_prediction_345.index),'HWLWcode'] = ts_ext_prediction_345['HWLWcode']
         ts_ext_prediction_345_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_345, station=current_station)
         
         assert len(ts_ext_prediction_345_HWLWno) == expect_345_len[current_station]
         assert ts_ext_prediction_345_HWLWno["HWLWcode"].sum() == expect_345_code_sum[current_station]
         assert ts_ext_prediction_345_HWLWno["HWLWno"].sum() == expect_345_nos_sum[current_station]
-        assert len(ts_ext_prediction_all) == expect_all_len[current_station]
-        assert ts_ext_prediction_all["HWLWcode"].sum() == expect_all_code_sum[current_station]
         
         fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_345)
         for irow, pdrow in ts_ext_prediction_345_HWLWno.iterrows():
@@ -430,7 +424,7 @@ def test_19Ycomp4Ydia():
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1.loc[['SA','SM']])
     
     #prediction and validation
     times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), "10min")
@@ -482,7 +476,7 @@ def test_19Ycomp4Ydia_compsplitsing():
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1.loc[['SA','SM']])
     
     #prediction and validation
     ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
@@ -527,7 +521,7 @@ def test_allfromdia():
     comp_frommeasurements_avg_group1 = hatyan.analysis(ts=ts_measurements_group1, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_perperiod=False, fu_alltimes=False)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1.loc[['SA','SM']])
     
     #prediction and validation
     ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)

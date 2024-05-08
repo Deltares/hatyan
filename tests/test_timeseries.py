@@ -92,6 +92,26 @@ def test_readts_dia_multiblock():
 
 
 @pytest.mark.unittest
+def test_readwrite_noos():
+
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')
+    
+    #component groups
+    filename_out = "noos_test.txt"
+    ts_noos1 = hatyan.read_noos(filename=file_data_comp0)
+    hatyan.write_noos(ts_noos1, filename=filename_out)
+    ts_noos2 = hatyan.read_noos(filename=filename_out)
+    
+    assert (ts_noos1 == ts_noos2).all().all()
+    
+    # compare metadata, raises ValueError if not equal
+    meta1 = metadata_from_obj(ts_noos1)
+    meta2 = metadata_from_obj(ts_noos2)
+    metadata_compare([meta1, meta2])
+    os.remove(filename_out)
+
+
+@pytest.mark.unittest
 def test_readts_noos_resamplecrop():
 
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')

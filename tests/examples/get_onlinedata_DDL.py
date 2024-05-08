@@ -24,51 +24,6 @@ end_date = "2020-03-29 00:00:00 +01:00"
 
 locations = ddlpy.locations()
 
-# retrieval for one station including comparison to DONAR validation dataset
-if 1: # for RWS
-    import os
-    import hatyan
-    import urllib
-    
-    # use time range available in validation data, passing winter/summertime date
-    current_station = "HOEKVHLD"
-    
-    # first download validation data
-    url_hatyan = "https://raw.githubusercontent.com/Deltares/hatyan/main/tests/data_unitsystemtests/"
-    file_vali = f'diawia_{current_station}_astro_tijdreeks.dia'
-    url = url_hatyan+file_vali
-    with urllib.request.urlopen(url) as response:
-        data = response.read()
-    with open(file_vali, "w") as f:
-        f.write(data.decode('utf-8'))
-    ts_vali = hatyan.read_dia(file_vali)
-    ts_vali = hatyan.crop_timeseries(ts_vali, times=slice(start_date, end_date))
-    
-    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTBRKD']) # measured waterlevels (not astro)
-    bool_groepering = locations['Groepering.Code'].isin(['NVT']) # timeseries (not extremes)
-    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP']) # vertical reference
-    locs_wathte = locations.loc[bool_grootheid & bool_groepering & bool_hoedanigheid]
-    
-    locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
-    
-    # no support for multiple rows, so pass one at a time
-    if len(locs_wathte_one) > 1:
-        raise Exception("duplicate stations for wathte")
-
-    # get the measurements
-    meas_wathte = ddlpy.measurements(locs_wathte_one.iloc[0], start_date=start_date, end_date=end_date)
-    meas_wathte_hat = hatyan.ddlpy_to_hatyan(meas_wathte)
-    
-    stat_name = locs_wathte_one.iloc[0]["Naam"]
-    stat_code = current_station
-    fig, ax = plt.subplots(figsize=(8,5))
-    ax.plot(ts_vali["values"], label="donar timeseries")
-    ax.plot(meas_wathte_hat["values"], "--", label="ddlpy timeseries")
-    ax.set_title(f'waterlevels for {stat_code} ({stat_name})')
-    ax.legend(loc=1)
-    fig.tight_layout()
-    os.remove(file_vali)
-
 
 ######### online waterlevel data retrieval for one station
 if 1: #for RWS
@@ -98,7 +53,7 @@ if 1: #for RWS
         locs_exttypes_wathte = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_meas]
         locs_exttypes_wathtbrkd = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_astro]
     
-    for current_station in ['HOEKVHLD']:
+    for current_station in ['AWGPFM']:
         locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
         locs_wathtbrkd_one = locs_wathtbrkd.loc[locs_wathtbrkd.index.isin([current_station])]
         

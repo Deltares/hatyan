@@ -221,33 +221,27 @@ def write_components(comp, filename):
                                                               compname))
 
 
-def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
+def merge_componentgroups(comp_main, comp_sec):
     """
     Merges the provided component groups into one
 
     Parameters
     ----------
-    comp_main : TYPE
-        DESCRIPTION.
-    comp_sec : TYPE
-        DESCRIPTION.
-    comp_sec_list : list of strings, optional
-        DESCRIPTION. The default is ['SA','SM'].
-
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
+    comp_main : pd.DataFrame
+        The reference component dataframe (with A/phi columns).
+    comp_sec : pd.DataFrame
+        The dataframe with the components that will be used to overwrite the components in comp_main.
 
     Returns
     -------
-    COMP_merged : TYPE
-        DESCRIPTION.
+    comp_merged : pd.DataFrame
+        The merged dataframe, a copy of comp_main with all components from comp_sec overwritten.
 
     """
     
     comp_main_meta = metadata_from_obj(comp_main).copy()
     comp_sec_meta = metadata_from_obj(comp_sec).copy()
+    comp_sec_list = comp_sec.index.tolist()
     
     meta_settings_list = ['origin','groepering','timestep_min','timestep_unit','TYP']
     comp_main_meta_others = {}
@@ -277,11 +271,12 @@ def merge_componentgroups(comp_main, comp_sec, comp_sec_list=['SA','SM']):
     comp_sec_list_sel = [comp for iC,comp in enumerate(comp_merged.index) if comp in comp_sec_list]
     if comp_sec_list_sel != []:
         comp_merged = comp_merged.drop(comp_sec_list_sel)
-    comp_merged = pd.concat([comp_sec.loc[comp_sec_list],comp_merged])
+    comp_merged = pd.concat([comp_sec,comp_merged])
 
     t_const_freq = get_schureman_freqs(comp_merged.index.tolist())
     comp_merged['freq'] = t_const_freq['freq']
     comp_merged = comp_merged.sort_values(by='freq')
+    comp_merged = comp_merged.drop(columns="freq")
     
     # add metadata
     comp_merged = metadata_add_to_obj(comp_merged, comp_merged_meta)

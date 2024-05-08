@@ -173,16 +173,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             #breakit
             
             print(current_station)
-            if 0: #corr_tideperiods instead of txt file, does not give decent results for all stations
-                if current_station in stats_CADZDm1:
-                    corr_tideperiods = -360
-                elif current_station in stats_CADZDm2:
-                    corr_tideperiods = -2*360
-                else:
-                    corr_tideperiods = 0
-                ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=None, corr_tideperiods=corr_tideperiods)
-            else:
-                ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
+            ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
             
             print(ts_ext_prediction_HWLWno)
             for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
