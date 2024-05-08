@@ -104,10 +104,10 @@ def test_readwrite_noos():
     
     assert (ts_noos1 == ts_noos2).all().all()
     
-    # compare metadata
+    # compare metadata, raises ValueError if not equal
     meta1 = metadata_from_obj(ts_noos1)
     meta2 = metadata_from_obj(ts_noos2)
-    assert metadata_compare([meta1, meta2])
+    metadata_compare([meta1, meta2])
 
 
 @pytest.mark.unittest
