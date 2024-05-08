@@ -280,10 +280,9 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     if bool_ts_duplicated.any():
         raise ValueError(f'{bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
     message = (f'#timesteps    = {len(ts)}\n'
-               f'tstart        = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}'
-               f'tstop         = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}')
-    if hasattr(ts.index,'freq'):
-        message += f'\ntimestep      = {ts.index.freq}'
+               f'tstart        = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
+               f'tstop         = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}\n'
+               f'timestep      = {ts.index.freq}')
     logger.info(message)
 
     #remove nans
