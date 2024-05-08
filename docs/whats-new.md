@@ -1,6 +1,7 @@
 # What's new
 
-## Unreleased
+## 2.8.0 (2024-05-08)
+This release contains many changes of which several also impact the user. These changes benefit the user friendliness and robustness of hatyan.
 
 ### Feat
 - reading/writing analysis settings (xfac, nodalfactors, fu_alltimes) from/to component file in [#175](https://github.com/Deltares/hatyan/pull/175)
