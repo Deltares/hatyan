@@ -31,8 +31,6 @@ dependencies = [
 	"sip>=5.0.0",
 	#requests<2.28.0 not tested on hmc
 	"requests>=2.28.0",
-	#statsmodels<0.13.2 has no support for pandas 2.0.0
-	"statsmodels>=0.13.2",
 	#TODO: xarray<2023.4.0 conflicts with pandas<2.0.0 for resampling, only available for py39
 	#xarray>=2022.6.0 is quite old version from dfm_tools
 	"xarray>=2022.6.0",
