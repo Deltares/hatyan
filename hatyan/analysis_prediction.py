@@ -537,10 +537,10 @@ def prediction(comp, times=None, timestep=None):
             comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
             if period_dt.freqstr in ['A-DEC','Y-DEC']: #year frequency
                 tstart = pd.Timestamp(period_dt.year,1,1)
-                tstop = pd.Timestamp(period_dt.year+1,1,1) - tstep.delta
+                tstop = pd.Timestamp(period_dt.year+1,1,1) - pd.Timedelta(tstep)
             elif period_dt.freqstr in ['M']: #month frequency
                 tstart = period_dt.to_timestamp()
-                tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - tstep.delta
+                tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - pd.Timedelta(tstep)
             else:
                 raise Exception(f'unknown freqstr: {period_dt.freqstr}')
             # generate date range and do prediction
