@@ -53,7 +53,7 @@ if 1: #for RWS
         locs_exttypes_wathte = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_meas]
         locs_exttypes_wathtbrkd = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_astro]
     
-    for current_station in ['AWGPFM']:
+    for current_station in ['HOEKVHLD']:
         locs_wathte_one = locs_wathte.loc[locs_wathte.index.isin([current_station])]
         locs_wathtbrkd_one = locs_wathtbrkd.loc[locs_wathtbrkd.index.isin([current_station])]
         
