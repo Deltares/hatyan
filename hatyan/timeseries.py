@@ -978,7 +978,7 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
         data_todia.to_csv(f,index=False,header=False)
 
 
-def write_noos(ts, filename, metadata=None):
+def write_noos(ts, filename):
     """
     Writes the timeseries to a noos file
 
@@ -994,6 +994,8 @@ def write_noos(ts, filename, metadata=None):
     None.
 
     """
+    
+    metadata = ts.attrs
     
     timestamp = dt.datetime.now().strftime('%c')
     ts_out = pd.DataFrame({'times':ts.index.strftime('%Y%m%d%H%M'),'values':ts['values']})
@@ -1636,10 +1638,14 @@ def read_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
             else:
                 startdata = linenum
                 break
-    
+        
     content_pd = pd.read_csv(filename,header=startdata-1, sep="\\s+",names=['times_str','values'], na_values=na_values)
     noos_datetime = pd.to_datetime(content_pd['times_str'],format=datetime_format)
     data_pd = pd.DataFrame({'values':content_pd['values'].values},index=noos_datetime)
+    
+    # clean noos metadata and add as attrs
+    noosheader_dict_clean = {k:v for k,v in noosheader_dict.items() if v!=''}
+    data_pd.attrs = noosheader_dict_clean
     
     return data_pd
 
