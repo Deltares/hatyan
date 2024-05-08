@@ -65,11 +65,6 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
         The default is False, in which case only extremes per tidal period are calculated.
         When first/second low waters and aggers are calculated, the local extremes around highwater (eg double highwaters and dips) are filtered out first.
     
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
-    
     Returns
     -------
     data_pd_HWLW : pandas.DataFrame
