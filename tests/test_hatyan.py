@@ -430,7 +430,7 @@ def test_19Ycomp4Ydia():
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1.loc[['SA','SM']])
     
     #prediction and validation
     times_pred = slice(dt.datetime(2019,1,1),dt.datetime(2019,1,1,12), "10min")
@@ -482,7 +482,7 @@ def test_19Ycomp4Ydia_compsplitsing():
     comp_fromfile_group1 = hatyan.read_components(filename=file_data_comp1)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_fromfile_group1.loc[['SA','SM']])
     
     #prediction and validation
     ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
@@ -527,7 +527,7 @@ def test_allfromdia():
     comp_frommeasurements_avg_group1 = hatyan.analysis(ts=ts_measurements_group1, nodalfactors=nodalfactors, xfac=xfac, const_list=const_list, analysis_perperiod=False, fu_alltimes=False)
     
     #merge component groups (SA/SM from 19Y, rest from 4Y)
-    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1, comp_sec_list=['SA','SM'])
+    COMP_merged = hatyan.merge_componentgroups(comp_main=comp_frommeasurements_avg_group0, comp_sec=comp_frommeasurements_avg_group1.loc[['SA','SM']])
     
     #prediction and validation
     ts_prediction = hatyan.prediction(COMP_merged, times=times_pred)
