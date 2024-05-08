@@ -134,7 +134,7 @@ def test_calc_HWLW_ts_with_gap():
     current_station = 'VLISSGN'
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
-    ts_prediction = hatyan.readts_dia(filename=file_pred, station=current_station)
+    ts_prediction = hatyan.read_dia(filename=file_pred, station=current_station)
     ts_prediction = ts_prediction.loc[slice("2019-01","2019-01")]
     ts_prediction.loc[slice("2019-01-12 04:00", "2019-01-19 04:00")] = np.nan
     
