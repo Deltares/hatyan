@@ -45,7 +45,7 @@ file_path = os.path.realpath(__file__)
 logger = logging.getLogger(__name__)
 
 
-def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, buffer_hr=6):
+def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
     """
     
     Calculates extremes (high and low waters) for the provided timeseries. 
@@ -64,8 +64,6 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, buffer_hr=6):
         Whether to also calculate local extremes, first/second low waters and 'aggers'. 
         The default is False, in which case only extremes per tidal period are calculated.
         When first/second low waters and aggers are calculated, the local extremes around highwater (eg double highwaters and dips) are filtered out first.
-    calc_HWLW345_cleanup1122 : boolean, optional
-        Whether to remove HWLWcodes 11 and 22 from DataFrame. The default is True.
     
     Raises
     ------
@@ -90,7 +88,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, buffer_hr=6):
     if ts_steps_sec_most > 60:
         logger.warning(f'the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
     elif ts_steps_sec_most == 0:
-        raise Exception('ts_steps_sec_most=0, check rounding issue')
+        raise ValueError('ts_steps_sec_most=0, check rounding issue')
     M2period_numsteps = M2_period_sec/ts_steps_sec_most
     minwidth_numsteps = 2*3600/ts_steps_sec_most # minimal width of 2 hours makes peakfinding more robust: https://github.com/Deltares/hatyan/issues/85
 
@@ -102,7 +100,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, buffer_hr=6):
 
     min_prominence = 0.01 #minimal prominence to exclude very minor dips/peaks from being seen as aggers.
     
-    if calc_HWLW345 or calc_HWLW1122:
+    if calc_HWLW345:
         #get all local extremes, including aggers and second high waters (1/2/11/22) #takes first value of two equal peaks
         LWid_all, LWid_all_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(None,None), distance=None)
         HWid_all, HWid_all_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(None,None), distance=None)
@@ -130,7 +128,7 @@ def calc_HWLW(ts, calc_HWLW345=False, calc_HWLW1122=False, buffer_hr=6):
     logger.debug('LW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==2]))
     data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,prop_list] = pd.DataFrame(HWid_main_properties,index=HWid_main_raw).loc[HWid_main,prop_list]
     logger.debug('HW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==1]))
-    if calc_HWLW345 or calc_HWLW1122:
+    if calc_HWLW345:
         LW_local_bool = ~np.in1d(LWid_all, LWid_main)
         data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==22,prop_list] = pd.DataFrame(LWid_all_properties,index=LWid_all).loc[LW_local_bool,prop_list]
         logger.debug('LW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22]))
