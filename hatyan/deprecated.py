@@ -10,7 +10,13 @@ import functools
 import logging
 
 __all__ = ["get_components_from_ts",
-           "check_ts"]
+           "check_ts",
+           "readts_dia",
+           "readts_noos",
+           "write_tsdia",
+           "writets_noos",
+           "write_tsnetcdf"
+           ]
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +64,24 @@ def get_components_from_ts(**kwargs):
 
 def check_ts(**kwargs):
     raise DeprecationWarning("hatyan.check_ts() was deprecated, use hatyan.Timeseries_Statistics() instead")
+
+
+def readts_dia(**kwargs):
+    raise DeprecationWarning("hatyan.readts_dia() was deprecated, use hatyan.read_dia() instead")
+
+
+def readts_noos(**kwargs):
+    raise DeprecationWarning("hatyan.readts_noos() was deprecated, use hatyan.read_noos() instead")
+
+
+def write_tsdia(**kwargs):
+    raise DeprecationWarning("hatyan.write_tsdia() was deprecated, use hatyan.write_dia() instead")
+
+
+def writets_noos(**kwargs):
+    raise DeprecationWarning("hatyan.writets_noos() was deprecated, use hatyan.write_noos() instead")
+
+
+def write_tsnetcdf(**kwargs):
+    raise DeprecationWarning("hatyan.write_tsnetcdf() was deprecated, use hatyan.write_netcdf() instead")
+
