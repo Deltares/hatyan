@@ -111,6 +111,19 @@ def test_plot_components_allyears():
 
 
 @pytest.mark.unittest
+def test_merge_componentgroups():
+    file_comp1 = os.path.join(dir_testdata,'VLISSGN_ana.txt')
+    comp_fromfile1 = hatyan.read_components(filename=file_comp1)
+    file_comp2 = os.path.join(dir_testdata,'HOEKVHLD_ana.txt')
+    comp_fromfile2 = hatyan.read_components(filename=file_comp2)
+    comp_fromfile2.attrs["station"] = "VLISSGN"
+    
+    comp_merged = hatyan.merge_componentgroups(comp_main=comp_fromfile1, comp_sec=comp_fromfile2, comp_sec_list=['SA','SM'])
+    comp_merged = comp_merged.drop(columns="freq")
+    assert (comp_fromfile1!=comp_merged).sum().sum() == 4
+
+
+@pytest.mark.unittest
 def test_merge_componentgroups_comparesettings():
     file_data_comp = os.path.join(dir_testdata,'VLISSGN_ana.txt')
     comp_fromfile = hatyan.read_components(filename=file_data_comp)
