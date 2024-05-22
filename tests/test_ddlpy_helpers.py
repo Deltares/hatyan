@@ -13,7 +13,7 @@ import numpy as np
 import pandas.api.types as ptypes
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def locations():
     """return all locations"""
     locations = ddlpy.locations()
