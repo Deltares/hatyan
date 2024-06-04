@@ -8,7 +8,6 @@ Created on Wed Aug  9 21:47:33 2023
 import os
 import pytest
 import pytz
-# import pandas as pd
 import hatyan
 from hatyan.metadata import metadata_from_obj, metadata_compare, wns_from_metadata
 
