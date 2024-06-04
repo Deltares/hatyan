@@ -50,7 +50,7 @@ def metadata_from_obj(obj):
 
 def metadata_compare(metadata_list):
     
-    # remove tstart/tstop since they cannot be compared on equality in case of multifile dia
+    # remove tstart/tstop since they should not be compared on equality in case of multifile dia
     metadata_list_notstartstop = []
     for meta in metadata_list:
         meta_new = meta.copy()

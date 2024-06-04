@@ -93,18 +93,24 @@ def test_readts_dia_multiblock():
 
 @pytest.mark.unittest
 def test_readts_dia_multiblock_varyingtimestep(tmp_path):
+    """
+    implemented while fixing https://github.com/Deltares/hatyan/issues/313
+    """
     file1 = os.path.join(dir_testdata, "diawia_HOEKVHLD_astro_tijdreeks.dia") # 10min interval
     file2 = os.path.join(dir_testdata,"HOEKVHLD_obs19.txt") # 60min interval
     file_dia = os.path.join(tmp_path, "HOEKVHLD_merged.dia")
     with open(file_dia, "w") as f:
         with open(file1, "r") as f1:
-            f.write(f1.read())
+            contents = f1.read()
+            contents_new = contents.replace("WATHTBRKD","WATHTE")
+            f.write(contents_new)
         with open(file2, "r") as f2:
             contents = f2.readlines()
             contents_nohead = contents[1:]
             contents_new = ''.join(contents_nohead)
             f.write(contents_new)
     ts = hatyan.read_dia(file_dia, block_ids="allstation", station="HOEKVHLD")
+    assert len(ts) == 219264
 
 
 @pytest.mark.unittest
