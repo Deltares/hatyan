@@ -355,7 +355,7 @@ def test_resample_timeseries():
     pred_meta = metadata_from_obj(ts_prediction)
     pred_res_meta = metadata_from_obj(ts_prediction_res)
     metadata_compare([pred_meta,pred_res_meta])
-    assert np.isclose(ts_prediction_res.index.freq.delta.total_seconds(), 7200)
+    assert np.isclose(ts_prediction_res.index.freq.delta.total_seconds(), 60*timestep_min)
 
 
 @pytest.mark.unittest
