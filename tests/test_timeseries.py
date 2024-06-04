@@ -111,8 +111,8 @@ def test_readts_dia_multiblock_varyingtimestep(tmp_path):
     ts = hatyan.read_dia(file_dia, block_ids="allstation", station="HOEKVHLD")
     assert len(ts) == 219264
     # check whether min/max attributes are correct since they are derived from the dataset
-    assert ts.index.min() == pd.Timestamp('1976-01-01 00:00:00')
-    assert ts.index.max() == pd.Timestamp('2020-12-31 23:50:00')
+    assert ts.index.min() == pd.Timestamp('1976-01-01 00:00:00 +01:00')
+    assert ts.index.max() == pd.Timestamp('2020-12-31 23:50:00 +01:00')
 
 
 @pytest.mark.unittest

@@ -419,7 +419,7 @@ def split_components(comp, dood_date_mid, hatyan_settings):
 def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_settings) -> pd.DataFrame:
     
     metadata_comp = metadata_from_obj(comp)
-    tzone_comp = metadata_comp.pop("tzone")
+    tzone_comp = metadata_comp.pop('tzone')
     
     if not isinstance(times, pd.DatetimeIndex):
         raise TypeError(f'times argument can be of type pd.DatetimeIndex or slice, not {type(times)}')
@@ -568,6 +568,7 @@ def prediction(comp, times=None, timestep=None):
         # update metadata
         if metadata_comp['grootheid'] == 'WATHTE':
             metadata_comp['grootheid'] = 'WATHTBRKD'
+    # prevent adding time metadata from component dataframe to prediction dataframe
     if 'tzone' in metadata_comp.keys():
         metadata_comp.pop('tzone')
     if 'tstart' in metadata_comp.keys():

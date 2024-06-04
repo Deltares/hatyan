@@ -90,7 +90,7 @@ def test_read_write_components_nondefaultsettings():
     assert "source" in str(e.value)
 
     comp_orig = hatyan.read_components(filename=file_orig)
-    comp_orig.attrs["tzone"] = None
+    comp_orig.attrs['tzone'] = None
     with pytest.raises(ValueError) as e:
         hatyan.write_components(comp_orig, filename=file_new)
     assert "tzone=None" in str(e.value)
