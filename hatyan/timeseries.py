@@ -1585,8 +1585,8 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
     data_pd_all = pd.concat(data_pd_list)
     metadata_compare(metadata_list)
     metadata = metadata_list[0].copy()
-    metadata['tstart'] = metadata_list[0]['tstart']
-    metadata['tstop'] = metadata_list[-1]['tstop']
+    metadata['tstart'] = data_pd_all.index.min()
+    metadata['tstop'] = data_pd_all.index.max()
     data_pd_all = metadata_add_to_obj(data_pd_all,metadata)
     
     if allow_duplicates:
