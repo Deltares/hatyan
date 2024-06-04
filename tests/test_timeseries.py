@@ -74,6 +74,17 @@ def test_readts_dia_multifile():
 
 
 @pytest.mark.unittest
+def test_readts_dia_multifile_multiblock():
+    """
+    this ordering of files raised `ValueError: Invalid values in block_ids list ([0, 1, 2]), possible are [0] (all integers)`
+    since block_ids was overwritten in the file loop before
+    """
+    file_dia1 = os.path.join(dir_testdata,"hoek_har.dia")
+    file_dia2 = os.path.join(dir_testdata,"diawia_HOEKVHLD_astro_extremen.dia")
+    ts = hatyan.read_dia([file_dia1,file_dia2], block_ids="allstation", station="HOEKVHLD")
+
+
+@pytest.mark.unittest
 def test_readts_dia_multiblock():
     
     file1 = os.path.join(dir_testdata,'hoek_har.dia')

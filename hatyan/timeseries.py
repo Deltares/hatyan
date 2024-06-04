@@ -1545,27 +1545,30 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
                                  "present in dia file. Provide block_ids argument to read_dia() (int, list of int or 'allstation'). "
                                  f"Available blocks:\n{diablocks_pd[print_cols]}")
             else: #exactly one occurrence or block_ids is provided or block_ids='allstation'
-                block_ids = ids_station
+                block_ids_one = ids_station
+        elif isinstance(block_ids,int):
+            block_ids_one = [block_ids]
+        else:
+            # prevent overwriting of block_ids in this file loop
+            block_ids_one = block_ids
         
         #check validity of blockids of type listlist
-        if isinstance(block_ids,int):
-            block_ids = [block_ids]
-        if not isinstance(block_ids,list):
+        if not isinstance(block_ids_one,list):
             raise TypeError('Invalid type for block_ids (should be int, list of int or "allstation")')
-        if not pd.Series(block_ids).isin(diablocks_pd.index).all():
-            raise ValueError(f"Invalid values in block_ids list ({block_ids}), "
+        if not pd.Series(block_ids_one).isin(diablocks_pd.index).all():
+            raise ValueError(f"Invalid values in block_ids list ({block_ids_one}), "
                              f"possible are {diablocks_pd.index.tolist()} (all integers)")
             
         if station is not None:
             if not isinstance(station,str):
                 raise TypeError('Station argument should be of type string')
-            bool_samestation = diablocks_pd.loc[block_ids,'station']==station
+            bool_samestation = diablocks_pd.loc[block_ids_one,'station']==station
             if not bool_samestation.all():
                 raise ValueError("Both the arguments station and block_ids are provided, "
                                  "but at least one of the requested block_ids corresponds to a different station. "
                                  f"Available blocks:\n{diablocks_pd[print_cols]}")
             
-        for block_id in block_ids:
+        for block_id in block_ids_one:
             if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): # non-equidistant
                 data_pd_oneblock = read_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: # equidistant
