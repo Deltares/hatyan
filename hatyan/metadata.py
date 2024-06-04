@@ -25,7 +25,6 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     
     metadata_keys = ['station', 'grootheid', 'eenheid', 
                      'vertref', 
-                     'tstart', 'tstop',
                      'timestep_min', 'timestep_unit',
                      'TYP', 'groepering']
     
@@ -49,21 +48,10 @@ def metadata_from_obj(obj):
 
 
 def metadata_compare(metadata_list):
-    
-    # remove tstart/tstop since they should not be compared on equality in case of multifile dia
-    metadata_list_notstartstop = []
-    for meta in metadata_list:
-        meta_new = meta.copy()
-        if 'tstart' in meta_new:
-            meta_new.pop('tstart')
-        if 'tstop' in meta_new:
-            meta_new.pop('tstop')
-        metadata_list_notstartstop.append(meta_new)
-    
-    nmeta = len(metadata_list_notstartstop)
+    nmeta = len(metadata_list)
     for i in range(1,nmeta):
-        meta1 = metadata_list_notstartstop[i-1]
-        meta2 = metadata_list_notstartstop[i]
+        meta1 = metadata_list[i-1]
+        meta2 = metadata_list[i]
         if meta1!=meta2:
             meta_12_df = pd.concat([pd.Series(meta1), pd.Series(meta2)],axis=1)
             meta_12_df["equal"] = meta_12_df[0]==meta_12_df[1]

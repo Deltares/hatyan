@@ -255,6 +255,8 @@ def analysis(ts, const_list,
     metadata['xfac'] = hatyan_settings.xfac
     metadata['fu_alltimes'] = hatyan_settings.fu_alltimes
     metadata['source'] = hatyan_settings.source
+    metadata['tstart'] = ts.index.min().tz_localize(None)
+    metadata['tstop'] = ts.index.max().tz_localize(None)
     metadata['tzone'] = ts.index.tz
     COMP_mean_pd = metadata_add_to_obj(COMP_mean_pd, metadata)
     
@@ -280,8 +282,8 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     if bool_ts_duplicated.any():
         raise ValueError(f'{bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
     message = (f'#timesteps    = {len(ts)}\n'
-               f'tstart        = {ts.index[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
-               f'tstop         = {ts.index[-1].strftime("%Y-%m-%d %H:%M:%S")}\n'
+               f'tstart        = {ts.index.min().strftime("%Y-%m-%d %H:%M:%S")}\n'
+               f'tstop         = {ts.index.max().strftime("%Y-%m-%d %H:%M:%S")}\n'
                f'timestep      = {ts.index.freq}')
     logger.info(message)
 
@@ -568,6 +570,10 @@ def prediction(comp, times=None, timestep=None):
             metadata_comp['grootheid'] = 'WATHTBRKD'
     if 'tzone' in metadata_comp.keys():
         metadata_comp.pop('tzone')
+    if 'tstart' in metadata_comp.keys():
+        metadata_comp.pop("tstart")
+    if 'tstop' in metadata_comp.keys():
+        metadata_comp.pop("tstop")
     ts_prediction = metadata_add_to_obj(ts_prediction, metadata_comp)
 
     return ts_prediction

@@ -152,7 +152,7 @@ def write_components(comp, filename):
     tstop = metadata.pop('tstop')
     tzone = metadata.pop('tzone')
     if tzone is None:
-        raise AttributeError("write_components() encountered tzone=None in components dataframe, not allowed.")
+        raise ValueError("write_components() encountered tzone=None in components dataframe, not allowed.")
     tzone_min = tzone._minutes
     tstart_str = tstart.strftime("%Y%m%d  %H%M")
     tstop_str = tstop.strftime("%Y%m%d  %H%M")
@@ -243,7 +243,7 @@ def merge_componentgroups(comp_main, comp_sec):
     comp_sec_meta = metadata_from_obj(comp_sec).copy()
     comp_sec_list = comp_sec.index.tolist()
     
-    meta_settings_list = ['origin','groepering','timestep_min','timestep_unit','TYP']
+    meta_settings_list = ['origin','groepering','tstart','tstop','timestep_min','timestep_unit','TYP']
     comp_main_meta_others = {}
     for key in meta_settings_list:
         if key in comp_main_meta:

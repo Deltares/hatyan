@@ -1060,10 +1060,7 @@ def crop_timeseries(ts, times, onlyfull=True):
     
     # add metadata
     metadata = metadata_from_obj(ts)
-    metadata['tstart'] = pd.Timestamp(tstart)
-    metadata['tstop'] = pd.Timestamp(tstop)
     ts_pd_out = metadata_add_to_obj(ts_pd_out,metadata)
-    
     return ts_pd_out
 
 
@@ -1104,8 +1101,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     # add metadata
     metadata = metadata_from_obj(ts)
-    metadata['tstart'] = pd.Timestamp(tstart)
-    metadata['tstop'] = pd.Timestamp(tstop)
     metadata['timestep_min'] = timestep_min
     data_pd_resample = metadata_add_to_obj(data_pd_resample,metadata)
     
@@ -1585,8 +1580,6 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
     data_pd_all = pd.concat(data_pd_list)
     metadata_compare(metadata_list)
     metadata = metadata_list[0].copy()
-    metadata['tstart'] = data_pd_all.index.min()
-    metadata['tstop'] = data_pd_all.index.max()
     data_pd_all = metadata_add_to_obj(data_pd_all,metadata)
     
     if allow_duplicates:

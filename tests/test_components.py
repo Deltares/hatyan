@@ -89,6 +89,25 @@ def test_read_write_components_nondefaultsettings():
         hatyan.write_components(comp_orig, filename=file_new)
     assert "source" in str(e.value)
 
+    comp_orig = hatyan.read_components(filename=file_orig)
+    comp_orig.attrs["tzone"] = None
+    with pytest.raises(ValueError) as e:
+        hatyan.write_components(comp_orig, filename=file_new)
+    assert "tzone=None" in str(e.value)
+
+
+@pytest.mark.unittest
+def test_writecomponents_fromanalysis():
+    """
+    this is of added value to check if all required metadata is present from an analysis
+    """
+    current_station = 'VLISSGN'
+    file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_obs1.txt')
+    ts = hatyan.read_dia(filename=file_data_comp0, station=current_station)
+    
+    comp = hatyan.analysis(ts=ts, const_list='month', fu_alltimes=False)
+    hatyan.write_components(comp, "test.txt")
+
 
 @pytest.mark.unittest
 def test_plot_components_validation():

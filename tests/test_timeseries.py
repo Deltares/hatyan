@@ -97,7 +97,7 @@ def test_readts_dia_multiblock_varyingtimestep(tmp_path):
     implemented while fixing https://github.com/Deltares/hatyan/issues/313
     """
     file1 = os.path.join(dir_testdata, "diawia_HOEKVHLD_astro_tijdreeks.dia") # 10min interval
-    file2 = os.path.join(dir_testdata,"HOEKVHLD_obs19.txt") # 60min interval
+    file2 = os.path.join(dir_testdata, "HOEKVHLD_obs19.txt") # 60min interval
     file_dia = os.path.join(tmp_path, "HOEKVHLD_merged.dia")
     with open(file_dia, "w") as f:
         with open(file1, "r") as f1:
@@ -112,8 +112,8 @@ def test_readts_dia_multiblock_varyingtimestep(tmp_path):
     ts = hatyan.read_dia(file_dia, block_ids="allstation", station="HOEKVHLD")
     assert len(ts) == 219264
     # check whether min/max attributes are correct since they are derived from the dataset
-    assert ts.attrs['tstart'] == pd.Timestamp('1976-01-01 00:00:00')
-    assert ts.attrs['tstop'] == pd.Timestamp('2020-12-31 23:50:00')
+    assert ts.index.min() == pd.Timestamp('1976-01-01 00:00:00')
+    assert ts.index.max() == pd.Timestamp('2020-12-31 23:50:00')
 
 
 @pytest.mark.unittest
@@ -307,10 +307,6 @@ def test_crop_timeseries():
     pred_meta = metadata_from_obj(ts_prediction)
     pred_cropped_meta = metadata_from_obj(ts_prediction_cropped)
     metadata_compare([pred_meta,pred_cropped_meta])
-    
-    assert pred_cropped_meta['tstart'] == pd.Timestamp(times_ext.start)
-    assert pred_cropped_meta['tstop'] == pd.Timestamp(times_ext.stop)
-
 
 
 @pytest.mark.unittest
