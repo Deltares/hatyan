@@ -1528,7 +1528,6 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
         print_cols = ['block_starts', 'station', 'grootheid', 'groepering', 'tstart', 'tstop']
         logger.info('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))
-        str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=hatyan.get_diablocks(filename)"'
         
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids=='allstation':
@@ -1536,16 +1535,17 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
                 if len(diablocks_pd)==1:
                     station = diablocks_pd.loc[0,'station']
                 else:
-                    raise ValueError(('If block_ids argument is not provided (or None) or is "allstation", station '
-                                      f'argument should be provided.\n{diablocks_pd[print_cols]}'))
+                    raise ValueError('If block_ids=None or block_ids="allstation", station argument should be provided. '
+                                      f'Available blocks:\n{diablocks_pd[print_cols]}')
             bool_station = diablocks_pd['station']==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)<1:
-                raise ValueError(f"No data block with requested station ({station}) present in dia file. {str_getdiablockspd}")
+                raise ValueError(f"No data block with requested station ({station}) present in dia file. "
+                                 f"Available blocks:\n{diablocks_pd[print_cols]}")
             elif len(ids_station)>1 and block_ids is None:
                 raise ValueError(f"More than one data block with requested station ({station}) "
                                  "present in dia file. Provide block_ids argument to read_dia() (int, list of int or 'allstation'). "
-                                 f"{str_getdiablockspd}")
+                                 f"Available blocks:\n{diablocks_pd[print_cols]}")
             else: #exactly one occurrence or block_ids is provided or block_ids='allstation'
                 block_ids = ids_station
         
@@ -1565,7 +1565,7 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
             if not bool_samestation.all():
                 raise ValueError("Both the arguments station and block_ids are provided, "
                                  "but at least one of the requested block_ids corresponds to a different station. "
-                                 f"{str_getdiablockspd}")
+                                 f"Available blocks:\n{diablocks_pd[print_cols]}")
             
         for block_id in block_ids:
             if np.isnan(diablocks_pd.loc[block_id,'timestep_min']):

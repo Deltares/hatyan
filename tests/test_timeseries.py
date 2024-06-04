@@ -77,7 +77,6 @@ def test_readts_dia_multifile():
 def test_readts_dia_multiblock():
     
     file1 = os.path.join(dir_testdata,'hoek_har.dia')
-    #ts_measurements_group0_extno = hatyan.read_dia(filename=file1, station='HOEKVHLD')
     ts_measurements_group0_ext0 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=0)
     ts_measurements_group0_ext1 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=1)
     ts_measurements_group0_ext2 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=2)
@@ -114,6 +113,23 @@ def test_readts_dia_multiblock_varyingtimestep(tmp_path):
     # check whether min/max attributes are correct since they are derived from the dataset
     assert ts.index.min() == pd.Timestamp('1976-01-01 00:00:00')
     assert ts.index.max() == pd.Timestamp('2020-12-31 23:50:00')
+
+
+@pytest.mark.unittest
+def test_read_dia_multiblock_toolittle_arguments():
+    file_dia = os.path.join(dir_testdata,'hoek_har.dia')
+    
+    with pytest.raises(ValueError) as e:
+        hatyan.read_dia(filename=file_dia)
+    assert 'If block_ids=None or block_ids="allstation", station argument should be provided.' in str(e.value)
+    
+    with pytest.raises(ValueError) as e:
+        hatyan.read_dia(filename=file_dia, station='HOEKVHLD')
+    assert "More than one data block with requested station (HOEKVHLD) present in dia file." in str(e.value)
+    
+    with pytest.raises(ValueError) as e:
+        hatyan.read_dia(filename=file_dia, station='VLISSGN')
+    assert "No data block with requested station (VLISSGN) present in dia file." in str(e.value)
 
 
 @pytest.mark.unittest

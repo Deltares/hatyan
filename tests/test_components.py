@@ -97,7 +97,7 @@ def test_read_write_components_nondefaultsettings():
 
 
 @pytest.mark.unittest
-def test_writecomponents_fromanalysis():
+def test_writecomponents_fromanalysis(tmp_dir):
     """
     this is of added value to check if all required metadata is present from an analysis
     """
@@ -106,7 +106,8 @@ def test_writecomponents_fromanalysis():
     ts = hatyan.read_dia(filename=file_data_comp0, station=current_station)
     
     comp = hatyan.analysis(ts=ts, const_list='month', fu_alltimes=False)
-    hatyan.write_components(comp, "test.txt")
+    file_comp = os.path.join(tmp_dir, "temp_comp.txt")
+    hatyan.write_components(comp, file_comp)
 
 
 @pytest.mark.unittest
