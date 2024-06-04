@@ -1586,7 +1586,8 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
     #check overlapping timesteps, sort values on time
     if data_pd_all.index.duplicated().any():
         raise ValueError("Merged datasets have duplicate/overlapping timesteps, "
-                         "clean up your input data or provide one file instead of a list")
+                         "clean up your input data or provide one file instead of a list. "
+                         "Or pass `allow_duplicates=True`")
     if not data_pd_all.index.is_monotonic_increasing:
         data_pd_all = data_pd_all.sort_index()
     
