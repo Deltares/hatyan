@@ -74,10 +74,22 @@ def test_readts_dia_multifile():
 
 
 @pytest.mark.unittest
+def test_readts_dia_multifile_multiblock():
+    """
+    this ordering of files raised `ValueError: Invalid values in block_ids list ([0, 1, 2]), possible are [0] (all integers)`
+    since block_ids was overwritten in the file loop before. After a fix we still get an error, but a different one.
+    """
+    file_dia1 = os.path.join(dir_testdata,"hoek_har.dia")
+    file_dia2 = os.path.join(dir_testdata,"diawia_HOEKVHLD_astro_extremen.dia")
+    with pytest.raises(ValueError) as e:
+        hatyan.read_dia([file_dia1,file_dia2], block_ids="allstation", station="HOEKVHLD")
+    assert 'metadata for two datasets is not equal, cannot be merged:' in str(e.value)
+
+
+@pytest.mark.unittest
 def test_readts_dia_multiblock():
     
     file1 = os.path.join(dir_testdata,'hoek_har.dia')
-    #ts_measurements_group0_extno = hatyan.read_dia(filename=file1, station='HOEKVHLD')
     ts_measurements_group0_ext0 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=0)
     ts_measurements_group0_ext1 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=1)
     ts_measurements_group0_ext2 = hatyan.read_dia(filename=file1, station='HOEKVHLD', block_ids=2)
@@ -89,6 +101,48 @@ def test_readts_dia_multiblock():
     assert len(ts_measurements_group0_ext2) == 9403
     assert len(ts_measurements_group0_ext012) == 23293
     assert len(ts_measurements_group0_extall) == 23293
+
+
+@pytest.mark.unittest
+def test_readts_dia_multiblock_varyingtimestep(tmp_path):
+    """
+    implemented while fixing https://github.com/Deltares/hatyan/issues/313
+    """
+    file1 = os.path.join(dir_testdata, "diawia_HOEKVHLD_astro_tijdreeks.dia") # 10min interval
+    file2 = os.path.join(dir_testdata, "HOEKVHLD_obs19.txt") # 60min interval
+    file_dia = os.path.join(tmp_path, "HOEKVHLD_merged.dia")
+    with open(file_dia, "w") as f:
+        with open(file1, "r") as f1:
+            contents = f1.read()
+            contents_new = contents.replace("WATHTBRKD","WATHTE")
+            f.write(contents_new)
+        with open(file2, "r") as f2:
+            contents = f2.readlines()
+            contents_nohead = contents[1:]
+            contents_new = ''.join(contents_nohead)
+            f.write(contents_new)
+    ts = hatyan.read_dia(file_dia, block_ids="allstation", station="HOEKVHLD")
+    assert len(ts) == 219264
+    # check whether min/max attributes are correct since they are derived from the dataset
+    assert ts.index.min() == pd.Timestamp('1976-01-01 00:00:00 +01:00')
+    assert ts.index.max() == pd.Timestamp('2020-12-31 23:50:00 +01:00')
+
+
+@pytest.mark.unittest
+def test_read_dia_multiblock_toolittle_arguments():
+    file_dia = os.path.join(dir_testdata,'hoek_har.dia')
+    
+    with pytest.raises(ValueError) as e:
+        hatyan.read_dia(filename=file_dia)
+    assert 'If block_ids=None or block_ids="allstation", station argument should be provided.' in str(e.value)
+    
+    with pytest.raises(ValueError) as e:
+        hatyan.read_dia(filename=file_dia, station='HOEKVHLD')
+    assert "More than one data block with requested station (HOEKVHLD) present in dia file." in str(e.value)
+    
+    with pytest.raises(ValueError) as e:
+        hatyan.read_dia(filename=file_dia, station='VLISSGN')
+    assert "No data block with requested station (VLISSGN) present in dia file." in str(e.value)
 
 
 @pytest.mark.unittest
@@ -282,10 +336,6 @@ def test_crop_timeseries():
     pred_meta = metadata_from_obj(ts_prediction)
     pred_cropped_meta = metadata_from_obj(ts_prediction_cropped)
     metadata_compare([pred_meta,pred_cropped_meta])
-    
-    assert pred_cropped_meta['tstart'] == pd.Timestamp(times_ext.start)
-    assert pred_cropped_meta['tstop'] == pd.Timestamp(times_ext.stop)
-
 
 
 @pytest.mark.unittest
@@ -303,13 +353,9 @@ def test_resample_timeseries():
     assert ts_prediction_res.index[-1] == pd.Timestamp("2019-12-31 22:00 +01:00")
     
     pred_meta = metadata_from_obj(ts_prediction)
-    pred_meta.pop('timestep_min')
     pred_res_meta = metadata_from_obj(ts_prediction_res)
-    pred_res_meta.pop('timestep_min')
     metadata_compare([pred_meta,pred_res_meta])
-    
-    pred_res_meta = metadata_from_obj(ts_prediction_res)
-    assert pred_res_meta['timestep_min'] == timestep_min
+    assert np.isclose(ts_prediction_res.index.freq.delta.total_seconds(), 60*timestep_min)
 
 
 @pytest.mark.unittest

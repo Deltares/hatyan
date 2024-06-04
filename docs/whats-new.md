@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+### Fix
+- repaired support for equidistant multiblock diafiles with varying timesteps in [#314](https://github.com/Deltares/hatyan/pull/314)
+
 
 ## 2.8.0 (2024-05-08)
 This release contains many changes of which several also impact the user. These changes benefit the user friendliness and robustness of hatyan.

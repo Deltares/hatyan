@@ -610,13 +610,12 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     
     times_all = ts.index
     timeseries = ts['values']
-    times_stepmin = (ts.index[1]-ts.index[0]).total_seconds()/60
     dt_analysistime = dt.datetime.now()
     data_nc = Dataset(filename, mode, format="NETCDF3_CLASSIC")
     attr_dict = {'title': 'tidal prediction for %s to %s'%(times_all[0].strftime('%Y-%m-%d %H:%M:%S'), times_all[-1].strftime('%Y-%m-%d %H:%M:%S')),
                  'institution': 'Rijkswaterstaat',
                  'source': 'hatyan-%s tidal analysis program of Rijkswaterstaat'%(version_no),
-                 'timestep_min': times_stepmin}
+                 }
     data_nc.setncatts(attr_dict)
     
     ncvarlist = list(data_nc.variables.keys())
@@ -1060,10 +1059,7 @@ def crop_timeseries(ts, times, onlyfull=True):
     
     # add metadata
     metadata = metadata_from_obj(ts)
-    metadata['tstart'] = pd.Timestamp(tstart)
-    metadata['tstop'] = pd.Timestamp(tstop)
     ts_pd_out = metadata_add_to_obj(ts_pd_out,metadata)
-    
     return ts_pd_out
 
 
@@ -1104,9 +1100,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     # add metadata
     metadata = metadata_from_obj(ts)
-    metadata['tstart'] = pd.Timestamp(tstart)
-    metadata['tstop'] = pd.Timestamp(tstop)
-    metadata['timestep_min'] = timestep_min
     data_pd_resample = metadata_add_to_obj(data_pd_resample,metadata)
     
     return data_pd_resample
@@ -1533,7 +1526,6 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
         pd.set_option('display.width', 200) #default was 80, but need more to display groepering
         print_cols = ['block_starts', 'station', 'grootheid', 'groepering', 'tstart', 'tstop']
         logger.info('blocks in diafile:\n%s'%(diablocks_pd[print_cols]))
-        str_getdiablockspd = 'A summary of the available blocks is printed above, obtain a full DataFrame of available diablocks with "diablocks_pd=hatyan.get_diablocks(filename)"'
         
         #get equidistant timeseries from metadata
         if block_ids is None or block_ids=='allstation':
@@ -1541,41 +1533,45 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
                 if len(diablocks_pd)==1:
                     station = diablocks_pd.loc[0,'station']
                 else:
-                    raise ValueError(('If block_ids argument is not provided (or None) or is "allstation", station '
-                                      f'argument should be provided.\n{diablocks_pd[print_cols]}'))
+                    raise ValueError('If block_ids=None or block_ids="allstation", station argument should be provided. '
+                                      f'Available blocks:\n{diablocks_pd[print_cols]}')
             bool_station = diablocks_pd['station']==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)<1:
-                raise ValueError(f"No data block with requested station ({station}) present in dia file. {str_getdiablockspd}")
+                raise ValueError(f"No data block with requested station ({station}) present in dia file. "
+                                 f"Available blocks:\n{diablocks_pd[print_cols]}")
             elif len(ids_station)>1 and block_ids is None:
                 raise ValueError(f"More than one data block with requested station ({station}) "
                                  "present in dia file. Provide block_ids argument to read_dia() (int, list of int or 'allstation'). "
-                                 f"{str_getdiablockspd}")
+                                 f"Available blocks:\n{diablocks_pd[print_cols]}")
             else: #exactly one occurrence or block_ids is provided or block_ids='allstation'
-                block_ids = ids_station
+                block_ids_one = ids_station
+        elif isinstance(block_ids,int):
+            block_ids_one = [block_ids]
+        else:
+            # prevent overwriting of block_ids in this file loop
+            block_ids_one = block_ids
         
         #check validity of blockids of type listlist
-        if isinstance(block_ids,int):
-            block_ids = [block_ids]
-        if not isinstance(block_ids,list):
+        if not isinstance(block_ids_one,list):
             raise TypeError('Invalid type for block_ids (should be int, list of int or "allstation")')
-        if not pd.Series(block_ids).isin(diablocks_pd.index).all():
-            raise ValueError(f"Invalid values in block_ids list ({block_ids}), "
+        if not pd.Series(block_ids_one).isin(diablocks_pd.index).all():
+            raise ValueError(f"Invalid values in block_ids list ({block_ids_one}), "
                              f"possible are {diablocks_pd.index.tolist()} (all integers)")
             
         if station is not None:
             if not isinstance(station,str):
                 raise TypeError('Station argument should be of type string')
-            bool_samestation = diablocks_pd.loc[block_ids,'station']==station
+            bool_samestation = diablocks_pd.loc[block_ids_one,'station']==station
             if not bool_samestation.all():
                 raise ValueError("Both the arguments station and block_ids are provided, "
                                  "but at least one of the requested block_ids corresponds to a different station. "
-                                 f"{str_getdiablockspd}")
+                                 f"Available blocks:\n{diablocks_pd[print_cols]}")
             
-        for block_id in block_ids:
-            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']):
+        for block_id in block_ids_one:
+            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): # non-equidistant
                 data_pd_oneblock = read_dia_nonequidistant(filename_one, diablocks_pd, block_id)
-            else: #equidistant
+            else: # equidistant
                 data_pd_oneblock = read_dia_equidistant(filename_one, diablocks_pd, block_id)
             data_pd_list.append(data_pd_oneblock)
             metadata = metadata_from_obj(data_pd_oneblock)
@@ -1585,8 +1581,6 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
     data_pd_all = pd.concat(data_pd_list)
     metadata_compare(metadata_list)
     metadata = metadata_list[0].copy()
-    metadata['tstart'] = metadata_list[0]['tstart']
-    metadata['tstop'] = metadata_list[-1]['tstop']
     data_pd_all = metadata_add_to_obj(data_pd_all,metadata)
     
     if allow_duplicates:
@@ -1595,7 +1589,8 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
     #check overlapping timesteps, sort values on time
     if data_pd_all.index.duplicated().any():
         raise ValueError("Merged datasets have duplicate/overlapping timesteps, "
-                         "clean up your input data or provide one file instead of a list")
+                         "clean up your input data or provide one file instead of a list. "
+                         "Or pass `allow_duplicates=True`")
     if not data_pd_all.index.is_monotonic_increasing:
         data_pd_all = data_pd_all.sort_index()
     
