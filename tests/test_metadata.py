@@ -28,8 +28,6 @@ def test_readts_dia_metadata_multifile():
      'grootheid': 'WATHTE',
      'eenheid': 'cm',
      'vertref': 'NAP',
-     'timestep_min': 60.0,
-     'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
      'origin': 'from timeseries dia file'}
@@ -54,7 +52,6 @@ def test_metadata_compare_valueerror():
 
 @pytest.mark.unittest
 def test_anapred_metadata():
-    
     current_station = 'VLISSGN'
     file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
@@ -73,8 +70,6 @@ def test_anapred_metadata():
      'grootheid': 'WATHTBRKD',
      'eenheid': 'cm',
      'vertref': 'NAP',
-     'timestep_min': 60.0,
-     'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
      'origin': 'from timeseries dia file',
@@ -96,7 +91,6 @@ def test_anapred_metadata():
 
 @pytest.mark.unittest
 def test_hwlw_metadata():
-    
     current_station = 'VLISSGN'
     file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
@@ -115,8 +109,6 @@ def test_hwlw_metadata():
      'grootheid': 'WATHTE',
      'eenheid': 'cm',
      'vertref': 'NAP',
-     'timestep_min': 60.0,
-     'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
      'origin': 'from timeseries dia file'}
@@ -125,8 +117,6 @@ def test_hwlw_metadata():
      'grootheid': 'WATHTBRKD',
      'eenheid': 'cm',
      'vertref': 'NAP',
-     'timestep_min': 60.0,
-     'timestep_unit': 'min',
      'TYP': 'TE',
      'groepering': 'NVT',
      'origin': 'from timeseries dia file',
@@ -155,8 +145,6 @@ def test_readts_dia_metadata_multiblock():
      'grootheid': 'WATHTE',
      'eenheid': 'cm',
      'vertref': 'NAP',
-     'timestep_min': None,
-     'timestep_unit': None,
      'TYP': 'TN',
      'groepering': 'GETETM2',
      'origin': 'from timeseries dia file'}
@@ -174,8 +162,6 @@ def test_metadata_compare():
         'groepering': 'NVT',
         'grootheid': 'WATHTE',
         'eenheid': 'cm',
-        'timestep_min': 60.0,
-        'timestep_unit': 'min',
         }
     
     metadata_compare([metadata,metadata,metadata])

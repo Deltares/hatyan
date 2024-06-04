@@ -340,13 +340,9 @@ def test_resample_timeseries():
     assert ts_prediction_res.index[-1] == pd.Timestamp("2019-12-31 22:00 +01:00")
     
     pred_meta = metadata_from_obj(ts_prediction)
-    pred_meta.pop('timestep_min')
     pred_res_meta = metadata_from_obj(ts_prediction_res)
-    pred_res_meta.pop('timestep_min')
     metadata_compare([pred_meta,pred_res_meta])
-    
-    pred_res_meta = metadata_from_obj(ts_prediction_res)
-    assert pred_res_meta['timestep_min'] == timestep_min
+    assert ts_prediction_res.index.freq.freqstr == f"{timestep_min}T"
 
 
 @pytest.mark.unittest

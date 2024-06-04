@@ -243,7 +243,7 @@ def merge_componentgroups(comp_main, comp_sec):
     comp_sec_meta = metadata_from_obj(comp_sec).copy()
     comp_sec_list = comp_sec.index.tolist()
     
-    meta_settings_list = ['origin','groepering','tstart','tstop','timestep_min','timestep_unit','TYP']
+    meta_settings_list = ['origin','groepering','tstart','tstop','TYP']
     comp_main_meta_others = {}
     for key in meta_settings_list:
         if key in comp_main_meta:

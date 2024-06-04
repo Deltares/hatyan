@@ -610,13 +610,12 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     
     times_all = ts.index
     timeseries = ts['values']
-    times_stepmin = (ts.index[1]-ts.index[0]).total_seconds()/60
     dt_analysistime = dt.datetime.now()
     data_nc = Dataset(filename, mode, format="NETCDF3_CLASSIC")
     attr_dict = {'title': 'tidal prediction for %s to %s'%(times_all[0].strftime('%Y-%m-%d %H:%M:%S'), times_all[-1].strftime('%Y-%m-%d %H:%M:%S')),
                  'institution': 'Rijkswaterstaat',
                  'source': 'hatyan-%s tidal analysis program of Rijkswaterstaat'%(version_no),
-                 'timestep_min': times_stepmin}
+                 }
     data_nc.setncatts(attr_dict)
     
     ncvarlist = list(data_nc.variables.keys())
@@ -1101,7 +1100,6 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     # add metadata
     metadata = metadata_from_obj(ts)
-    metadata['timestep_min'] = timestep_min
     data_pd_resample = metadata_add_to_obj(data_pd_resample,metadata)
     
     return data_pd_resample
@@ -1568,9 +1566,9 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
                                  f"Available blocks:\n{diablocks_pd[print_cols]}")
             
         for block_id in block_ids:
-            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']):
+            if np.isnan(diablocks_pd.loc[block_id,'timestep_min']): # non-equidistant
                 data_pd_oneblock = read_dia_nonequidistant(filename_one, diablocks_pd, block_id)
-            else: #equidistant
+            else: # equidistant
                 data_pd_oneblock = read_dia_equidistant(filename_one, diablocks_pd, block_id)
             data_pd_list.append(data_pd_oneblock)
             metadata = metadata_from_obj(data_pd_oneblock)

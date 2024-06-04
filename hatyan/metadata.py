@@ -5,7 +5,6 @@ Created on Wed Aug  9 20:48:46 2023
 @author: veenstra
 """
 
-import numpy as np
 import pandas as pd
 
 
@@ -24,21 +23,13 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     diablocks_pd_onerow = diablocks_pd.iloc[block_id]
     
     metadata_keys = ['station', 'grootheid', 'eenheid', 
-                     'vertref', 
-                     'timestep_min', 'timestep_unit',
-                     'TYP', 'groepering']
+                     'vertref', 'TYP', 'groepering']
     
     #TODO: align with metadata from hatyan.read_components()
     metadata = {key:diablocks_pd_onerow[key] for key in metadata_keys}
     
     # add origin
     metadata['origin'] = 'from timeseries dia file'
-    
-    # replace nan with None (otherwise metadata_compare fails)
-    #TODO: avoid nan in metadata (timestep for hoek_har.dia)
-    if np.isnan(metadata['timestep_min']): #non-equidistant, nan in py38 and none in py39 (pandas 2.1.2)
-        metadata['timestep_min'] = None
-        metadata['timestep_unit'] = None
     return metadata
 
 
