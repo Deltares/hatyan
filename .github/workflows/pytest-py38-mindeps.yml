@@ -25,7 +25,7 @@ jobs:
         python -m pip install "toml-to-requirements==0.1.0" # highest version available to py38
         toml-to-req --toml-file pyproject.toml --include-optional # --optional-lists dev # commented arg is available from toml-to-requirements 0.2.0, but that version is not available for py38.
         sed -i -E 's/>=/==/' requirements.txt
-        # temporaily removing all non-dev optional requirements manually
+        # temporarily removing all non-dev optional requirements manually, can be done more cleanly with toml-to-req>=0.2.0
         sed -i '/^sphinx/d' requirements.txt
         sed -i '/^nbsphinx/d' requirements.txt
         sed -i '/^pydata-sphinx-theme/d' requirements.txt
