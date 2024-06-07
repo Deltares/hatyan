@@ -26,11 +26,11 @@ jobs:
         toml-to-req --toml-file pyproject.toml --include-optional # --optional-lists dev # commented arg is available from toml-to-requirements 0.2.0, but that version is not available for py38.
         sed -i -E 's/>=/==/' requirements.txt
         # temporaily removing all non-dev optional requirements manually
-        sed '/^sphinx/d' requirements.txt
-        sed '/^nbsphinx/d' requirements.txt
-        sed '/^pydata-sphinx-theme/d' requirements.txt
-        sed '/^jupyter/d' requirements.txt
-        sed '/^notebook/d' requirements.txt
+        sed -i '/^sphinx/d' requirements.txt
+        sed -i '/^nbsphinx/d' requirements.txt
+        sed -i '/^pydata-sphinx-theme/d' requirements.txt
+        sed -i '/^jupyter/d' requirements.txt
+        sed -i '/^notebook/d' requirements.txt
     - name: Print contents of requirements.txt
       run: |
         # print file contents
