@@ -31,6 +31,8 @@ jobs:
         sed '/^pydata-sphinx-theme/d' requirements.txt
         sed '/^jupyter/d' requirements.txt
         sed '/^notebook/d' requirements.txt
+        # print file contents
+        cat requirements.txt
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
