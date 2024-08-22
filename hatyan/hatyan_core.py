@@ -157,7 +157,18 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
     return dood_tstart_sec
 
 
-def get_lunarSLSIHO_fromsolar(v0uf_base): #TODO: iets simpeler implementatie in foreman.get_foreman_doodson_nodal_harmonic(), maar dit is ook prima
+def get_lunarSLSIHO_fromsolar(v0uf_base):
+    """
+    Convert the Schureman v0uf table to different conventions.
+    
+    Examples
+    --------
+    >>> from hatyan.schureman import get_schureman_table
+    >>> v0uf_allT = get_schureman_table()
+    >>> v0uf_all = v0uf_allT.T
+    >>> v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
+    
+    """
     
     #conversion to lunar for comparison with SLS and IHO
     v0uf_baseT_solar = v0uf_base.loc[['T','S','H','P','N','P1','EDN']].T

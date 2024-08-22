@@ -9,6 +9,7 @@ import functools #to Memoize v0uf table (https://en.wikipedia.org/wiki/Memoizati
 import numpy as np
 import datetime as dt
 import logging
+import warnings
 
 file_path = os.path.realpath(__file__)
 logger = logging.getLogger(__name__)
@@ -40,27 +41,25 @@ def get_schureman_table():
     index_v0 = ['T','S','H','P','N','P1','EDN']
     index_u = ['DKSI','DNU','DQ','DQU','DR','DUK1','DUK2']
     index_f = ['DND73','DND74','DND75','DND76','DND77','DND78','DND79','DFM1','DFK1','DFL2','DFK2','DFM1C']
-    #index_fstr =['f_eqs']
 
     file_schureman_harmonic = os.path.join(os.path.dirname(file_path),'data','data_schureman_harmonic.csv')
     v0uf_baseT = pd.read_csv(file_schureman_harmonic,comment='#',skipinitialspace=True,index_col='component')
     v0uf_base = v0uf_baseT.T
-    #v0uf_base.index = index_v0 + index_u + index_f + index_fstr
     
     shallow_eqs_pd = get_schureman_shallowrelations()
     shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].items()) 
 
     #calculate shallow water components and rename back to original component name
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
-    v0uf_base_forv0u = v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=False)
     v0uf_base_forf = v0uf_base.loc[index_f,:].astype(float)
-    v0uf_base_forf = v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=False) #for f only multiplication is applied, never division
+    with warnings.catch_warnings():
+        # suppress PerformanceWarning: https://github.com/Deltares/hatyan/issues/272
+        warnings.simplefilter("ignore", category=pd.errors.PerformanceWarning)
+        v0uf_base_forv0u = v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=False)
+        v0uf_base_forf = v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=False) #for f only multiplication is applied, never division
     v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
     v0uf_all.rename(columns=shallow_eqs_pd['shallow_const'],inplace=True)
     v0uf_allT = v0uf_all.T
-    
-    #from hatyan.hatyan_core import get_lunarSLSIHO_fromsolar # local import since otherwise cross-dependency
-    #v0uf_allT_lunar, v0uf_allT_lunar_SLS, v0uf_allT_lunar_IHO = get_lunarSLSIHO_fromsolar(v0uf_all)
     
     return v0uf_allT
 
