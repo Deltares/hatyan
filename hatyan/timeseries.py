@@ -107,8 +107,8 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(minwidth_numsteps,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
     # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
     validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW['times']>=data_pd_HWLW['times'].iloc[0]+dt.timedelta(hours=buffer_hr)) & (data_pd_HWLW['times']<=data_pd_HWLW['times'].iloc[-1]-dt.timedelta(hours=buffer_hr))].index
-    LWid_main = LWid_main_raw[np.in1d(LWid_main_raw,validtimes_idx)]
-    HWid_main = HWid_main_raw[np.in1d(HWid_main_raw,validtimes_idx)]
+    LWid_main = LWid_main_raw[np.isin(LWid_main_raw,validtimes_idx)]
+    HWid_main = HWid_main_raw[np.isin(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process
     data_pd_HWLW.loc[LWid_main,'HWLWcode'] = 2
     data_pd_HWLW.loc[HWid_main,'HWLWcode'] = 1
@@ -124,10 +124,10 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
     data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==1,prop_list] = pd.DataFrame(HWid_main_properties,index=HWid_main_raw).loc[HWid_main,prop_list]
     logger.debug('HW values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==1]))
     if calc_HWLW345:
-        LW_local_bool = ~np.in1d(LWid_all, LWid_main)
+        LW_local_bool = ~np.isin(LWid_all, LWid_main)
         data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==22,prop_list] = pd.DataFrame(LWid_all_properties,index=LWid_all).loc[LW_local_bool,prop_list]
         logger.debug('LW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==22]))
-        HW_local_bool = ~np.in1d(HWid_all, HWid_main)
+        HW_local_bool = ~np.isin(HWid_all, HWid_main)
         data_pd_HWLW.loc[data_pd_HWLW['HWLWcode']==11,prop_list] = pd.DataFrame(HWid_all_properties,index=HWid_all).loc[HW_local_bool,prop_list]
         logger.debug('HW_local values:\n%s\n'%(data_pd_HWLW[data_pd_HWLW['HWLWcode']==11]))
     
