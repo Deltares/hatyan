@@ -9,6 +9,7 @@ import functools #to Memoize v0uf table (https://en.wikipedia.org/wiki/Memoizati
 import numpy as np
 import datetime as dt
 import logging
+import warnings
 
 file_path = os.path.realpath(__file__)
 logger = logging.getLogger(__name__)
@@ -52,9 +53,12 @@ def get_schureman_table():
 
     #calculate shallow water components and rename back to original component name
     v0uf_base_forv0u = v0uf_base.loc[index_v0+index_u,:].astype(int)
-    v0uf_base_forv0u = v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=False)
     v0uf_base_forf = v0uf_base.loc[index_f,:].astype(float)
-    v0uf_base_forf = v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=False) #for f only multiplication is applied, never division
+    with warnings.catch_warnings():
+        # suppress PerformanceWarning: https://github.com/Deltares/hatyan/issues/272
+        warnings.simplefilter("ignore", category=pd.errors.PerformanceWarning)
+        v0uf_base_forv0u = v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=False)
+        v0uf_base_forf = v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=False) #for f only multiplication is applied, never division
     v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
     v0uf_all.rename(columns=shallow_eqs_pd['shallow_const'],inplace=True)
     v0uf_allT = v0uf_all.T
