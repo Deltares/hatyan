@@ -55,8 +55,9 @@ def get_schureman_table():
     with warnings.catch_warnings():
         # suppress PerformanceWarning: https://github.com/Deltares/hatyan/issues/272
         warnings.simplefilter("ignore", category=pd.errors.PerformanceWarning)
-        v0uf_base_forv0u = v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=False)
-        v0uf_base_forf = v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=False) #for f only multiplication is applied, never division
+        v0uf_base_forv0u = v0uf_base_forv0u.eval(shallow_eqs_pd_str, inplace=False).copy()
+        # for f only multiplication is applied, never division
+        v0uf_base_forf = v0uf_base_forf.eval(shallow_eqs_pd_str.replace('-','+'), inplace=False).copy()
     v0uf_all = pd.concat([v0uf_base_forv0u,v0uf_base_forf])
     v0uf_all.rename(columns=shallow_eqs_pd['shallow_const'],inplace=True)
     v0uf_allT = v0uf_all.T
