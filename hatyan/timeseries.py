@@ -331,9 +331,9 @@ def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
         idx_toosmall = np.nonzero((np.diff(HW_tdiff_div) <= 0))[0]
         logger.info(idx_toosmall)
         logger.info(ts_ext.loc[HW_bool,['values','HWLWcode','HWLWno']].iloc[idx_toosmall[0]:])
-        raise Exception('tidal wave numbering: HW numbers not always increasing')
+        raise ValueError('tidal wave numbering: HW numbers not always increasing')
     if not all(np.abs(HW_tdiff_mod)<searchwindow_hr):
-        raise Exception('tidal wave numbering: not all HW fall into hardcoded search window')
+        raise ValueError('tidal wave numbering: not all HW fall into hardcoded search window')
     
     for LWcode_2345 in [2,3,4,5]:
         LW_bool = ts_ext['HWLWcode']==LWcode_2345
@@ -342,9 +342,9 @@ def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
         LW_tdiff_div, LW_tdiff_mod_searchwindow = np.divmod(LW_tdiff_cadzd.values, M2_period_hr)
         LW_tdiff_mod = LW_tdiff_mod_searchwindow - searchwindow_hr
         if not all(np.diff(LW_tdiff_div) > 0):
-            raise Exception('tidal wave numbering: LW numbers not always increasing')
+            raise ValueError('tidal wave numbering: LW numbers not always increasing')
         if not all(np.abs(LW_tdiff_mod)<searchwindow_hr):
-            raise Exception('tidal wave numbering: not all LW fall into defined search window')
+            raise ValueError('tidal wave numbering: not all LW fall into defined search window')
         ts_ext.loc[LW_bool,'HWLWno'] = LW_tdiff_div
     
     #check if LW is after HW
@@ -352,7 +352,7 @@ def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
     if doHWLWcheck:
         tdiff_firstHWLW = (ts_ext_checkfirst.index.to_series().diff().dt.total_seconds()/3600).values[1]
         if (tdiff_firstHWLW<0) or (tdiff_firstHWLW>M2_period_hr):
-            raise Exception('tidal wave numbering: first LW does not match first HW')
+            raise ValueError('tidal wave numbering: first LW does not match first HW')
     
     ts_ext['HWLWno'] = ts_ext['HWLWno'].astype(int)
     
@@ -364,12 +364,12 @@ def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft
     logger.info('analyzing timeseries with fft and fftfreq')
     
     if ts_residue['values'].isnull().sum() > 0:
-        raise Exception('supplied timeseries contains nan values, use pd.interpolate first (dropping them will result in non-constant timestep which is also not possible for fft)')
+        raise ValueError('supplied timeseries contains nan values, use pd.interpolate first (dropping them will result in non-constant timestep which is also not possible for fft)')
     y = ts_residue['values'].values
     N = len(y)
     T = np.unique((ts_residue.index[1:]-ts_residue.index[:-1])).astype(float)/1e9/3600 #timestep in hours.
     if len(T)!=1:
-        raise Exception('timestep of supplied timeseries should be constant for fourier analysis')
+        raise ValueError('timestep of supplied timeseries should be constant for fourier analysis')
     yf = fft(y)
     power = np.abs(yf)
     freq = fftfreq(N, T[0])
