@@ -12,8 +12,8 @@
 
 ## Setup local developer environment
 
-- download and install Anaconda 64 bit Python 3.9 (or higher) from [anaconda.com](https://www.anaconda.com/distribution/#download-section) (miniconda should also be sufficient, but this is not yet tested). Install it with the recommended settings.
-- open anaconda prompt and navigate to hatyan checkout folder, e.g. ``C:\DATA\hatyan``
+- download Miniforge3 from [the miniforge github](https://github.com/conda-forge/miniforge?tab=readme-ov-file#download) and install it with the recommended settings.
+- open Miniforge Prompt and navigate to hatyan checkout folder, e.g. ``C:\DATA\hatyan``
 - ``conda create --name hatyan_hmcenv python=3.8.13 git spyder -y`` (``git`` and ``spyder``, python version should be the one at HMC)
 - ``conda activate hatyan_hmcenv``
 - ``pip install -r environment_hmc.txt`` (installs fixed python/package versions like on HMC)
@@ -38,7 +38,7 @@
 
 ## Running the testbank
 
-- open anaconda prompt and navigate to hatyan local folder (e.g. ``C:\\DATA\\hatyan``)
+- open Miniforge Prompt and navigate to hatyan local folder (e.g. ``C:\\DATA\\hatyan``)
 - ``conda activate hatyan_hmcenv``
 - ``pytest`` (runs all tests)
 - ``pytest -m "not acceptance"``
@@ -46,7 +46,7 @@
 
 ## Generate documentation (automatically runs via Github Actions upon push to main)
 
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- open Miniforge Prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
 - ``conda activate hatyan_hmcenv``
 ```
 cp README.md docs
@@ -56,7 +56,7 @@ mkdocs build
 ## Increase the hatyan version number
 
 - commit all changes via git
-- open anaconda prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
+- open Miniforge Prompt and navigate to hatyan local folder, e.g. ``C:\\DATA\\hatyan``
 - ``conda activate hatyan_hmcenv``
 - ``bumpversion major`` or ``bumpversion minor`` or ``bumpversion patch``
 - the hatyan version number of all relevant files will be updated, as stated in setup.cfg
