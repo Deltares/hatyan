@@ -441,9 +441,6 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     else:
         raise ValueError("provided times are timezone-aware and components are timezone-naive, "
                          "this cannot be processed.")
-        # raise ValueError("provided times and components should both be timezone-aware "
-        #                  "or timezone-naive, not mixed.")
-        # TODO: this is not mixed anymore, but only raised if tzone_pred is not None and tzone_comp is None:
     
     # remove timezone from prediction times: first convert times to tzone of components, then make timezone naive
     if tzone_convert:
