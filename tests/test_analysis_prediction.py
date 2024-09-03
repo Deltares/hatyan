@@ -289,7 +289,22 @@ def test_analysis_component_splitting_invalid_components():
 
 
 @pytest.mark.unittest
-def test_predictionsettings():
+def test_analysis_deprecatedsettings():
+    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
+    file_data_comp0 = os.path.join(dir_testdata,'DENHDR_ana.txt')
+    comp = hatyan.read_components(filename=file_data_comp0)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.analysis(comp=comp, times=times_pred, CS_comps=1)
+    assert str(e.value) == "Argument 'CS_comps' has been deprecated for hatyan.analysis(), use 'cs_comps' instead"
+
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.analysis(comp=comp, times=times_pred, xTxmat_condition_max=1)
+    assert str(e.value) == "Argument 'xTxmat_condition_max' has been deprecated for hatyan.analysis(), use 'max_matrix_condition' instead"
+
+
+@pytest.mark.unittest
+def test_prediction_settings():
     times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
     current_station = 'DENHDR'
     
@@ -342,21 +357,6 @@ def test_predictionsettings():
     expected = np.array([-0.61931214, -0.61234662, -0.60517618, -0.59779951, -0.59021548,
            -0.58242314, -0.57442171, -0.56621065, -0.55778958, -0.54915834])
     assert np.allclose(ts_pred["values"].values[:10], expected)
-
-
-@pytest.mark.unittest
-def test_analysis_deprecatedsettings():
-    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
-    file_data_comp0 = os.path.join(dir_testdata,'DENHDR_ana.txt')
-    comp = hatyan.read_components(filename=file_data_comp0)
-    
-    with pytest.raises(DeprecationWarning) as e:
-        _ = hatyan.analysis(comp=comp, times=times_pred, CS_comps=1)
-    assert str(e.value) == "Argument 'CS_comps' has been deprecated for hatyan.analysis(), use 'cs_comps' instead"
-
-    with pytest.raises(DeprecationWarning) as e:
-        _ = hatyan.analysis(comp=comp, times=times_pred, xTxmat_condition_max=1)
-    assert str(e.value) == "Argument 'xTxmat_condition_max' has been deprecated for hatyan.analysis(), use 'max_matrix_condition' instead"
 
 
 @pytest.mark.unittest
