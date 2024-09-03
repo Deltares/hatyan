@@ -289,7 +289,22 @@ def test_analysis_component_splitting_invalid_components():
 
 
 @pytest.mark.unittest
-def test_predictionsettings():
+def test_analysis_deprecatedsettings():
+    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
+    file_data_comp0 = os.path.join(dir_testdata,'DENHDR_ana.txt')
+    comp = hatyan.read_components(filename=file_data_comp0)
+    
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.analysis(comp=comp, times=times_pred, CS_comps=1)
+    assert str(e.value) == "Argument 'CS_comps' has been deprecated for hatyan.analysis(), use 'cs_comps' instead"
+
+    with pytest.raises(DeprecationWarning) as e:
+        _ = hatyan.analysis(comp=comp, times=times_pred, xTxmat_condition_max=1)
+    assert str(e.value) == "Argument 'xTxmat_condition_max' has been deprecated for hatyan.analysis(), use 'max_matrix_condition' instead"
+
+
+@pytest.mark.unittest
+def test_prediction_settings():
     times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
     current_station = 'DENHDR'
     
@@ -342,21 +357,6 @@ def test_predictionsettings():
     expected = np.array([-0.61931214, -0.61234662, -0.60517618, -0.59779951, -0.59021548,
            -0.58242314, -0.57442171, -0.56621065, -0.55778958, -0.54915834])
     assert np.allclose(ts_pred["values"].values[:10], expected)
-
-
-@pytest.mark.unittest
-def test_analysis_deprecatedsettings():
-    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
-    file_data_comp0 = os.path.join(dir_testdata,'DENHDR_ana.txt')
-    comp = hatyan.read_components(filename=file_data_comp0)
-    
-    with pytest.raises(DeprecationWarning) as e:
-        _ = hatyan.analysis(comp=comp, times=times_pred, CS_comps=1)
-    assert str(e.value) == "Argument 'CS_comps' has been deprecated for hatyan.analysis(), use 'cs_comps' instead"
-
-    with pytest.raises(DeprecationWarning) as e:
-        _ = hatyan.analysis(comp=comp, times=times_pred, xTxmat_condition_max=1)
-    assert str(e.value) == "Argument 'xTxmat_condition_max' has been deprecated for hatyan.analysis(), use 'max_matrix_condition' instead"
 
 
 @pytest.mark.unittest
@@ -500,6 +500,7 @@ def test_prediction_1018():
     assert (np.abs(ts_prediction.index-ts_prediction_times_pd) < dt.timedelta(days=10E-9)).all()
 
 
+@pytest.mark.unittest
 def test_prediction_comp_and_times_different_timezones():
     """
     it is possible to supply a timezone via times, but the comp dataframe also contains a timezone already.
@@ -531,6 +532,26 @@ def test_prediction_comp_and_times_different_timezones():
     assert ((ts_prediction1-ts_prediction2).dropna()["values"] < 1e-9).all()
 
 
+@pytest.mark.unittest
+def test_prediction_comp_no_timezone():
+    """
+    https://github.com/Deltares/hatyan/issues/317
+    """
+    comp = pd.DataFrame({"A": [1, 0.5, 0.2],
+                         "phi_deg": [10,15,20]}, 
+                        index=["M2","M4","S2"])
+    comp.attrs["nodalfactors"] = True
+    comp.attrs["fu_alltimes"] = True
+    comp.attrs["xfac"] = False
+    comp.attrs["source"] = "schureman"
+    dtindex = pd.date_range("2020-01-01","2020-01-02", freq="10min")
+    pred = hatyan.prediction(comp, times=dtindex)
+    assert pred.index.tz is None
+    assert pred.index[0] == pd.Timestamp('2020-01-01 00:00:00')
+    assert pred.index[-1] == pd.Timestamp('2020-01-02 00:00:00')
+
+
+@pytest.mark.unittest
 def test_prediction_perperiod_month():
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
@@ -552,6 +573,7 @@ def test_prediction_perperiod_month():
     assert len(ts_pred_atonce) == len(ts_pred_allmonths)
 
 
+@pytest.mark.unittest
 def test_prediction_perperiod_year():
     # TODO: when the prediction function does not treat Y and M differently, this testcase can be dropped
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
@@ -574,6 +596,7 @@ def test_prediction_perperiod_year():
     assert len(ts_pred_atonce) == len(ts_pred_allyears)
 
 
+@pytest.mark.unittest
 def test_prediction_hasrequiredargs():
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)
@@ -590,6 +613,7 @@ def test_prediction_hasrequiredargs():
     assert str(e.value) == "prediction() per period, so 'timestep' argument should not be None"
 
 
+@pytest.mark.unittest
 def test_prediction_deprecatedsettings():
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_obs1.txt')
     ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0)

@@ -4,6 +4,7 @@
 
 ### Feat
 - flexible timezone support in astrog in [#333](https://github.com/Deltares/hatyan/pull/333)
+- support for missing `comp` timezone attribute in `hatyan.prediction()` in [#335](https://github.com/Deltares/hatyan/pull/335)
 
 ### Fix
 - repaired support for equidistant multiblock diafiles with varying timesteps in [#314](https://github.com/Deltares/hatyan/pull/314)
