@@ -12,6 +12,7 @@ import requests
 import warnings
 import matplotlib.pyplot as plt
 import logging
+import pytz
 
 from hatyan.schureman import get_schureman_freqs
 
@@ -951,48 +952,63 @@ def check_crop_dataframe(astrog_df, tFirst, tLast, tzone):
     return astrog_df
 
 
-def convert_str2datetime(tFirst,tLast):
-    """
-    Tries to convert tFirst/tLast to datetime.datetime
+# def convert_str2datetime_old(tFirst,tLast):
+#     """
+#     Tries to convert tFirst/tLast to datetime.datetime
 
-    Parameters
-    ----------
-    tFirst : str/dt.datetime/pd.Timestamp
-        DESCRIPTION.
-    tLast : str/dt.datetime/pd.Timestamp
-        DESCRIPTION.
+#     Parameters
+#     ----------
+#     tFirst : str/dt.datetime/pd.Timestamp
+#         DESCRIPTION.
+#     tLast : str/dt.datetime/pd.Timestamp
+#         DESCRIPTION.
 
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
+#     Raises
+#     ------
+#     Exception
+#         DESCRIPTION.
 
-    Returns
-    -------
-    tFirst : pd.Timestamp
-        DESCRIPTION.
-    tLast : pd.Timestamp
-        DESCRIPTION.
+#     Returns
+#     -------
+#     tFirst : pd.Timestamp
+#         DESCRIPTION.
+#     tLast : pd.Timestamp
+#         DESCRIPTION.
 
-    """
+#     """
 
-    tFirst_out,tLast_out = tFirst,tLast
-    if not type(tFirst) == type(tLast):
-        raise Exception('input dates are not of equal type')
+#     tFirst_out,tLast_out = tFirst,tLast
+#     if not type(tFirst) == type(tLast):
+#         raise Exception('input dates are not of equal type')
     
-    if isinstance(tFirst,pd._libs.tslibs.timestamps.Timestamp):
-        tFirst_out,tLast_out = tFirst,tLast
-    elif isinstance(tFirst, dt.datetime):
-        tFirst_out,tLast_out = pd.Timestamp(tFirst), pd.Timestamp(tLast)
-        if hasattr(tFirst_out,'tz'):
-            if tFirst_out.tz != None:
-                raise Exception('tFirst and tLast should be timezone naive dt.datetime or "yyyymmdd" str')
-    elif isinstance(tFirst, str):
-        tFirst_out,tLast_out = dt.datetime.strptime(tFirst,'%Y%m%d'), dt.datetime.strptime(tLast,'%Y%m%d')
-    else:
-        raise TypeError('date_input should be timezone naive dt.datetime or "yyyymmdd" str')
+#     if isinstance(tFirst,pd._libs.tslibs.timestamps.Timestamp):
+#         tFirst_out,tLast_out = tFirst,tLast
+#     elif isinstance(tFirst, dt.datetime):
+#         tFirst_out,tLast_out = pd.Timestamp(tFirst), pd.Timestamp(tLast)
+#         if hasattr(tFirst_out,'tz'):
+#             if tFirst_out.tz != None:
+#                 raise Exception('tFirst and tLast should be timezone naive dt.datetime or "yyyymmdd" str')
+#     elif isinstance(tFirst, str):
+#         tFirst_out,tLast_out = dt.datetime.strptime(tFirst,'%Y%m%d'), dt.datetime.strptime(tLast,'%Y%m%d')
+#     else:
+#         raise TypeError('date_input should be timezone naive dt.datetime or "yyyymmdd" str')
                 
-    return tFirst_out,tLast_out
+#     return tFirst_out,tLast_out
+
+
+def convert_str2datetime(tFirst, tLast):
+    start_date = pd.Timestamp(tFirst)
+    end_date = pd.Timestamp(tLast)
+    
+    # check if timezones are the same
+    assert start_date.tz == end_date.tz
+    
+    # set UTC timezone if tz is None
+    # if start_date.tz is None:
+    #     start_date = pytz.UTC.localize(start_date)
+    #     end_date = pytz.UTC.localize(end_date)
+
+    return start_date, end_date
 
 
 def convert2perday(dataframeIn, timeformat='%H:%M %Z'):
