@@ -305,9 +305,7 @@ def test_analysis_deprecatedsettings():
 
 @pytest.mark.unittest
 def test_prediction_settings():
-    times_pred = slice(pd.Timestamp(2009, 12, 31, 14, tz="UTC+01:00"),
-                       pd.Timestamp(2010, 1, 2, 12, tz="UTC+01:00"), 
-                       "1min")
+    times_pred = slice(dt.datetime(2009,12,31,14),dt.datetime(2010,1,2,12), "1min")
     current_station = 'DENHDR'
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
@@ -465,9 +463,7 @@ def test_analysis_1018():
 def test_prediction_1018():
     current_station = 'DENHDR'
     
-    times_pred = slice(pd.Timestamp(1018,7,21, tz="UTC+01:00"),
-                       pd.Timestamp(1018,7,21,3, tz="UTC+01:00"), 
-                       "10min")
+    times_pred = slice(dt.datetime(1018,7,21),dt.datetime(1018,7,21,3), "10min")
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
@@ -544,6 +540,27 @@ def test_prediction_comp_and_times_different_timezones():
 
 
 @pytest.mark.unittest
+def test_prediction_times_tznaive_comp_tzaware(caplog):
+    """
+    https://github.com/Deltares/hatyan/issues/334
+    """
+    comp = pd.DataFrame({"A": [1, 0.5, 0.2],
+                         "phi_deg": [10,15,20]}, 
+                        index=["M2","M4","S2"])
+    comp.attrs["nodalfactors"] = True
+    comp.attrs["fu_alltimes"] = True
+    comp.attrs["xfac"] = False
+    comp.attrs["source"] = "schureman"
+    comp.attrs["tzone"] = "UTC+01:00"
+    dtindex = pd.date_range("2020-01-01","2020-01-02", freq="10min")
+    hatyan.prediction(comp, times=dtindex)
+    warning_text = ("provided times are timezone-naive and provided components are "
+                    "timezone-aware. The times are being interpreted as if they would "
+                    "have the same timezone as the components: UTC+01:00")
+    assert warning_text in caplog.text
+
+
+@pytest.mark.unittest
 def test_prediction_raise_mixed_tznaive_tzaware():
     """
     https://github.com/Deltares/hatyan/issues/334
@@ -559,13 +576,14 @@ def test_prediction_raise_mixed_tznaive_tzaware():
     dtindex = pd.date_range("2020-01-01 00:00 +00:00","2020-01-02 00:00 +00:00", freq="10min")
     with pytest.raises(ValueError) as e:
         hatyan.prediction(comp, times=dtindex)
-    assert "provided times and components should both be timezone-aware or timezone-naive, not mixed" in str(e.value)
+    assert "provided times are timezone-aware and components are timezone-naive, this cannot be processed." in str(e.value)
+    # assert "provided times and components should both be timezone-aware or timezone-naive, not mixed" in str(e.value)
     
-    comp.attrs["tzone"] = "UTC"
-    dtindex = pd.date_range("2020-01-01","2020-01-02", freq="10min")
-    with pytest.raises(ValueError) as e:
-        hatyan.prediction(comp, times=dtindex)
-    assert "provided times and components should both be timezone-aware or timezone-naive, not mixed" in str(e.value)
+    # comp.attrs["tzone"] = "UTC"
+    # dtindex = pd.date_range("2020-01-01","2020-01-02", freq="10min")
+    # with pytest.raises(ValueError) as e:
+    #     hatyan.prediction(comp, times=dtindex)
+    # assert "provided times and components should both be timezone-aware or timezone-naive, not mixed" in str(e.value)
 
 
 @pytest.mark.unittest
