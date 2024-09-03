@@ -34,6 +34,9 @@ DEPRECATED_OPTIONS_PREDICTION_DICT = {
     'source':'as attribute of the component dataframe (comp.attrs["source"])',
     }
 
+DEPRECATED_OPTIONS_ASTROG_DICT = {
+    'tzone':'tFirst/tLast with timezones instead'}
+
 
 def deprecated_python_option(**aliases: str) -> Callable:
     def deco(f: Callable):

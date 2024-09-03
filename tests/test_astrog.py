@@ -14,6 +14,76 @@ import datetime as dt
 import hatyan
 
 
+@pytest.mark.unittest
+def test_astrog_deprecated_tzone_argument():
+    func_list = [
+        hatyan.astrog.astrog_culminations,
+        hatyan.astrog.astrog_phases,
+        hatyan.astrog.astrog_sunriseset,
+        hatyan.astrog.astrog_moonriseset,
+        hatyan.astrog.astrog_anomalies,
+        hatyan.astrog.astrog_seasons,
+    ]
+    for func in func_list:
+        with pytest.raises(DeprecationWarning) as e:
+            func(tFirst="2000-01-01", tLast="2001-01-01", tzone="UTC+01:00")
+        assert "Argument 'tzone' has been deprecated for" in str(e.value)
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_str_naive():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime("1887-01-01","2022-12-31")
+    assert tstart == pd.Timestamp("1887-01-01")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-31")
+    assert tstop.tz is None
+    assert tzone == "UTC"
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_pd_naive():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime(pd.Timestamp("1887-01-01"),
+                                                              pd.Timestamp("2022-12-31"))
+    assert tstart == pd.Timestamp("1887-01-01")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-31")
+    assert tstop.tz is None
+    assert tzone == "UTC"
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_str_met():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime("1887-01-01 00:00 +01:00",
+                                                              "2022-12-31 00:00 +01:00")
+    assert tstart == pd.Timestamp("1886-12-31 23:00:00")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-30 23:00:00")
+    assert tstop.tz is None
+    assert tzone == dt.timezone(dt.timedelta(seconds=3600))
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_pd_met():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime(pd.Timestamp("1887-01-01 00:00 +01:00"),
+                                                              pd.Timestamp("2022-12-31 00:00 +01:00"))
+    assert tstart == pd.Timestamp("1886-12-31 23:00:00")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-30 23:00:00")
+    assert tstop.tz is None
+    assert tzone == dt.timezone(dt.timedelta(seconds=3600))
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_pd_utc():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime(pd.Timestamp("1887-01-01 00:00 +00:00"),
+                                                              pd.Timestamp("2022-12-31 00:00 +00:00"))
+    assert tstart == pd.Timestamp("1887-01-01")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-31")
+    assert tstop.tz is None
+    assert tzone == dt.timezone.utc
+    
+
 @pytest.mark.systemtest
 def test_astrog_dT():
     # 1. Input
