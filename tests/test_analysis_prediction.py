@@ -571,6 +571,7 @@ def test_prediction_perperiod_month():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
     assert len(ts_pred_atonce) == len(ts_pred_allmonths)
+    assert ts_pred_allmonths.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest
@@ -594,6 +595,7 @@ def test_prediction_perperiod_year():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allyears["values"].values[:10], expected_allyears)
     assert len(ts_pred_atonce) == len(ts_pred_allyears)
+    assert ts_pred_allyears.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest
