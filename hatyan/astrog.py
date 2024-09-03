@@ -12,6 +12,8 @@ import requests
 import warnings
 import matplotlib.pyplot as plt
 import logging
+from hatyan.deprecated import (deprecated_python_option,
+                               DEPRECATED_OPTIONS_ASTROG_DICT)
 
 from hatyan.schureman import get_schureman_freqs
 
@@ -30,7 +32,8 @@ logger = logging.getLogger(__name__)
 file_path = os.path.realpath(__file__)
 
 
-def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add simple lon correction at end of definition, currenty calculating culmination at lon=0
+@deprecated_python_option(**DEPRECATED_OPTIONS_ASTROG_DICT)
+def astrog_culminations(tFirst, tLast, dT_fortran=False):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates lunar culminations, parallax and declination. By default the lunar culmination is calculated at coordinates lon=0 (Greenwich), since EHMOON is used to calculate it. Possible to add lon-correction at end of definition.
@@ -43,8 +46,6 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add s
         End of timeframe for output.
     dT_fortran : boolean, optional
         Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
-    tzone : string/dt.timezone, optional
-        Timezone to convert the output dataset to. The default is 'UTC'.
 
     Raises
     ------
@@ -60,9 +61,10 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add s
         declination: lunar declination (degrees)
 
     """
-
+    #TODO: add simple lon correction at end of definition, currenty calculating culmination at lon=0
+    
     # check input times (datetime or string)
-    tFirst,tLast = convert_str2datetime(tFirst,tLast)
+    tFirst, tLast, tzone = convert_str2datetime(tFirst, tLast)
     
     # constants
     EHMINC       = 346.8 # increment of ephemeris hour angle of moon (deg/day)
@@ -98,7 +100,8 @@ def astrog_culminations(tFirst,tLast,dT_fortran=False,tzone='UTC'): #TODO: add s
     return astrog_df
 
 
-def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
+@deprecated_python_option(**DEPRECATED_OPTIONS_ASTROG_DICT)
+def astrog_phases(tFirst,tLast,dT_fortran=False):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates lunar phases. The lunar phases are independent of coordinates.
@@ -111,8 +114,6 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
         End of timeframe for output.
     dT_fortran : boolean, optional
         Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
-    tzone : string/dt.timezone, optional
-        Timezone to convert the output dataset to. The default is 'UTC'.
 
     Raises
     ------
@@ -128,7 +129,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
 
     # check input times (datetime or string)
-    tFirst,tLast = convert_str2datetime(tFirst,tLast)
+    tFirst, tLast, tzone = convert_str2datetime(tFirst, tLast)
         
     # constants
     ELOINC = 12.2           # increment of ELONG ecliptic elongation of moon-sun (deg/day)
@@ -166,7 +167,8 @@ def astrog_phases(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     return astrog_df
 
 
-def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=52.1562):
+@deprecated_python_option(**DEPRECATED_OPTIONS_ASTROG_DICT)
+def astrog_sunriseset(tFirst,tLast,dT_fortran=False,lon=5.3876,lat=52.1562):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates sunrise and -set at requested location.
@@ -179,8 +181,6 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
         End of timeframe for output.
     dT_fortran : boolean, optional
         Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
-    tzone : string/dt.timezone, optional
-        Timezone to convert the output dataset to. The default is 'UTC'.
     lon : float, optional
         Longitude, defined positive eastward. The default is -5.3876 (Amersfoort).
     lat : float, optional
@@ -200,7 +200,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     """
 
     # check input times (datetime or string)
-    tFirst,tLast = convert_str2datetime(tFirst,tLast)
+    tFirst, tLast, tzone = convert_str2datetime(tFirst, tLast)
 
     # first and last datetime in calculation (add enough margin, and an extra day for timezone differences)
     date_first = tFirst - pd.Timedelta(days=1)
@@ -228,7 +228,8 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=5
     return astrog_df
 
 
-def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=52.1562):
+@deprecated_python_option(**DEPRECATED_OPTIONS_ASTROG_DICT)
+def astrog_moonriseset(tFirst,tLast,dT_fortran=False,lon=5.3876,lat=52.1562):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates moonrise and -set at requested location.
@@ -241,8 +242,6 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
         End of timeframe for output.
     dT_fortran : boolean, optional
         Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
-    tzone : string/dt.timezone, optional
-        Timezone to convert the output dataset to. The default is 'UTC'.
     lon : float, optional
         Longitude, defined positive eastward. The default is -5.3876 (Amersfoort).
     lat : float, optional
@@ -262,7 +261,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     """
 
     # check input times (datetime or string)
-    tFirst,tLast = convert_str2datetime(tFirst,tLast)
+    tFirst, tLast, tzone = convert_str2datetime(tFirst, tLast)
 
     # constants
     from hatyan.schureman import get_schureman_freqs
@@ -302,7 +301,8 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,tzone='UTC',lon=5.3876,lat=
     return astrog_df
 
 
-def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
+@deprecated_python_option(**DEPRECATED_OPTIONS_ASTROG_DICT)
+def astrog_anomalies(tFirst,tLast,dT_fortran=False):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates lunar anomalies. The lunar anomalies are independent of coordinates.
@@ -315,8 +315,6 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
         End of timeframe for output.
     dT_fortran : boolean, optional
         Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
-    tzone : string/dt.timezone, optional
-        Timezone to convert the output dataset to. The default is 'UTC'.
 
     Raises
     ------
@@ -332,7 +330,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
 
     # check input times (datetime or string)
-    tFirst,tLast = convert_str2datetime(tFirst,tLast)
+    tFirst, tLast, tzone = convert_str2datetime(tFirst, tLast)
 
     # constants
     ANMINC = 13.06       # increment of ANM anomaly of moon (deg/day)
@@ -372,7 +370,8 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     return astrog_df
 
 
-def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
+@deprecated_python_option(**DEPRECATED_OPTIONS_ASTROG_DICT)
+def astrog_seasons(tFirst,tLast,dT_fortran=False):
     """
     Makes use of the definitions dT, astrab and astrac.
     Calculates astronomical seasons. The seasons are independent of coordinates.
@@ -385,8 +384,6 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
         End of timeframe for output.
     dT_fortran : boolean, optional
         Reproduce fortran difference between universal time and terrestrial time (dT). Can be True (for latest fortran reproduction) or False (international definition). The default is False.
-    tzone : string/dt.timezone, optional
-        Timezone to convert the output dataset to. The default is 'UTC'.
 
     Raises
     ------
@@ -402,7 +399,7 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False,tzone='UTC'):
     """
 
     # check input times (datetime or string)
-    tFirst,tLast = convert_str2datetime(tFirst,tLast)
+    tFirst, tLast, tzone = convert_str2datetime(tFirst, tLast)
 
     # estimate start of seasons (time and type)
     date_start = dt.datetime(tFirst.year,int(np.ceil(tFirst.month/3)*3),1)
@@ -926,11 +923,8 @@ def dT(dateIn,dT_fortran=False):
             warnings.warn(UserWarning('The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this might not be accurate.'))
         leap_seconds_pd, expirydate = get_leapsecondslist_fromurlorfile()
 
-        NTP_date = leap_seconds_pd['datetime'].values#tolist()
-        leap_sec = leap_seconds_pd['leap_seconds'].values#.tolist()
-        #import matplotlib.pyplot as plt
-        #fig,ax=plt.subplots()
-        #ax.plot(leap_seconds_pd['datetime'], leap_seconds_pd['leap_seconds'])
+        NTP_date = leap_seconds_pd['datetime'].values
+        leap_sec = leap_seconds_pd['leap_seconds'].values
         ind = np.zeros(shape=dateIn.shape,dtype=int)
         for iD, NTP_date_one in enumerate(NTP_date):
             ind[dateIn>NTP_date_one] = iD
@@ -951,48 +945,27 @@ def check_crop_dataframe(astrog_df, tFirst, tLast, tzone):
     return astrog_df
 
 
-def convert_str2datetime(tFirst,tLast):
-    """
-    Tries to convert tFirst/tLast to datetime.datetime
-
-    Parameters
-    ----------
-    tFirst : str/dt.datetime/pd.Timestamp
-        DESCRIPTION.
-    tLast : str/dt.datetime/pd.Timestamp
-        DESCRIPTION.
-
-    Raises
-    ------
-    Exception
-        DESCRIPTION.
-
-    Returns
-    -------
-    tFirst : pd.Timestamp
-        DESCRIPTION.
-    tLast : pd.Timestamp
-        DESCRIPTION.
-
-    """
-
-    tFirst_out,tLast_out = tFirst,tLast
-    if not type(tFirst) == type(tLast):
-        raise Exception('input dates are not of equal type')
+def convert_str2datetime(tFirst, tLast):
+    start_date = pd.Timestamp(tFirst)
+    end_date = pd.Timestamp(tLast)
     
-    if isinstance(tFirst,pd._libs.tslibs.timestamps.Timestamp):
-        tFirst_out,tLast_out = tFirst,tLast
-    elif isinstance(tFirst, dt.datetime):
-        tFirst_out,tLast_out = pd.Timestamp(tFirst), pd.Timestamp(tLast)
-        if hasattr(tFirst_out,'tz'):
-            if tFirst_out.tz != None:
-                raise Exception('tFirst and tLast should be timezone naive dt.datetime or "yyyymmdd" str')
-    elif isinstance(tFirst, str):
-        tFirst_out,tLast_out = dt.datetime.strptime(tFirst,'%Y%m%d'), dt.datetime.strptime(tLast,'%Y%m%d')
-    else:
-        raise TypeError('date_input should be timezone naive dt.datetime or "yyyymmdd" str')
-                
-    return tFirst_out,tLast_out
+    # check if timezones are the same
+    assert start_date.tz == end_date.tz
+    
+    # extract tzone before conversion
+    tzone = start_date.tz
+    if tzone is None:
+        tzone = "UTC"
+    
+    # convert to UTC and remove timezones
+    if start_date.tz is not None:
+        start_date = start_date.tz_convert(None)
+        end_date = end_date.tz_convert(None)
+
+    if start_date > end_date:
+        raise ValueError(f"start_date {start_date} is larger than end_date {end_date}")
+
+    return start_date, end_date, tzone
 
 
 def convert2perday(dataframeIn, timeformat='%H:%M %Z'):

@@ -13,7 +13,7 @@ schrijf resultaat (python) weg als csv (in MET) met pd.to_csv()
 
 """
 
-import os, pytz
+import os
 import numpy as np
 import datetime as dt
 import pandas as pd
@@ -26,46 +26,47 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 # script settings
 compare2fortran = True #requires validation data
-timeStart = dt.datetime(2000,1,1)
-timeEnd   = dt.datetime(2012,1,1)
-dT_fortran = True #True is best comparison to fortran, False is more precise 
-tz_GMT = 'UTC' # UTC/GMT timezone
-try: #only works with pandas 1.2.0 or higher, but 1.1.5 is highest available pandas version in Python 3.6.12 (which is the highest available Python in RHEL)
-    tz_MET = 'UTC+01:00' #for timezone conversion to UTC+01:00 (Dutch wintertime)
-    pytz.timezone(tz_MET)
-except:
-    tz_MET = dt.timezone(dt.timedelta(hours=1)) #for timezone conversion to UTC+01:00 (Dutch wintertime)
+
+start_date_utc = pd.Timestamp(2000, 1, 1, tz="UTC")
+end_date_utc = pd.Timestamp(2012, 1, 1, tz="UTC")
+start_date_naive = start_date_utc.tz_convert(None)
+end_date_naive = end_date_utc.tz_convert(None)
+start_date_met = start_date_utc.tz_convert('UTC+01:00')
+end_date_met = end_date_utc.tz_convert('UTC+01:00')
+
 tz_EurAms = 'Europe/Amsterdam' # for conversion to local timezone, including daylight saving time (DST)
+
+dT_fortran = True #True is best comparison to fortran, False is more precise 
 
 pdtocsv_kwargs = dict(index=False, sep=',', date_format='%Y-%m-%d %H:%M:%S %Z', float_format='%9.5f', na_rep='--:--          ')
 
 #%% calculate astrog arrays
 # lunar culmination times, parallax, declination
-culminations_python = hatyan.astrog_culminations(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_GMT)
+culminations_python = hatyan.astrog_culminations(tFirst=start_date_utc, tLast=end_date_utc, dT_fortran=dT_fortran)
 culminations_python.to_csv('moon_culminations.csv',**pdtocsv_kwargs)
 
 # lunar phases
-phases_python = hatyan.astrog_phases(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_MET)
+phases_python = hatyan.astrog_phases(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 phases_python.to_csv('moon_phases.csv',**pdtocsv_kwargs)
 
 # moonrise and -set
-moonriseset_python = hatyan.astrog_moonriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_MET)
+moonriseset_python = hatyan.astrog_moonriseset(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 moonriseset_python.to_csv('moon_riseset.csv',**pdtocsv_kwargs)
 moonriseset_python_perday = hatyan.convert2perday(moonriseset_python)
 moonriseset_python_perday.to_csv('moon_riseset_perday.csv',**pdtocsv_kwargs)
 
 # sunrise and -set
-sunriseset_python = hatyan.astrog_sunriseset(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_MET)
+sunriseset_python = hatyan.astrog_sunriseset(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 sunriseset_python.to_csv('sun_riseset.csv',**pdtocsv_kwargs)
 sunriseset_python_perday = hatyan.convert2perday(sunriseset_python)
 sunriseset_python_perday.to_csv('sun_riseset_perday.csv',**pdtocsv_kwargs)
 
 # lunar anomalies
-anomalies_python = hatyan.astrog_anomalies(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_MET)
+anomalies_python = hatyan.astrog_anomalies(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 anomalies_python.to_csv('anomalies.csv',**pdtocsv_kwargs)
 
 # astronomical seasons
-seasons_python = hatyan.astrog_seasons(tFirst=timeStart, tLast=timeEnd, dT_fortran=dT_fortran, tzone=tz_MET)
+seasons_python = hatyan.astrog_seasons(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 seasons_python.to_csv('seasons.csv',**pdtocsv_kwargs)
 
 if compare2fortran:
@@ -79,10 +80,10 @@ if compare2fortran:
     pkl_seas = os.path.join(dir_testdata,'other','astrog30_seasons_2000_2011.pkl')
     
     culminations_fortran = pd.read_pickle(pkl_culm)
-    culminations_fortran = culminations_fortran[np.logical_and(culminations_fortran['datetime']>=timeStart,culminations_fortran['datetime']<=timeEnd)].reset_index(drop=True)
+    culminations_fortran = culminations_fortran[np.logical_and(culminations_fortran['datetime']>=start_date_naive,culminations_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
     
     phases_fortran = pd.read_pickle(pkl_phas)
-    phases_fortran = phases_fortran[np.logical_and(phases_fortran['datetime']>=timeStart,phases_fortran['datetime']<=timeEnd)].reset_index(drop=True)
+    phases_fortran = phases_fortran[np.logical_and(phases_fortran['datetime']>=start_date_naive,phases_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
     
     phases_long_fortran = pd.read_csv(txt_phas, sep=';', names=['date','time','type_str'], skiprows=1) # long time series 2021-2035 (Koos Doekes)
     phases_long_fortran['datetime']=pd.to_datetime(phases_long_fortran['date'].astype(str)+phases_long_fortran['time'].astype(str).str.zfill(4))
@@ -91,18 +92,18 @@ if compare2fortran:
     phases_long_python['datetime'] = phases_long_python['datetime'].dt.tz_convert(tz_EurAms) #convert to local timezone
     
     moonriseset_fortran = pd.read_pickle(pkl_moon)
-    moonriseset_fortran = moonriseset_fortran[np.logical_and(moonriseset_fortran['datetime']>=timeStart,moonriseset_fortran['datetime']<=timeEnd)]
+    moonriseset_fortran = moonriseset_fortran[np.logical_and(moonriseset_fortran['datetime']>=start_date_naive,moonriseset_fortran['datetime']<=end_date_naive)]
     
     sunriseset_fortran = pd.read_pickle(pkl_sun)
-    sunriseset_fortran = sunriseset_fortran[np.logical_and(sunriseset_fortran['datetime']>=timeStart,sunriseset_fortran['datetime']<=timeEnd)]
+    sunriseset_fortran = sunriseset_fortran[np.logical_and(sunriseset_fortran['datetime']>=start_date_naive,sunriseset_fortran['datetime']<=end_date_naive)]
     pyth_index         = sunriseset_python['datetime'].dt.date.isin(sunriseset_fortran['datetime'].dt.date.unique())
     sunriseset_python_somedays = sunriseset_python.loc[pyth_index].reset_index(drop=True)
     
     anomalies_fortran = pd.read_pickle(pkl_anom)
-    anomalies_fortran = anomalies_fortran[np.logical_and(anomalies_fortran['datetime']>=timeStart,anomalies_fortran['datetime']<=timeEnd)].reset_index(drop=True)
+    anomalies_fortran = anomalies_fortran[np.logical_and(anomalies_fortran['datetime']>=start_date_naive,anomalies_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
     
     seasons_fortran = pd.read_pickle(pkl_seas)
-    seasons_fortran = seasons_fortran[np.logical_and(seasons_fortran['datetime']>=timeStart,seasons_fortran['datetime']<=timeEnd)].reset_index(drop=True)
+    seasons_fortran = seasons_fortran[np.logical_and(seasons_fortran['datetime']>=start_date_naive,seasons_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
     
     #%% plot results (differences)
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python, culminations_fortran, typeLab=['lower','upper'], timeBand=[-.18,.18])

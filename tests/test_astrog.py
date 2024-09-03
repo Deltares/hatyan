@@ -14,6 +14,91 @@ import datetime as dt
 import hatyan
 
 
+@pytest.mark.unittest
+def test_astrog_deprecated_tzone_argument():
+    func_list = [
+        hatyan.astrog.astrog_culminations,
+        hatyan.astrog.astrog_phases,
+        hatyan.astrog.astrog_sunriseset,
+        hatyan.astrog.astrog_moonriseset,
+        hatyan.astrog.astrog_anomalies,
+        hatyan.astrog.astrog_seasons,
+    ]
+    for func in func_list:
+        with pytest.raises(DeprecationWarning) as e:
+            func(tFirst="2000-01-01", tLast="2001-01-01", tzone="UTC+01:00")
+        assert "Argument 'tzone' has been deprecated for" in str(e.value)
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_str_tzdifferent():
+    with pytest.raises(AssertionError):
+        hatyan.astrog.convert_str2datetime("1887-01-01 00:00 +00:00",
+                                           "2022-12-31 00:00 +01:00")
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_enddate_toosmall():
+    with pytest.raises(ValueError) as e:
+        hatyan.astrog.convert_str2datetime("2022-01-01 00:00 +00:00",
+                                           "2010-12-31 00:00 +00:00")
+    assert "start_date 2022-01-01 00:00:00 is larger than end_date 2010-12-31 00:00:00" in str(e.value)
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_str_naive():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime("1887-01-01","2022-12-31")
+    assert tstart == pd.Timestamp("1887-01-01")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-31")
+    assert tstop.tz is None
+    assert tzone == "UTC"
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_pd_naive():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime(pd.Timestamp("1887-01-01"),
+                                                              pd.Timestamp("2022-12-31"))
+    assert tstart == pd.Timestamp("1887-01-01")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-31")
+    assert tstop.tz is None
+    assert tzone == "UTC"
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_str_met():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime("1887-01-01 00:00 +01:00",
+                                                              "2022-12-31 00:00 +01:00")
+    assert tstart == pd.Timestamp("1886-12-31 23:00:00")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-30 23:00:00")
+    assert tstop.tz is None
+    assert tzone == dt.timezone(dt.timedelta(seconds=3600))
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_pd_met():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime(pd.Timestamp("1887-01-01 00:00 +01:00"),
+                                                              pd.Timestamp("2022-12-31 00:00 +01:00"))
+    assert tstart == pd.Timestamp("1886-12-31 23:00:00")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-30 23:00:00")
+    assert tstop.tz is None
+    assert tzone == dt.timezone(dt.timedelta(seconds=3600))
+
+
+@pytest.mark.unittest
+def test_astrog_convert_str2datetime_pd_utc():
+    tstart, tstop, tzone = hatyan.astrog.convert_str2datetime(pd.Timestamp("1887-01-01 00:00 +00:00"),
+                                                              pd.Timestamp("2022-12-31 00:00 +00:00"))
+    assert tstart == pd.Timestamp("1887-01-01")
+    assert tstart.tz is None
+    assert tstop == pd.Timestamp("2022-12-31")
+    assert tstop.tz is None
+    assert tzone == dt.timezone.utc
+    
+
 @pytest.mark.systemtest
 def test_astrog_dT():
     # 1. Input
@@ -119,7 +204,116 @@ def test_astrog_astrac():
         assert abs(timeExpect[iMode-1]-timeOutput[iMode-1]).total_seconds() < 10E-5
 
 
+@pytest.mark.systemtest
+def test_astrog_leapsecondslist():
+    leap_seconds_pd, expirydate = hatyan.astrog.get_leapsecondslist_fromurlorfile()
+
+
+@pytest.mark.systemtest
+def test_astrog_culminations():
+    start_date = "2020-01-01"
+    end_date = "2021-01-01"
+    # moon culminations
+    culminations_python = hatyan.astrog_culminations(tFirst=start_date, tLast=end_date)
+    
+    datetimes = culminations_python['datetime']
+    assert datetimes.dt.tz == dt.timezone.utc
+    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 04:44:14.732116514+0000')
+    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 13:16:46.464269856+0000')
+
+    subset = culminations_python.iloc[:10]
+    assert subset["type"].tolist() == [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
+    expected_type_str = [
+        'lowerculmination', 'upperculmination',
+        'lowerculmination', 'upperculmination',
+        'lowerculmination', 'upperculmination',
+        'lowerculmination', 'upperculmination',
+        'lowerculmination', 'upperculmination',
+        ]
+    assert subset["type_str"].tolist() == expected_type_str
+    expected_parallax = np.array([
+        0.90436235, 0.90347198, 0.90333631, 0.90397446, 0.90539423,
+           0.90759186, 0.9105516 , 0.91424508, 0.91863045, 0.92365127])
+    assert np.allclose(subset["parallax"].values, expected_parallax)
+    expected_declination = np.array([
+        -9.12903352, -6.86053844, -4.53030521, -2.15683332,  0.24204067,
+        2.64853148,  5.04424777,  7.40950843,  9.72265897, 11.95942792])
+    assert np.allclose(subset["declination"].values, expected_declination)
+
+
+@pytest.mark.systemtest
+def test_astrog_culminations_met():
+    start_date = "2020-01-01 00:00:00 +01:00"
+    end_date = "2021-01-01 00:00:00 +01:00"
+    # moon culminations
+    culminations_python = hatyan.astrog_culminations(tFirst=start_date, tLast=end_date)
+    
+    datetimes = culminations_python['datetime']
+    assert datetimes.dt.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 05:44:14.732115815+0100')
+    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 14:16:46.464269693+0100')
+
+
+@pytest.mark.systemtest
+def test_astrog_phases():
+    start_date = "2020-01-01"
+    end_date = "2021-01-01"
+    # lunar phases
+    phases_python = hatyan.astrog_phases(tFirst=start_date, tLast=end_date)
+    
+    datetimes = phases_python['datetime']
+    assert datetimes.dt.tz == dt.timezone.utc
+    assert datetimes.iloc[0] == pd.Timestamp('2020-01-03 04:45:20+0000')
+    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-30 03:28:07+0000')
+    
+    expected_type = [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 
+                     1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 
+                     1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 
+                     1, 2]
+    assert phases_python["type"].tolist() == expected_type
+    expected_type_str = ['FQ', 'FM', 'LQ', 'NM', 'FQ', 'FM', 'LQ', 'NM', 
+                         'FQ', 'FM', 'LQ', 'NM', 'FQ', 'FM', 'LQ', 'NM', 
+                         'FQ', 'FM', 'LQ', 'NM', 'FQ', 'FM', 'LQ', 'NM', 
+                         'FQ', 'FM', 'LQ', 'NM', 'FQ', 'FM', 'LQ', 'NM', 
+                         'FQ', 'FM', 'LQ', 'NM', 'FQ', 'FM', 'LQ', 'NM', 
+                         'FQ', 'FM', 'LQ', 'NM', 'FQ', 'FM', 'LQ', 'NM', 
+                         'FQ', 'FM']
+    assert phases_python["type_str"].tolist() == expected_type_str
+
+
+@pytest.mark.systemtest
 def test_astrog_moonriseset():
+    start_date = "2020-01-01"
+    end_date = "2021-01-01"
+    # moonrise and -set
+    moonriseset_python = hatyan.astrog_moonriseset(tFirst=start_date, tLast=end_date)
+    moonriseset_python_perday = hatyan.convert2perday(moonriseset_python)
+    
+    datetimes = moonriseset_python['datetime']
+    assert datetimes.dt.tz == dt.timezone.utc
+    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 11:15:43+0000')
+    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 16:46:52+0000')
+    
+    datetimes_perday = pd.to_datetime(moonriseset_python_perday['datetime'])
+    assert datetimes_perday.dt.tz is None
+    assert datetimes_perday.iloc[0] == pd.Timestamp('2020-01-01 00:00:00')
+    assert datetimes_perday.iloc[-1] == pd.Timestamp('2020-12-31 00:00:00')
+    
+    subset = moonriseset_python.iloc[:10]
+    assert subset["type"].tolist() == [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
+    expected_type_str = [
+        'moonrise', 'moonset', 'moonrise', 'moonset',
+        'moonrise', 'moonset', 'moonrise', 'moonset',
+        'moonrise', 'moonset']
+    assert subset["type_str"].tolist() == expected_type_str
+    
+    subset_perday = moonriseset_python_perday.iloc[:10]
+    assert subset_perday["moonrise"].isnull().sum() == 0
+    assert subset_perday["moonset"].isnull().sum() == 1
+
+
+@pytest.mark.systemtest
+def test_astrog_moonriseset_posinf():
     """
     This part of code resulted in timesteps being dropped in newer pandas versions.
     This was due to 0 RATES in astract, resulting in inf values in 'addtime'.
@@ -138,6 +332,70 @@ def test_astrog_moonriseset():
 
 
 @pytest.mark.systemtest
-def test_astrog_leapsecondslist():
-    leap_seconds_pd, expirydate = hatyan.astrog.get_leapsecondslist_fromurlorfile()
+def test_astrog_sunriseset():
+    start_date = "2020-01-01"
+    end_date = "2021-01-01"
+    # sunrise and -set
+    sunriseset_python = hatyan.astrog_sunriseset(tFirst=start_date, tLast=end_date)
+    sunriseset_python_perday = hatyan.convert2perday(sunriseset_python)
     
+    datetimes = sunriseset_python['datetime']
+    assert datetimes.dt.tz == dt.timezone.utc
+    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 07:47:25+0000')
+    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 15:36:02+0000')
+    
+    datetimes_perday = pd.to_datetime(sunriseset_python_perday['datetime'])
+    assert datetimes_perday.dt.tz is None
+    assert datetimes_perday.iloc[0] == pd.Timestamp('2020-01-01 00:00:00')
+    assert datetimes_perday.iloc[-1] == pd.Timestamp('2020-12-31 00:00:00')
+
+    subset = sunriseset_python.iloc[:10]
+    assert subset["type"].tolist() == [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
+    expected_type_str = [
+        'sunrise', 'sunset', 'sunrise', 'sunset', 
+        'sunrise', 'sunset', 'sunrise', 'sunset', 
+        'sunrise', 'sunset']
+    assert subset["type_str"].tolist() == expected_type_str
+    
+    subset_perday = sunriseset_python_perday.iloc[:10]
+    assert subset_perday["sunrise"].isnull().sum() == 0
+    assert subset_perday["sunset"].isnull().sum() == 0
+    
+
+@pytest.mark.systemtest
+def test_astrog_anomalies():
+    start_date = "2020-01-01"
+    end_date = "2021-01-01"
+    # lunar anomalies
+    anomalies_python = hatyan.astrog_anomalies(tFirst=start_date, tLast=end_date)
+    
+    datetimes = anomalies_python['datetime']
+    assert datetimes.dt.tz == dt.timezone.utc
+    assert datetimes.iloc[0] == pd.Timestamp('2020-01-02 01:25:44+0000')
+    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-24 16:48:18+0000')
+    
+    expected_type = [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 
+                     1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
+    expected_type_str = ['apogeum', 'perigeum', 'apogeum', 'perigeum', 'apogeum', 'perigeum', 
+                         'apogeum', 'perigeum', 'apogeum', 'perigeum', 'apogeum', 'perigeum', 
+                         'apogeum', 'perigeum', 'apogeum', 'perigeum', 'apogeum', 'perigeum', 
+                         'apogeum', 'perigeum', 'apogeum', 'perigeum', 'apogeum', 'perigeum', 
+                         'apogeum', 'perigeum', 'apogeum']
+    assert anomalies_python['type'].tolist() == expected_type
+    assert anomalies_python['type_str'].tolist() == expected_type_str
+
+
+@pytest.mark.systemtest
+def test_astrog_seasons():
+    start_date = "2020-01-01"
+    end_date = "2021-01-01"
+    # astronomical seasons
+    seasons_python = hatyan.astrog_seasons(tFirst=start_date, tLast=end_date)
+    
+    datetimes = seasons_python['datetime']
+    assert datetimes.dt.tz == dt.timezone.utc
+    assert datetimes.iloc[0] == pd.Timestamp('2020-03-20 03:49:46+0000')
+    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-21 10:02:39+0000')
+    
+    assert seasons_python['type'].tolist() == [1, 2, 3, 4]
+    assert seasons_python['type_str'].tolist() == ['spring', 'summer', 'autumn', 'winter']
