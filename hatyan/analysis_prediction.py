@@ -425,8 +425,18 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
         raise TypeError(f'times argument can be of type pd.DatetimeIndex or slice, not {type(times)}')
     times_pred_all_pdDTI = times
     
-    # localize times datetimeindex, first convert times to tzone of components, then drop timezone
-    if times_pred_all_pdDTI.tz is not None:
+    tzone_pred = times_pred_all_pdDTI.tz
+    
+    if tzone_pred is None and tzone_comp is None:
+        tzone_convert = False
+    elif tzone_pred is not None and tzone_comp is not None:
+        tzone_convert = True
+    else:
+        raise ValueError("provided times and components should both be timezone-aware "
+                         "or timezone-naive, not mixed.")
+    
+    # remove timezone from prediction times: first convert times to tzone of components, then make timezone naive
+    if tzone_convert:
         times_pred_all_pdDTI = times_pred_all_pdDTI.tz_convert(tzone_comp)
         times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(None)
     
@@ -477,8 +487,10 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
     logger.info('PREDICTION finished')
     
-    # add timezone to timeseries again
-    ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
+    # add timezone to prediction: first interpret times as tzone of components, then convert to timezone of prediction
+    if tzone_convert:
+        ts_prediction_pd = ts_prediction_pd.tz_localize(tzone_comp)
+        ts_prediction_pd = ts_prediction_pd.tz_convert(tzone_pred)
     
     return ts_prediction_pd
 
@@ -527,6 +539,7 @@ def prediction(comp, times=None, timestep=None):
             raise TypeError("prediction() per period, so 'times' argument not allowed")
         # convert timestep to tstep of proper type
         tstep = pd.tseries.frequencies.to_offset(timestep)
+        tzone_comp = comp.attrs['tzone']
         
         ts_periods_dt = comp.columns.levels[1]
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
@@ -537,11 +550,13 @@ def prediction(comp, times=None, timestep=None):
             comp_oneyear = comp.loc[:,(slice(None),period_dt)]
             comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
             if period_dt.freqstr in ['A-DEC','Y-DEC']: #year frequency
-                tstart = pd.Timestamp(period_dt.year,1,1)
-                tstop = pd.Timestamp(period_dt.year+1,1,1) - pd.Timedelta(tstep)
+                tstart = pd.Timestamp(period_dt.year, 1, 1, tz=tzone_comp)
+                tstop = pd.Timestamp(period_dt.year+1, 1, 1, tz=tzone_comp) - pd.Timedelta(tstep)
             elif period_dt.freqstr in ['M']: #month frequency
-                tstart = period_dt.to_timestamp()
-                tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - pd.Timedelta(tstep)
+                tstart_naive = period_dt.to_timestamp()
+                tstart = pd.Timestamp(tstart_naive, tz=tzone_comp)
+                tstop_naive = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - pd.Timedelta(tstep)
+                tstop = pd.Timestamp(tstop_naive, tz=tzone_comp)
             else:
                 raise Exception(f'unknown freqstr: {period_dt.freqstr}')
             # generate date range and do prediction
