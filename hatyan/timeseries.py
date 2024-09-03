@@ -802,7 +802,7 @@ def write_dia_ts(ts, filename, headerformat='dia'):
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = ts.index.tz
-    if tzone != pytz.FixedOffset(60):
+    if tzone not in [pytz.FixedOffset(60), dt.timezone(dt.timedelta(seconds=3600))]:
         raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
@@ -888,7 +888,7 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
     if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
         raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
     tzone = ts_ext.index.tz
-    if tzone != pytz.FixedOffset(60):
+    if tzone not in [pytz.FixedOffset(60), dt.timezone(dt.timedelta(seconds=3600))]:
         raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
     
     if vertref == 'NAP':
