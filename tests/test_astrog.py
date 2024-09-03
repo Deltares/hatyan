@@ -38,6 +38,14 @@ def test_astrog_convert_str2datetime_str_tzdifferent():
 
 
 @pytest.mark.unittest
+def test_astrog_convert_str2datetime_enddate_toosmall():
+    with pytest.raises(ValueError) as e:
+        hatyan.astrog.convert_str2datetime("2022-01-01 00:00 +00:00",
+                                           "2010-12-31 00:00 +00:00")
+    assert "start_date 2022-01-01 00:00:00 is larger than end_date 2010-12-31 00:00:00" in str(e.value)
+
+
+@pytest.mark.unittest
 def test_astrog_convert_str2datetime_str_naive():
     tstart, tstop, tzone = hatyan.astrog.convert_str2datetime("1887-01-01","2022-12-31")
     assert tstart == pd.Timestamp("1887-01-01")

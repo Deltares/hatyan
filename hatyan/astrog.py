@@ -923,11 +923,8 @@ def dT(dateIn,dT_fortran=False):
             warnings.warn(UserWarning('The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this might not be accurate.'))
         leap_seconds_pd, expirydate = get_leapsecondslist_fromurlorfile()
 
-        NTP_date = leap_seconds_pd['datetime'].values#tolist()
-        leap_sec = leap_seconds_pd['leap_seconds'].values#.tolist()
-        #import matplotlib.pyplot as plt
-        #fig,ax=plt.subplots()
-        #ax.plot(leap_seconds_pd['datetime'], leap_seconds_pd['leap_seconds'])
+        NTP_date = leap_seconds_pd['datetime'].values
+        leap_sec = leap_seconds_pd['leap_seconds'].values
         ind = np.zeros(shape=dateIn.shape,dtype=int)
         for iD, NTP_date_one in enumerate(NTP_date):
             ind[dateIn>NTP_date_one] = iD
@@ -964,6 +961,9 @@ def convert_str2datetime(tFirst, tLast):
     if start_date.tz is not None:
         start_date = start_date.tz_convert(None)
         end_date = end_date.tz_convert(None)
+
+    if start_date > end_date:
+        raise ValueError(f"start_date {start_date} is larger than end_date {end_date}")
 
     return start_date, end_date, tzone
 
