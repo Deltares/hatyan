@@ -789,6 +789,9 @@ def write_dia(ts, filename, headerformat='dia'):
     if "status" in ts.columns:
        logger.warning("status column is ignored by hatyan.write_dia(), all "
                       "status values in diafile will be 'Ongecontroleerd'")
+    if "qualitycode" in ts.columns:
+       logger.warning("qualitycode column is ignored by hatyan.write_dia(), all "
+                      "qualitycode values in diafile will be 0")
     metadata_pd = get_metadata_pd(ts, headerformat=headerformat)
     
     if "HWLWcode" in ts.columns:
