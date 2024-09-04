@@ -399,3 +399,15 @@ def test_astrog_seasons():
     
     assert seasons_python['type'].tolist() == [1, 2, 3, 4]
     assert seasons_python['type_str'].tolist() == ['spring', 'summer', 'autumn', 'winter']
+
+
+@pytest.mark.unittest
+def test_plot_astrog_diff():
+    start_date_utc = pd.Timestamp(2000, 1, 1, tz="UTC")
+    end_date_utc = pd.Timestamp(2000, 4, 1, tz="UTC")
+    
+    culminations_python = hatyan.astrog_culminations(tFirst=start_date_utc, tLast=end_date_utc)
+    culminations_python_naive = culminations_python.copy()
+    culminations_python_naive['datetime'] = culminations_python_naive['datetime'].dt.tz_localize(None)
+    
+    hatyan.plot_astrog_diff(culminations_python, culminations_python_naive, typeLab=['lower','upper'], timeBand=[-.18,.18])
