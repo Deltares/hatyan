@@ -918,6 +918,7 @@ def get_metadata_pd(ts, headerformat):
     
     if headerformat=='wia':
         metadata_pd = dia_metadata_to_wia_metadata(metadata_pd, time_today, ana, grootheid)
+    return metadata_pd
     
 
 def dia_metadata_to_wia_metadata(metadata_pd, time_today, ana, grootheid):
