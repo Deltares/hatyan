@@ -856,13 +856,7 @@ def write_dia_ts(ts, filename, headerformat='dia'):
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
                              '[WRD]'])
     if headerformat=='wia':
-        for metalinestart in ['WNS']:
-            bool_drop = metadata_pd.str.startswith(metalinestart)
-            metadata_pd = metadata_pd[~bool_drop]
-        metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
-        metadata_pd[metadata_pd.str.startswith('PAR')] = 'GHD;%s'%(grootheid)
-        metadata_pd[metadata_pd.str.startswith('CPM')] = 'CPM;OW;Oppervlaktewater'
-        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)
+        metadata_pd = dia_metadata_to_wia_metadata(metadata_pd, time_today, ana, grootheid)
     
     linestr_list = []
     linestr = ''
@@ -910,6 +904,8 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
     if 11 in ts_ext['HWLWcode'].values or 22 in ts_ext['HWLWcode'].values:
         raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
     
+    
+    
     metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                              '[W3H]', #WIE, WAT, WAAR en HOE
                              'MUX;%s'%(parameterX), #Mux
@@ -956,27 +952,34 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str),
                              '[WRD]'])
     if headerformat=='wia':
-        for metalinestart in ['MXW']:
-            #De volgende regel identificaties worden niet meer ondersteund:
-            #worden hernoemd: ANA>>WBM
-            #nu gecomment: BEM, BEW, BTN, GBD, SYS, VAT
-            #nooit gebruikt: GDH, GRD, INV, RAI, SSS, SSV, SVZ, VGS, VZM
-            #TODO uitzoeken: MXT, MXW, WNS
-            bool_drop = metadata_pd.str.startswith(metalinestart)
-            metadata_pd = metadata_pd[~bool_drop]
-        metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
-        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)
-        metadata_pd[metadata_pd.str.startswith('MXP;1')] = 'MXT;1;GETETTPE' # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
-        metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater' #TODO: kan ook met metadata_pd.str.replace(';10;Oppervlaktewater',';OW;Oppervlaktewater')
-        metadata_pd[metadata_pd.str.startswith('MXP;2')] = 'MXG;2;%s'%(grootheid)
-        metadata_pd[metadata_pd.str.startswith('MXC;2')] = 'MXC;2;OW;Oppervlaktewater'
-
+        metadata_pd = dia_metadata_to_wia_metadata(metadata_pd, time_today, ana, grootheid)
+    
     data_todia = ts_ext.index.strftime('%Y%m%d;%H%M')+';'+ts_ext['HWLWcode'].astype(str)+'/0;'+(ts_ext['values']*100).round().astype(int).astype(str)+':'
 
     with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
         for metaline in metadata_pd:
             f.write('%s\n'%(metaline))
         data_todia.to_csv(f,index=False,header=False)
+
+
+def dia_metadata_to_wia_metadata(metadata_pd, time_today, ana, grootheid):
+    # drop metadata
+    for metalinestart in ['WNS','MXW']:
+        bool_drop = metadata_pd.str.startswith(metalinestart)
+        metadata_pd = metadata_pd[~bool_drop]
+    
+    # rename metadata for ts and ext
+    metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
+    metadata_pd[metadata_pd.str.startswith('ANA;')] = 'WBM;other:%s'%(ana)
+    # rename metadata for ts
+    metadata_pd[metadata_pd.str.startswith('PAR;')] = 'GHD;%s'%(grootheid)
+    metadata_pd[metadata_pd.str.startswith('CPM;')] = 'CPM;OW;Oppervlaktewater'
+    # rename metadata for ext
+    metadata_pd[metadata_pd.str.startswith('MXP;1')] = 'MXT;1;GETETTPE' # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
+    metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater'
+    metadata_pd[metadata_pd.str.startswith('MXP;2')] = 'MXG;2;%s'%(grootheid)
+    metadata_pd[metadata_pd.str.startswith('MXC;2')] = 'MXC;2;OW;Oppervlaktewater'
+    return metadata_pd
 
 
 def write_noos(ts, filename):
