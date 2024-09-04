@@ -796,8 +796,6 @@ def write_dia(ts, filename, headerformat='dia'):
 
 
 def write_dia_ts(ts, filename, headerformat='dia'):
-    if "HWLWcode" in ts.columns:
-        raise TypeError("a timeseries with extremes (HWLW) was passed to write_dia, use `write_dia_HWLW()` instead")
     metadata = metadata_from_obj(ts)
     waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
