@@ -800,9 +800,12 @@ def write_dia_ts(ts, filename, headerformat='dia'):
     waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
     station = metadata['station']
-    quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    grootheid = metadata['grootheid']
+    if grootheid == 'WATHTBRKD':
+        grootheid = 'WATHTBRKD;Waterhoogte berekend'
+        ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse'
+    else:
+        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {grootheid} was provided.')
     tzone = ts.index.tz
     if tzone not in [pytz.FixedOffset(60), dt.timezone(dt.timedelta(seconds=3600))]:
         raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
@@ -814,9 +817,6 @@ def write_dia_ts(ts, filename, headerformat='dia'):
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
     
-    grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
-
-    ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #TODO: dit is niet per se generiek geldig, alleen in getijpredictieproces RWS
     
     time_today = dt.datetime.today().strftime('%Y%m%d')
     tstart_str = ts.index[0].strftime('%Y%m%d;%H%M')
@@ -832,27 +832,16 @@ def write_dia_ts(ts, filename, headerformat='dia'):
                              'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
                              'EHD;I;cm', #domein (I: integer) en eenheid, gelijk voor waarnemingssoorten 18 en 55
                              'HDH;%s;%s'%(vertref,vertreflong),
-                             ##'ORG;NVT;Niet van toepassing', #orgaan
-                             ##'SGK;NVT', #samengesteldeklasse
-                             ##'IVS;NVT;Niet van toepassing',
-                             ##'BTX;NVT;NVT;Niet van toepassing', #Biotaxonnaam
-                             ##'BTN;Niet van toepassing', >> niet ondersteund in wia
                              'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Analyserende-instantie
                              'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Beherende-instantie
                              'BMI;NVT;Niet van toepassing', #niet_essentieel? Bemonsterende-instantie
                              'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? Opdrachtgevende-instantie
-                             ##'GBD;NIEUWWTWG;Nieuwe Waterweg', >> niet ondersteund in wia
                              'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code #;Hoek van Holland;P;RD;6793000;44400000
                              'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
-                             #'BEM;NVT', #niet_essentieel? >> niet ondersteund in wia
-                             #'BEW;NVT', #niet_essentieel? >> niet ondersteund in wia
-                             #'VAT;NVT', #niet_essentieel? >> niet ondersteund in wia
                              'TYP;TE', #Reekstype: equidistant
                              '[RKS]',
                              'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min), #(Begin)datum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;Tijdstapeenheid
-                             ##'PLT;NVT;-999999999;6793000;44400000',
-                             ##'SYS;CENT', >> niet ondersteund in wia
-                             '[TPS]',
+                              '[TPS]',
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
                              '[WRD]'])
     if headerformat=='wia':
@@ -880,9 +869,12 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
     waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
     station = metadata['station']
-    quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    grootheid = metadata['grootheid']
+    if grootheid == 'WATHTBRKD':
+        grootheid = 'WATHTBRKD;Waterhoogte berekend'
+        ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #HW en LW uit 1 min. waterhoogten gefilterd uit 10 min. gem.
+    else:
+        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {grootheid} was provided.')
     tzone = ts_ext.index.tz
     if tzone not in [pytz.FixedOffset(60), dt.timezone(dt.timedelta(seconds=3600))]:
         raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
@@ -895,8 +887,7 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
         parameterX = 'GETETBRKDMSL2;Getijextreem berekend t.o.v. MSL'
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
-    grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
-    ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #HW en LW uit 1 min. waterhoogten gefilterd uit 10 min. gem.  #TODO: dit is niet per se generiek geldig, alleen in getijpredictieproces RWS
+    
     time_today = dt.datetime.today().strftime('%Y%m%d')
     tstart_str = ts_ext.index[0].strftime('%Y%m%d;%H%M')
     tstop_str = ts_ext.index[-1].strftime('%Y%m%d;%H%M')
@@ -904,24 +895,15 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
     if 11 in ts_ext['HWLWcode'].values or 22 in ts_ext['HWLWcode'].values:
         raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
     
-    
-    
     metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                              '[W3H]', #WIE, WAT, WAAR en HOE
                              'MUX;%s'%(parameterX), #Mux
-                             ##IVS;NVT;Niet van toepassing
-                             ##BTX;NVT;NVT;Niet van toepassing #Biotaxonnaam
-                             ##BTN;Niet van toepassing >> niet ondersteund in wia
                              'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Analyserende-instantie
                              'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Beherende-instantie
                              'BMI;NVT;Niet van toepassing', #niet_essentieel? #Bemonsterende-instantie
                              'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? #Opdrachtgevende-instantie
-                             ##GBD;NIEUWWTWG;Nieuwe Waterweg >> niet ondersteund in wia
                              'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code
                              'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
-                             #'BEM;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
-                             #'BEW;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
-                             #'VAT;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
                              'TYP;TN', #Reekstype: niet-equidistant
                              '[MUX]', #Multiplex administratieblok
                              'MXW;1;15', #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
@@ -946,8 +928,6 @@ def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
                              'TVL;1;5;laagwater 2',
                              '[RKS]',
                              'TYD;%10s;%10s'%(tstart_str,tstop_str),
-                             ##'PLT;NVT;-999999999;6793000;44400000',
-                             #'SYS;CENT', #niet_essentieel? >> niet ondersteund in wia
                              '[TPS]',
                              'STA;%10s;%10s;O'%(tstart_str,tstop_str),
                              '[WRD]'])
