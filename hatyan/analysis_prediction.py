@@ -425,17 +425,32 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
         raise TypeError(f'times argument can be of type pd.DatetimeIndex or slice, not {type(times)}')
     times_pred_all_pdDTI = times
     
-    # localize times datetimeindex, first convert times to tzone of components, then drop timezone
-    if times_pred_all_pdDTI.tz is not None:
+    tzone_pred = times_pred_all_pdDTI.tz
+    
+    if tzone_pred is None and tzone_comp is not None:
+        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(tzone_comp)
+        tzone_pred = tzone_comp
+        logger.warning("provided times are timezone-naive and provided components are "
+                       "timezone-aware. The times are being interpreted as if they would "
+                       f"have the same timezone as the components: {tzone_comp}")
+        tzone_convert = True
+    elif tzone_pred is None and tzone_comp is None:
+        tzone_convert = False
+    elif tzone_pred is not None and tzone_comp is not None:
+        tzone_convert = True
+    else:
+        raise ValueError("provided times are timezone-aware and components are timezone-naive, "
+                         "this cannot be processed.")
+    
+    # remove timezone from prediction times: first convert times to tzone of components, then make timezone naive
+    if tzone_convert:
         times_pred_all_pdDTI = times_pred_all_pdDTI.tz_convert(tzone_comp)
         times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(None)
     
-    message = (f'components used = {len(comp)}\n'
-               f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
-               f'tstop = {times_pred_all_pdDTI[-1].strftime("%Y-%m-%d %H:%M:%S")}')
-    if hasattr(times_pred_all_pdDTI,'freq'):
-        message += f'\ntimestep = {times_pred_all_pdDTI.freq}'
-    logger.info(message)
+    logger.info(f'components used = {len(comp)}\n'
+                f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
+                f'tstop = {times_pred_all_pdDTI[-1].strftime("%Y-%m-%d %H:%M:%S")}\n'
+                f'timestep = {times_pred_all_pdDTI.freq}')
     
     # middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
     dood_date_mid = times_pred_all_pdDTI[[len(times_pred_all_pdDTI)//2]]
@@ -477,8 +492,10 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
     logger.info('PREDICTION finished')
     
-    # add timezone to timeseries again
-    ts_prediction_pd.index = ts_prediction_pd.index.tz_localize(tzone_comp)
+    # add timezone to prediction: first interpret times as tzone of components, then convert to timezone of prediction
+    if tzone_convert:
+        ts_prediction_pd = ts_prediction_pd.tz_localize(tzone_comp)
+        ts_prediction_pd = ts_prediction_pd.tz_convert(tzone_pred)
     
     return ts_prediction_pd
 
@@ -487,8 +504,9 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
 def prediction(comp, times=None, timestep=None):
     """
     generates a tidal prediction from a set of components A and phi values.
-    The component set has the same timezone as the timeseries used to create it, 
-    therefore the resulting prediction will also be in that original timezone.
+    The component set has the same timezone as the timeseries used to create it.
+    If times is timezone-naive the resulting prediction will be in component timezone.
+    If times is timezone-aware the resulting prediction will be converted to that timezone.
     If a components dataframe contains multiple column levels (multiple periods),
     The prediction is a concatenation of predictions of all periods (based on the respective A/phi values).
 
@@ -537,15 +555,17 @@ def prediction(comp, times=None, timestep=None):
             comp_oneyear = comp.loc[:,(slice(None),period_dt)]
             comp_oneyear.columns = comp_oneyear.columns.droplevel(1)
             if period_dt.freqstr in ['A-DEC','Y-DEC']: #year frequency
-                tstart = pd.Timestamp(period_dt.year,1,1)
-                tstop = pd.Timestamp(period_dt.year+1,1,1) - pd.Timedelta(tstep)
+                tstart = pd.Timestamp(period_dt.year, 1, 1)
+                tstop = pd.Timestamp(period_dt.year+1, 1, 1) - pd.Timedelta(tstep)
             elif period_dt.freqstr in ['M']: #month frequency
                 tstart = period_dt.to_timestamp()
                 tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - pd.Timedelta(tstep)
             else:
                 raise Exception(f'unknown freqstr: {period_dt.freqstr}')
             # generate date range and do prediction
-            times_pred = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
+            metadata_comp = metadata_from_obj(comp)
+            tzone_comp = metadata_comp.pop('tzone', None)
+            times_pred = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us", tz=tzone_comp)
             ts_prediction_oneperiod = prediction_singleperiod(comp=comp_oneyear, times=times_pred, hatyan_settings=hatyan_settings)
             ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
         ts_prediction = pd.concat(ts_prediction_perperiod_list)

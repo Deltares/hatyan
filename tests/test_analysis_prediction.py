@@ -506,30 +506,77 @@ def test_prediction_comp_and_times_different_timezones():
     it is possible to supply a timezone via times, but the comp dataframe also contains a timezone already.
     The components timezone is leading, but the times will be converted to that timezone also.
     From the below test, both predictions are therefore UTC+01:00, but the times are shifted
+    https://github.com/Deltares/hatyan/issues/334
     """
     
     current_station = 'VLISSGN'
     
     const_list = hatyan.get_const_list_hatyan('year') # 94 constituents
     
-    file_data_comp0 = os.path.join(dir_testdata,f'{current_station}_obs1.txt')
+    file_comp = os.path.join(dir_testdata,f'{current_station}_obs1.txt')
+    ts_meas = hatyan.read_dia(filename=file_comp, station=current_station)
     
-    times_pred1 = slice("2019-01-01","2020-01-01", "10min")
-    times_pred2 = pd.date_range("2019-01-01","2020-01-01", freq="10min", unit="us", tz="UTC+02:00")
+    comp_naive = hatyan.analysis(ts=ts_meas, const_list=const_list)
+    comp_naive.attrs["tzone"] = None
+    comp_met = hatyan.analysis(ts=ts_meas, const_list=const_list)
+    
+    times_naive = slice("2019-01-01","2020-01-01", "10min")
+    times_met = pd.date_range("2019-01-01","2020-01-01", freq="10min", tz="UTC+01:00")
+    times_utc = pd.date_range("2019-01-01","2020-01-01", freq="10min", tz="UTC+00:00")
+    
+    pred_naive = hatyan.prediction(comp=comp_naive, times=times_naive)
+    pred_met = hatyan.prediction(comp=comp_met, times=times_met)
+    pred_utc = hatyan.prediction(comp=comp_met, times=times_utc)
+    
+    assert pred_naive.index.tz is None
+    assert pred_naive.index[0] == pd.Timestamp('2019-01-01 00:00:00')
+    assert pred_met.index[0] == pd.Timestamp('2019-01-01 00:00:00+0100')
+    assert pred_met.index.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert pred_met.index[0] == pd.Timestamp('2019-01-01 00:00:00+0100')
+    assert pred_utc.index.tz == dt.timezone.utc
+    assert pred_utc.index[0] == pd.Timestamp('2019-01-01 00:00:00+0000')
+    assert ((pred_naive - pred_met.tz_localize(None)).dropna()["values"] < 1e-9).all()
+    assert ((pred_utc - pred_met).dropna()["values"] < 1e-9).all()
 
-    ts_measurements_group0 = hatyan.read_dia(filename=file_data_comp0, station=current_station)
-    
-    comp_frommeasurements_avg_group0 = hatyan.analysis(ts=ts_measurements_group0, const_list=const_list)
-    
-    #prediction and validation
-    ts_prediction1 = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred1)
-    ts_prediction2 = hatyan.prediction(comp=comp_frommeasurements_avg_group0, times=times_pred2)
-    
-    assert ts_prediction1.index.tz == pytz.FixedOffset(60)
-    assert ts_prediction2.index.tz == pytz.FixedOffset(60)
-    assert ts_prediction1.index[0] == pd.Timestamp('2019-01-01 00:00:00 +01:00')
-    assert ts_prediction2.index[0] == pd.Timestamp('2018-12-31 23:00:00 +01:00')
-    assert ((ts_prediction1-ts_prediction2).dropna()["values"] < 1e-9).all()
+
+@pytest.mark.unittest
+def test_prediction_times_tznaive_comp_tzaware(caplog):
+    """
+    https://github.com/Deltares/hatyan/issues/334
+    """
+    comp = pd.DataFrame({"A": [1, 0.5, 0.2],
+                         "phi_deg": [10,15,20]}, 
+                        index=["M2","M4","S2"])
+    comp.attrs["nodalfactors"] = True
+    comp.attrs["fu_alltimes"] = True
+    comp.attrs["xfac"] = False
+    comp.attrs["source"] = "schureman"
+    comp.attrs["tzone"] = "UTC+01:00"
+    dtindex = pd.date_range("2020-01-01","2020-01-02", freq="10min")
+    hatyan.prediction(comp, times=dtindex)
+    warning_text = ("provided times are timezone-naive and provided components are "
+                    "timezone-aware. The times are being interpreted as if they would "
+                    "have the same timezone as the components: UTC+01:00")
+    assert warning_text in caplog.text
+
+
+@pytest.mark.unittest
+def test_prediction_raise_mixed_tznaive_tzaware():
+    """
+    https://github.com/Deltares/hatyan/issues/334
+    """
+    comp = pd.DataFrame({"A": [1, 0.5, 0.2],
+                         "phi_deg": [10,15,20]}, 
+                        index=["M2","M4","S2"])
+    comp.attrs["nodalfactors"] = True
+    comp.attrs["fu_alltimes"] = True
+    comp.attrs["xfac"] = False
+    comp.attrs["source"] = "schureman"
+    comp.attrs["tzone"] = None
+    dtindex = pd.date_range("2020-01-01 00:00 +00:00","2020-01-02 00:00 +00:00", freq="10min")
+    with pytest.raises(ValueError) as e:
+        hatyan.prediction(comp, times=dtindex)
+    assert "provided times are timezone-aware and components are timezone-naive, this cannot be processed." in str(e.value)
 
 
 @pytest.mark.unittest
@@ -571,6 +618,7 @@ def test_prediction_perperiod_month():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
     assert len(ts_pred_atonce) == len(ts_pred_allmonths)
+    assert ts_pred_allmonths.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest
@@ -594,6 +642,7 @@ def test_prediction_perperiod_year():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allyears["values"].values[:10], expected_allyears)
     assert len(ts_pred_atonce) == len(ts_pred_allyears)
+    assert ts_pred_allyears.index.tz == pytz.FixedOffset(60)
 
 
 @pytest.mark.unittest

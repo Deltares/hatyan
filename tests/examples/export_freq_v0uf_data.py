@@ -67,8 +67,8 @@ def get_hatyan55_values(file_hatyan55):
         drop_idx = drop_idx+list(range(x,y+1))
     
     hatyan55_freq = hatyan55_freq_raw.drop(drop_idx).reset_index(drop=True)
-    hatyan55_freq = hatyan55_freq.apply(pd.to_numeric,errors='ignore')
     hatyan55_freq = hatyan55_freq.set_index('NAAM')
+    hatyan55_freq = hatyan55_freq.apply(pd.to_numeric)
     hatyan55_freq.index.name=None
     
     #######################
@@ -89,7 +89,7 @@ def get_hatyan55_values(file_hatyan55):
             drop_idx = drop_idx+list(range(x,y+1))
         
         hatyan55_v0uf_1y = hatyan55_v0uf_raw_1y.drop(drop_idx).reset_index(drop=True)
-        hatyan55_v0uf_1y = hatyan55_v0uf_1y.apply(pd.to_numeric,errors='ignore')
+        hatyan55_v0uf_1y = hatyan55_v0uf_1y.apply(pd.to_numeric)
         hatyan55_v0uf_1y.index = hatyan55_freq.index
         
         hatyan55_v0u[year] = hatyan55_v0uf_1y['VU-FAKTOR']
