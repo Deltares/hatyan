@@ -38,12 +38,12 @@ def test_ddlpy_to_hatyan(locations):
     # timeseries
     ts_measwl = hatyan.ddlpy_to_hatyan(meas_wathte)
 
-    assert ts_measwl.columns.tolist() == ['values', 'QC', 'Status']
+    assert ts_measwl.columns.tolist() == ['values', 'qualitycode', 'status']
     assert ts_measwl.index.name == 'time'
 
     assert ptypes.is_float_dtype(ts_measwl["values"])
-    assert ptypes.is_integer_dtype(ts_measwl["QC"])
-    assert ptypes.is_object_dtype(ts_measwl["Status"])
+    assert ptypes.is_integer_dtype(ts_measwl["qualitycode"])
+    assert ptypes.is_object_dtype(ts_measwl["status"])
 
 
 @pytest.mark.unittest

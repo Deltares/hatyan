@@ -26,7 +26,7 @@ def ddlpy_to_hatyan(ddlpy_meas, ddlpy_meas_exttyp=None):
     Returns
     -------
     pd.DataFrame
-        hatyan timeseries DataFrame with values/QC/Status columns. If ddlpy_meas_typ 
+        hatyan timeseries DataFrame with values/qualitycode/status columns. If ddlpy_meas_typ 
         is supplied, this DataFrame will also include a HWLWcode column.
 
     """
@@ -67,8 +67,8 @@ def ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True):
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
     
     ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues],
-                          'QC':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
-                          'Status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'],
+                          'qualitycode':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
+                          'status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'],
                           })
     return ts_pd
 

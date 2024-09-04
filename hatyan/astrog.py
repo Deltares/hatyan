@@ -9,7 +9,6 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 import requests
-import warnings
 import matplotlib.pyplot as plt
 import logging
 from hatyan.deprecated import (deprecated_python_option,
@@ -920,7 +919,10 @@ def dT(dateIn,dT_fortran=False):
     else: #use most exact approximation
         # get list with leap seconds
         if (dateIn<dt.datetime(1972,1,1)).any():
-            warnings.warn(UserWarning('The current definition of the relationship between UTC and TAI dates from 1 January 1972. This first dT value is also applied before that date even though this might not be accurate.'))
+            logging.warning('The current definition of the relationship between UTC '
+                            'and TAI dates from 1 January 1972. This first dT value '
+                            'is also applied before that date even though this might '
+                            'not be accurate.')
         leap_seconds_pd, expirydate = get_leapsecondslist_fromurlorfile()
 
         NTP_date = leap_seconds_pd['datetime'].values

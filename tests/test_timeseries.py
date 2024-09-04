@@ -36,12 +36,13 @@ def test_readwrite_tsdia_rounding():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
     file_new = 'temp_dia.txt'
     ts_pred = hatyan.read_dia(file_pred)
+    ts_pred.pop('status')
     for diff in [0,0.004, -0.004]:
         ts_pred_rounddiff = hatyan.read_dia(file_pred)
         ts_pred_rounddiff['values'] = ts_pred['values'] + diff
         hatyan.write_dia(ts=ts_pred_rounddiff, filename=file_new)
         ts_new = hatyan.read_dia(file_new)
-        
+        ts_new.pop('status')
         assert np.allclose(ts_pred, ts_new)
     os.remove(file_new)
 
@@ -51,12 +52,13 @@ def test_readwrite_tsdia_ext_rounding():
     file_pred = os.path.join(dir_testdata, "VLISSGN_ext.txt")
     file_new = 'temp_dia_ext.txt'
     ts_pred = hatyan.read_dia(file_pred)
+    ts_pred.pop('status')
     for diff in [0, 0.004, -0.004]:
         ts_pred_rounddiff = hatyan.read_dia(file_pred)
         ts_pred_rounddiff['values'] = ts_pred['values'] + diff
         hatyan.write_dia(ts=ts_pred_rounddiff, filename=file_new)
         ts_new = hatyan.read_dia(file_new)
-        
+        ts_new.pop('status')        
         assert np.allclose(ts_pred, ts_new)
     os.remove(file_new)
 
@@ -304,6 +306,10 @@ def test_readwrite_diawia():
         #read from new files
         ts_dia_new = hatyan.read_dia(filename=file_dia_out, station=current_station)
         ts_wia_new = hatyan.read_dia(filename=file_wia_out, station=current_station)
+        ts_dia.pop('status')
+        ts_wia.pop('status')
+        ts_dia_new.pop('status')
+        ts_wia_new.pop('status')
         assert np.allclose(ts_dia, ts_dia_new) #check if wia and dia input is equal
         assert np.allclose(ts_wia, ts_wia_new) #check if wia and dia input is equal
         
