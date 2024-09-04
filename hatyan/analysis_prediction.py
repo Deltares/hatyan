@@ -558,7 +558,7 @@ def prediction(comp, times=None, timestep=None):
                 tstart = pd.Timestamp(period_dt.year, 1, 1)
                 tstop = pd.Timestamp(period_dt.year+1, 1, 1) - pd.Timedelta(tstep)
             elif period_dt.freqstr in ['M']: #month frequency
-                tstart = pd.Timestamp(period_dt.to_timestamp())
+                tstart = period_dt.to_timestamp()
                 tstop = period_dt.to_timestamp() + pd.Timedelta(days=period_dt.days_in_month) - pd.Timedelta(tstep)
             else:
                 raise Exception(f'unknown freqstr: {period_dt.freqstr}')
