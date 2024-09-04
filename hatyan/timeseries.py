@@ -540,10 +540,10 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     ts_ext = ts_ext.set_index(['HWLWcode','HWLWno'],drop=False)
     ts_ext_validation['times'] = ts_ext_validation.index
     ts_ext_validation = ts_ext_validation.set_index(['HWLWcode','HWLWno'],drop=False)
-    HWLW_diff = ts_ext.sub(ts_ext_validation[['times','values']])
+    hwlw_diff = ts_ext.sub(ts_ext_validation[['times','values']])
     
-    tdiff_minutes = HWLW_diff['times'].dt.total_seconds()/60
-    vdiff_cm = HWLW_diff['values']*100
+    tdiff_minutes = hwlw_diff['times'].dt.total_seconds()/60
+    vdiff_cm = hwlw_diff['values']*100
     message = ('Time differences [minutes]\n'
                f'  RMSE: {(np.sqrt(np.mean(tdiff_minutes**2))):.2f}\n'
                f'  std: {tdiff_minutes.std():.2f}\n'
@@ -560,8 +560,8 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     logger.info(message)
     
     fig, ax = plt.subplots()
-    ax.plot(HWLW_diff.loc[1,'times'].dt.total_seconds()/60,HWLW_diff.loc[1,'values']*100,'+',label='HWdiff')
-    ax.plot(HWLW_diff.loc[2,'times'].dt.total_seconds()/60,HWLW_diff.loc[2,'values']*100,'.',label='LWdiff')
+    ax.plot(hwlw_diff.loc[1,'times'].dt.total_seconds()/60,hwlw_diff.loc[1,'values']*100,'+',label='HWdiff')
+    ax.plot(hwlw_diff.loc[2,'times'].dt.total_seconds()/60,hwlw_diff.loc[2,'values']*100,'.',label='LWdiff')
     ax.set_xlabel('Time difference [minutes]')
     ax.set_ylabel('Value difference [cm]')
     ax.legend(loc=1)
