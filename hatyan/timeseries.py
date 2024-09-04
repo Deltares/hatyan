@@ -789,196 +789,156 @@ def write_dia(ts, filename, headerformat='dia'):
     if "status" in ts.columns:
        logger.warning("status column is ignored by hatyan.write_dia(), all "
                       "status values in diafile will be 'Ongecontroleerd'")
+    metadata_pd = get_metadata_pd(ts, headerformat=headerformat)
+    
     if "HWLWcode" in ts.columns:
-        write_dia_HWLW(ts_ext=ts, filename=filename, headerformat=headerformat)
+        data_todia = (ts.index.strftime('%Y%m%d;%H%M')
+                      + ';'
+                      + ts['HWLWcode'].astype(str)
+                      + '/0;'
+                      + (ts['values']*100).round().astype(int).astype(str)
+                      + ':')
     else:
-        write_dia_ts(ts=ts, filename=filename, headerformat=headerformat)
+        linestr_list = []
+        linestr = ''
+        for iV, ts_value in enumerate(ts['values']):
+            linestr_add = "%i/0:"%(np.round(ts_value*100))
+            linestr = linestr + linestr_add
+            if (len(linestr) > 114) or (iV==len(ts)-1): # append linestr to linestr_list if linestr is longer than n characters or last item of ts_values was reached
+                linestr_list.append(linestr)
+                linestr = ''
+        data_todia = pd.Series(linestr_list)
+    
+    # write metadata and data to file
+    with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
+        for metaline in metadata_pd:
+            f.write('%s\n'%(metaline))
+        data_todia.to_csv(f,index=False,header=False)
 
 
-def write_dia_ts(ts, filename, headerformat='dia'):
-    if "HWLWcode" in ts.columns:
-        raise TypeError("a timeseries with extremes (HWLW) was passed to write_dia, use `write_dia_HWLW()` instead")
+def get_metadata_pd(ts, headerformat):
     metadata = metadata_from_obj(ts)
     waarnemingssoort = wns_from_metadata(metadata)
     vertref = metadata['vertref']
     station = metadata['station']
-    quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
+    grootheid = metadata['grootheid']
+    
+    # check grootheid
+    if grootheid == 'WATHTBRKD':
+        grootheid = 'WATHTBRKD;Waterhoogte berekend'
+        ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse'
+    else:
+        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {grootheid} was provided.')
+    
+    # check tzone
     tzone = ts.index.tz
     if tzone not in [pytz.FixedOffset(60), dt.timezone(dt.timedelta(seconds=3600))]:
-        raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
+        raise ValueError('write_dia() expects tzone pytz.FixedOffset(60) (since tzone '
+                         f'is not defined in dia-header), but {tzone} was provided.')
     
+    # check vertref
     if vertref == 'NAP':
         vertreflong = 'T.o.v. Normaal Amsterdams Peil'
+        parameterX = 'GETETBRKD2;Getijextreem berekend' # only for ext
     elif vertref == 'MSL':
         vertreflong = 'T.o.v. Mean Sea Level'
+        parameterX = 'GETETBRKDMSL2;Getijextreem berekend t.o.v. MSL' # only for ext
     else:
         raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
     
-    grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
-
-    ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #TODO: dit is niet per se generiek geldig, alleen in getijpredictieproces RWS
-    
+    # get times
     time_today = dt.datetime.today().strftime('%Y%m%d')
     tstart_str = ts.index[0].strftime('%Y%m%d;%H%M')
     tstop_str = ts.index[-1].strftime('%Y%m%d;%H%M')
-    timestep_min = (ts.index[1]-ts.index[0]).total_seconds()/60
     
-    ts_values = ts['values']
-    #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
-    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
-                             '[W3H]', #WIE, WAT, WAAR en HOE
-                             'WNS;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia dus geheel weglaten?
-                             'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55. GHD in wia (PAR is daar parameter, maar betekent wat anders)
-                             'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
-                             'EHD;I;cm', #domein (I: integer) en eenheid, gelijk voor waarnemingssoorten 18 en 55
-                             'HDH;%s;%s'%(vertref,vertreflong),
-                             ##'ORG;NVT;Niet van toepassing', #orgaan
-                             ##'SGK;NVT', #samengesteldeklasse
-                             ##'IVS;NVT;Niet van toepassing',
-                             ##'BTX;NVT;NVT;Niet van toepassing', #Biotaxonnaam
-                             ##'BTN;Niet van toepassing', >> niet ondersteund in wia
-                             'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Analyserende-instantie
-                             'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Beherende-instantie
-                             'BMI;NVT;Niet van toepassing', #niet_essentieel? Bemonsterende-instantie
-                             'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? Opdrachtgevende-instantie
-                             ##'GBD;NIEUWWTWG;Nieuwe Waterweg', >> niet ondersteund in wia
-                             'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code #;Hoek van Holland;P;RD;6793000;44400000
-                             'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
-                             #'BEM;NVT', #niet_essentieel? >> niet ondersteund in wia
-                             #'BEW;NVT', #niet_essentieel? >> niet ondersteund in wia
-                             #'VAT;NVT', #niet_essentieel? >> niet ondersteund in wia
-                             'TYP;TE', #Reekstype: equidistant
-                             '[RKS]',
-                             'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min), #(Begin)datum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;Tijdstapeenheid
-                             ##'PLT;NVT;-999999999;6793000;44400000',
-                             ##'SYS;CENT', >> niet ondersteund in wia
-                             '[TPS]',
-                             'STA;%10s;%10s;O'%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
-                             '[WRD]'])
-    if headerformat=='wia':
-        for metalinestart in ['WNS']:
-            bool_drop = metadata_pd.str.startswith(metalinestart)
-            metadata_pd = metadata_pd[~bool_drop]
-        metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
-        metadata_pd[metadata_pd.str.startswith('PAR')] = 'GHD;%s'%(grootheid)
-        metadata_pd[metadata_pd.str.startswith('CPM')] = 'CPM;OW;Oppervlaktewater'
-        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)
-    
-    linestr_list = []
-    linestr = ''
-    for iV, ts_value in enumerate(ts_values): # iterate over ts_values
-        linestr_add = "%i/0:"%(np.round(ts_value*100))
-        linestr = linestr + linestr_add
-        if (len(linestr) > 114) or (iV==len(ts_values)-1): # append linestr to linestr_list if linestr is longer than n characters or last item of ts_values was reached
-            linestr_list.append(linestr)
-            linestr = ''
-    data_todia = pd.Series(linestr_list)
-    
-    with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
-        for metaline in metadata_pd:
-            f.write('%s\n'%(metaline))
-        data_todia.to_csv(f,index=False,header=False)
-
-
-def write_dia_HWLW(ts_ext, filename, headerformat='dia'):
-    
-    metadata = metadata_from_obj(ts_ext)
-    waarnemingssoort = wns_from_metadata(metadata)
-    vertref = metadata['vertref']
-    station = metadata['station']
-    quantity = metadata['grootheid']
-    if quantity != 'WATHTBRKD': #TODO: remove this after hardcoding in this function is fixed
-        raise ValueError(f'write_dia() expects quantity WATHTBRKD, but {quantity} was provided.')
-    tzone = ts_ext.index.tz
-    if tzone not in [pytz.FixedOffset(60), dt.timezone(dt.timedelta(seconds=3600))]:
-        raise ValueError(f'write_dia() expects tzone pytz.FixedOffset(60) (since tzone is not defined in dia-header), but {tzone} was provided.')
-    
-    if vertref == 'NAP':
-        vertreflong = 'T.o.v. Normaal Amsterdams Peil'
-        parameterX = 'GETETBRKD2;Getijextreem berekend'
-    elif vertref == 'MSL':
-        vertreflong = 'T.o.v. Mean Sea Level'
-        parameterX = 'GETETBRKDMSL2;Getijextreem berekend t.o.v. MSL'
+    if "HWLWcode" in ts.columns:
+        if 11 in ts['HWLWcode'].values or 22 in ts['HWLWcode'].values:
+            raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
+        
+        metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
+                                 '[W3H]', #WIE, WAT, WAAR en HOE
+                                 'MUX;%s'%(parameterX), #Mux
+                                 'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Analyserende-instantie
+                                 'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Beherende-instantie
+                                 'BMI;NVT;Niet van toepassing', #niet_essentieel? #Bemonsterende-instantie
+                                 'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? #Opdrachtgevende-instantie
+                                 'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code
+                                 'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
+                                 'TYP;TN', #Reekstype: niet-equidistant
+                                 '[MUX]', #Multiplex administratieblok
+                                 'MXW;1;15', #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
+                                 'MXP;1;GETETCDE;Getijextreem code', #MXG in wia: grootheid muxkanaal (TODO: wia GETETTPE in welke groep?)
+                                 'MXC;1;10;Oppervlaktewater', #Compartiment Muxkanaal
+                                 'MXE;1;T;DIMSLS', #domein (T: integer met waarde 1 tot 127, vertaaltabel TYPERING met dezelfde parameter/compartiment-combinatie is dan verplicht) en eenheid
+                                 'MXH;1;NVT;Niet van toepassing', #Hoedanigheid Muxkanaal
+                                 'MXO;1;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
+                                 'MXS;1;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
+                                 'MXW;2;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
+                                 'MXP;2;%s'%(grootheid), #MXG in wia: grootheid muxkanaal
+                                 'MXC;2;10;Oppervlaktewater', #Compartiment Muxkanaal
+                                 'MXE;2;I;cm', #domein (I: integer) en eenheid
+                                 'MXH;2;%s;%s'%(vertref, vertreflong), #Hoedanigheid Muxkanaal
+                                 'MXO;2;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
+                                 'MXS;2;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
+                                 '[TYP]',
+                                 'TVL;1;1;hoogwater',
+                                 'TVL;1;2;laagwater',
+                                 'TVL;1;3;laagwater 1',
+                                 'TVL;1;4;topagger',
+                                 'TVL;1;5;laagwater 2',
+                                 '[RKS]',
+                                 'TYD;%10s;%10s'%(tstart_str,tstop_str),
+                                 '[TPS]',
+                                 'STA;%10s;%10s;O'%(tstart_str,tstop_str),
+                                 '[WRD]'])
     else:
-        raise Exception('ERROR: currently only vertref="NAP" and vertref="MSL" are supported for writing diafiles')
-    grootheid = 'WATHTBRKD;Waterhoogte berekend;J'
-    ana = 'F012;Waterhoogte astronomisch mbv harmonische analyse' #HW en LW uit 1 min. waterhoogten gefilterd uit 10 min. gem.  #TODO: dit is niet per se generiek geldig, alleen in getijpredictieproces RWS
-    time_today = dt.datetime.today().strftime('%Y%m%d')
-    tstart_str = ts_ext.index[0].strftime('%Y%m%d;%H%M')
-    tstop_str = ts_ext.index[-1].strftime('%Y%m%d;%H%M')
+        # TODO: derive timestep_min from freq instead, otherwise we cannot be certain of constant freq
+        timestep_min = (ts.index[1]-ts.index[0]).total_seconds()/60
+        
+        #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
+        metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
+                                 '[W3H]', #WIE, WAT, WAAR en HOE
+                                 'WNS;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia dus geheel weglaten?
+                                 'PAR;%s'%(grootheid), #parameter/grootheid, gelijk voor waarnemingssoorten 18 en 55. GHD in wia (PAR is daar parameter, maar betekent wat anders)
+                                 'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
+                                 'EHD;I;cm', #domein (I: integer) en eenheid, gelijk voor waarnemingssoorten 18 en 55
+                                 'HDH;%s;%s'%(vertref,vertreflong),
+                                 'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Analyserende-instantie
+                                 'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Beherende-instantie
+                                 'BMI;NVT;Niet van toepassing', #niet_essentieel? Bemonsterende-instantie
+                                 'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? Opdrachtgevende-instantie
+                                 'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code #;Hoek van Holland;P;RD;6793000;44400000
+                                 'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
+                                 'TYP;TE', #Reekstype: equidistant
+                                 '[RKS]',
+                                 'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min), #(Begin)datum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;Tijdstapeenheid
+                                  '[TPS]',
+                                 'STA;%10s;%10s;O'%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
+                                 '[WRD]'])
     
-    if 11 in ts_ext['HWLWcode'].values or 22 in ts_ext['HWLWcode'].values:
-        raise Exception('ERROR: invalid HWLWcodes in provided extreme timeseries (11 and/or 22)')
-    
-    metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
-                             '[W3H]', #WIE, WAT, WAAR en HOE
-                             'MUX;%s'%(parameterX), #Mux
-                             ##IVS;NVT;Niet van toepassing
-                             ##BTX;NVT;NVT;Niet van toepassing #Biotaxonnaam
-                             ##BTN;Niet van toepassing >> niet ondersteund in wia
-                             'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Analyserende-instantie
-                             'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Beherende-instantie
-                             'BMI;NVT;Niet van toepassing', #niet_essentieel? #Bemonsterende-instantie
-                             'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? #Opdrachtgevende-instantie
-                             ##GBD;NIEUWWTWG;Nieuwe Waterweg >> niet ondersteund in wia
-                             'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code
-                             'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
-                             #'BEM;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
-                             #'BEW;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
-                             #'VAT;NVT;Niet van toepassing', #niet_essentieel? >> niet ondersteund in wia
-                             'TYP;TN', #Reekstype: niet-equidistant
-                             '[MUX]', #Multiplex administratieblok
-                             'MXW;1;15', #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
-                             'MXP;1;GETETCDE;Getijextreem code;J', #MXG in wia: grootheid muxkanaal (TODO: wia GETETTPE in welke groep?)
-                             'MXC;1;10;Oppervlaktewater', #Compartiment Muxkanaal
-                             'MXE;1;T;DIMSLS', #domein (T: integer met waarde 1 tot 127, vertaaltabel TYPERING met dezelfde parameter/compartiment-combinatie is dan verplicht) en eenheid
-                             'MXH;1;NVT;Niet van toepassing', #Hoedanigheid Muxkanaal
-                             'MXO;1;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
-                             'MXS;1;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
-                             'MXW;2;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
-                             'MXP;2;%s'%(grootheid), #MXG in wia: grootheid muxkanaal
-                             'MXC;2;10;Oppervlaktewater', #Compartiment Muxkanaal
-                             'MXE;2;I;cm', #domein (I: integer) en eenheid
-                             'MXH;2;%s;%s'%(vertref, vertreflong), #Hoedanigheid Muxkanaal
-                             'MXO;2;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
-                             'MXS;2;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
-                             '[TYP]',
-                             'TVL;1;1;hoogwater',
-                             'TVL;1;2;laagwater',
-                             'TVL;1;3;laagwater 1',
-                             'TVL;1;4;topagger',
-                             'TVL;1;5;laagwater 2',
-                             '[RKS]',
-                             'TYD;%10s;%10s'%(tstart_str,tstop_str),
-                             ##'PLT;NVT;-999999999;6793000;44400000',
-                             #'SYS;CENT', #niet_essentieel? >> niet ondersteund in wia
-                             '[TPS]',
-                             'STA;%10s;%10s;O'%(tstart_str,tstop_str),
-                             '[WRD]'])
     if headerformat=='wia':
-        for metalinestart in ['MXW']:
-            #De volgende regel identificaties worden niet meer ondersteund:
-            #worden hernoemd: ANA>>WBM
-            #nu gecomment: BEM, BEW, BTN, GBD, SYS, VAT
-            #nooit gebruikt: GDH, GRD, INV, RAI, SSS, SSV, SVZ, VGS, VZM
-            #TODO uitzoeken: MXT, MXW, WNS
-            bool_drop = metadata_pd.str.startswith(metalinestart)
-            metadata_pd = metadata_pd[~bool_drop]
-        metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
-        metadata_pd[metadata_pd.str.startswith('ANA')] = 'WBM;other:%s'%(ana)
-        metadata_pd[metadata_pd.str.startswith('MXP;1')] = 'MXT;1;GETETTPE' # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
-        metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater' #TODO: kan ook met metadata_pd.str.replace(';10;Oppervlaktewater',';OW;Oppervlaktewater')
-        metadata_pd[metadata_pd.str.startswith('MXP;2')] = 'MXG;2;%s'%(grootheid)
-        metadata_pd[metadata_pd.str.startswith('MXC;2')] = 'MXC;2;OW;Oppervlaktewater'
+        metadata_pd = dia_metadata_to_wia_metadata(metadata_pd, time_today, ana, grootheid)
+    return metadata_pd
+    
 
-    data_todia = ts_ext.index.strftime('%Y%m%d;%H%M')+';'+ts_ext['HWLWcode'].astype(str)+'/0;'+(ts_ext['values']*100).round().astype(int).astype(str)+':'
-
-    with io.open(filename,'w', newline='\n') as f: #open file and set linux newline style
-        for metaline in metadata_pd:
-            f.write('%s\n'%(metaline))
-        data_todia.to_csv(f,index=False,header=False)
+def dia_metadata_to_wia_metadata(metadata_pd, time_today, ana, grootheid):
+    # drop metadata
+    for metalinestart in ['WNS','MXW']:
+        bool_drop = metadata_pd.str.startswith(metalinestart)
+        metadata_pd = metadata_pd[~bool_drop]
+    
+    # rename metadata for ts and ext
+    metadata_pd[metadata_pd.str.startswith('[IDT;')] = '[IDT;*WIF*;A;;%6s]'%(time_today)
+    metadata_pd[metadata_pd.str.startswith('ANA;')] = 'WBM;other:%s'%(ana)
+    # rename metadata for ts
+    metadata_pd[metadata_pd.str.startswith('PAR;')] = 'GHD;%s'%(grootheid)
+    metadata_pd[metadata_pd.str.startswith('CPM;')] = 'CPM;OW;Oppervlaktewater'
+    # rename metadata for ext
+    metadata_pd[metadata_pd.str.startswith('MXP;1')] = 'MXT;1;GETETTPE' # GETETCDE;Getijextreem code naar GETETTPE #TODO: MXT wordt niet ondersteund door wia, toch MXG?
+    metadata_pd[metadata_pd.str.startswith('MXC;1')] = 'MXC;1;OW;Oppervlaktewater'
+    metadata_pd[metadata_pd.str.startswith('MXP;2')] = 'MXG;2;%s'%(grootheid)
+    metadata_pd[metadata_pd.str.startswith('MXC;2')] = 'MXC;2;OW;Oppervlaktewater'
+    return metadata_pd
 
 
 def write_noos(ts, filename):
