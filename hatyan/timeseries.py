@@ -530,7 +530,8 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     
     logger.info('Calculating comparison statistics for extremes')
     if 'HWLWno' not in ts_ext.columns or 'HWLWno' not in ts_ext_validation.columns:
-        logger.info('HWLWno is not present in ts_ext or ts_ext_validation, trying to automatically derive it without M2phasediff argument (this might fail)')
+        logger.info('HWLWno is not present in ts_ext or ts_ext_validation, trying to '
+                    'automatically derive it without station argument (this might fail)')
         ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
         ts_ext_validation = calc_HWLWnumbering(ts_ext=ts_ext_validation)
     
@@ -539,7 +540,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     ts_ext = ts_ext.set_index(['HWLWcode','HWLWno'],drop=False)
     ts_ext_validation['times'] = ts_ext_validation.index
     ts_ext_validation = ts_ext_validation.set_index(['HWLWcode','HWLWno'],drop=False)
-    HWLW_diff = ts_ext.sub(ts_ext_validation)
+    HWLW_diff = ts_ext.sub(ts_ext_validation[['times','values']])
     
     tdiff_minutes = HWLW_diff['times'].dt.total_seconds()/60
     vdiff_cm = HWLW_diff['values']*100
@@ -785,12 +786,15 @@ def write_dia(ts, filename, headerformat='dia'):
     None.
 
     """
+    if "status" in ts.columns:
+       logger.warning("status column is ignored by hatyan.write_dia(), all "
+                      "status values in diafile will be 'Ongecontroleerd'")
     if "HWLWcode" in ts.columns:
         write_dia_HWLW(ts_ext=ts, filename=filename, headerformat=headerformat)
     else:
         write_dia_ts(ts=ts, filename=filename, headerformat=headerformat)
 
-    
+
 def write_dia_ts(ts, filename, headerformat='dia'):
     if "HWLWcode" in ts.columns:
         raise TypeError("a timeseries with extremes (HWLW) was passed to write_dia, use `write_dia_HWLW()` instead")
@@ -1573,6 +1577,15 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
                 data_pd_oneblock = read_dia_nonequidistant(filename_one, diablocks_pd, block_id)
             else: # equidistant
                 data_pd_oneblock = read_dia_equidistant(filename_one, diablocks_pd, block_id)
+            
+            # add status column
+            block_status_list = diablocks_pd.loc[block_id,'STA'].split('!')
+            for block_status_one in block_status_list:
+                status_tstart = pd.to_datetime(block_status_one[4:17],format='%Y%m%d;%H%M').tz_localize("UTC+01:00")
+                status_tstop = pd.to_datetime(block_status_one[18:31],format='%Y%m%d;%H%M').tz_localize("UTC+01:00")
+                status_val = block_status_one[-1]
+                data_pd_oneblock.loc[status_tstart:status_tstop,'status'] = status_val
+            
             data_pd_list.append(data_pd_oneblock)
             metadata = metadata_from_obj(data_pd_oneblock)
             metadata_list.append(metadata)
