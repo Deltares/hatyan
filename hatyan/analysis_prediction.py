@@ -430,9 +430,9 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     if tzone_pred is None and tzone_comp is not None:
         times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(tzone_comp)
         tzone_pred = tzone_comp
-        logger.warn("provided times are timezone-naive and provided components are "
-                    "timezone-aware. The times are being interpreted as if they would "
-                    f"have the same timezone as the components: {tzone_comp}")
+        logger.warning("provided times are timezone-naive and provided components are "
+                       "timezone-aware. The times are being interpreted as if they would "
+                       f"have the same timezone as the components: {tzone_comp}")
         tzone_convert = True
     elif tzone_pred is None and tzone_comp is None:
         tzone_convert = False
