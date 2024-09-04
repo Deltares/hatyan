@@ -447,12 +447,10 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
         times_pred_all_pdDTI = times_pred_all_pdDTI.tz_convert(tzone_comp)
         times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(None)
     
-    message = (f'components used = {len(comp)}\n'
-               f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
-               f'tstop = {times_pred_all_pdDTI[-1].strftime("%Y-%m-%d %H:%M:%S")}')
-    if hasattr(times_pred_all_pdDTI,'freq'):
-        message += f'\ntimestep = {times_pred_all_pdDTI.freq}'
-    logger.info(message)
+    logger.info(f'components used = {len(comp)}\n'
+                f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
+                f'tstop = {times_pred_all_pdDTI[-1].strftime("%Y-%m-%d %H:%M:%S")}\n'
+                f'timestep = {times_pred_all_pdDTI.freq}')
     
     # middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
     dood_date_mid = times_pred_all_pdDTI[[len(times_pred_all_pdDTI)//2]]
