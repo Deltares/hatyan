@@ -941,7 +941,7 @@ def check_crop_dataframe(astrog_df, tFirst, tLast, tzone):
     if not astrog_df.index.is_monotonic_increasing:
         raise Exception('something went wrong which resulted in off ordering of the dataframe')
     # crop on time range
-    astrog_df = astrog_df.loc[tFirst, tLast]
+    astrog_df = astrog_df.loc[tFirst:tLast]
     # set and convert timezone
     astrog_df = astrog_df.tz_localize('UTC').tz_convert(tzone)
     return astrog_df
