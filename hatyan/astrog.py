@@ -90,9 +90,10 @@ def astrog_culminations(tFirst, tLast, dT_fortran=False):
     DEC = astrabOutput['DECMOO']
     
     # make dataframe
-    astrog_df = pd.DataFrame({'type':CULTYP,'parallax':PAR,'declination':DEC},
-                             index=CULTIM)  # CULTIM.round('S') decreases fortran reproduction
+    astrog_df = pd.DataFrame({'datetime':CULTIM, # CULTIM.round('S') decreases fortran reproduction
+                              'type':CULTYP,'parallax':PAR,'declination':DEC})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','lowerculmination').replace('2','upperculmination')
+    astrog_df = astrog_df.set_index("datetime")
 
     #set timezone, check datetime order and filter datetimerange
     astrog_df = check_crop_dataframe(astrog_df, tFirst, tLast, tzone)
@@ -158,8 +159,9 @@ def astrog_phases(tFirst,tLast,dT_fortran=False):
     FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'type':FATYP}, index=FATIM.round('s'))
+    astrog_df = pd.DataFrame({'datetime':FATIM.round('s'), 'type':FATYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','FQ').replace('2','FM').replace('3','LQ').replace('4','NM')
+    astrog_df = astrog_df.set_index("datetime")
 
     #set timezone, check datetime order and filter datetimerange
     astrog_df = check_crop_dataframe(astrog_df, tFirst, tLast, tzone)
@@ -221,6 +223,7 @@ def astrog_sunriseset(tFirst,tLast,dT_fortran=False,lon=5.3876,lat=52.1562):
     astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('s'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
     astrog_df = astrog_df.sort_values('datetime').reset_index(drop=True)
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','sunrise').replace('2','sunset')
+    astrog_df = astrog_df.set_index("datetime")
 
     #set timezone, check datetime order and filter datetimerange
     astrog_df = check_crop_dataframe(astrog_df, tFirst, tLast, tzone)
@@ -294,6 +297,7 @@ def astrog_moonriseset(tFirst,tLast,dT_fortran=False,lon=5.3876,lat=52.1562):
     astrog_df = pd.DataFrame({'datetime':np.concatenate((OPTIM.round('s'),ONTIM.round('s'))),'type':np.repeat([1,2],len(OPTIM))})
     astrog_df = pd.DataFrame(astrog_df).sort_values('datetime').reset_index(drop=True)
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','moonrise').replace('2','moonset')
+    astrog_df = astrog_df.set_index("datetime")
 
     #set timezone, check datetime order and filter datetimerange
     astrog_df = check_crop_dataframe(astrog_df, tFirst, tLast, tzone)
@@ -363,6 +367,7 @@ def astrog_anomalies(tFirst,tLast,dT_fortran=False):
     # make dataframe
     astrog_df = pd.DataFrame({'datetime':ANOTIM.round('s'),'type':ANOTYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','perigeum').replace('2','apogeum')
+    astrog_df = astrog_df.set_index("datetime")
 
     #set timezone, check datetime order and filter datetimerange
     astrog_df = check_crop_dataframe(astrog_df, tFirst, tLast, tzone)
@@ -414,6 +419,7 @@ def astrog_seasons(tFirst,tLast,dT_fortran=False):
     # make dataframe
     astrog_df = pd.DataFrame({'datetime':SEITIM.round('s'),'type':SEITYP})
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','spring').replace('2','summer').replace('3','autumn').replace('4','winter')
+    astrog_df = astrog_df.set_index("datetime")
     
     #set timezone, check datetime order and filter datetimerange
     astrog_df = check_crop_dataframe(astrog_df, tFirst, tLast, tzone)
@@ -988,13 +994,12 @@ def convert2perday(dataframeIn, timeformat='%H:%M %Z'):
 
     """
     
-    dataframeOut = dataframeIn.copy()
+    dataframeOut = dataframeIn.reset_index()
     dataframeOut.index = dataframeOut['datetime'].dt.date
     for type_sel in dataframeOut['type_str'].unique():
         dataframeOut[type_sel] = dataframeOut['datetime'][dataframeOut['type_str']==type_sel].dt.strftime(timeformat)
-    dataframeOut.drop(['type','type_str'],axis='columns',inplace=True)
+    dataframeOut = dataframeOut.drop(['type','type_str','datetime'],axis='columns')
     dataframeOut = dataframeOut[~dataframeOut.index.duplicated(keep='first')]
-    dataframeOut['datetime'] = dataframeOut.index #overwrite datetime with dates
     
     return dataframeOut
 
@@ -1030,12 +1035,11 @@ def plot_astrog_diff(pd_python, pd_fortran, typeCol="type", typeUnit='-', typeLa
 
     """
     
-    if hasattr(pd_python['datetime'].dtype,'tz'):
-        pd_python = pd_python.copy() #do not overwrite original dataframe, so make a copy
-        pd_python['datetime'] = pd_python['datetime'].dt.tz_localize(None) #Passing None will remove the time zone information preserving local time. https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.tz_localize.html#pandas.Series.dt.tz_localize
+    if hasattr(pd_python.index,'tz'):
+        pd_python = pd_python.tz_localize(None) #Passing None will remove the time zone information preserving local time. https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.tz_localize.html#pandas.Series.dt.tz_localize
     
     # reset index
-    pd_python = pd_python.reset_index(drop=True)
+    pd_python = pd_python.reset_index(drop=False)
     pd_fortran = pd_fortran.reset_index(drop=True)
     
     fig, (ax1,ax2,ax3) = plt.subplots(3,1,figsize=(15,9),sharex=True)

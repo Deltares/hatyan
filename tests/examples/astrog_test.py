@@ -89,15 +89,15 @@ if compare2fortran:
     phases_long_fortran['datetime']=pd.to_datetime(phases_long_fortran['date'].astype(str)+phases_long_fortran['time'].astype(str).str.zfill(4))
     phases_long_fortran['type'] = phases_long_fortran['type_str'].str.replace('EK','1').str.replace('VM','2').str.replace('LK','3').str.replace('NM','4').astype(int)
     phases_long_python = hatyan.astrog_phases(phases_long_fortran['datetime'].iloc[0]-dt.timedelta(days=5), phases_long_fortran['datetime'].iloc[-1]+dt.timedelta(days=5), dT_fortran=dT_fortran)
-    phases_long_python['datetime'] = phases_long_python['datetime'].dt.tz_convert(tz_EurAms) #convert to local timezone
+    phases_long_python = phases_long_python.tz_convert(tz_EurAms) #convert to local timezone
     
     moonriseset_fortran = pd.read_pickle(pkl_moon)
     moonriseset_fortran = moonriseset_fortran[np.logical_and(moonriseset_fortran['datetime']>=start_date_naive,moonriseset_fortran['datetime']<=end_date_naive)]
     
     sunriseset_fortran = pd.read_pickle(pkl_sun)
     sunriseset_fortran = sunriseset_fortran[np.logical_and(sunriseset_fortran['datetime']>=start_date_naive,sunriseset_fortran['datetime']<=end_date_naive)]
-    pyth_index         = sunriseset_python['datetime'].dt.date.isin(sunriseset_fortran['datetime'].dt.date.unique())
-    sunriseset_python_somedays = sunriseset_python.loc[pyth_index].reset_index(drop=True)
+    selected_dates = sunriseset_fortran['datetime'].dt.date.drop_duplicates()
+    sunriseset_python_somedays = sunriseset_python.loc[pd.Index(sunriseset_python.index.date).isin(selected_dates)]
     
     anomalies_fortran = pd.read_pickle(pkl_anom)
     anomalies_fortran = anomalies_fortran[np.logical_and(anomalies_fortran['datetime']>=start_date_naive,anomalies_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
