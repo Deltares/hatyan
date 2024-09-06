@@ -235,14 +235,17 @@ def calc_HWLW12345to12(data_HWLW_12345):
     logger.info('starting HWLW 12345 to 12 correction')
     times_LWmin = []
     data_HW1 = data_HWLW_12345.loc[data_HWLW_12345['HWLWcode']==1]
-    #computing minimum waterlevels after each HW. Using hardcoded 12hour period instead of from one HW to next HW since then we can also assess last LW values
+    # computing minimum waterlevels after each HW. Using hardcoded 12hour period 
+    # instead of from one HW to next HW since then we can also assess last LW values
     for timeHW in data_HW1.index: #np.arange(0,len(data_HW1)-1):
         if timeHW==data_HWLW_12345.index[-1]: #if last HW is last time of input dataframe
             continue
-        #tide_afterHW = data_HWLW_12345.loc[data_HW1.index[iHW]:data_HW1.index[iHW+1]]
         tide_afterHW = data_HWLW_12345.loc[timeHW:timeHW+dt.timedelta(hours=12)]
-        tide_afterHW = tide_afterHW.iloc[1:] #remove first HW to avoid issues if LW is higher than HW due to surge
-        if len(tide_afterHW)==0: #this happens if there is no LW defined between two HWs, for instance after SCHEVNGN HW at '1948-04-30 19:50:00'
+        # remove first HW to avoid issues if LW is higher than HW due to surge
+        tide_afterHW = tide_afterHW.iloc[1:]
+        if len(tide_afterHW)==0:
+            # this happens if there is no LW defined between two HWs
+            # for instance after SCHEVNGN HW at '1948-04-30 19:50:00'
             continue
         time_minimum = tide_afterHW['values'].idxmin()
         times_LWmin.append(time_minimum)

@@ -492,7 +492,6 @@ def test_writenetcdf():
 
 @pytest.mark.unittest
 def test_writenetcdf_nosidx():
-    
     current_station = 'VLISSGN'
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
@@ -525,3 +524,87 @@ def test_writenetcdf_nosidx():
     data_nc.close()
     os.remove(file_nc)
 
+
+@pytest.mark.unittest
+def test_calc_HWLW12345to12():
+    file_ext = os.path.join(dir_testdata,'hoek_har.dia')
+    
+    df = hatyan.read_dia(file_ext, block_ids=0)
+    df_12 = hatyan.calc_HWLW12345to12(df)
+    
+    assert len(df) == 3977
+    assert len(df_12) == 2825
+
+
+@pytest.mark.unittest
+def test_calc_HWLW12345to12_include_last_lw():
+    file_ext = os.path.join(dir_testdata,'hoek_har.dia')
+    
+    df = hatyan.read_dia(file_ext, block_ids=0)
+    
+    # get timeseries that ends with HWLWcode=2
+    df_sel = df.iloc[:-1]
+    df_12 = hatyan.calc_HWLW12345to12(df_sel)
+    
+    assert len(df) == 3977
+    assert len(df_sel) == 3976
+    assert df_sel["HWLWcode"].iloc[0] == 1
+    assert df_sel["HWLWcode"].iloc[-1] == 2
+    assert len(df_12) == 2824
+    assert df_12["HWLWcode"].iloc[0] == 1
+    assert df_12["HWLWcode"].iloc[-1] == 2
+
+
+@pytest.mark.unittest
+def test_calc_HWLW12345to12_include_first_lw():
+    file_ext = os.path.join(dir_testdata,'hoek_har.dia')
+    
+    df = hatyan.read_dia(file_ext, block_ids=0)
+    
+    # get timeseries that starts with HWLWcode=2
+    df_sel = df.iloc[9:]
+    df_12 = hatyan.calc_HWLW12345to12(df_sel)
+    
+    assert len(df) == 3977
+    assert len(df_sel) == 3968
+    assert df_sel["HWLWcode"].iloc[0] == 2
+    assert df_sel["HWLWcode"].iloc[-1] == 1
+    assert len(df_12) == 2820
+    assert df_12["HWLWcode"].iloc[0] == 2
+    assert df_12["HWLWcode"].iloc[-1] == 1
+
+
+@pytest.mark.unittest
+def test_calc_HWLW12345to12_skip_missing_lw():
+    file_ext = os.path.join(dir_testdata,'hoek_har.dia')
+    
+    df = hatyan.read_dia(file_ext, block_ids=0)
+    
+    # construct boolean to drop the first low waters (345 combination)
+    # and the last low water (2)
+    bool_drop = df["HWLWcode"] != 0
+    bool_drop.iloc[1:4] = False
+    bool_drop.iloc[-2:-1] = False
+    
+    df_sel = df.loc[bool_drop]
+    df_12 = hatyan.calc_HWLW12345to12(df_sel)
+    
+    assert len(df) == 3977
+    assert len(df_sel) == 3973
+    assert df_sel["HWLWcode"].iloc[0:2].tolist() == [1,1]
+    assert df_sel["HWLWcode"].iloc[-2:].tolist() == [1,1]
+    assert len(df_12) == 2823
+    assert df_12["HWLWcode"].iloc[0:2].tolist() == [1,1]
+    assert df_12["HWLWcode"].iloc[-2:].tolist() == [1,1]
+
+
+@pytest.mark.unittest
+def test_calc_HWLW12345to12_already_12():
+    file_ext = os.path.join(dir_testdata,'VLISSGN_ext.txt')
+    
+    df = hatyan.read_dia(file_ext)
+    
+    df_12 = hatyan.calc_HWLW12345to12(df)
+    
+    assert len(df) == 1411
+    assert len(df_12) == 1411
