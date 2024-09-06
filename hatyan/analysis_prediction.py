@@ -577,7 +577,6 @@ def prediction(comp, times=None, timestep=None):
         tzone_pred = times.tz
         if tzone_pred is None and tzone_comp is not None:
             times = times.tz_localize(tzone_comp)
-            tzone_pred = tzone_comp
             logger.warning("provided times are timezone-naive and provided components are "
                             "timezone-aware. The times are being interpreted as if they would "
                             f"have the same timezone as the components: {tzone_comp}")
