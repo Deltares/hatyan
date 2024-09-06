@@ -576,7 +576,7 @@ def test_prediction_raise_mixed_tznaive_tzaware():
     dtindex = pd.date_range("2020-01-01 00:00 +00:00","2020-01-02 00:00 +00:00", freq="10min")
     with pytest.raises(ValueError) as e:
         hatyan.prediction(comp, times=dtindex)
-    assert "provided times are timezone-aware and components are timezone-naive, this cannot be processed." in str(e.value)
+    assert "provided times and components should both be timezone-aware or timezone-naive, not mixed." in str(e.value)
 
 
 @pytest.mark.unittest
