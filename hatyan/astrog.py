@@ -1040,7 +1040,7 @@ def plot_astrog_diff(pd_python, pd_fortran, typeCol="type", typeUnit='-', typeLa
     
     # reset index
     pd_python = pd_python.reset_index(drop=False)
-    pd_fortran = pd_fortran.reset_index(drop=True)
+    pd_fortran = pd_fortran.reset_index(drop=False)
     
     fig, (ax1,ax2,ax3) = plt.subplots(3,1,figsize=(15,9),sharex=True)
     ax1.set_title('%s'%(typeCol))
