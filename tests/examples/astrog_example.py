@@ -80,30 +80,33 @@ if compare2fortran:
     pkl_seas = os.path.join(dir_testdata,'other','astrog30_seasons_2000_2011.pkl')
     
     culminations_fortran = pd.read_pickle(pkl_culm)
-    culminations_fortran = culminations_fortran[np.logical_and(culminations_fortran['datetime']>=start_date_naive,culminations_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
+    culminations_fortran['datetime'] = pd.to_datetime(culminations_fortran['datetime'])
+    culminations_fortran = culminations_fortran.set_index('datetime')
+    culminations_fortran = culminations_fortran.loc[start_date_naive:end_date_naive]
     
-    phases_fortran = pd.read_pickle(pkl_phas)
-    phases_fortran = phases_fortran[np.logical_and(phases_fortran['datetime']>=start_date_naive,phases_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
+    phases_fortran = pd.read_pickle(pkl_phas).set_index('datetime')
+    phases_fortran = phases_fortran.loc[start_date_naive:end_date_naive]
     
     phases_long_fortran = pd.read_csv(txt_phas, sep=';', names=['date','time','type_str'], skiprows=1) # long time series 2021-2035 (Koos Doekes)
-    phases_long_fortran['datetime']=pd.to_datetime(phases_long_fortran['date'].astype(str)+phases_long_fortran['time'].astype(str).str.zfill(4))
-    phases_long_fortran['type'] = phases_long_fortran['type_str'].replace('EK',1).replace('VM',2).replace('LK',3).replace('NM',4)
-    phases_long_python = hatyan.astrog_phases(phases_long_fortran['datetime'].iloc[0]-dt.timedelta(days=5), phases_long_fortran['datetime'].iloc[-1]+dt.timedelta(days=5), dT_fortran=dT_fortran)
-    phases_long_python['datetime'] = phases_long_python['datetime'].dt.tz_convert(tz_EurAms) #convert to local timezone
+    phases_long_fortran['datetime'] = pd.to_datetime(phases_long_fortran['date'].astype(str)+phases_long_fortran['time'].astype(str).str.zfill(4))
+    phases_long_fortran = phases_long_fortran.set_index('datetime')
+    phases_long_fortran['type'] = phases_long_fortran['type_str'].str.replace('EK','1').str.replace('VM','2').str.replace('LK','3').str.replace('NM','4').astype(int)
+    phases_long_python = hatyan.astrog_phases(phases_long_fortran.index[0]-dt.timedelta(days=5), phases_long_fortran.index[-1]+dt.timedelta(days=5), dT_fortran=dT_fortran)
+    phases_long_python = phases_long_python.tz_convert(tz_EurAms) #convert to local timezone
     
-    moonriseset_fortran = pd.read_pickle(pkl_moon)
-    moonriseset_fortran = moonriseset_fortran[np.logical_and(moonriseset_fortran['datetime']>=start_date_naive,moonriseset_fortran['datetime']<=end_date_naive)]
+    moonriseset_fortran = pd.read_pickle(pkl_moon).set_index('datetime')
+    moonriseset_fortran = moonriseset_fortran.loc[start_date_naive:end_date_naive]
     
-    sunriseset_fortran = pd.read_pickle(pkl_sun)
-    sunriseset_fortran = sunriseset_fortran[np.logical_and(sunriseset_fortran['datetime']>=start_date_naive,sunriseset_fortran['datetime']<=end_date_naive)]
-    pyth_index         = sunriseset_python['datetime'].dt.date.isin(sunriseset_fortran['datetime'].dt.date.unique())
-    sunriseset_python_somedays = sunriseset_python.loc[pyth_index].reset_index(drop=True)
+    sunriseset_fortran = pd.read_pickle(pkl_sun).set_index('datetime')
+    sunriseset_fortran = sunriseset_fortran.loc[start_date_naive:end_date_naive]
+    selected_dates = sunriseset_fortran.index.date
+    sunriseset_python_somedays = sunriseset_python.loc[pd.Index(sunriseset_python.index.date).isin(selected_dates)]
     
-    anomalies_fortran = pd.read_pickle(pkl_anom)
-    anomalies_fortran = anomalies_fortran[np.logical_and(anomalies_fortran['datetime']>=start_date_naive,anomalies_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
+    anomalies_fortran = pd.read_pickle(pkl_anom).set_index('datetime')
+    anomalies_fortran = anomalies_fortran.loc[start_date_naive:end_date_naive]
     
-    seasons_fortran = pd.read_pickle(pkl_seas)
-    seasons_fortran = seasons_fortran[np.logical_and(seasons_fortran['datetime']>=start_date_naive,seasons_fortran['datetime']<=end_date_naive)].reset_index(drop=True)
+    seasons_fortran = pd.read_pickle(pkl_seas).set_index('datetime')
+    seasons_fortran = seasons_fortran.loc[start_date_naive:end_date_naive]
     
     #%% plot results (differences)
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python, culminations_fortran, typeLab=['lower','upper'], timeBand=[-.18,.18])
@@ -118,7 +121,7 @@ if compare2fortran:
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_python, pd_fortran=phases_fortran, typeLab=['FQ','FM','LQ','NM'], timeBand=[-30,30])
     fig.savefig('phase_differences.png')
 
-    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_long_python, pd_fortran=phases_long_fortran[['datetime','type']], typeLab=['FQ','FM','LQ','NM'], timeBand=[-30,30])
+    fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=phases_long_python, pd_fortran=phases_long_fortran[['type']], typeLab=['FQ','FM','LQ','NM'], timeBand=[-30,30])
     fig.savefig('phase_differences_longperiod.png')
 
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=moonriseset_python, pd_fortran=moonriseset_fortran, typeLab=['rise','set'], timeBand=[-30,30])
@@ -132,4 +135,3 @@ if compare2fortran:
     
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(pd_python=seasons_python, pd_fortran=seasons_fortran, typeLab=['spring','summer','autumn','winter'], timeBand=[-30,30])
     fig.savefig('season_differences.png')
-
