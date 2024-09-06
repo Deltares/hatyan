@@ -87,7 +87,7 @@ if compare2fortran:
     
     phases_long_fortran = pd.read_csv(txt_phas, sep=';', names=['date','time','type_str'], skiprows=1) # long time series 2021-2035 (Koos Doekes)
     phases_long_fortran['datetime']=pd.to_datetime(phases_long_fortran['date'].astype(str)+phases_long_fortran['time'].astype(str).str.zfill(4))
-    phases_long_fortran['type'] = phases_long_fortran['type_str'].replace('EK',1).replace('VM',2).replace('LK',3).replace('NM',4)
+    phases_long_fortran['type'] = phases_long_fortran['type_str'].str.replace('EK','1').str.replace('VM','2').str.replace('LK','3').str.replace('NM','4').astype(int)
     phases_long_python = hatyan.astrog_phases(phases_long_fortran['datetime'].iloc[0]-dt.timedelta(days=5), phases_long_fortran['datetime'].iloc[-1]+dt.timedelta(days=5), dT_fortran=dT_fortran)
     phases_long_python['datetime'] = phases_long_python['datetime'].dt.tz_convert(tz_EurAms) #convert to local timezone
     

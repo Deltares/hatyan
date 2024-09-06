@@ -90,7 +90,8 @@ def astrog_culminations(tFirst, tLast, dT_fortran=False):
     DEC = astrabOutput['DECMOO']
     
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':CULTIM,'type':CULTYP,'parallax':PAR,'declination':DEC}) #CULTIM.round('S') decreases fortran reproduction
+    astrog_df = pd.DataFrame({'type':CULTYP,'parallax':PAR,'declination':DEC},
+                             index=CULTIM)  # CULTIM.round('S') decreases fortran reproduction
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','lowerculmination').replace('2','upperculmination')
 
     #set timezone, check datetime order and filter datetimerange
@@ -157,7 +158,7 @@ def astrog_phases(tFirst,tLast,dT_fortran=False):
     FATIM = astrac(FAEST,dT_fortran=dT_fortran,mode=FATYP+2) + TIMDIF
 
     # make dataframe
-    astrog_df = pd.DataFrame({'datetime':FATIM.round('s'),'type':FATYP})
+    astrog_df = pd.DataFrame({'type':FATYP}, index=FATIM.round('s'))
     astrog_df['type_str'] = astrog_df['type'].astype(str).replace('1','FQ').replace('2','FM').replace('3','LQ').replace('4','NM')
 
     #set timezone, check datetime order and filter datetimerange
@@ -936,14 +937,13 @@ def dT(dateIn,dT_fortran=False):
 
 
 def check_crop_dataframe(astrog_df, tFirst, tLast, tzone):
-    
-    #set timezone, check datetime order and filter datetimerange
-    astrog_df['datetime'] = pd.to_datetime(astrog_df['datetime']).dt.tz_localize('UTC',ambiguous=False,nonexistent='shift_forward') # set timezone (UTC)
-    astrog_df['datetime'] = astrog_df['datetime'].dt.tz_convert(tzone) #convert timezone to tzone
-    if (np.diff(astrog_df.sort_values('datetime').index)!=1).any():
+    # check datetime order
+    if not astrog_df.index.is_monotonic_increasing:
         raise Exception('something went wrong which resulted in off ordering of the dataframe')
-    astrog_df_dtnaive = astrog_df['datetime'].dt.tz_localize(None)
-    astrog_df = astrog_df[np.logical_and(astrog_df_dtnaive>=tFirst,astrog_df_dtnaive<=tLast)].reset_index(drop=True)
+    # crop on time range
+    astrog_df = astrog_df.loc[tFirst, tLast]
+    # set and convert timezone
+    astrog_df = astrog_df.tz_localize('UTC').tz_convert(tzone)
     return astrog_df
 
 
