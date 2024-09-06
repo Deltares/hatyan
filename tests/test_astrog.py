@@ -216,10 +216,10 @@ def test_astrog_culminations():
     # moon culminations
     culminations_python = hatyan.astrog_culminations(tFirst=start_date, tLast=end_date)
     
-    datetimes = culminations_python['datetime']
-    assert datetimes.dt.tz == dt.timezone.utc
-    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 04:44:14.732116514+0000')
-    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 13:16:46.464269856+0000')
+    datetimes = culminations_python.index
+    assert datetimes.tz == dt.timezone.utc
+    assert datetimes[0] == pd.Timestamp('2020-01-01 04:44:14.732116514+0000')
+    assert datetimes[-1] == pd.Timestamp('2020-12-31 13:16:46.464269856+0000')
 
     subset = culminations_python.iloc[:10]
     assert subset["type"].tolist() == [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
@@ -248,10 +248,10 @@ def test_astrog_culminations_met():
     # moon culminations
     culminations_python = hatyan.astrog_culminations(tFirst=start_date, tLast=end_date)
     
-    datetimes = culminations_python['datetime']
-    assert datetimes.dt.tz == dt.timezone(dt.timedelta(seconds=3600))
-    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 05:44:14.732115815+0100')
-    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 14:16:46.464269693+0100')
+    datetimes = culminations_python.index
+    assert datetimes.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert datetimes[0] == pd.Timestamp('2020-01-01 05:44:14.732115815+0100')
+    assert datetimes[-1] == pd.Timestamp('2020-12-31 14:16:46.464269693+0100')
 
 
 @pytest.mark.systemtest
@@ -261,10 +261,10 @@ def test_astrog_phases():
     # lunar phases
     phases_python = hatyan.astrog_phases(tFirst=start_date, tLast=end_date)
     
-    datetimes = phases_python['datetime']
-    assert datetimes.dt.tz == dt.timezone.utc
-    assert datetimes.iloc[0] == pd.Timestamp('2020-01-03 04:45:20+0000')
-    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-30 03:28:07+0000')
+    datetimes = phases_python.index
+    assert datetimes.tz == dt.timezone.utc
+    assert datetimes[0] == pd.Timestamp('2020-01-03 04:45:20+0000')
+    assert datetimes[-1] == pd.Timestamp('2020-12-30 03:28:07+0000')
     
     expected_type = [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 
                      1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 
@@ -289,15 +289,15 @@ def test_astrog_moonriseset():
     moonriseset_python = hatyan.astrog_moonriseset(tFirst=start_date, tLast=end_date)
     moonriseset_python_perday = hatyan.convert2perday(moonriseset_python)
     
-    datetimes = moonriseset_python['datetime']
-    assert datetimes.dt.tz == dt.timezone.utc
-    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 11:15:43+0000')
-    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 16:46:52+0000')
+    datetimes = moonriseset_python.index
+    assert datetimes.tz == dt.timezone.utc
+    assert datetimes[0] == pd.Timestamp('2020-01-01 11:15:43+0000')
+    assert datetimes[-1] == pd.Timestamp('2020-12-31 16:46:52+0000')
     
-    datetimes_perday = pd.to_datetime(moonriseset_python_perday['datetime'])
-    assert datetimes_perday.dt.tz is None
-    assert datetimes_perday.iloc[0] == pd.Timestamp('2020-01-01 00:00:00')
-    assert datetimes_perday.iloc[-1] == pd.Timestamp('2020-12-31 00:00:00')
+    datetimes_perday = pd.to_datetime(moonriseset_python_perday.index)
+    assert datetimes_perday.tz is None
+    assert datetimes_perday[0] == pd.Timestamp('2020-01-01 00:00:00')
+    assert datetimes_perday[-1] == pd.Timestamp('2020-12-31 00:00:00')
     
     subset = moonriseset_python.iloc[:10]
     assert subset["type"].tolist() == [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
@@ -339,15 +339,15 @@ def test_astrog_sunriseset():
     sunriseset_python = hatyan.astrog_sunriseset(tFirst=start_date, tLast=end_date)
     sunriseset_python_perday = hatyan.convert2perday(sunriseset_python)
     
-    datetimes = sunriseset_python['datetime']
-    assert datetimes.dt.tz == dt.timezone.utc
-    assert datetimes.iloc[0] == pd.Timestamp('2020-01-01 07:47:25+0000')
-    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-31 15:36:02+0000')
+    datetimes = sunriseset_python.index
+    assert datetimes.tz == dt.timezone.utc
+    assert datetimes[0] == pd.Timestamp('2020-01-01 07:47:25+0000')
+    assert datetimes[-1] == pd.Timestamp('2020-12-31 15:36:02+0000')
     
-    datetimes_perday = pd.to_datetime(sunriseset_python_perday['datetime'])
-    assert datetimes_perday.dt.tz is None
-    assert datetimes_perday.iloc[0] == pd.Timestamp('2020-01-01 00:00:00')
-    assert datetimes_perday.iloc[-1] == pd.Timestamp('2020-12-31 00:00:00')
+    datetimes_perday = pd.to_datetime(sunriseset_python_perday.index)
+    assert datetimes_perday.tz is None
+    assert datetimes_perday[0] == pd.Timestamp('2020-01-01 00:00:00')
+    assert datetimes_perday[-1] == pd.Timestamp('2020-12-31 00:00:00')
 
     subset = sunriseset_python.iloc[:10]
     assert subset["type"].tolist() == [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
@@ -369,10 +369,10 @@ def test_astrog_anomalies():
     # lunar anomalies
     anomalies_python = hatyan.astrog_anomalies(tFirst=start_date, tLast=end_date)
     
-    datetimes = anomalies_python['datetime']
-    assert datetimes.dt.tz == dt.timezone.utc
-    assert datetimes.iloc[0] == pd.Timestamp('2020-01-02 01:25:44+0000')
-    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-24 16:48:18+0000')
+    datetimes = anomalies_python.index
+    assert datetimes.tz == dt.timezone.utc
+    assert datetimes[0] == pd.Timestamp('2020-01-02 01:25:44+0000')
+    assert datetimes[-1] == pd.Timestamp('2020-12-24 16:48:18+0000')
     
     expected_type = [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 
                      1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
@@ -392,10 +392,10 @@ def test_astrog_seasons():
     # astronomical seasons
     seasons_python = hatyan.astrog_seasons(tFirst=start_date, tLast=end_date)
     
-    datetimes = seasons_python['datetime']
-    assert datetimes.dt.tz == dt.timezone.utc
-    assert datetimes.iloc[0] == pd.Timestamp('2020-03-20 03:49:46+0000')
-    assert datetimes.iloc[-1] == pd.Timestamp('2020-12-21 10:02:39+0000')
+    datetimes = seasons_python.index
+    assert datetimes.tz == dt.timezone.utc
+    assert datetimes[0] == pd.Timestamp('2020-03-20 03:49:46+0000')
+    assert datetimes[-1] == pd.Timestamp('2020-12-21 10:02:39+0000')
     
     assert seasons_python['type'].tolist() == [1, 2, 3, 4]
     assert seasons_python['type_str'].tolist() == ['spring', 'summer', 'autumn', 'winter']
@@ -407,7 +407,6 @@ def test_plot_astrog_diff():
     end_date_utc = pd.Timestamp(2000, 4, 1, tz="UTC")
     
     culminations_python = hatyan.astrog_culminations(tFirst=start_date_utc, tLast=end_date_utc)
-    culminations_python_naive = culminations_python.copy()
-    culminations_python_naive['datetime'] = culminations_python_naive['datetime'].dt.tz_localize(None)
+    culminations_python_naive = culminations_python.tz_localize(None).reset_index()
     
     hatyan.plot_astrog_diff(culminations_python, culminations_python_naive, typeLab=['lower','upper'], timeBand=[-.18,.18])
