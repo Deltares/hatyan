@@ -10,7 +10,7 @@
 
 ### Fix
 - repaired support for equidistant multiblock diafiles with varying timesteps in [#314](https://github.com/Deltares/hatyan/pull/314)
-- fixed passing of timezones in case of mixed timezones in comp and times in `hatyan.prediction()` in [#336](https://github.com/Deltares/hatyan/pull/336)
+- fixed passing of timezones in case of mixed timezones in comp and times in `hatyan.prediction()` in [#336](https://github.com/Deltares/hatyan/pull/336) and [#349](https://github.com/Deltares/hatyan/pull/349)
 
 
 ## 2.8.0 (2024-05-08)
