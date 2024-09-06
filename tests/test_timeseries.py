@@ -540,8 +540,9 @@ def test_calc_HWLW12345to12():
 def test_calc_HWLW12345to12_include_last_lw():
     file_ext = os.path.join(dir_testdata,'hoek_har.dia')
     
-    # get timeseries that ends with HWLWcode=2
     df = hatyan.read_dia(file_ext, block_ids=0)
+    
+    # get timeseries that ends with HWLWcode=2
     df_sel = df.iloc[:-1]
     df_12 = hatyan.calc_HWLW12345to12(df_sel)
     
@@ -558,8 +559,9 @@ def test_calc_HWLW12345to12_include_last_lw():
 def test_calc_HWLW12345to12_include_first_lw():
     file_ext = os.path.join(dir_testdata,'hoek_har.dia')
     
-    # get timeseries that starts with HWLWcode=2
     df = hatyan.read_dia(file_ext, block_ids=0)
+    
+    # get timeseries that starts with HWLWcode=2
     df_sel = df.iloc[9:]
     df_12 = hatyan.calc_HWLW12345to12(df_sel)
     
@@ -576,7 +578,6 @@ def test_calc_HWLW12345to12_include_first_lw():
 def test_calc_HWLW12345to12_skip_missing_lw():
     file_ext = os.path.join(dir_testdata,'hoek_har.dia')
     
-    # get timeseries that starts with HWLWcode=2
     df = hatyan.read_dia(file_ext, block_ids=0)
     
     # construct boolean to drop the first low waters (345 combination)
@@ -595,3 +596,15 @@ def test_calc_HWLW12345to12_skip_missing_lw():
     assert len(df_12) == 2823
     assert df_12["HWLWcode"].iloc[0:2].tolist() == [1,1]
     assert df_12["HWLWcode"].iloc[-2:].tolist() == [1,1]
+
+
+@pytest.mark.unittest
+def test_calc_HWLW12345to12_already_12():
+    file_ext = os.path.join(dir_testdata,'VLISSGN_ext.txt')
+    
+    df = hatyan.read_dia(file_ext)
+    
+    df_12 = hatyan.calc_HWLW12345to12(df)
+    
+    assert len(df) == 1411
+    assert len(df_12) == 1411
