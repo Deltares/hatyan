@@ -421,41 +421,30 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     metadata_comp = metadata_from_obj(comp)
     tzone_comp = metadata_comp.pop('tzone', None)
     
-    if not isinstance(times, pd.DatetimeIndex):
-        raise TypeError(f'times argument can be of type pd.DatetimeIndex or slice, not {type(times)}')
-    times_pred_all_pdDTI = times
+    tzone_pred = times.tz
     
-    tzone_pred = times_pred_all_pdDTI.tz
-    
-    if tzone_pred is None and tzone_comp is not None:
-        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(tzone_comp)
-        tzone_pred = tzone_comp
-        logger.warning("provided times are timezone-naive and provided components are "
-                       "timezone-aware. The times are being interpreted as if they would "
-                       f"have the same timezone as the components: {tzone_comp}")
-        tzone_convert = True
-    elif tzone_pred is None and tzone_comp is None:
+    if tzone_pred is None and tzone_comp is None:
         tzone_convert = False
     elif tzone_pred is not None and tzone_comp is not None:
         tzone_convert = True
     else:
-        raise ValueError("provided times are timezone-aware and components are timezone-naive, "
-                         "this cannot be processed.")
+        raise ValueError("provided times and components should both be timezone-aware "
+                         "or timezone-naive, not mixed.")
     
     # remove timezone from prediction times: first convert times to tzone of components, then make timezone naive
     if tzone_convert:
-        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_convert(tzone_comp)
-        times_pred_all_pdDTI = times_pred_all_pdDTI.tz_localize(None)
+        times = times.tz_convert(tzone_comp)
+        times = times.tz_localize(None)
     
     logger.info(f'components used = {len(comp)}\n'
-                f'tstart = {times_pred_all_pdDTI[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
-                f'tstop = {times_pred_all_pdDTI[-1].strftime("%Y-%m-%d %H:%M:%S")}\n'
-                f'timestep = {times_pred_all_pdDTI.freq}')
+                f'tstart = {times[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
+                f'tstop = {times[-1].strftime("%Y-%m-%d %H:%M:%S")}\n'
+                f'timestep = {times.freq}')
     
     # middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan.
-    dood_date_mid = times_pred_all_pdDTI[[len(times_pred_all_pdDTI)//2]]
+    dood_date_mid = times[[len(times)//2]]
     # first date (for v0, also freq?)
-    dood_date_start = times_pred_all_pdDTI[:1]
+    dood_date_start = times[:1]
     
     # sort component list and component dataframe
     if np.isnan(comp.values).any():
@@ -469,17 +458,17 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     t_const_speed_all = t_const_freq_pd['freq'].values[:,np.newaxis]*(2*np.pi)
 
     if hatyan_settings.fu_alltimes:
-        dood_date_fu = times_pred_all_pdDTI
+        dood_date_fu = times
     else:
         dood_date_fu = dood_date_mid
     u_i_rad, f_i = get_uf_generic(const_list, dood_date_fu, hatyan_settings.nodalfactors, hatyan_settings.xfac, hatyan_settings.source)
 
     logger.info('PREDICTION started')
     omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    if not isinstance(times_pred_all_pdDTI,pd.DatetimeIndex): #support for years<1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
-        tdiff = pd.TimedeltaIndex(times_pred_all_pdDTI-dood_date_start) #pd.TimedeltaIndex is around it to avoid it being an Index in case of outofbounds timesteps (necessary from pandas 2.0.0)
+    if not isinstance(times,pd.DatetimeIndex): #support for years<1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
+        tdiff = pd.TimedeltaIndex(times-dood_date_start) #pd.TimedeltaIndex is around it to avoid it being an Index in case of outofbounds timesteps (necessary from pandas 2.0.0)
     else:
-        tdiff = pd.TimedeltaIndex(times_pred_all_pdDTI-dood_date_start[0]) #pd.TimedeltaIndex is not necessary here, but for conformity with above
+        tdiff = pd.TimedeltaIndex(times-dood_date_start[0]) #pd.TimedeltaIndex is not necessary here, but for conformity with above
     times_from0allpred_s_orig = tdiff.total_seconds().values
     times_from0allpred_s = np.transpose(times_from0allpred_s_orig[np.newaxis])
     
@@ -489,7 +478,7 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     omeg_t_v_u_phi = np.add(omeg_t,v_u_phi)
     ht_res = np.sum(np.multiply(f_A,np.cos(omeg_t_v_u_phi)),axis=1) #not necessary to add A0, since it is already part of the component list
     
-    ts_prediction_pd = pd.DataFrame({'values': ht_res},index=times_pred_all_pdDTI)
+    ts_prediction_pd = pd.DataFrame({'values': ht_res}, index=times)
     logger.info('PREDICTION finished')
     
     # add timezone to prediction: first interpret times as tzone of components, then convert to timezone of prediction
@@ -537,6 +526,9 @@ def prediction(comp, times=None, timestep=None):
     
     logger.info(f'PREDICTION initializing\n{hatyan_settings}')
     
+    metadata_comp = metadata_from_obj(comp)
+    tzone_comp = metadata_comp.pop('tzone', None)
+    
     if hasattr(comp.columns,"levels"):
         logger.info('prediction() per period due to levels in component dataframe columns')
         if timestep is None:
@@ -563,8 +555,6 @@ def prediction(comp, times=None, timestep=None):
             else:
                 raise Exception(f'unknown freqstr: {period_dt.freqstr}')
             # generate date range and do prediction
-            metadata_comp = metadata_from_obj(comp)
-            tzone_comp = metadata_comp.pop('tzone', None)
             times_pred = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us", tz=tzone_comp)
             ts_prediction_oneperiod = prediction_singleperiod(comp=comp_oneyear, times=times_pred, hatyan_settings=hatyan_settings)
             ts_prediction_perperiod_list.append(ts_prediction_oneperiod)
@@ -580,6 +570,17 @@ def prediction(comp, times=None, timestep=None):
             tstop = pd.Timestamp(times.stop)
             tstep = pd.tseries.frequencies.to_offset(times.step)
             times = pd.date_range(start=tstart, end=tstop, freq=tstep, unit="us")
+        if not isinstance(times, pd.DatetimeIndex):
+            raise TypeError(f'times argument can be of type pd.DatetimeIndex or slice, not {type(times)}')
+
+        # backwards compatibility for timezone-naive times
+        tzone_pred = times.tz
+        if tzone_pred is None and tzone_comp is not None:
+            times = times.tz_localize(tzone_comp)
+            logger.warning("provided times are timezone-naive and provided components are "
+                            "timezone-aware. The times are being interpreted as if they would "
+                            f"have the same timezone as the components: {tzone_comp}")
+        
         ts_prediction = prediction_singleperiod(comp=comp, times=times, hatyan_settings=hatyan_settings)
     
     # add metadata (and update grootheid)
