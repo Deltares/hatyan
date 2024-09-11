@@ -894,6 +894,7 @@ def get_metadata_pd(ts, headerformat):
                                  'STA;%10s;%10s;O'%(tstart_str,tstop_str),
                                  '[WRD]'])
     else:
+        assert ts.index.freq is not None
         timestep_min = pd.Timedelta(ts.index.freq).total_seconds()/60
         
         #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
