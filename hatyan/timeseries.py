@@ -894,8 +894,7 @@ def get_metadata_pd(ts, headerformat):
                                  'STA;%10s;%10s;O'%(tstart_str,tstop_str),
                                  '[WRD]'])
     else:
-        # TODO: derive timestep_min from freq instead, otherwise we cannot be certain of constant freq
-        timestep_min = (ts.index[1]-ts.index[0]).total_seconds()/60
+        timestep_min = ts.index.freq.delta.total_seconds()/60
         
         #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
         metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
