@@ -1,6 +1,6 @@
 # What's new
 
-## UNRELEASED
+## 2.9.0 (2024-09-11)
 
 ### Feat
 - flexible timezone support in astrog in [#333](https://github.com/Deltares/hatyan/pull/333)
