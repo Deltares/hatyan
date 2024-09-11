@@ -864,10 +864,10 @@ def get_metadata_pd(ts, headerformat):
         metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
                                  '[W3H]', #WIE, WAT, WAAR en HOE
                                  'MUX;%s'%(parameterX), #Mux
-                                 'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Analyserende-instantie
-                                 'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? #Beherende-instantie
-                                 'BMI;NVT;Niet van toepassing', #niet_essentieel? #Bemonsterende-instantie
-                                 'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? #Opdrachtgevende-instantie
+                                 'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #Analyserende-instantie
+                                 'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #Beherende-instantie
+                                 'BMI;NVT;Niet van toepassing', #Bemonsterende-instantie
+                                 'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #Opdrachtgevende-instantie
                                  'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code
                                  'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
                                  'TYP;TN', #Reekstype: niet-equidistant
@@ -877,15 +877,11 @@ def get_metadata_pd(ts, headerformat):
                                  'MXC;1;10;Oppervlaktewater', #Compartiment Muxkanaal
                                  'MXE;1;T;DIMSLS', #domein (T: integer met waarde 1 tot 127, vertaaltabel TYPERING met dezelfde parameter/compartiment-combinatie is dan verplicht) en eenheid
                                  'MXH;1;NVT;Niet van toepassing', #Hoedanigheid Muxkanaal
-                                 'MXO;1;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
-                                 'MXS;1;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
                                  'MXW;2;%i'%(waarnemingssoort), #TODO: niet ondersteund in wia, wellicht niet essentieel voor dia?
                                  'MXP;2;%s'%(grootheid), #MXG in wia: grootheid muxkanaal
                                  'MXC;2;10;Oppervlaktewater', #Compartiment Muxkanaal
                                  'MXE;2;I;cm', #domein (I: integer) en eenheid
                                  'MXH;2;%s;%s'%(vertref, vertreflong), #Hoedanigheid Muxkanaal
-                                 'MXO;2;NVT;Niet van toepassing', #niet_essentieel? #Orgaan Muxkanaal
-                                 'MXS;2;NVT', #niet_essentieel? #Samengesteldeklasse Muxkanaal
                                  '[TYP]',
                                  'TVL;1;1;hoogwater',
                                  'TVL;1;2;laagwater',
@@ -898,8 +894,8 @@ def get_metadata_pd(ts, headerformat):
                                  'STA;%10s;%10s;O'%(tstart_str,tstop_str),
                                  '[WRD]'])
     else:
-        # TODO: derive timestep_min from freq instead, otherwise we cannot be certain of constant freq
-        timestep_min = (ts.index[1]-ts.index[0]).total_seconds()/60
+        assert ts.index.freq is not None
+        timestep_min = pd.Timedelta(ts.index.freq).total_seconds()/60
         
         #informatie in comments komt veelal uit "IDD-WIA-v0.9.2.docx"
         metadata_pd = pd.Series(['[IDT;*DIF*;A;;%6s]'%(time_today), #identificatieblok (DIF voor dia en WIF voor wia, A voor ASCII) #TODO: kan *DIF*/*WIF* gebruikt worden voor identificatie dia/wia file?
@@ -909,10 +905,10 @@ def get_metadata_pd(ts, headerformat):
                                  'CPM;10;Oppervlaktewater', #compartiment, gelijk voor waarnemingssoorten 18 en 55
                                  'EHD;I;cm', #domein (I: integer) en eenheid, gelijk voor waarnemingssoorten 18 en 55
                                  'HDH;%s;%s'%(vertref,vertreflong),
-                                 'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Analyserende-instantie
-                                 'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #niet_essentieel? Beherende-instantie
-                                 'BMI;NVT;Niet van toepassing', #niet_essentieel? Bemonsterende-instantie
-                                 'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #niet_essentieel? Opdrachtgevende-instantie
+                                 'ANI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #Analyserende-instantie
+                                 'BHI;RIKZITSDHG;RIKZ - afdeling ZDI te Den Haag', #Beherende-instantie
+                                 'BMI;NVT;Niet van toepassing', #Bemonsterende-instantie
+                                 'OGI;RIKZMON_WAT;RIKZ - Landelijke monitoring waterhoogten gegevens', #Opdrachtgevende-instantie
                                  'LOC;%s'%(station), #Locatiecode;Omschrijving;Soort;Coördinaattype;X-coördinaat_GS;Y-coördinaat_GS, EPSG_code #;Hoek van Holland;P;RD;6793000;44400000
                                  'ANA;%s'%(ana), #WBM in wia: Waardebepalingsmethode
                                  'TYP;TE', #Reekstype: equidistant

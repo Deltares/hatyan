@@ -529,11 +529,13 @@ def test_prediction_comp_and_times_different_timezones():
     pred_utc = hatyan.prediction(comp=comp_met, times=times_utc)
     
     assert pred_naive.index.tz is None
+    assert pred_naive.index.freq is not None
     assert pred_naive.index[0] == pd.Timestamp('2019-01-01 00:00:00')
-    assert pred_met.index[0] == pd.Timestamp('2019-01-01 00:00:00+0100')
     assert pred_met.index.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert pred_met.index.freq is not None
     assert pred_met.index[0] == pd.Timestamp('2019-01-01 00:00:00+0100')
     assert pred_utc.index.tz == dt.timezone.utc
+    assert pred_utc.index.freq is not None
     assert pred_utc.index[0] == pd.Timestamp('2019-01-01 00:00:00+0000')
     assert ((pred_naive - pred_met.tz_localize(None)).dropna()["values"] < 1e-9).all()
     assert ((pred_utc - pred_met).dropna()["values"] < 1e-9).all()

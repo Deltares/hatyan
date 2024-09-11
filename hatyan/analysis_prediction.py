@@ -435,6 +435,9 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     if tzone_convert:
         times = times.tz_convert(tzone_comp)
         times = times.tz_localize(None)
+        # TODO: workaround to maintain the frequency dropped by tz_localize
+        # https://github.com/pandas-dev/pandas/issues/36575
+        times.freq = times.inferred_freq
     
     logger.info(f'components used = {len(comp)}\n'
                 f'tstart = {times[0].strftime("%Y-%m-%d %H:%M:%S")}\n'
@@ -484,6 +487,9 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     # add timezone to prediction: first interpret times as tzone of components, then convert to timezone of prediction
     if tzone_convert:
         ts_prediction_pd = ts_prediction_pd.tz_localize(tzone_comp)
+        # TODO: workaround to maintain the frequency dropped by tz_localize
+        # https://github.com/pandas-dev/pandas/issues/36575
+        ts_prediction_pd.index.freq = ts_prediction_pd.index.inferred_freq
         ts_prediction_pd = ts_prediction_pd.tz_convert(tzone_pred)
     
     return ts_prediction_pd
@@ -577,6 +583,9 @@ def prediction(comp, times=None, timestep=None):
         tzone_pred = times.tz
         if tzone_pred is None and tzone_comp is not None:
             times = times.tz_localize(tzone_comp)
+            # TODO: workaround to maintain the frequency dropped by tz_localize
+            # https://github.com/pandas-dev/pandas/issues/36575
+            times.freq = times.inferred_freq
             logger.warning("provided times are timezone-naive and provided components are "
                             "timezone-aware. The times are being interpreted as if they would "
                             f"have the same timezone as the components: {tzone_comp}")
