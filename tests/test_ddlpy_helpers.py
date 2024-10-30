@@ -45,10 +45,21 @@ def test_ddlpy_to_hatyan(locations):
     assert ptypes.is_integer_dtype(ts_measwl["qualitycode"])
     assert ptypes.is_object_dtype(ts_measwl["status"])
 
+    # check if metadata is complete and correct
+    meta_fromts = ts_measwl.attrs
+    meta_expected = {
+        'grootheid': 'WATHTE',
+        'groepering': 'NVT',
+        'eenheid': 'cm',
+        'vertref': 'NAP',
+        'station': 'HOEKVHLD',
+        'origin': 'ddlpy',
+        }
+    assert meta_fromts == meta_expected
+
 
 @pytest.mark.unittest
 def test_convert_hwlwstr2num(locations):
-
     tstart_dt = "2022-12-19"
     tstop_dt = "2022-12-31"
     
@@ -74,10 +85,28 @@ def test_convert_hwlwstr2num(locations):
     
     assert "HWLWcode" in ts_measwlHWLW.columns
     assert np.array_equal(ts_measwlHWLW["HWLWcode"].values, hwlwcode_expected)
+    
+    # check if metadata is complete and correct
+    meta_fromts = ts_measwlHWLW.attrs
+    meta_expected = {
+        'grootheid': 'WATHTE',
+        'groepering': 'GETETM2',
+        'eenheid': 'cm',
+        'vertref': 'NAP',
+        'station': 'HOEKVHLD',
+        'origin': 'ddlpy',
+        }
+    assert meta_fromts == meta_expected
 
 
 @pytest.mark.systemtest
-def test_ddlpy_to_components(locations):
+def test_ddlpy_to_components(tmp_path, locations):
+    """
+    this test shows the metadata of the hatyan timeseries is properly created and passed
+    such that the component file can be written without altering or adding metadata.
+    This was achieved by fixing issue https://github.com/Deltares/hatyan/issues/357 
+    and issue https://github.com/Deltares/hatyan/issues/358.
+    """
     start_dt  = "2022-01-01 00:00:00 +01:00"
     end_dt  = "2022-03-31 23:50:00 +01:00"
 
@@ -90,13 +119,19 @@ def test_ddlpy_to_components(locations):
     locs_ddl_one = locs_ddl.loc[donar_loccode]
     ddl_df = ddlpy.measurements(locs_ddl_one, start_date=start_dt, end_date=end_dt)
     df_meas = hatyan.ddlpy_to_hatyan(ddl_df)
-
-    ts_comp_nfac1_fualltimes0_xfac1_peryear0 = hatyan.analysis(ts=df_meas, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod=False)
     
-    # TODO: manually setting attrs should not be necessary after improving hatyan.ddlpy_to_hatyan()
-    # https://github.com/Deltares/hatyan/issues/358
-    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['grootheid'] = "WATHTE"
-    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['eenheid'] = "cm"
-    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['vertref'] = "NAP"
-    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['station'] = donar_loccode
-    hatyan.write_components(ts_comp_nfac1_fualltimes0_xfac1_peryear0, filename='components_%.ana'%(donar_loccode))
+    # check if metadata is complete and correct
+    meta_fromts = df_meas.attrs
+    meta_expected = {
+        'grootheid': 'WATHTE',
+        'groepering': 'NVT',
+        'eenheid': 'cm',
+        'vertref': 'NAP',
+        'station': 'VLISSGN',
+        'origin': 'ddlpy'
+        }
+    assert meta_fromts == meta_expected
+    
+    comp = hatyan.analysis(ts=df_meas, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod=False)
+    file_comp = tmp_path / f'components_{donar_loccode}.ana'
+    hatyan.write_components(comp, filename=file_comp)

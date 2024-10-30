@@ -5,6 +5,7 @@ The package ddlpy is available at https://github.com/Deltares/ddlpy
 """
 
 import pandas as pd
+from hatyan.metadata import metadata_from_ddlpy
 
 __all__ = ["ddlpy_to_hatyan"]
 
@@ -34,6 +35,8 @@ def ddlpy_to_hatyan(ddlpy_meas, ddlpy_meas_exttyp=None):
     
     ts_pd = ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True)
     ts_pd['values'] /= 100 #convert from cm to m
+    metadata = metadata_from_ddlpy(ddlpy_meas)
+    ts_pd.attrs = metadata
     if ddlpy_meas_exttyp is None:
         return ts_pd
     
@@ -70,6 +73,7 @@ def ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True):
                           'qualitycode':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
                           'status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'].str[0],
                           })
+    
     return ts_pd
 
 
