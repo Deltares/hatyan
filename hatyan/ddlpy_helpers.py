@@ -5,6 +5,7 @@ The package ddlpy is available at https://github.com/Deltares/ddlpy
 """
 
 import pandas as pd
+from hatyan.metadata import metadata_from_ddlpy
 
 __all__ = ["ddlpy_to_hatyan"]
 
@@ -74,22 +75,6 @@ def ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True):
                           })
     
     return ts_pd
-
-
-def metadata_from_ddlpy(ddlpy_meas):
-    dict_translate = {'grootheid':'Grootheid.Code',
-                      'groepering':'Groepering.Code',
-                      'eenheid':'Eenheid.Code',
-                      'vertref':'Hoedanigheid.Code',
-                      'station':'Code',
-                      }
-    metadata = {'origin':'ddlpy'}
-    for k,v in dict_translate.items():
-        meta_values = ddlpy_meas[v]
-        meta_val = meta_values.iloc[0]
-        assert (meta_values == meta_val).all()
-        metadata[k] = meta_val
-    return metadata
 
 
 def convert_exttype_str2num(ts_measwl_ext, ts_measwl_exttype):

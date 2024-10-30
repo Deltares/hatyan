@@ -48,12 +48,12 @@ def test_ddlpy_to_hatyan(locations):
     # check if metadata is complete and correct
     meta_fromts = ts_measwl.attrs
     meta_expected = {
-        'origin': 'ddlpy',
         'grootheid': 'WATHTE',
         'groepering': 'NVT',
         'eenheid': 'cm',
         'vertref': 'NAP',
         'station': 'HOEKVHLD',
+        'origin': 'ddlpy',
         }
     assert meta_fromts == meta_expected
 
@@ -89,12 +89,12 @@ def test_convert_hwlwstr2num(locations):
     # check if metadata is complete and correct
     meta_fromts = ts_measwlHWLW.attrs
     meta_expected = {
-        'origin': 'ddlpy',
         'grootheid': 'WATHTE',
         'groepering': 'GETETM2',
         'eenheid': 'cm',
         'vertref': 'NAP',
-        'station': 'HOEKVHLD'
+        'station': 'HOEKVHLD',
+        'origin': 'ddlpy',
         }
     assert meta_fromts == meta_expected
 
@@ -119,7 +119,19 @@ def test_ddlpy_to_components(tmp_path, locations):
     locs_ddl_one = locs_ddl.loc[donar_loccode]
     ddl_df = ddlpy.measurements(locs_ddl_one, start_date=start_dt, end_date=end_dt)
     df_meas = hatyan.ddlpy_to_hatyan(ddl_df)
-
+    
+    # check if metadata is complete and correct
+    meta_fromts = df_meas.attrs
+    meta_expected = {
+        'grootheid': 'WATHTE',
+        'groepering': 'NVT',
+        'eenheid': 'cm',
+        'vertref': 'NAP',
+        'station': 'VLISSGN',
+        'origin': 'ddlpy'
+        }
+    assert meta_fromts == meta_expected
+    
     comp = hatyan.analysis(ts=df_meas, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod=False)
     file_comp = tmp_path / f'components_{donar_loccode}.ana'
     hatyan.write_components(comp, filename=file_comp)

@@ -33,6 +33,23 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     return metadata
 
 
+def metadata_from_ddlpy(ddlpy_meas):
+    dict_translate = {'grootheid':'Grootheid.Code',
+                      'groepering':'Groepering.Code',
+                      'eenheid':'Eenheid.Code',
+                      'vertref':'Hoedanigheid.Code',
+                      'station':'Code',
+                      }
+    metadata = {}
+    for k,v in dict_translate.items():
+        meta_values = ddlpy_meas[v]
+        meta_val = meta_values.iloc[0]
+        assert (meta_values == meta_val).all()
+        metadata[k] = meta_val
+    metadata['origin'] = 'ddlpy'
+    return metadata
+
+
 def metadata_from_obj(obj):
     metadata = obj.attrs.copy()
     return metadata
