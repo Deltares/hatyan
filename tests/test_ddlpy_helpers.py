@@ -74,3 +74,28 @@ def test_convert_hwlwstr2num(locations):
     
     assert "HWLWcode" in ts_measwlHWLW.columns
     assert np.array_equal(ts_measwlHWLW["HWLWcode"].values, hwlwcode_expected)
+
+
+@pytest.mark.systemtest
+def test_ddlpy_to_components(locations):
+    start_dt  = "2022-01-01 00:00:00 +01:00"
+    end_dt  = "2022-03-31 23:50:00 +01:00"
+
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE']) # measured waterlevels (not astro)
+    bool_groepering = locations['Groepering.Code'].isin(['NVT']) # timeseries (not extremes)
+    bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP']) # vertical reference, only NAP
+    locs_ddl = locations.loc[bool_grootheid & bool_groepering & bool_hoedanigheid]
+
+    donar_loccode = "VLISSGN"
+    locs_ddl_one = locs_ddl.loc[donar_loccode]
+    ddl_df = ddlpy.measurements(locs_ddl_one, start_date=start_dt, end_date=end_dt)
+    df_meas = hatyan.ddlpy_to_hatyan(ddl_df)
+
+    ts_comp_nfac1_fualltimes0_xfac1_peryear0 = hatyan.analysis(ts=df_meas, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod=False)
+    
+    # TODO: this should not be necessary after improving hatyan.ddlpy_to_hatyan()
+    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['grootheid'] = "WATHTE"
+    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['eenheid'] = "cm"
+    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['vertref'] = "NAP"
+    ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['station'] = donar_loccode
+    hatyan.write_components(ts_comp_nfac1_fualltimes0_xfac1_peryear0, filename='components_%.ana'%(donar_loccode))
