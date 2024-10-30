@@ -7,9 +7,13 @@ Created on Fri Aug 11 14:33:40 2023
 
 import os
 import pytest
+import pandas as pd
+import pytz
+import datetime as dt
 import numpy as np
 import hatyan
 from hatyan.metadata import metadata_from_obj
+from hatyan.components import _get_tzone_minutes
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -167,3 +171,22 @@ def test_merge_componentgroups_comparesettings():
         comp_fromfile_fake = comp_fromfile.copy()
         comp_fromfile_fake.attrs["source"] = 'foreman'
         _ = hatyan.merge_componentgroups(comp_main=comp_fromfile, comp_sec=comp_fromfile_fake.loc[['SA','SM']])
+
+
+@pytest.mark.unittest
+def test_get_tzone_minutes():
+    # relevant for ddlpy timeseries
+    tstart = pd.Timestamp("2020-01-01 00:00:00 +01:00")
+    tzone_min = _get_tzone_minutes(tstart.tz)
+    assert isinstance(tstart.tz, dt.timezone)
+    assert tzone_min == 60
+    
+    # hatyan dia timeseries
+    tstart = pd.Timestamp("2020-01-01 00:00:00", tz=pytz.FixedOffset(60))
+    tzone_min = _get_tzone_minutes(tstart.tz)
+    assert tzone_min == 60
+    
+    tstart = pd.Timestamp("2020-01-01 00:00:00")
+    with pytest.raises(NotImplementedError) as e:
+        _get_tzone_minutes(tstart.tz)
+    assert "tzone of type <class 'NoneType'> is not yet supported" in str(e.value)

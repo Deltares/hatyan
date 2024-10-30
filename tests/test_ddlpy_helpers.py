@@ -93,7 +93,8 @@ def test_ddlpy_to_components(locations):
 
     ts_comp_nfac1_fualltimes0_xfac1_peryear0 = hatyan.analysis(ts=df_meas, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, analysis_perperiod=False)
     
-    # TODO: this should not be necessary after improving hatyan.ddlpy_to_hatyan()
+    # TODO: manually setting attrs should not be necessary after improving hatyan.ddlpy_to_hatyan()
+    # https://github.com/Deltares/hatyan/issues/358
     ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['grootheid'] = "WATHTE"
     ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['eenheid'] = "cm"
     ts_comp_nfac1_fualltimes0_xfac1_peryear0.attrs['vertref'] = "NAP"
