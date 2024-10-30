@@ -5,6 +5,7 @@ components.py contains all the definitions related to hatyan components.
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import datetime as dt
 import numpy as np
 import pandas as pd
 import pytz
@@ -107,6 +108,16 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
     return fig, axs
 
 
+def _get_tzone_minutes(tzone):
+    if isinstance(tzone, dt.timezone):
+        tzone_min = int(tzone.utcoffset(None).seconds/60)
+    elif isinstance(tzone, pytz._FixedOffset):
+        tzone_min = tzone._minutes
+    else:
+        raise NotImplementedError(f"tzone of type {type(tzone)} is not yet supported.")
+    return tzone_min
+
+
 def write_components(comp, filename):
     """
     Writes the provided analysis results to a file
@@ -153,7 +164,8 @@ def write_components(comp, filename):
     tzone = metadata.pop('tzone')
     if tzone is None:
         raise ValueError("write_components() encountered tzone=None in components dataframe, not allowed.")
-    tzone_min = tzone._minutes
+    
+    tzone_min = _get_tzone_minutes(tzone)
     tstart_str = tstart.strftime("%Y%m%d  %H%M")
     tstop_str = tstop.strftime("%Y%m%d  %H%M")
     
