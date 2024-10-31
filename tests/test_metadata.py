@@ -25,7 +25,7 @@ def test_readts_dia_metadata_multifile():
     
     meta_expected = {'station': 'VLISSGN',
      'grootheid': 'WATHTE',
-     'eenheid': 'cm',
+     'eenheid': 'm',
      'vertref': 'NAP',
      'TYP': 'TE',
      'groepering': 'NVT',
@@ -67,7 +67,7 @@ def test_anapred_metadata():
     
     meta_expected_xfac0 = {'station': 'VLISSGN',
      'grootheid': 'WATHTBRKD',
-     'eenheid': 'cm',
+     'eenheid': 'm',
      'vertref': 'NAP',
      'TYP': 'TE',
      'groepering': 'NVT',
@@ -106,7 +106,7 @@ def test_hwlw_metadata():
     
     meas_ext_meta_expected = {'station': 'VLISSGN',
      'grootheid': 'WATHTE',
-     'eenheid': 'cm',
+     'eenheid': 'm',
      'vertref': 'NAP',
      'TYP': 'TE',
      'groepering': 'NVT',
@@ -114,7 +114,7 @@ def test_hwlw_metadata():
     
     pred_ext_meta_expected = {'station': 'VLISSGN',
      'grootheid': 'WATHTBRKD',
-     'eenheid': 'cm',
+     'eenheid': 'm',
      'vertref': 'NAP',
      'TYP': 'TE',
      'groepering': 'NVT',
@@ -142,7 +142,7 @@ def test_readts_dia_metadata_multiblock():
     
     meta_expected = {'station': 'HOEKVHLD',
      'grootheid': 'WATHTE',
-     'eenheid': 'cm',
+     'eenheid': 'm',
      'vertref': 'NAP',
      'TYP': 'TN',
      'groepering': 'GETETM2',
@@ -160,7 +160,7 @@ def test_metadata_compare():
         'TYP': 'TE',
         'groepering': 'NVT',
         'grootheid': 'WATHTE',
-        'eenheid': 'cm',
+        'eenheid': 'm',
         }
     
     metadata_compare([metadata,metadata,metadata])
@@ -168,10 +168,10 @@ def test_metadata_compare():
 
 @pytest.mark.unittest
 def test_wns_from_metadata():
-    metadata_1 = {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'NAP'}
-    metadata_54 = {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'MSL'}
-    metadata_18 = {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'NAP'}
-    metadata_55 = {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'MSL'}
+    metadata_1 = {'grootheid':'WATHTE', 'eenheid':'m', 'vertref':'NAP'}
+    metadata_54 = {'grootheid':'WATHTE', 'eenheid':'m', 'vertref':'MSL'}
+    metadata_18 = {'grootheid':'WATHTBRKD', 'eenheid':'m', 'vertref':'NAP'}
+    metadata_55 = {'grootheid':'WATHTBRKD', 'eenheid':'m', 'vertref':'MSL'}
     
     wns_1 = wns_from_metadata(metadata_1)
     wns_54 = wns_from_metadata(metadata_54)

@@ -32,10 +32,13 @@ def ddlpy_to_hatyan(ddlpy_meas, ddlpy_meas_exttyp=None):
 
     """
     
-    
     ts_pd = ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True)
-    ts_pd['values'] /= 100 #convert from cm to m
     metadata = metadata_from_ddlpy(ddlpy_meas)
+    # conver units from cm to meters
+    assert metadata['eenheid'] == 'cm'
+    assert metadata['grootheid'] == 'WATHTE'
+    ts_pd['values'] /= 100 #convert from cm to m
+    metadata['eenheid'] = 'm'
     ts_pd.attrs = metadata
     if ddlpy_meas_exttyp is None:
         return ts_pd

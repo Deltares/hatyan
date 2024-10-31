@@ -50,7 +50,7 @@ def test_ddlpy_to_hatyan(locations):
     meta_expected = {
         'grootheid': 'WATHTE',
         'groepering': 'NVT',
-        'eenheid': 'cm',
+        'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'HOEKVHLD',
         'origin': 'ddlpy',
@@ -91,7 +91,7 @@ def test_convert_hwlwstr2num(locations):
     meta_expected = {
         'grootheid': 'WATHTE',
         'groepering': 'GETETM2',
-        'eenheid': 'cm',
+        'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'HOEKVHLD',
         'origin': 'ddlpy',
@@ -125,7 +125,7 @@ def test_ddlpy_to_components(tmp_path, locations):
     meta_expected = {
         'grootheid': 'WATHTE',
         'groepering': 'NVT',
-        'eenheid': 'cm',
+        'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'VLISSGN',
         'origin': 'ddlpy'
