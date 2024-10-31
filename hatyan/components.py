@@ -160,6 +160,7 @@ def write_components(comp, filename):
     eenheid = metadata.pop('eenheid')
     # change unit because of *100 below
     assert eenheid == 'm'
+    factor = 100
     eenheid = 'cm'
     
     tstart = metadata.pop('tstart')
@@ -173,7 +174,7 @@ def write_components(comp, filename):
     tstop_str = tstop.strftime("%Y%m%d  %H%M")
     
     if 'A0' in comp.index.tolist():
-        midd = comp.loc['A0','A']*100
+        midd = comp.loc['A0','A']*factor
         comp = comp.drop('A0',axis=0)
     else:
         midd = 0
@@ -231,7 +232,7 @@ def write_components(comp, filename):
             comp_one = comp.loc[compname]
             f.write("COMP %4i %12.6f %9.3f %7.2f  %-12s\n" % (comp_one['const_no'],
                                                               comp_one['const_speed'], 
-                                                              comp_one['A']*100, 
+                                                              comp_one['A']*factor, 
                                                               comp_one['phi_deg']%360, 
                                                               compname))
 
