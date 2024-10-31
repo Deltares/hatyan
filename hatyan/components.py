@@ -157,7 +157,11 @@ def write_components(comp, filename):
     station = metadata.pop('station')
     grootheid = metadata.pop('grootheid')
     vertref = metadata.pop('vertref')
-    unit = metadata.pop('eenheid')
+    eenheid = metadata.pop('eenheid')
+    # change unit because of *100 below
+    assert eenheid == 'm'
+    factor = 100
+    eenheid = 'cm'
     
     tstart = metadata.pop('tstart')
     tstop = metadata.pop('tstop')
@@ -170,7 +174,7 @@ def write_components(comp, filename):
     tstop_str = tstop.strftime("%Y%m%d  %H%M")
     
     if 'A0' in comp.index.tolist():
-        midd = comp.loc['A0','A']*100
+        midd = comp.loc['A0','A']*factor
         comp = comp.drop('A0',axis=0)
     else:
         midd = 0
@@ -219,7 +223,7 @@ def write_components(comp, filename):
             for key in metadata.keys():
                 f.write(f'* {key} : {metadata[key]}\n')
         
-        f.write(f'STAT  {station}    {grootheid}    {vertref}    {unit}    {waarnemingssoort}\n')
+        f.write(f'STAT  {station}    {grootheid}    {vertref}    {eenheid}    {waarnemingssoort}\n')
         f.write(f'PERD  {tstart_str}  {tstop_str}     {tzone_min}\n')
         f.write( 'CODE      3\n')
         f.write(f'MIDD {midd:9.3f}\n')
@@ -228,7 +232,7 @@ def write_components(comp, filename):
             comp_one = comp.loc[compname]
             f.write("COMP %4i %12.6f %9.3f %7.2f  %-12s\n" % (comp_one['const_no'],
                                                               comp_one['const_speed'], 
-                                                              comp_one['A']*100, 
+                                                              comp_one['A']*factor, 
                                                               comp_one['phi_deg']%360, 
                                                               compname))
 
@@ -421,7 +425,7 @@ def read_components(filename):
     
     Aphi_datapd_A0line = pd.DataFrame({'A': [A0_cm], 'phi': [0], 'name': ['A0']})
     Aphi_datapd_raw = pd.concat([Aphi_datapd_A0line,Aphi_datapd_raw_noA0],ignore_index=True)
-    comp_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values/100, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
+    comp_pd = pd.DataFrame({'A': Aphi_datapd_raw['A'].values, 'phi_deg': Aphi_datapd_raw['phi'].values}, index=Aphi_datapd_raw['name'].values)
     
     # add metadata
     if not (stat_available & perd_available):
@@ -430,6 +434,10 @@ def read_components(filename):
                        "Add metadata to the header of the component file like this:\n"
                        "STAT  DENHDR    WATHTE     NAP     cm    1\n"
                        "PERD  20090101  0000  20121231  2300     60")
+    # convert cm to m
+    assert eenheid == 'cm'
+    comp_pd['A'] /= 100
+    eenheid = 'm'
     metadata = {'station':station,
                 'grootheid':grootheid, 'eenheid':eenheid,
                 'vertref':vertref,

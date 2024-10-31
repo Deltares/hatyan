@@ -75,14 +75,18 @@ def wns_from_metadata(metadata):
     """
     
     meta_sel = {key:metadata[key] for key in ['grootheid','eenheid','vertref']}
+    grootheid = metadata['grootheid']
+    eenheid = metadata['eenheid']
+    vertref = metadata['vertref']
+    assert eenheid in ['m']
     
-    if meta_sel == {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'NAP'}:
+    if (grootheid == 'WATHTE') & (vertref == 'NAP'):
         wns = 1
-    elif meta_sel == {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'MSL'}:
+    elif (grootheid == 'WATHTE') & (vertref == 'MSL'):
         wns = 54
-    elif meta_sel == {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'NAP'}:
+    elif (grootheid == 'WATHTBRKD') & (vertref == 'NAP'):
         wns = 18
-    elif meta_sel == {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'MSL'}:
+    elif (grootheid == 'WATHTBRKD') & (vertref == 'MSL'):
         wns = 55
     else:
         raise ValueError(f'combination of quantity/unit/vertref not found available in wns_from_metadata():\n{meta_sel}')

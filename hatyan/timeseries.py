@@ -1395,8 +1395,8 @@ def read_dia_nonequidistant(filename, diablocks_pd, block_id):
     data_pd_HWLW['qualitycode'] = data_pd_HWLWtemp.iloc[:,1].astype('int')
     data_pd_HWLW = data_pd_HWLW.drop('HWLWcode/qualitycode',axis='columns')
 
-    #convert value from cm to m
-    data_pd_HWLW['values'] = data_pd_HWLW['valuecm:'].str.strip(':').astype('int')/100
+    #construct df
+    data_pd_HWLW['values'] = data_pd_HWLW['valuecm:'].str.strip(':').astype('int')
     data_pd_HWLW = data_pd_HWLW.drop('valuecm:',axis='columns')
     
     bool_hiaat = data_pd_HWLW['qualitycode'] == 99
@@ -1442,7 +1442,7 @@ def read_dia_equidistant(filename, diablocks_pd, block_id):
     
     # convert HWLW+quality code to separate columns
     data_pd_temp = data_pd.loc[:,'valuecm/qualitycode'].str.split('/', expand=True)
-    data_pd['values'] = data_pd_temp.iloc[:,0].astype('int')/100
+    data_pd['values'] = data_pd_temp.iloc[:,0].astype('int')
     data_pd['qualitycode'] = data_pd_temp.iloc[:,1].astype('int')
     data_pd = data_pd.drop('valuecm/qualitycode',axis='columns')
     
@@ -1524,7 +1524,7 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
         if not pd.Series(block_ids_one).isin(diablocks_pd.index).all():
             raise ValueError(f"Invalid values in block_ids list ({block_ids_one}), "
                              f"possible are {diablocks_pd.index.tolist()} (all integers)")
-            
+        
         if station is not None:
             if not isinstance(station,str):
                 raise TypeError('Station argument should be of type string')
@@ -1556,6 +1556,12 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
     data_pd_all = pd.concat(data_pd_list)
     metadata_compare(metadata_list)
     metadata = metadata_list[0].copy()
+    
+    # convert cm to m
+    assert metadata['eenheid'] == 'cm'
+    data_pd_all['values'] /= 100
+    metadata['eenheid'] = 'm'
+
     data_pd_all = metadata_add_to_obj(data_pd_all,metadata)
     
     if allow_duplicates:

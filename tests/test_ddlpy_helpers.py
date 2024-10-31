@@ -21,14 +21,15 @@ def locations():
 
 
 @pytest.mark.unittest
-def test_ddlpy_to_hatyan(locations):
+@pytest.mark.parametrize("grootheid", [pytest.param(gr, id=gr) for gr in ['WATHTE','WATHTBRKD']])
+def test_ddlpy_to_hatyan(locations, grootheid):
     # input parameters
     tstart_dt = dt.datetime(2023,12,24)
     tstop_dt = dt.datetime(2024,1,5)
 
     bool_station = locations.index.isin(['HOEKVHLD'])
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
-    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
+    bool_grootheid = locations['Grootheid.Code'].isin([grootheid])
     bool_groepering = locations['Groepering.Code'].isin(['NVT'])
     locs_wathte = locations.loc[bool_station & bool_grootheid &
                                 bool_groepering & bool_hoedanigheid]
@@ -48,9 +49,9 @@ def test_ddlpy_to_hatyan(locations):
     # check if metadata is complete and correct
     meta_fromts = ts_measwl.attrs
     meta_expected = {
-        'grootheid': 'WATHTE',
+        'grootheid': grootheid,
         'groepering': 'NVT',
-        'eenheid': 'cm',
+        'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'HOEKVHLD',
         'origin': 'ddlpy',
@@ -91,7 +92,7 @@ def test_convert_hwlwstr2num(locations):
     meta_expected = {
         'grootheid': 'WATHTE',
         'groepering': 'GETETM2',
-        'eenheid': 'cm',
+        'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'HOEKVHLD',
         'origin': 'ddlpy',
@@ -125,7 +126,7 @@ def test_ddlpy_to_components(tmp_path, locations):
     meta_expected = {
         'grootheid': 'WATHTE',
         'groepering': 'NVT',
-        'eenheid': 'cm',
+        'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'VLISSGN',
         'origin': 'ddlpy'
