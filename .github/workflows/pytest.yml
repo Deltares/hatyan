@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         # Python 3.8.14 is used at HMC
-        python-version: ["3.8.14", "3.9", "3.12"]
+        python-version: ["3.8.14", "3.9", "3.12", "3.13"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
