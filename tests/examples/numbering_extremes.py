@@ -93,12 +93,8 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         
         
         file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
-    
-        #file_data_compvali = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
         times_pred = slice(dt.datetime(yr-1,12,31),dt.datetime(yr,1,2,12), "1min")
-        
         file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
-        #file_data_predvaliHWLW = os.path.join(dir_testdata,'predictie2019','%s_ext.txt'%(current_station))
     
         #component groups
         COMP_merged = hatyan.read_components(filename=file_data_comp0)
@@ -106,9 +102,6 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         #prediction and validation
         ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
 
-        #ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
-        #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
-        #hatyan.write_dia(ts=ts_prediction, filename='prediction_%im_%s.dia'%(times_step_pred,current_station))
         ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
         
         if i_stat == 0:
@@ -152,13 +145,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
             pdrow['RDx'] = RDx
             pdrow['RDy'] = RDy
         stats = pd.concat([stats,pdrow])
-            
-        #hatyan.write_dia(ts=ts_ext_prediction, filename='prediction_HWLW_%im_%s.dia'%(times_step_pred, current_station))
-        #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction, ts_ext_validation=ts_ext_validation)
-        #fig.savefig('prediction_%im_%s_HWLW'%(times_step_pred, current_station))
-        #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction)
-        #fig.savefig('prediction_%im_%s_validation'%(times_step_pred, current_station))
-        
+
         ax1.plot(ts_prediction.index, ts_prediction['values'], label=current_station, color=colors[i_stat])
         ax1.plot([ts_firstlocalHW.name,ts_firstlocalHW.name], [ts_firstlocalHW['values'], 2.5], '--', linewidth=1.5, color=colors[i_stat])
         ax1.plot(ts_firstlocalHW.name,ts_firstlocalHW['values'],'x', color=colors[i_stat])
@@ -166,11 +153,8 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         if 1: #validation case
             #calculate tidal wave number
             times_pred_HWLWno = slice(dt.datetime(yr_HWLWno-1,12,31),dt.datetime(yr_HWLWno,1,2,12), "1min")
-            #COMP_merged_temp.loc['M2','A']=0.05
             ts_prediction_HWLWno = hatyan.prediction(comp=COMP_merged, times=times_pred_HWLWno)
             ts_ext_prediction_HWLWno_pre = hatyan.calc_HWLW(ts=ts_prediction_HWLWno)
-            #fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_HWLWno, ts_ext=ts_ext_prediction_HWLWno_pre)
-            #breakit
             
             print(current_station)
             ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction_HWLWno_pre, station=current_station)
@@ -191,8 +175,7 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
     
     stats['M2phasediff_hr'] = stats['M2phasediff']/360*12.420601
     stats_M2phasediff_out = stats.sort_values('M2phasediff_hr')['M2phasediff']
-    #stats_M2phasediff_out.to_csv(r'c:\DATA\hatyan_github\hatyan\data_M2phasediff_perstation_new.txt', sep=' ', header=False, float_format='%.2f')
-    
+
     print(stats)
     print('')
     print(hatyan.schureman.get_schureman_freqs(['M2']))
@@ -223,9 +206,5 @@ if create_spatialplot:
         
     for irow, pdrow in stats.iterrows():
         fig2_ax1.text(pdrow['RDx'], pdrow['RDy'], '%.1f'%(pdrow['M2phasediff']))
-        #fig2_ax1.text(pdrow['RDx'], pdrow['RDy'], '%.1f (%s)'%(pdrow['M2phasediff'],pdrow.name))
     fig2.tight_layout()
-    if 0:
-        import contextily as ctx
-        ctx.add_basemap(fig2_ax1, source=ctx.providers.Esri.WorldImagery, crs=crs, attribution=False)
     fig2.savefig('tide_numbering_phasediff.png', dpi=250)

@@ -96,10 +96,6 @@ for current_station in selected_stations:
                                                        analysis_perperiod=analysis_perperiod, return_allperiods=True, 
                                                        cs_comps=cs_comps)
 
-    #fig,(ax1,ax2) = hatyan.plot_components(comp_fromts_avg, comp_allperiods=comp_fromts_all)
-    #fig.savefig('components_%s_4Y.png'%(current_station))
-    #hatyan.write_components(comp_fromts_avg, filename='components_%s_4Y.txt'%(current_station))
-    
     comp_fromfile = hatyan.read_components(filename=file_comp1)
     assert comp_fromfile.attrs["xfac"] == xfac
     

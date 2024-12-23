@@ -23,7 +23,6 @@ freqs_pd = pd.concat([freqs_pd_schu['freq'],freqs_pd_for],axis=1)
 freqs_pd['const'] = freqs_pd.index
 freqs_pd['freq_absdiff'] = np.abs(freqs_pd.iloc[:,0]-freqs_pd.iloc[:,1])
 freqs_pd['freq_bigdiff'] = freqs_pd['freq_absdiff']>10e-9
-#freqs_pd['freq_nan'] = (np.isnan(freqs_pd.iloc[:,0]-freqs_pd.iloc[:,1]))
 
 v0_pd = pd.concat([v0_pd_schu[0],v0_pd_for[0]],axis=1)
 v0_pd['v0_absdiff'] = (np.abs(v0_pd.iloc[:,0]-v0_pd.iloc[:,1])+0.5*np.pi)%np.pi-0.5*np.pi
