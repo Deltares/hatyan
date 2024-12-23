@@ -24,7 +24,6 @@ dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
 stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','BRESKS','BROUWHVSGT02','BROUWHVSGT08','CADZD','CROMR','CUXHVN','DELFZL','DENHDR','DENOVBTN','DEVPT','DORDT','DOVR','EEMHVN','EEMSHVN','EURPFM','EURPHVN','FELSWE','FISHGD','GEULHVN','GOIDSOD','GOUDBG','HAGSBNDN','HANSWT','HARLGN','HARMSBG','HARTBG','HARTHVN','HARVT10','HEESBN','HELLVSS','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','IMMHM','KATSBTN','KEIZVR','KINLBVE','KORNWDZBTN','KRAMMSZWT','KRIMPADIJSL','KRIMPADLK','K13APFM','LAUWOG','LEITH','LICHTELGRE','LITHDP','LLANDNO','LOWST','MAASMSMPL','MAASSS','MAESLKRZZDE','MARLGT','MOERDK','NES','NEWHVN','NEWLN','NIEUWSTZL','NORTHSS','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','PARKSS','PETTZD','PORTSMH','RAKND','ROOMPBNN','ROOMPBTN','ROTTDM','ROZBSSNZDE','ROZBSSZZDE','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SCHOONHVN','SHEERNS','SINTANLHVSGR','SPIJKNSE','STAVNSE','STELLDBTN','STORNWY','SUURHBNZDE','TENNSHVN','TERNZN','TERSLNZE','TEXNZE','VLAARDGN','VLAKTVDRN','VLIELHVN','VLISSGN','VURN','WALSODN','WERKDBTN','WESTKPLE','WESTTSLG','WEYMH','WHITBY','WICK','WIERMGDN','YERSKE','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
 
-
 case_list = ['A0','M2','S2']#,'P1','K1','K2','M4','P1_K1','NU2_N2','LABDA2_2MN2','K2_S2','T2_S2']
 
 #get coordinates
@@ -38,9 +37,7 @@ for current_station in stats_all:
 
 #get data and plot
 for case in case_list:
-    print('-'*50)
-    print('%-45s = %s'%('case',case))
-    print('-'*5)
+    print(case)
     if '_' in case:
         const_list = case.split('_')
     else:
@@ -60,7 +57,6 @@ for case in case_list:
         else:
             A_list.append(COMP_sel.loc[const_list_sel[0],'A']/COMP_sel.loc[const_list_sel[1],'A'])
             phi_list.append(COMP_sel.loc[const_list_sel[0],'phi_deg']-COMP_sel.loc[const_list_sel[1],'phi_deg'])
-        
     
     if len(COMP_sel) == 1:
         if case=='A0':

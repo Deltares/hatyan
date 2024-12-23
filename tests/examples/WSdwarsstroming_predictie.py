@@ -35,7 +35,7 @@ for yr, ax in zip([2020,2021],[ax1,ax2]):
     ts_prediction_HANSWT = hatyan.prediction(comp=COMP_merged_HANSWT, times=times_pred)
     ts_prediction_TERNZN = hatyan.prediction(comp=COMP_merged_TERNZN, times=times_pred)
     
-    ts_prediction_diff = ts_prediction_TERNZN-ts_prediction_HANSWT # TODO: metadata is dropped
+    ts_prediction_diff = ts_prediction_TERNZN-ts_prediction_HANSWT # TODO: metadata is retained from TERNZN
     ts_prediction_diff['values'] = ts_prediction_diff['values'].round(2) #round to cm
     ts_prediction_diff_HWLW = hatyan.calc_HWLW(ts=ts_prediction_diff)
     
@@ -46,19 +46,15 @@ for yr, ax in zip([2020,2021],[ax1,ax2]):
     list_matig.append(ts_prediction_diff_matig)
     list_sterk.append(ts_prediction_diff_sterk)
     
-    #fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction_diff)
     ax.plot(ts_prediction_diff.index, ts_prediction_diff['values'],'-',linewidth=0.7,markersize=1, label='verval')
     ax.plot(ts_prediction_diff_matig.index, ts_prediction_diff_matig['values'],'oy',markersize=5, label='matig (>%.2fm)'%(value_matig))
     ax.plot(ts_prediction_diff_sterk.index, ts_prediction_diff_sterk['values'],'or',markersize=5, label='sterk (>%.2fm)'%(value_sterk))
     ax.plot([ts_prediction_diff.index[0],ts_prediction_diff.index[-1]],[value_matig,value_matig],'-y')
     ax.plot([ts_prediction_diff.index[0],ts_prediction_diff.index[-1]],[value_sterk,value_sterk],'-r')
-    #ax1.set_ylim(-1.2,1.7)
     ax.legend(loc=1)
     ax.grid()
     ax.set_xlabel('Tijd')
     ax.set_ylabel('astro verval %d [m] (TERNZN-HANSWT)'%yr)
-    #hatyan.write_dia(ts=ts_ext_prediction_main, station=current_station, vertref='NAP', filename='prediction_HWLW_%s_%s_main.dia'%(times_step_pred, current_station))
-    #hatyan.write_dia(ts=ts_ext_prediction_clean, station=current_station, vertref='NAP', filename='prediction_HWLW_%s_%s_agger345.dia'%(times_step_pred, current_station))
 fig.tight_layout()
 fig.savefig('prediction_WSdwarsstroming')
 

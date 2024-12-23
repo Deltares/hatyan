@@ -14,7 +14,6 @@ schrijf resultaat (python) weg als csv (in MET) met pd.to_csv()
 """
 
 import os
-import numpy as np
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -24,7 +23,6 @@ import hatyan
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
-# script settings
 compare2fortran = True #requires validation data
 
 start_date_utc = pd.Timestamp(2000, 1, 1, tz="UTC")
@@ -38,39 +36,38 @@ tz_EurAms = 'Europe/Amsterdam' # for conversion to local timezone, including day
 
 dT_fortran = True #True is best comparison to fortran, False is more precise 
 
-pdtocsv_kwargs = dict(index=False, sep=',', date_format='%Y-%m-%d %H:%M:%S %Z', float_format='%9.5f', na_rep='--:--          ')
+pdtocsv_kwargs = dict(index=False, sep=',', date_format='%Y-%m-%d %H:%M:%S %Z', float_format='%9.5f', na_rep='--:--')
 
-#%% calculate astrog arrays
-# lunar culmination times, parallax, declination
+# calculate astrog lunar culmination times, parallax, declination
 culminations_python = hatyan.astrog_culminations(tFirst=start_date_utc, tLast=end_date_utc, dT_fortran=dT_fortran)
 culminations_python.to_csv('moon_culminations.csv',**pdtocsv_kwargs)
 
-# lunar phases
+# calculate astrog lunar phases
 phases_python = hatyan.astrog_phases(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 phases_python.to_csv('moon_phases.csv',**pdtocsv_kwargs)
 
-# moonrise and -set
+# calculate astrog moonrise and -set
 moonriseset_python = hatyan.astrog_moonriseset(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 moonriseset_python.to_csv('moon_riseset.csv',**pdtocsv_kwargs)
 moonriseset_python_perday = hatyan.convert2perday(moonriseset_python)
 moonriseset_python_perday.to_csv('moon_riseset_perday.csv',**pdtocsv_kwargs)
 
-# sunrise and -set
+# calculate astrog sunrise and -set
 sunriseset_python = hatyan.astrog_sunriseset(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 sunriseset_python.to_csv('sun_riseset.csv',**pdtocsv_kwargs)
 sunriseset_python_perday = hatyan.convert2perday(sunriseset_python)
 sunriseset_python_perday.to_csv('sun_riseset_perday.csv',**pdtocsv_kwargs)
 
-# lunar anomalies
+# calculate astrog lunar anomalies
 anomalies_python = hatyan.astrog_anomalies(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 anomalies_python.to_csv('anomalies.csv',**pdtocsv_kwargs)
 
-# astronomical seasons
+# calculate astrog astronomical seasons
 seasons_python = hatyan.astrog_seasons(tFirst=start_date_met, tLast=end_date_met, dT_fortran=dT_fortran)
 seasons_python.to_csv('seasons.csv',**pdtocsv_kwargs)
 
 if compare2fortran:
-    #%% load fortran results
+    # load fortran results
     pkl_culm = os.path.join(dir_testdata,'other','astrog20_2000_2011.pkl')
     pkl_phas = os.path.join(dir_testdata,'other','astrog30_phases_2000_2011.pkl')
     txt_phas = os.path.join(dir_testdata,'other','maanfasen.txt')
@@ -108,7 +105,7 @@ if compare2fortran:
     seasons_fortran = pd.read_pickle(pkl_seas).set_index('datetime')
     seasons_fortran = seasons_fortran.loc[start_date_naive:end_date_naive]
     
-    #%% plot results (differences)
+    # plot results (differences)
     fig, (ax1,ax2,ax3) = hatyan.plot_astrog_diff(culminations_python, culminations_fortran, typeLab=['lower','upper'], timeBand=[-.18,.18])
     fig.savefig('culmination_differences.png')
     
