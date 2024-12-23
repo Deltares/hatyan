@@ -61,8 +61,8 @@ def test_ddlpy_to_hatyan(locations, grootheid):
 
 @pytest.mark.unittest
 def test_convert_hwlwstr2num(locations):
-    tstart_dt = "2022-12-19"
-    tstop_dt = "2022-12-31"
+    tstart_dt = "2020-12-19"
+    tstop_dt = "2020-12-31"
     
     bool_grootheid_meas = locations['Grootheid.Code'].isin(['WATHTE'])
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
@@ -79,10 +79,9 @@ def test_convert_hwlwstr2num(locations):
     # hatyan timeseries
     ts_measwlHWLW = hatyan.ddlpy_to_hatyan(meas_wathte_ext, meas_wathte_exttypes)
     
-    hwlwcode_expected = np.array([2, 1, 2, 1, 2, 1, 3, 4, 5, 1, 2, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4,
-            5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1,
-            3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4,
-            5, 1, 2, 1, 3, 4, 5, 1, 2, 1, 2, 1])
+    hwlwcode_expected = np.array([2, 1, 3, 4, 5, 1, 2, 1, 3, 4, 5, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1,
+           2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 4,
+           5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 3, 4, 5, 1, 2])
     
     assert "HWLWcode" in ts_measwlHWLW.columns
     assert np.array_equal(ts_measwlHWLW["HWLWcode"].values, hwlwcode_expected)
