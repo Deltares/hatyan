@@ -1540,7 +1540,9 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
             else: # equidistant
                 data_pd_oneblock = read_dia_equidistant(filename_one, diablocks_pd, block_id)
             
-            # add status column
+            # add status columnm
+            # first set dtype via empty column to avoid FutureWarning
+            data_pd_oneblock['status'] = ''
             block_status_list = diablocks_pd.loc[block_id,'STA'].split('!')
             for block_status_one in block_status_list:
                 status_tstart = pd.to_datetime(block_status_one[4:17],format='%Y%m%d;%H%M').tz_localize("UTC+01:00")
