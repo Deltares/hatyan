@@ -262,6 +262,15 @@ def calc_HWLW12345to12(data_HWLW_12345):
     return data_HWLW_12
 
 
+def filter_duplicate_hwlwnos(ts_ext):
+    # find rows that have a duplicated HWLW code+number
+    bool_hwno_duplicated = ts_ext[['HWLWcode','HWLWno']].duplicated(keep=False)
+    # return this filtered dataframe
+    ts_ext_hwlwno_duplicated = ts_ext.loc[bool_hwno_duplicated,
+                                          ['values','HWLWcode','HWLWno']]
+    return ts_ext_hwlwno_duplicated
+
+
 def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
     """
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
@@ -329,14 +338,9 @@ def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
     HW_tdiff_cadzd = HW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr
     HW_tdiff_div, HW_tdiff_mod_searchwindow = np.divmod(HW_tdiff_cadzd.values, M2_period_hr)
     HW_tdiff_mod = HW_tdiff_mod_searchwindow - searchwindow_hr
-    ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
-    if not all(np.diff(HW_tdiff_div) > 0):
-        idx_toosmall = np.nonzero((np.diff(HW_tdiff_div) <= 0))[0]
-        logger.info(idx_toosmall)
-        logger.info(ts_ext.loc[HW_bool,['values','HWLWcode','HWLWno']].iloc[idx_toosmall[0]:])
-        raise ValueError('tidal wave numbering: HW numbers not always increasing')
     if not all(np.abs(HW_tdiff_mod)<searchwindow_hr):
         raise ValueError('tidal wave numbering: not all HW fall into hardcoded search window')
+    ts_ext.loc[HW_bool,'HWLWno'] = HW_tdiff_div
     
     for LWcode_2345 in [2,3,4,5]:
         LW_bool = ts_ext['HWLWcode']==LWcode_2345
@@ -344,15 +348,20 @@ def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
         LW_tdiff_cadzd = LW_tdiff_cadzdraw - M2phasediff_hr + searchwindow_hr - M2_period_hr/2
         LW_tdiff_div, LW_tdiff_mod_searchwindow = np.divmod(LW_tdiff_cadzd.values, M2_period_hr)
         LW_tdiff_mod = LW_tdiff_mod_searchwindow - searchwindow_hr
-        if not all(np.diff(LW_tdiff_div) > 0):
-            raise ValueError('tidal wave numbering: LW numbers not always increasing')
         if not all(np.abs(LW_tdiff_mod)<searchwindow_hr):
-            raise ValueError('tidal wave numbering: not all LW fall into defined search window')
+            raise ValueError('tidal wave numbering: not all LW fall into hardcoded search window')
         ts_ext.loc[LW_bool,'HWLWno'] = LW_tdiff_div
     
-    #check if LW is after HW
-    ts_ext_checkfirst = ts_ext[ts_ext['HWLWno']==np.min(HW_tdiff_div)]
+    # check if HWLW code+numbers are duplicated
+    ts_ext_hwlwno_duplicated = filter_duplicate_hwlwnos(ts_ext)
+    if not ts_ext_hwlwno_duplicated.empty:
+        raise ValueError('tidal wave numbering: HWLW code+numbers not always unique:\n'
+                         f'{ts_ext_hwlwno_duplicated}'
+                         )
+    
     if doHWLWcheck:
+        # check if LW is after HW
+        ts_ext_checkfirst = ts_ext[ts_ext['HWLWno']==np.min(HW_tdiff_div)]
         tdiff_firstHWLW = (ts_ext_checkfirst.index.to_series().diff().dt.total_seconds()/3600).values[1]
         if (tdiff_firstHWLW<0) or (tdiff_firstHWLW>M2_period_hr):
             raise ValueError('tidal wave numbering: first LW does not match first HW')
