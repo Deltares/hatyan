@@ -271,7 +271,7 @@ def filter_duplicate_hwlwnos(ts_ext):
     return ts_ext_hwlwno_duplicated
 
 
-def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
+def calc_HWLWnumbering(ts_ext, station=None):
     """
     For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
     The number of every high and low water is calculated by taking the time difference between itself and the first high water at Cadzand, correcting it with the station phase difference (M2phasediff). 
@@ -358,14 +358,7 @@ def calc_HWLWnumbering(ts_ext, station=None, doHWLWcheck=True):
         raise ValueError('tidal wave numbering: HWLW code+numbers not always unique:\n'
                          f'{ts_ext_hwlwno_duplicated}'
                          )
-    
-    if doHWLWcheck:
-        # check if LW is after HW
-        ts_ext_checkfirst = ts_ext[ts_ext['HWLWno']==np.min(HW_tdiff_div)]
-        tdiff_firstHWLW = (ts_ext_checkfirst.index.to_series().diff().dt.total_seconds()/3600).values[1]
-        if (tdiff_firstHWLW<0) or (tdiff_firstHWLW>M2_period_hr):
-            raise ValueError('tidal wave numbering: first LW does not match first HW')
-    
+
     ts_ext['HWLWno'] = ts_ext['HWLWno'].astype(int)
     
     return ts_ext

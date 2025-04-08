@@ -10,6 +10,9 @@
 ### Fix
 - aligned (conversion of) units in [#364](https://github.com/Deltares/hatyan/pull/364)
 
+### Deprecated
+- deprecated `doHWLWcheck` argument in `hatyan.calc_HWLWnumbering()` in [#377](https://github.com/Deltares/hatyan/pull/377)
+
 
 ## 2.9.0 (2024-09-11)
 
