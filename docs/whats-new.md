@@ -5,6 +5,7 @@
 ### Feat
 - `datetime.timezone` support in `hatyan.write_components()` to support components from ddlpy timeseries in [#359](https://github.com/Deltares/hatyan/pull/359)
 - adding metdata to timeseries from ddlpy in `hatyan.ddlpy_to_hatyan()` in [#360](https://github.com/Deltares/hatyan/pull/360)
+- improved error message in case of duplicated HWLWno in `hatyan.calc_HWLWnumbering()` [#375](https://github.com/Deltares/hatyan/pull/375)
 
 ### Fix
 - aligned (conversion of) units in [#364](https://github.com/Deltares/hatyan/pull/364)

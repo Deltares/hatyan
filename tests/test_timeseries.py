@@ -409,6 +409,40 @@ def test_timeseries_fft():
 
 
 @pytest.mark.unittest
+def test_calc_HWLWnumbering():
+    file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
+    ts_ext = hatyan.read_dia(file_ext)
+    ts_ext_nos = hatyan.calc_HWLWnumbering(ts_ext)
+    hwlwno = ts_ext_nos["HWLWno"]
+    firstvals = np.array([13409, 13410, 13410, 13411, 13411, 13412, 13412, 13413])
+    lastvals = np.array([14111, 14111, 14112, 14112, 14113, 14113, 14114, 14114])
+    assert np.allclose(hwlwno.iloc[:8], firstvals)
+    assert np.allclose(hwlwno.iloc[-8:], lastvals)
+    assert hwlwno.min() == 13409
+    assert hwlwno.max() == 14114
+
+
+@pytest.mark.unittest
+def test_calc_HWLWnumbering_duplicateHWLWno():
+    
+    file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
+    ts_ext = hatyan.read_dia(file_ext)
+    
+    # add two almost duplicated times (one HW and one LW)
+    ts_dupl_hwlw = ts_ext.iloc[[5, -5]]
+    ts_dupl_hwlw.index = ts_dupl_hwlw.index + pd.Timedelta(minutes=2)
+    ts_ext_dupl = pd.concat([ts_ext, ts_dupl_hwlw], axis=0)
+    ts_ext_dupl = ts_ext_dupl.sort_index()
+    
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.calc_HWLWnumbering(ts_ext_dupl)
+    assert "tidal wave numbering: HWLW code+numbers not always unique" in str(e.value)
+    # some indirect way of asserting there are four rows in the pandas dataframe
+    # in the error message
+    assert len(str(e.value)) == 376
+
+
+@pytest.mark.unittest
 def test_plot_timeseries():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
     file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
