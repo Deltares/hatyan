@@ -1620,7 +1620,7 @@ def read_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
                 break
         
     content_pd = pd.read_csv(filename,header=startdata-1, sep="\\s+",names=['times_str','values'],
-                             na_values=na_values)# dtype = {'times_str': str, 'values' : 'float'})
+                             na_values=na_values, dtype = {'times_str': str, 'values' : 'float'})
     noos_datetime = pd.to_datetime(content_pd['times_str'],format=datetime_format)
     data_pd = pd.DataFrame({'values':content_pd['values'].values},index=noos_datetime)
     
