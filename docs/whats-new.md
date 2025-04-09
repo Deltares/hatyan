@@ -11,6 +11,7 @@
 
 ### Fix
 - aligned (conversion of) units in [#364](https://github.com/Deltares/hatyan/pull/364)
+- fix `hatyan.read_noos()` for inverted timestamps in [#380](https://github.com/Deltares/hatyan/pull/380)
 
 ### Deprecated
 - deprecated `doHWLWcheck` argument in `hatyan.calc_HWLWnumbering()` in [#377](https://github.com/Deltares/hatyan/pull/377)
