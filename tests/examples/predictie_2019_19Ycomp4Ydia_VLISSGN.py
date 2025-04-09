@@ -15,7 +15,7 @@ import pandas as pd
 import hatyan
 hatyan.close('all')
 
-dir_testdata = 'C:\\DATA\\hatyan\\tests'
+dir_testdata = 'C:\\DATA\\checkouts\\hatyan\\tests'
 
 selected_stations = ['VLISSGN']
 
