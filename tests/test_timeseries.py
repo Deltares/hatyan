@@ -642,3 +642,23 @@ def test_calc_HWLW12345to12_already_12():
     
     assert len(df) == 1411
     assert len(df_12) == 1411
+
+
+@pytest.mark.unittest
+def test_read_noos_inverted_datetimes(tmp_path):
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')
+    date_format = "%d%m%Y%H%M%S"
+    
+    # write with inverted datetimes
+    ts_noos1 = hatyan.read_noos(filename=file_data_comp0)
+    filename_out = os.path.join(tmp_path, "noos_test.txt")
+    with open(filename_out, "w") as f:
+        f.write("# header\n")
+        ts_noos1.to_csv(f, date_format=date_format, sep=" ", header=False)
+    
+    # read the resulting file
+    ts_noos2 = hatyan.read_noos(filename=filename_out, datetime_format=date_format)
+    
+    # check for equality
+    assert np.allclose(ts_noos1["values"], ts_noos2["values"])
+    assert (ts_noos1.index == ts_noos2.index).all()
