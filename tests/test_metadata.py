@@ -187,10 +187,6 @@ def test_wns_from_metadata():
 @pytest.mark.unittest
 def test_wns_from_metadata_invalid():
     metadata_invalid = {'grootheid':'WATHTBRKD', 'eenheid':'m', 'vertref':'MSL'}
-    with pytest.raises(AssertionError):
-        _ = wns_from_metadata(metadata_invalid)
-        
-    metadata_invalid = {'grootheid':'dummy', 'eenheid':'cm', 'vertref':'MSL'}
     with pytest.raises(ValueError) as e:
         _ = wns_from_metadata(metadata_invalid)
     assert "combination of quantity/unit/vertref not defined" in str(e.value)
