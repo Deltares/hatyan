@@ -49,6 +49,9 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
 
     """
     
+    # get unit, assuming all other dataframes have the same unit
+    eenheid = comp.attrs.get('eenheid', '-')
+    
     COMP = comp.copy()
     if comp_allperiods is not None:
         comp_allperiods = comp_allperiods.copy()
@@ -83,7 +86,7 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
     ax1.set_xlim(-0.5,len(const_list)+0.5)
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.set_ylim(-.05,1)
-    ax1.set_ylabel('amplitudes [m]')
+    ax1.set_ylabel(f'amplitudes [{eenheid}]')
     ax1.legend(loc='lower right')
     ax2.plot([0,len(const_list)],[0,0],'-k',linewidth=size_line_ts)
     if comp_allperiods is not None:

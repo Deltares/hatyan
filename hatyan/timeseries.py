@@ -443,9 +443,11 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     figure_ylim_ts = [-3,3]
     figure_ylim_tsdiff = [-0.02,0.02]
     
+    # get unit, assuming all other dataframes have the same unit
+    eenheid = ts.attrs.get('eenheid', '-')
+    
     if ts_validation is not None:
         times_predval_ext = [min(min(ts_validation.index),min(ts.index)), max(max(ts_validation.index),max(ts.index))]
-
     else:
         times_predval_ext = [min(ts.index), max(ts.index)]    
 
@@ -489,7 +491,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
                 ax1.plot(ts_ext_validation.index[vali_code_ids],ts_ext_validation['values'][vali_code_ids],'1',markersize=10,label=vali_codename)
     ax1.set_ylim(figure_ylim_ts)
     ax2.set_xlabel('Time')
-    ax1.set_ylabel('waterlevel [m]')
+    ax1.set_ylabel(f'waterlevel [{eenheid}]')
     ax1.legend(loc='lower right')
     ax1.grid()
     if ts_validation is not None:
@@ -502,7 +504,7 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
         overlapdiff = ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values
         if len(overlapdiff) != 0:
             rmse = np.sqrt(np.nanmean(overlapdiff ** 2))
-    ax2.set_ylabel('timeseries difference [m], RMSE = %.5f'%(rmse))
+    ax2.set_ylabel(f'timeseries difference [{eenheid}], RMSE = %.5f'%(rmse))
     ax2.grid()
     fig.tight_layout()
     
@@ -548,6 +550,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     hwlw_diff = ts_ext.sub(ts_ext_validation[['times','values']])
     
     tdiff_minutes = hwlw_diff['times'].dt.total_seconds()/60
+    assert hwlw_diff.attrs["eenheid"] == "m"
     vdiff_cm = hwlw_diff['values']*100
     message = ('Time differences [minutes]\n'
                f'  RMSE: {(np.sqrt(np.mean(tdiff_minutes**2))):.2f}\n'
