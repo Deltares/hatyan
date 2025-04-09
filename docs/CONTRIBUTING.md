@@ -63,15 +63,18 @@ mkdocs build
 
 ## Create release
 
-- bump the versionnumber with ``bumpversion minor``
-- update ``docs/whats-new.md`` and add a date to the current release heading
-- run local testbank
-- local check with: ``python -m build`` and ``twine check dist/*`` ([does not work on WCF](https://github.com/pypa/setuptools/issues/4133))
-- make sure the remote ``main`` branch is up to date (important issues solved, all pullrequests and branches closed, commit+push all local changes)
-- copy the hatyan version from https://github.com/Deltares/hatyan/blob/main/setup.cfg (e.g. ``0.11.0``)
-- go to https://github.com/Deltares/hatyan/releases/new
-- click ``choose a tag`` and type v+versionnumber (e.g. ``v0.11.0``), click ``create new tag: v0.11.0 on publish``
-- set the release title to the tagname (e.g. ``v0.11.0``)
-- click `Generate release notes` and replace the `What's Changed` info by a tagged link to ``docs/whats-new.md``
-- if all is set, click ``Publish release``
-- a release is created and the github action publishes it on PyPI (https://pypi.org/project/hatyan/)
+- make sure the `main` branch is up to date (check pytest warnings, important issues solved, all pullrequests and branches closed)
+- create and checkout branch for release
+- bump the versionnumber with `bumpversion minor`
+- update `docs/whats-new.md` and add a date to the current release heading
+- run local testbank with `pytest -m "not requireslocaldata"`
+- local check with: `python -m build` and `twine check dist/*` ([does not work on WCF](https://github.com/pypa/setuptools/issues/4133))
+- commit+push to branch and merge PR
+- copy the hatyan version from [pyproject.toml](https://github.com/Deltares/hatyan/blob/main/pyproject.toml) (e.g. `0.11.0`)
+- create a [new release](https://github.com/Deltares/hatyan/releases/new)
+- click `choose a tag` and type v+versionnumber (e.g. `v0.11.0`), click `create new tag: v0.11.0 on publish`
+- set the release title to the tagname (e.g. `v0.11.0`)
+- click `Generate release notes` and replace the `What's Changed` info by a tagged link to `docs/whats-new.md`
+- if all is set, click `Publish release`
+- a release is created and the github action publishes it [on PyPI](https://pypi.org/project/hatyan)
+- post-release: commit+push `bumpversion patch` and `UNRELEASED` header in `docs/whats-new.md` to distinguish between release and dev version
