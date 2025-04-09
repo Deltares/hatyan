@@ -148,23 +148,44 @@ def test_read_dia_multiblock_toolittle_arguments():
 
 
 @pytest.mark.unittest
-def test_readwrite_noos():
+def test_readwrite_noos(tmp_path):
 
     file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')
     
     #component groups
-    filename_out = "noos_test.txt"
+    filename_out = os.path.join(tmp_path, "noos_test.txt")
     ts_noos1 = hatyan.read_noos(filename=file_data_comp0)
     hatyan.write_noos(ts_noos1, filename=filename_out)
     ts_noos2 = hatyan.read_noos(filename=filename_out)
     
-    assert (ts_noos1 == ts_noos2).all().all()
+    # check for equality
+    assert np.allclose(ts_noos1["values"], ts_noos2["values"])
+    assert (ts_noos1.index == ts_noos2.index).all()
     
     # compare metadata, raises ValueError if not equal
     meta1 = metadata_from_obj(ts_noos1)
     meta2 = metadata_from_obj(ts_noos2)
     metadata_compare([meta1, meta2])
-    os.remove(filename_out)
+
+
+@pytest.mark.unittest
+def test_read_noos_inverted_datetimes(tmp_path):
+    file_data_comp0 = os.path.join(dir_testdata,'VLISSGN_waterlevel_20180101_20180401.noos')
+    date_format = "%d%m%Y%H%M%S"
+    
+    # write with inverted datetimes
+    ts_noos1 = hatyan.read_noos(filename=file_data_comp0)
+    filename_out = os.path.join(tmp_path, "noos_test.txt")
+    with open(filename_out, "w") as f:
+        f.write("# header\n")
+        ts_noos1.to_csv(f, date_format=date_format, sep=" ", header=False)
+    
+    # read the resulting file
+    ts_noos2 = hatyan.read_noos(filename=filename_out, datetime_format=date_format)
+    
+    # check for equality
+    assert np.allclose(ts_noos1["values"], ts_noos2["values"])
+    assert (ts_noos1.index == ts_noos2.index).all()
 
 
 @pytest.mark.unittest
