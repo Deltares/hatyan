@@ -128,8 +128,6 @@ def write_components(comp, filename):
         DESCRIPTION.
     filename : TYPE
         DESCRIPTION.
-    metadata : TYPE, optional
-        DESCRIPTION. The default is None.
 
     Returns
     -------
@@ -137,6 +135,13 @@ def write_components(comp, filename):
 
     """
     
+    # optionally convert meters to centimeters
+    # before asserting metadata in wns_from_metadata
+    if comp.attrs["eenheid"] == "m":
+        comp = comp.copy()
+        comp["A"] *= 100
+        comp.attrs["eenheid"] = "cm"
+
     #get metadata before copying DataFrame
     metadata = metadata_from_obj(comp)
     waarnemingssoort = wns_from_metadata(metadata)
@@ -158,10 +163,6 @@ def write_components(comp, filename):
     grootheid = metadata.pop('grootheid')
     vertref = metadata.pop('vertref')
     eenheid = metadata.pop('eenheid')
-    # change unit because of *100 below
-    assert eenheid == 'm'
-    factor = 100
-    eenheid = 'cm'
     
     tstart = metadata.pop('tstart')
     tstop = metadata.pop('tstop')
@@ -174,7 +175,7 @@ def write_components(comp, filename):
     tstop_str = tstop.strftime("%Y%m%d  %H%M")
     
     if 'A0' in comp.index.tolist():
-        midd = comp.loc['A0','A']*factor
+        midd = comp.loc['A0','A']
         comp = comp.drop('A0',axis=0)
     else:
         midd = 0
@@ -232,7 +233,7 @@ def write_components(comp, filename):
             comp_one = comp.loc[compname]
             f.write("COMP %4i %12.6f %9.3f %7.2f  %-12s\n" % (comp_one['const_no'],
                                                               comp_one['const_speed'], 
-                                                              comp_one['A']*factor, 
+                                                              comp_one['A'], 
                                                               comp_one['phi_deg']%360, 
                                                               compname))
 
