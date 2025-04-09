@@ -7,6 +7,7 @@
 - adding metdata to timeseries from ddlpy in `hatyan.ddlpy_to_hatyan()` in [#360](https://github.com/Deltares/hatyan/pull/360)
 - improved error message in case of duplicated HWLWno in `hatyan.calc_HWLWnumbering()` [#375](https://github.com/Deltares/hatyan/pull/375)
 - support for centimeters in `hatyan.write_dia()` and `hatyan.write_components()` in [#379](https://github.com/Deltares/hatyan/pull/379)
+- proper units in plots in [#382](https://github.com/Deltares/hatyan/pull/382)
 
 ### Fix
 - aligned (conversion of) units in [#364](https://github.com/Deltares/hatyan/pull/364)
