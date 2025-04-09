@@ -1,6 +1,6 @@
 # What's new
 
-## UNRELEASED
+## 2.10.0 (2025-04-09)
 
 ### Feat
 - `datetime.timezone` support in `hatyan.write_components()` to support components from ddlpy timeseries in [#359](https://github.com/Deltares/hatyan/pull/359)
