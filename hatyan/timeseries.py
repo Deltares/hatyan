@@ -774,16 +774,7 @@ def write_dia(ts, filename, headerformat='dia'):
     ts : pandas.DataFrame
         The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries. 
         In case of extremes, the DataFrame should also contain a 'HWLW_code' column.
-    station : TYPE
-        DESCRIPTION.
-    vertref : TYPE
-        DESCRIPTION.
     filename : TYPE
-        DESCRIPTION.
-
-    Raises
-    ------
-    Exception
         DESCRIPTION.
 
     Returns
@@ -797,6 +788,14 @@ def write_dia(ts, filename, headerformat='dia'):
     if "qualitycode" in ts.columns:
        logger.warning("qualitycode column is ignored by hatyan.write_dia(), all "
                       "qualitycode values in diafile will be 0")
+    
+    # optionally convert meters to centimeters
+    # before asserting metadata in wns_from_metadata
+    if ts.attrs["eenheid"] == "m":
+        ts = ts.copy()
+        ts["values"] *= 100
+        ts.attrs["eenheid"] = "cm"
+    
     metadata_pd = get_metadata_pd(ts, headerformat=headerformat)
     
     if "HWLWcode" in ts.columns:
@@ -804,13 +803,13 @@ def write_dia(ts, filename, headerformat='dia'):
                       + ';'
                       + ts['HWLWcode'].astype(str)
                       + '/0;'
-                      + (ts['values']*100).round().astype(int).astype(str)
+                      + (ts['values']).round().astype(int).astype(str)
                       + ':')
     else:
         linestr_list = []
         linestr = ''
         for iV, ts_value in enumerate(ts['values']):
-            linestr_add = "%i/0:"%(np.round(ts_value*100))
+            linestr_add = "%i/0:"%(np.round(ts_value))
             linestr = linestr + linestr_add
             if (len(linestr) > 114) or (iV==len(ts)-1): # append linestr to linestr_list if linestr is longer than n characters or last item of ts_values was reached
                 linestr_list.append(linestr)
