@@ -168,10 +168,10 @@ def test_metadata_compare():
 
 @pytest.mark.unittest
 def test_wns_from_metadata():
-    metadata_1 = {'grootheid':'WATHTE', 'eenheid':'m', 'vertref':'NAP'}
-    metadata_54 = {'grootheid':'WATHTE', 'eenheid':'m', 'vertref':'MSL'}
-    metadata_18 = {'grootheid':'WATHTBRKD', 'eenheid':'m', 'vertref':'NAP'}
-    metadata_55 = {'grootheid':'WATHTBRKD', 'eenheid':'m', 'vertref':'MSL'}
+    metadata_1 = {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'NAP'}
+    metadata_54 = {'grootheid':'WATHTE', 'eenheid':'cm', 'vertref':'MSL'}
+    metadata_18 = {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'NAP'}
+    metadata_55 = {'grootheid':'WATHTBRKD', 'eenheid':'cm', 'vertref':'MSL'}
     
     wns_1 = wns_from_metadata(metadata_1)
     wns_54 = wns_from_metadata(metadata_54)
@@ -182,6 +182,18 @@ def test_wns_from_metadata():
     assert wns_54 == 54
     assert wns_18 == 18
     assert wns_55 == 55
+
+
+@pytest.mark.unittest
+def test_wns_from_metadata_invalid():
+    metadata_invalid = {'grootheid':'WATHTBRKD', 'eenheid':'m', 'vertref':'MSL'}
+    with pytest.raises(AssertionError):
+        _ = wns_from_metadata(metadata_invalid)
+        
+    metadata_invalid = {'grootheid':'dummy', 'eenheid':'cm', 'vertref':'MSL'}
+    with pytest.raises(ValueError) as e:
+        _ = wns_from_metadata(metadata_invalid)
+    assert "combination of quantity/unit/vertref not defined" in str(e.value)
 
 
 @pytest.mark.unittest

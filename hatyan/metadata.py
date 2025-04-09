@@ -78,7 +78,7 @@ def wns_from_metadata(metadata):
     grootheid = metadata['grootheid']
     eenheid = metadata['eenheid']
     vertref = metadata['vertref']
-    assert eenheid in ['m']
+    assert eenheid in ['cm']
     
     if (grootheid == 'WATHTE') & (vertref == 'NAP'):
         wns = 1
@@ -89,6 +89,8 @@ def wns_from_metadata(metadata):
     elif (grootheid == 'WATHTBRKD') & (vertref == 'MSL'):
         wns = 55
     else:
-        raise ValueError(f'combination of quantity/unit/vertref not found available in wns_from_metadata():\n{meta_sel}')
+        raise ValueError(
+            'combination of quantity/unit/vertref not defined in wns_from_metadata():\n'
+            f'{meta_sel}')
     
     return wns
