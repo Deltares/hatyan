@@ -280,7 +280,10 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     bool_ts_duplicated = ts.index.duplicated(keep='first')
     ts_pd = ts.copy() #TODO: this is not necessary
     if bool_ts_duplicated.any():
-        raise ValueError(f'{bool_ts_duplicated.sum()} duplicate timesteps in provided timeseries, remove them e.g. with: ts = ts[~ts.index.duplicated(keep="first")]')
+        ts_dupl = ts[ts.index.duplicated(keep=False)]
+        raise ValueError(f'{bool_ts_duplicated.sum()} duplicate timesteps in provided '
+                         'timeseries, can be removed with: '
+                         f'ts = ts[~ts.index.duplicated(keep="first")]:\n{ts_dupl}')
     message = (f'#timesteps    = {len(ts)}\n'
                f'tstart        = {ts.index.min().strftime("%Y-%m-%d %H:%M:%S")}\n'
                f'tstop         = {ts.index.max().strftime("%Y-%m-%d %H:%M:%S")}\n'
