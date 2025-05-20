@@ -5,6 +5,9 @@
 ### Feat
 - improved error message in case of duplicated timesteps in `hatyan.analysis()` in [#388](https://github.com/Deltares/hatyan/pull/388)
 
+### Fix
+- fixed stdout processing for click 8.2.0 in [#393](https://github.com/Deltares/hatyan/pull/393)
+
 
 ## 2.10.0 (2025-04-09)
 

@@ -4,7 +4,7 @@
 Console script for hatyan.
     - ``hatyan --help``
 """
-import sys
+
 import logging
 import click
 import hatyan
@@ -73,12 +73,14 @@ def cli(filename, overwrite, interactive_plots, redirect_stdout, loglevel):
     
     #redirecting stdout, stderr is still printed to console
     if redirect_stdout:
-        sys.stdout = open('STDOUT.txt', "w")
+        stream = open('STDOUT.txt', "w")
+    else:
+        stream = None
     
     # set logging level and stdout
     if loglevel is None:
         loglevel = "INFO"
-    logging.basicConfig(level=loglevel, stream=sys.stdout)
+    logging.basicConfig(level=loglevel, stream=stream)
     
     # initialization print
     logger.info("############### HATYAN INITALIZING ###############")
