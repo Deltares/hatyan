@@ -4,7 +4,7 @@
 Console script for hatyan.
     - ``hatyan --help``
 """
-import sys
+
 import logging
 import click
 import hatyan
