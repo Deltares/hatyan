@@ -15,8 +15,10 @@ import glob
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 
 @pytest.mark.unittest
-def test_command_line_interface():
+def test_command_line_interface(tmp_path):
     """Test the CLI."""
+    os.chdir(tmp_path)
+    
     filename = os.path.join(dir_tests,'examples','minimal_example.py')
     assert os.path.exists(filename)
     
@@ -33,8 +35,7 @@ def test_command_line_interface():
     dir_output = os.path.abspath(os.path.basename(filename).replace(".py",""))
     if os.path.exists(dir_output):
         shutil.rmtree(dir_output)
-    filename_command = f'{filename} --redirect-stdout'
-    filename_result = runner.invoke(cli.cli, filename_command.split())
+    filename_result = runner.invoke(cli.cli, [filename, '--redirect-stdout'])
     assert filename_result.exit_code == 0
     
     # assert file presence
@@ -48,6 +49,3 @@ def test_command_line_interface():
     assert os.path.exists(file_script)
     assert len(dia_list) > 0
     assert len(png_list) > 0
-    
-    # cleanup output
-    shutil.rmtree(dir_output)
