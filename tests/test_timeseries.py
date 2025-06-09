@@ -473,6 +473,15 @@ def test_plot_timeseries():
 
 
 @pytest.mark.unittest
+def test_plot_timeseries_duplicate_index():
+    file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
+    ts_pred = hatyan.read_dia(file_pred)
+    # create ts with duplicated timestamps
+    ts_pred2 = pd.concat([ts_pred,ts_pred.iloc[:2]], axis=0).sort_index()
+    hatyan.plot_timeseries(ts=ts_pred, ts_validation=ts_pred2)
+
+
+@pytest.mark.unittest
 def test_plot_HWLW_validatestats():
     file_ext = os.path.join(dir_testdata, "VLISSGN_ext.txt")
     ts_ext = hatyan.read_dia(file_ext)
