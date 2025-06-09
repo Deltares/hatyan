@@ -83,7 +83,10 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
     
     if not ts.index.is_monotonic_increasing:
         #otherwise "ValueError: 'list' argument must have no negative elements"
-        raise Exception('timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()')
+        raise ValueError(
+            'timeseries is not monotonic increasing, supply sorted timeseries '
+            '(ts = ts.index.sort_index()',
+            )
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_sec = get_schureman_freqs(['M2']).loc['M2','period [hr]']*3600
@@ -356,7 +359,7 @@ def calc_HWLWnumbering(ts_ext, station=None):
     """
         
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]']
-    firstHWcadz_fixed = pd.Timestamp("2000-01-01 09:45:00 +01:00") #dt.datetime(2000, 1, 1, 9, 45)
+    firstHWcadz_fixed = pd.Timestamp("2000-01-01 09:45:00 +01:00")
     firstHWcadz_fixed = firstHWcadz_fixed.tz_convert(ts_ext.index.tz)
     searchwindow_hr = M2_period_hr/2
     
@@ -364,7 +367,7 @@ def calc_HWLWnumbering(ts_ext, station=None):
         raise Exception('length of provided ts_ext is zero')
     
     if not all((ts_ext['HWLWcode']==1) | (ts_ext['HWLWcode']==2) | (ts_ext['HWLWcode']==3) | (ts_ext['HWLWcode']==4) | (ts_ext['HWLWcode']==5)):
-        raise Exception(
+        raise ValueError(
             'calc_HWLWnumbering() not implemented for HWLWcode other than 1,2,3,4,5 '
             '(so no HWLWcode 11 or 22 supported), provide extreme timeseries derived '
             'with Timeseries.calc_HWLW(calc_HWLW345=False) or '
@@ -1121,7 +1124,7 @@ def crop_timeseries(ts, times, onlyfull=True):
             f'imported timeseries: {ts_pd_in.index[0]} to {ts_pd_in.index[-1]}'
             )
         if onlyfull:
-            raise Exception(message)
+            raise ValueError(message)
         else:
             logger.warning(message)
             
@@ -1164,7 +1167,7 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     bool_duplicated_index = ts.index.duplicated()
     if bool_duplicated_index.sum()>0:
-        raise Exception(
+        raise ValueError(
             'there are duplicated values in the ts DatetimeIndex, this is not '
             'supported by Timeseries.resample_timeseries(). Try '
             '"ts_nodupl = ts[~ts.index.duplicated()]"'

@@ -366,6 +366,17 @@ def test_crop_timeseries():
 
 
 @pytest.mark.unittest
+def test_crop_timeseries_wrongperiod():
+    current_station = 'VLISSGN'
+    times_ext = slice("2030-01-01 00:00:00 +00:00", "2030-06-01 00:00:00 +00:00")
+    file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
+    ts_prediction = hatyan.read_dia(filename=file_pred, station=current_station)
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.crop_timeseries(ts_prediction, times=times_ext)
+    assert "imported timeseries is not available within entire " in str(e.value)
+
+
+@pytest.mark.unittest
 def test_resample_timeseries():
     
     current_station = 'VLISSGN'
@@ -383,6 +394,18 @@ def test_resample_timeseries():
     pred_res_meta = metadata_from_obj(ts_prediction_res)
     metadata_compare([pred_meta,pred_res_meta])
     assert np.isclose(pd.Timedelta(ts_prediction_res.index.freq).total_seconds(), 60*timestep_min)
+
+
+@pytest.mark.unittest
+def test_resample_timeseries_duplicatedindex():
+    
+    current_station = 'VLISSGN'
+    file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
+    ts_prediction = hatyan.read_dia(filename=file_pred, station=current_station)
+    ts_pred_dup = pd.concat([ts_prediction, ts_prediction.iloc[:2]], axis=0)
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.resample_timeseries(ts_pred_dup, timestep_min=120)
+    assert "duplicated values in the ts DatetimeIndex" in str(e.value)
 
 
 @pytest.mark.unittest
@@ -461,6 +484,18 @@ def test_calc_HWLWnumbering_duplicateHWLWno():
     # some indirect way of asserting there are four rows in the pandas dataframe
     # in the error message
     assert len(str(e.value)) == 376
+
+
+@pytest.mark.systemtest
+def test_calc_HWLWnumbering_incorrectHWLWno():
+    current_station = 'VLISSGN'
+    file_ext = os.path.join(dir_testdata,f'{current_station}_ext.txt')
+    ts_ext = hatyan.read_dia(filename=file_ext, station=current_station)
+    ts_ext["HWLWcode"] = 0
+    
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.calc_HWLWnumbering(ts_ext=ts_ext)
+    assert "not implemented for HWLWcode other than 1,2,3,4,5 " in str(e.value)
 
 
 @pytest.mark.unittest
