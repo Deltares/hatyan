@@ -420,13 +420,19 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     Parameters
     ----------
     ts : pandas.DataFrame
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries.
+        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
+        it contains the timeseries.
     ts_validation : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries. The default is None.
+        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
+        it contains the timeseries. The default is None.
     ts_ext : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes. The default is None.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, it contains the times, values and codes of the
+        timeseries that are extremes. The default is None.
     ts_ext_validation : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes. The default is None.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, it contains the times, values and codes of the
+        timeseries that are extremes. The default is None.
 
     Returns
     -------
@@ -447,7 +453,10 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     eenheid = ts.attrs.get('eenheid', '-')
     
     if ts_validation is not None:
-        times_predval_ext = [min(min(ts_validation.index),min(ts.index)), max(max(ts_validation.index),max(ts.index))]
+        times_predval_ext = [
+            min(min(ts_validation.index),min(ts.index)),
+            max(max(ts_validation.index),max(ts.index)),
+            ]
     else:
         times_predval_ext = [min(ts.index), max(ts.index)]    
 
@@ -456,13 +465,11 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.set_title('hatyan timeseries')
     ax1.plot(ts.index, ts['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts')
     if ts_validation is not None:
-        if ts.index.duplicated().sum() + ts_validation.index.duplicated().sum() >0:
-            logger.warning(f'duplicated timesteps in ts ({ts.index.duplicated().sum()}) or ts_validation ({ts_validation.index.duplicated().sum()}), timeseries difference computation will probably fail')
-        #overlap between timeseries for difference plots
-        times_id_validationinpred = np.nonzero(ts_validation.index.isin(ts.index))[0]
-        times_id_predinvalidation = np.nonzero(ts.index.isin(ts_validation.index))[0]
+        # compute difference between timeseries for overlapping period
+        ts_diff = ts['values'] - ts_validation['values']
+        ts_diff = ts_diff.dropna()
         ax1.plot(ts_validation.index, ts_validation['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts_validation', alpha=0.7)
-        ax1.plot(ts.index[times_id_predinvalidation], ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference', alpha=0.7)
+        ax1.plot(ts_diff.index, ts_diff,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference', alpha=0.7)
     ax1.plot(times_predval_ext,[0,0],'-k',linewidth=size_line_ts)
     ts_mean = np.mean(ts['values'])
     ax1.plot(ts.index[[0,-1]],[ts_mean,ts_mean],'-r',linewidth=size_line_ts,label='mean of ts')
@@ -495,15 +502,14 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.legend(loc='lower right')
     ax1.grid()
     if ts_validation is not None:
-        ax2.plot(ts.index[times_id_predinvalidation], ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference')
+        ax2.plot(ts_diff.index, ts_diff, 'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference')
         ax2.legend(loc='lower right') # create legend only if diff is plotted
     ax2.plot(times_predval_ext,[0,0],'-k',linewidth=size_line_ts)
     ax2.set_ylim(figure_ylim_tsdiff)
     rmse = np.nan
     if ts_validation is not None:
-        overlapdiff = ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values
-        if len(overlapdiff) != 0:
-            rmse = np.sqrt(np.nanmean(overlapdiff ** 2))
+        if len(ts_diff) != 0:
+            rmse = np.sqrt(np.nanmean(ts_diff ** 2))
     ax2.set_ylabel(f'timeseries difference [{eenheid}], RMSE = %.5f'%(rmse))
     ax2.grid()
     fig.tight_layout()

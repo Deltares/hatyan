@@ -476,8 +476,8 @@ def test_plot_timeseries():
 def test_plot_timeseries_duplicate_index():
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
     ts_pred = hatyan.read_dia(file_pred)
-    # create ts with duplicated timestamps
-    ts_pred2 = pd.concat([ts_pred,ts_pred.iloc[:2]], axis=0).sort_index()
+    # create ts with duplicated timestamps with slightly less coverage
+    ts_pred2 = pd.concat([ts_pred,ts_pred.iloc[:2]], axis=0).sort_index().iloc[:-10000]
     hatyan.plot_timeseries(ts=ts_pred, ts_validation=ts_pred2)
 
 
