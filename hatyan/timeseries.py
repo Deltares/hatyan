@@ -50,63 +50,108 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
     
     Calculates extremes (high and low waters) for the provided timeseries. 
     This definition uses scipy.signal.find_peaks() with arguments 'distance' and 'prominence'. 
-    The minimal 'distance' between two high or low water peaks is based on the M2 period: 12.42/1.5=8.28 hours for HW and 12.42/1.7=7.30 hours for LW (larger because of aggers). 
+    The minimal 'distance' between two high or low water peaks is based on the
+    M2 period: 12.42/1.5=8.28 hours for HW and 12.42/1.7=7.30 hours for LW (larger because of aggers). 
     The prominence for local extremes is set to 0.01m, to filter out very minor dips in the timeseries.
     If there are two equal high or low water values, the first one is taken. 
-    There are no main high/low waters calculated within 6 hours of the start/end of the timeseries (keyword buffer_hr), since these can be invalid.
-    Since scipy.signal.find_peaks() warns about nan values, those are removed first. Nans/gaps can influence the results since find_peaks does not know about time registration. This is also tricky for input timeseries with varying time interval.
+    There are no main high/low waters calculated within 6 hours of the start/end of the
+    timeseries (keyword buffer_hr), since these can be invalid.
+    Since scipy.signal.find_peaks() warns about nan values, those are removed first.
+    Nans/gaps can influence the results since find_peaks does not know about time
+    registration. This is also tricky for input timeseries with varying time interval.
     
     Parameters
     ----------
     ts : pandas.DataFrame
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries with a tidal prediction or water level measurements.
+        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
+        it contains the timeseries with a tidal prediction or water level measurements.
     calc_HWLW345 : boolean, optional
         Whether to also calculate local extremes, first/second low waters and 'aggers'. 
         The default is False, in which case only extremes per tidal period are calculated.
-        When first/second low waters and aggers are calculated, the local extremes around highwater (eg double highwaters and dips) are filtered out first.
+        When first/second low waters and aggers are calculated, the local extremes
+        around highwater (eg double highwaters and dips) are filtered out first.
     
     Returns
     -------
     data_pd_HWLW : pandas.DataFrame
-        The DataFrame contains colums 'times', 'values' and 'HWLWcode', it contains the times, values and codes of the timeseries that are extremes.
-        1 (high water) and 2 (low water). And if calc_HWLW345=True also 3 (first low water), 4 (agger) and 5 (second low water).
+        The DataFrame contains colums 'times', 'values' and 'HWLWcode', it contains the
+        times, values and codes of the timeseries that are extremes.
+        1 (high water) and 2 (low water). And if calc_HWLW345=True also
+        3 (first low water), 4 (agger) and 5 (second low water).
 
     """
     
     if not ts.index.is_monotonic_increasing:
-        raise Exception('timeseries is not monotonic increasing, supply sorted timeseries (ts = ts.index.sort_index()') #otherwise "ValueError: 'list' argument must have no negative elements"
+        #otherwise "ValueError: 'list' argument must have no negative elements"
+        raise ValueError(
+            'timeseries is not monotonic increasing, supply sorted timeseries '
+            '(ts = ts.index.sort_index()',
+            )
     
     #calculate the amount of steps in a M2 period, based on the most occurring timestep 
     M2_period_sec = get_schureman_freqs(['M2']).loc['M2','period [hr]']*3600
     
     ts_steps_sec_most = np.argmax(np.bincount(pd.Series(np.diff(ts.index)).dt.total_seconds().astype(int).values))
     if ts_steps_sec_most > 60:
-        logger.warning(f'the timestep of the series for which to calculate extremes/HWLW is {ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended')
+        logger.warning(
+            'the timestep of the series for which to calculate extremes/HWLW is'
+            f'{ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended',
+            )
     elif ts_steps_sec_most == 0:
         raise ValueError('ts_steps_sec_most=0, check rounding issue')
     M2period_numsteps = M2_period_sec/ts_steps_sec_most
-    minwidth_numsteps = 2*3600/ts_steps_sec_most # minimal width of 2 hours makes peakfinding more robust: https://github.com/Deltares/hatyan/issues/85
+    # minimal width of 2 hours makes peakfinding more robust: https://github.com/Deltares/hatyan/issues/85
+    minwidth_numsteps = 2*3600/ts_steps_sec_most
 
     data_pd_HWLW = pd.DataFrame({'times':ts.index,'values':ts['values'],'HWLWcode':np.nan}).reset_index(drop=True)
     #create empty HWLW dataframe
     if data_pd_HWLW['values'].isnull().any():
         data_pd_HWLW = data_pd_HWLW[~data_pd_HWLW['values'].isnull()].reset_index(drop=True)
-        logger.warning('the provided ts for extreme/HWLW calculation contained NaN values. To avoid unexpected results from scipy.signal.find_peaks(), the %i NaN values were removed from the ts (%.2f%%) before calculating extremes/HWLW.'%(len(ts)-len(data_pd_HWLW), (len(ts)-len(data_pd_HWLW))/len(ts)*100))
+        len_diff = len(ts)-len(data_pd_HWLW)
+        len_diff_pct = (len(ts)-len(data_pd_HWLW))/len(ts)*100
+        logger.warning(
+            'the provided ts for extreme/HWLW calculation contained NaN values. To '
+            f'avoid unexpected results from scipy.signal.find_peaks(), the {len_diff} '
+            f'NaN values ({len_diff_pct:.2f}%) were removed from the ts before '
+            'calculating extremes/HWLW.'
+            )
 
-    min_prominence = 0.01 #minimal prominence to exclude very minor dips/peaks from being seen as aggers.
+    # minimal prominence to exclude very minor dips/peaks from being seen as aggers.
+    min_prominence = 0.01
     
     if calc_HWLW345:
-        #get all local extremes, including aggers and second high waters (1/2/11/22) #takes first value of two equal peaks
+        # get all local extremes, including aggers and second high waters (1/2/11/22)
+        # takes first value of two equal peaks
         LWid_all, LWid_all_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(None,None), distance=None)
         HWid_all, HWid_all_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(None,None), distance=None)
         data_pd_HWLW.loc[LWid_all,'HWLWcode'] = 22 #all LW
         data_pd_HWLW.loc[HWid_all,'HWLWcode'] = 11 #all HW
 
     #get HWLW (extremes per tidal period).
-    LWid_main_raw,LWid_main_properties = ssig.find_peaks(-data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(minwidth_numsteps,None), distance=M2period_numsteps/1.7) #most stations work with factor 1.4. 1.5 results in all LW values for HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000 (also for 1999-2002).
-    HWid_main_raw,HWid_main_properties = ssig.find_peaks(data_pd_HWLW['values'].values, prominence=(min_prominence,None), width=(minwidth_numsteps,None), distance=M2period_numsteps/1.9) #most stations work with factor 1.4. 1.5 value results in all HW values for DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
-    # remove main extremes within 6 hours of start/end of timeseries, since they are often missed or invalid.
-    validtimes_idx = data_pd_HWLW.loc[(data_pd_HWLW['times']>=data_pd_HWLW['times'].iloc[0]+dt.timedelta(hours=buffer_hr)) & (data_pd_HWLW['times']<=data_pd_HWLW['times'].iloc[-1]-dt.timedelta(hours=buffer_hr))].index
+    # LW: most stations work with factor 1.4. 1.5 results in all LW values for
+    # HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000
+    # (also for 1999-2002).
+    LWid_main_raw,LWid_main_properties = ssig.find_peaks(
+        -data_pd_HWLW['values'].values,
+        prominence=(min_prominence,None),
+        width=(minwidth_numsteps,None),
+        distance=M2period_numsteps/1.7,
+        )
+    # HW: most stations work with factor 1.4. 1.5 value results in all HW values for
+    # DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for
+    #LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
+    HWid_main_raw,HWid_main_properties = ssig.find_peaks(
+        data_pd_HWLW['values'].values,
+        prominence=(min_prominence,None),
+        width=(minwidth_numsteps,None),
+        distance=M2period_numsteps/1.9,
+        )
+    # remove main extremes within 6 hours of start/end of timeseries, since they are
+    # often missed or invalid.
+    buffer_dt = dt.timedelta(hours=buffer_hr)
+    bool_larger = (data_pd_HWLW['times'] >= data_pd_HWLW['times'].iloc[0] + buffer_dt)
+    bool_smaller = (data_pd_HWLW['times'] <= data_pd_HWLW['times'].iloc[-1] - buffer_dt)
+    validtimes_idx = data_pd_HWLW.loc[bool_larger & bool_smaller].index
     LWid_main = LWid_main_raw[np.isin(LWid_main_raw,validtimes_idx)]
     HWid_main = HWid_main_raw[np.isin(HWid_main_raw,validtimes_idx)]
     #use valid values to continue process
@@ -273,20 +318,33 @@ def filter_duplicate_hwlwnos(ts_ext):
 
 def calc_HWLWnumbering(ts_ext, station=None):
     """
-    For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in 2000 (occurred on 1-1-2000 at approximately 9:45). 
-    The number of every high and low water is calculated by taking the time difference between itself and the first high water at Cadzand, correcting it with the station phase difference (M2phasediff). 
+    For calculation of the extremes numbering, w.r.t. the first high water at Cadzand in
+    2000 (occurred on 1-1-2000 at approximately 9:45). 
+    The number of every high and low water is calculated by taking the time difference
+    between itself and the first high water at Cadzand, correcting it with the station
+    phase difference (M2phasediff). 
     Low waters are searched for half an M2 period from the high waters. 
-    By adding a search window of half the period of M2 (searchwindow_hr), even strong time variance between consecutive high or low waters should be caputered. 
+    By adding a search window of half the period of M2 (searchwindow_hr), even strong
+    time variance between consecutive high or low waters should be caputered. 
     
     Parameters
     ----------
     ts_ext : pandas.DataFrame
-        The DataFrame should contain a 'values' and 'HWLWcode' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes.
+        The DataFrame should contain a 'values' and 'HWLWcode' column and a
+        pd.DatetimeIndex as index, it contains the times, values and codes of the
+        timeseries that are extremes.
     station: string, optional
-        The station for which the M2 phase difference should be retrieved from data_M2phasediff_perstation.txt.
-        This value is the phase difference in degrees of the occurrence of the high water generated by the same tidal wave as the first high water in 2000 at Cadzand (actually difference between M2 phases of stations).
-        This value is used to correct the search window of high/low water numbering. The default is None.
-        Providing a value will result in a proper HWLWno, corresponing to CADZD. Providing None will result in a HWLWno that is a multiple of 360degrees/M2_period_hr off (positive or negative). This is only an issue when comparing different stations, not comparing e.g. measured and predicted HW values of one station.
+        The station for which the M2 phase difference should be retrieved from
+        data_M2phasediff_perstation.txt. This value is the phase difference in degrees
+        of the occurrence of the high water generated by the same tidal wave as the
+        first high water in 2000 at Cadzand (actually difference between M2 phases
+        of stations). This value is used to correct the search window of high/low water
+        numbering. The default is None.
+        Providing a value will result in a proper HWLWno, corresponing to CADZD.
+        Providing None will result in a HWLWno that is a multiple of
+        360degrees/M2_period_hr off (positive or negative). This is only an issue when
+        comparing different stations, not comparing e.g. measured and predicted HW
+        values of one station.
     
     Raises
     ------
@@ -301,7 +359,7 @@ def calc_HWLWnumbering(ts_ext, station=None):
     """
         
     M2_period_hr = get_schureman_freqs(['M2']).loc['M2','period [hr]']
-    firstHWcadz_fixed = pd.Timestamp("2000-01-01 09:45:00 +01:00") #dt.datetime(2000, 1, 1, 9, 45)
+    firstHWcadz_fixed = pd.Timestamp("2000-01-01 09:45:00 +01:00")
     firstHWcadz_fixed = firstHWcadz_fixed.tz_convert(ts_ext.index.tz)
     searchwindow_hr = M2_period_hr/2
     
@@ -309,7 +367,12 @@ def calc_HWLWnumbering(ts_ext, station=None):
         raise Exception('length of provided ts_ext is zero')
     
     if not all((ts_ext['HWLWcode']==1) | (ts_ext['HWLWcode']==2) | (ts_ext['HWLWcode']==3) | (ts_ext['HWLWcode']==4) | (ts_ext['HWLWcode']==5)):
-        raise Exception('calc_HWLWnumbering() not implemented for HWLWcode other than 1,2,3,4,5 (so no HWLWcode 11 or 22 supported), provide extreme timeseries derived with Timeseries.calc_HWLW(calc_HWLW345=False) or Timeseries.calc_HWLW(calc_HWLW345=True, calc_HWLW345_cleanup1122=True)')
+        raise ValueError(
+            'calc_HWLWnumbering() not implemented for HWLWcode other than 1,2,3,4,5 '
+            '(so no HWLWcode 11 or 22 supported), provide extreme timeseries derived '
+            'with Timeseries.calc_HWLW(calc_HWLW345=False) or '
+            'Timeseries.calc_HWLW(calc_HWLW345=True, calc_HWLW345_cleanup1122=True)'
+            )
     
     # copy object but retain metadata
     metadata_ext = metadata_from_obj(ts_ext)
@@ -319,9 +382,12 @@ def calc_HWLWnumbering(ts_ext, station=None):
     HW_bool = ts_ext['HWLWcode']==1
     HW_tdiff_cadzdraw = (ts_ext.loc[HW_bool].index.to_series()-firstHWcadz_fixed).dt.total_seconds()/3600
     if station is None:
-        from hatyan.analysis_prediction import analysis #TODO: local import since Importerror: cannot import name 'analysis' from partially initialized module 'hatyan.analysis_prediction' (most likely due to a circular import) 
-        M2phase_cadzd = 48.81 #from analyse waterlevels CADZD over 2009 t/m 2012
-        # high max_matrix_condition value necessary for some english stations. Not a big issue since it should provide a phasediff also in case of only one HW+LW.
+        # TODO: local import since Importerror: cannot import name 'analysis' from
+        # partially initialized module 'hatyan.analysis_prediction' (most likely due to a circular import) 
+        from hatyan.analysis_prediction import analysis
+        M2phase_cadzd = 48.81 # from analyse waterlevels CADZD over 2009 t/m 2012
+        # high max_matrix_condition value necessary for some english stations. Not a big
+        # issue since it should provide a phasediff also in case of only one HW+LW.
         comp_M2 = analysis(ts_ext,const_list=['M2'],max_matrix_condition=250)
         logger.debug(f"M2phase: {comp_M2.loc['M2','phi_deg']}, comp_M2_cadzd: {M2phase_cadzd}")
         M2phasediff_deg = (comp_M2.loc['M2','phi_deg'] - M2phase_cadzd+90)%360-90
@@ -420,13 +486,19 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     Parameters
     ----------
     ts : pandas.DataFrame
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries.
+        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
+        it contains the timeseries.
     ts_validation : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries. The default is None.
+        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
+        it contains the timeseries. The default is None.
     ts_ext : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes. The default is None.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, it contains the times, values and codes of the
+        timeseries that are extremes. The default is None.
     ts_ext_validation : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes. The default is None.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, it contains the times, values and codes of the
+        timeseries that are extremes. The default is None.
 
     Returns
     -------
@@ -447,7 +519,10 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     eenheid = ts.attrs.get('eenheid', '-')
     
     if ts_validation is not None:
-        times_predval_ext = [min(min(ts_validation.index),min(ts.index)), max(max(ts_validation.index),max(ts.index))]
+        times_predval_ext = [
+            min(min(ts_validation.index),min(ts.index)),
+            max(max(ts_validation.index),max(ts.index)),
+            ]
     else:
         times_predval_ext = [min(ts.index), max(ts.index)]    
 
@@ -456,13 +531,11 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.set_title('hatyan timeseries')
     ax1.plot(ts.index, ts['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts')
     if ts_validation is not None:
-        if ts.index.duplicated().sum() + ts_validation.index.duplicated().sum() >0:
-            logger.warning(f'duplicated timesteps in ts ({ts.index.duplicated().sum()}) or ts_validation ({ts_validation.index.duplicated().sum()}), timeseries difference computation will probably fail')
-        #overlap between timeseries for difference plots
-        times_id_validationinpred = np.nonzero(ts_validation.index.isin(ts.index))[0]
-        times_id_predinvalidation = np.nonzero(ts.index.isin(ts_validation.index))[0]
+        # compute difference between timeseries for overlapping period
+        ts_diff = ts['values'] - ts_validation['values']
+        ts_diff = ts_diff.dropna()
         ax1.plot(ts_validation.index, ts_validation['values'],'o-',linewidth=size_line_ts,markersize=size_marker_ts, label='ts_validation', alpha=0.7)
-        ax1.plot(ts.index[times_id_predinvalidation], ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference', alpha=0.7)
+        ax1.plot(ts_diff.index, ts_diff,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference', alpha=0.7)
     ax1.plot(times_predval_ext,[0,0],'-k',linewidth=size_line_ts)
     ts_mean = np.mean(ts['values'])
     ax1.plot(ts.index[[0,-1]],[ts_mean,ts_mean],'-r',linewidth=size_line_ts,label='mean of ts')
@@ -495,15 +568,14 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
     ax1.legend(loc='lower right')
     ax1.grid()
     if ts_validation is not None:
-        ax2.plot(ts.index[times_id_predinvalidation], ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values,'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference')
+        ax2.plot(ts_diff.index, ts_diff, 'go-',linewidth=size_line_ts,markersize=size_marker_ts, label='difference')
         ax2.legend(loc='lower right') # create legend only if diff is plotted
     ax2.plot(times_predval_ext,[0,0],'-k',linewidth=size_line_ts)
     ax2.set_ylim(figure_ylim_tsdiff)
     rmse = np.nan
     if ts_validation is not None:
-        overlapdiff = ts['values'].iloc[times_id_predinvalidation].values-ts_validation['values'].iloc[times_id_validationinpred].values
-        if len(overlapdiff) != 0:
-            rmse = np.sqrt(np.nanmean(overlapdiff ** 2))
+        if len(ts_diff) != 0:
+            rmse = np.sqrt(np.nanmean(ts_diff ** 2))
     ax2.set_ylabel(f'timeseries difference [{eenheid}], RMSE = %.5f'%(rmse))
     ax2.grid()
     fig.tight_layout()
@@ -514,17 +586,26 @@ def plot_timeseries(ts, ts_validation=None, ts_ext=None, ts_ext_validation=None)
 
 def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     """
-    This definition calculates (and plots and prints) some statistics when comparing extreme values.
-    This is done by calculating the extreme number (sort of relative to Cadzand 1jan2000, but see 'warning') and subtracting the ts_ext and ts_ext_validation dataframes based on these numbers (and HWLWcode).
-    It will only result in values for the overlapping extremes, other values will be NaN and are not considered for the statistics.
-    Warning: the calculated extreme numbers in this definition are not corrected for the real phase difference with the M2phasediff argument, the calculated extreme are fine for internal use (to match corresponding extremes) but the absolute number might be incorrect.
+    This definition calculates (and plots and prints) some statistics when comparing
+    extreme values. This is done by calculating the extreme number (sort of relative to
+    Cadzand 1jan2000, but see 'warning') and subtracting the ts_ext and
+    ts_ext_validation dataframes based on these numbers (and HWLWcode).
+    It will only result in values for the overlapping extremes, other values will be NaN
+    and are not considered for the statistics.
+    Warning: the calculated extreme numbers in this definition are not corrected for the
+    real phase difference with the M2phasediff argument, the calculated extreme are fine
+    for internal use (to match corresponding extremes) but the absolute number might be
+    incorrect.
 
     Parameters
     ----------
     ts_ext : pandas.DataFrame
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, it contains the times, values and codes of the
+        timeseries that are extremes.
     ts_ext_validation : pandas.DataFrame
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, values and codes of the timeseries that are extremes.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, values and codes of the timeseries that are extremes.
 
     Returns
     -------
@@ -537,8 +618,10 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     
     logger.info('Calculating comparison statistics for extremes')
     if 'HWLWno' not in ts_ext.columns or 'HWLWno' not in ts_ext_validation.columns:
-        logger.info('HWLWno is not present in ts_ext or ts_ext_validation, trying to '
-                    'automatically derive it without station argument (this might fail)')
+        logger.info(
+            'HWLWno is not present in ts_ext or ts_ext_validation, trying to '
+            'automatically derive it without station argument (this might fail)'
+            )
         ts_ext = calc_HWLWnumbering(ts_ext=ts_ext)
         ts_ext_validation = calc_HWLWnumbering(ts_ext=ts_ext_validation)
     
@@ -585,7 +668,8 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     Parameters
     ----------
     ts : pandas.DataFrame
-        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index, it contains the timeseries.
+        The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
+        it contains the timeseries.
     station : str
         DESCRIPTION.
     vertref : str
@@ -593,7 +677,9 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     filename : str
         The filename of the netCDF file that will be written.
     ts_ext : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the times, values and codes of the timeseries that are extremes. The default is None.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, it contains the times, values and codes of the
+        timeseries that are extremes. The default is None.
     tzone_hr : int, optional
         The timezone (GMT+tzone_hr) that applies to the data. The default is 1 (MET).
     
@@ -641,12 +727,22 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
         data_nc.createDimension('analysis_time',1)
     
     refdate_tz = dt.datetime(1900,1,1,tzinfo=ts.index.tz)
+    time_units = 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z'))
     dict_statattr = {'cf_role': 'timeseries_id'}
-    dict_anatimattr = {'units': 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z')), 'standard_name':'forecast_reference_time', 'long_name':'forecast_reference_time'}
-    dict_timattr = {'units': 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z'))}
-    dict_wlattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of water level above reference level'}
-    dict_HWattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of high water extremes above reference level'}
-    dict_LWattr = {'units':'m', 'vertical_reference': vertref, 'standard_name': 'sea_surface_height_above_geopotential_datum', 'long_name': 'astronomical prediction of low water extremes above reference level'}
+    dict_anatimattr = {'units': time_units, 'standard_name':'forecast_reference_time', 'long_name':'forecast_reference_time'}
+    dict_timattr = {'units': time_units}
+    dict_wlattr = {'units':'m', 'vertical_reference': vertref,
+                   'standard_name': 'sea_surface_height_above_geopotential_datum',
+                   'long_name': 'astronomical prediction of water level above reference level',
+                   }
+    dict_HWattr = {'units':'m', 'vertical_reference': vertref,
+                   'standard_name': 'sea_surface_height_above_geopotential_datum',
+                   'long_name': 'astronomical prediction of high water extremes above reference level',
+                   }
+    dict_LWattr = {'units':'m', 'vertical_reference': vertref,
+                   'standard_name': 'sea_surface_height_above_geopotential_datum',
+                   'long_name': 'astronomical prediction of low water extremes above reference level',
+                   }
     dict_HWLWnoattr = {'units':'n-th tidal wave since reference wave at Cadzand on 1-1-2000'} #, 'standard_name': '', 'long_name': ''}
 
     if 'stations' not in ncvarlist: #create empty variables if not yet present
@@ -982,7 +1078,10 @@ def write_noos(ts, filename):
         Timezone    : None
         ------------------------------------------------------"""
     else:
-        header_txt = f"""------------------------------------------------------\nTimeseries written by hatyan\nCreated at {timestamp}\n------------------------------------------------------\n"""
+        header_txt = f"""------------------------------------------------------
+        Timeseries written by hatyan\nCreated at {timestamp}
+        ------------------------------------------------------
+        """
         for key in metadata.keys():
             header_txt = header_txt+('%-12s: %s\n'%(key, metadata[key]))
         header_txt = header_txt+'------------------------------------------------------'
@@ -1019,9 +1118,13 @@ def crop_timeseries(ts, times, onlyfull=True):
     if tstart >= tstop:
         raise ValueError(f'the tstart and tstop should be increasing, but they are not: {times}.')
     if (tstart < ts_pd_in.index.min()) or (tstop > ts_pd_in.index.max()):
-        message = 'imported timeseries is not available within entire requested period:\nrequested period:    %s to %s\nimported timeseries: %s to %s'%(tstart,tstop,ts_pd_in.index[0],ts_pd_in.index[-1])
+        message = (
+            'imported timeseries is not available within entire requested period:\n'
+            f'requested period:    {tstart} to {tstop}\n'
+            f'imported timeseries: {ts_pd_in.index[0]} to {ts_pd_in.index[-1]}'
+            )
         if onlyfull:
-            raise Exception(message)
+            raise ValueError(message)
         else:
             logger.warning(message)
             
@@ -1035,18 +1138,23 @@ def crop_timeseries(ts, times, onlyfull=True):
 
 def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     """
-    resamples the provided timeseries, only overlapping timesteps are selected, so no interpolation. with tstart/tstop it is possible to extend the timeseries with NaN values.
+    resamples the provided timeseries, only overlapping timesteps are selected, so no
+    interpolation. with tstart/tstop it is possible to extend the timeseries with NaN
+    values.
 
     Parameters
     ----------
     ts : pandas.DataFrame
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a pd.DatetimeIndex as index, it contains the timeseries to be resampled.
+        The DataFrame should contain a 'values' and 'HWLW_code' column and a
+        pd.DatetimeIndex as index, it contains the timeseries to be resampled.
     timestep_min : int
         the amount of minutes with which to resample the timeseries.
     tstart : dt.datetime, optional
-        the start date for the resampled timeseries, the default is None which results in using the start date of the input ts.
+        the start date for the resampled timeseries, the default is None which results
+        in using the start date of the input ts.
     tstop : dt.datetime, optional
-        the stop date for the resampled timeseries, the default is None which results in using the stop date of the input ts.
+        the stop date for the resampled timeseries, the default is None which results
+        in using the stop date of the input ts.
 
     Returns
     -------
@@ -1059,14 +1167,20 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
     
     bool_duplicated_index = ts.index.duplicated()
     if bool_duplicated_index.sum()>0:
-        raise Exception('there are duplicated values in the ts DatetimeIndex, this is not supported by Timeseries.resample_timeseries(). Try "ts_nodupl = ts[~ts.index.duplicated()]"')
+        raise ValueError(
+            'there are duplicated values in the ts DatetimeIndex, this is not '
+            'supported by Timeseries.resample_timeseries(). Try '
+            '"ts_nodupl = ts[~ts.index.duplicated()]"'
+            )
     
     if tstart is None:
         tstart = ts.index[0]
     if tstop is None:
         tstop = ts.index[-1]
-    data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq='%dmin'%(timestep_min))) #generate timeseries with correct tstart/tstop and interval
-    data_pd_resample['values'] = ts['values'] #put measurements into this timeseries, matches to correct index automatically
+    # generate timeseries with correct tstart/tstop and interval
+    data_pd_resample = pd.DataFrame({},index=pd.date_range(tstart,tstop,freq='%dmin'%(timestep_min)))
+    # put measurements into this timeseries, matches to correct index automatically
+    data_pd_resample['values'] = ts['values']
     
     # add metadata
     metadata = metadata_from_obj(ts)
@@ -1077,13 +1191,14 @@ def resample_timeseries(ts, timestep_min, tstart=None, tstop=None):
 
 def nyquist_folding(ts_pd,t_const_freq_pd):
     #deriving dominant timestep, sampling frequency and nyquist frequency
-    timestep_hr_all = ((ts_pd.index[1:]-ts_pd.index[:-1]).total_seconds()/3600)#.astype(int).values
+    timestep_hr_all = ((ts_pd.index[1:]-ts_pd.index[:-1]).total_seconds()/3600)
     uniq_vals, uniq_counts = np.unique(timestep_hr_all,return_counts=True)
     timestep_hr_dominant = uniq_vals[np.argmax(uniq_counts)]
     fs_phr = 1/timestep_hr_dominant #sampling freq [1/hr]
     fn_phr = fs_phr/2 #nyquist freq [1/hr]
     
-    #check if there is a component with exactly the same frequency as the nyquist frequency #TODO: or its multiples (but with remainder, A0 also gets flagged)
+    # check if there is a component with exactly the same frequency as the nyquist
+    # frequency #TODO: or its multiples (but with remainder, A0 also gets flagged)
     bool_isnyquist = t_const_freq_pd['freq']==fn_phr
     if bool_isnyquist.any():
         raise ValueError(f'there is a component on the Nyquist frequency ({fn_phr} [1/hr]), '
@@ -1093,9 +1208,11 @@ def nyquist_folding(ts_pd,t_const_freq_pd):
                 f'of the dominant timestep ({timestep_hr_dominant} hour), '
                 f'there are {len(uniq_counts)} unique timesteps)')
     #folding frequencies over nyquist frequency: https://users.encs.concordia.ca/~kadem/CHAPTER%20V.pdf (fig 5.6)
-    freq_div,freq_rem = np.divmod(t_const_freq_pd[['freq']],fn_phr) # remainder gives folded frequencies for even divisions (freqs for odd divisions are not valid yet)
+    # remainder gives folded frequencies for even divisions (freqs for odd divisions are not valid yet)
+    freq_div,freq_rem = np.divmod(t_const_freq_pd[['freq']],fn_phr)
     freq_div_isodd = (freq_div%2).astype(bool)
-    freq_rem[freq_div_isodd] = fn_phr-freq_rem[freq_div_isodd] # fn-remainder gives folded frequencies for odd divisions
+    # fn-remainder gives folded frequencies for odd divisions
+    freq_rem[freq_div_isodd] = fn_phr-freq_rem[freq_div_isodd]
     return freq_rem
 
 
@@ -1122,8 +1239,12 @@ def check_rayleigh(ts_pd,t_const_freq_pd):
         return #Rayleigh check is only relevant (and possible) if there more than one non-A0 component, otherwise stop.
     freq_diffs = np.diff(t_const_freq)
     ts_period_hr = (ts_pd.index.max()-ts_pd.index.min()).total_seconds()/3600
-    rayleigh_tresh = 0.7 #0.99 # Koos Doekes: "Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het Rayleigh-criterium enigszins schenden, tot zo'n 0,7 van de theoretisch vereiste reekslengte. "
-    rayleigh = ts_period_hr*freq_diffs #TODO: might be better to drop timeseries nan-values first, especially from start/end of series since it decreases ts_period_hr
+    # Koos Doekes: "Bij het algoritme dat HATYAN gebruikt mag men in de praktijk het
+    # Rayleigh-criterium enigszins schenden, tot zo'n 0,7 van de theoretisch vereiste reekslengte. "
+    rayleigh_tresh = 0.7
+    # TODO: might be better to drop timeseries nan-values first, especially from
+    # start/end of series since it decreases ts_period_hr
+    rayleigh = ts_period_hr*freq_diffs
     freq_diff_phr_minimum = rayleigh_tresh/ts_period_hr
     rayleigh_bool = rayleigh>rayleigh_tresh
     rayleigh_bool_id = np.nonzero(~rayleigh_bool)[0]
@@ -1268,10 +1389,14 @@ def get_diablocks_startstopstation(filename):
     linenum_colnames = ['block_starts','data_starts','data_ends']
     diablocks_pd_startstopstation = pd.DataFrame({},columns=linenum_colnames)
     
-    # add str type columns to avoid "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'min' has dtype incompatible with float64, please explicitly cast to a compatible dtype first."
+    # add str type columns to avoid "FutureWarning: Setting an item of incompatible
+    # dtype is deprecated and will raise in a future error of pandas. Value 'min' has
+    # dtype incompatible with float64, please explicitly cast to a compatible dtype first."
     diablocks_pd_startstopstation['station'] = ""
     
-    with open(filename, encoding='latin1') as f: #'latin1 is nodig om predictie diafile die rechtstreeks uit hatyan komen in te lezen (validatietijdserie met op regel 4 (PAR) ongeldige tekens aan het einde)
+    # 'latin1 is nodig om predictie diafile die rechtstreeks uit hatyan komen in te
+    # lezen (validatietijdserie met op regel 4 (PAR) ongeldige tekens aan het einde)
+    with open(filename, encoding='latin1') as f:
         block_id = -1
         for linenum, line in enumerate(f, 1):
             if '[W3H]' in line:
@@ -1297,17 +1422,22 @@ def get_diablocks(filename):
     
     logger.info('reading file: %s'%(filename))
     diablocks_pd = get_diablocks_startstopstation(filename)
-    # add str type columns to avoid "FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value 'min' has dtype incompatible with float64, please explicitly cast to a compatible dtype first."
+    # add str type columns to avoid "FutureWarning: Setting an item of incompatible
+    # dtype is deprecated and will raise in a future error of pandas. Value 'min' has
+    # dtype incompatible with float64, please explicitly cast to a compatible dtype first."
     columns_str = ['TYP','groepering','grootheid','coordsys',
                    'eenheid','vertref',
                    'timestep_unit',
                    'STA']
     diablocks_pd[columns_str] = ""
     for block_id in diablocks_pd.index.tolist():
-        #read diafile metadata as pandas series, prevent splitting of combined paramater names like MXH;2 by replacing ; with !
+        # read diafile metadata as pandas series, prevent splitting of combined paramater names like MXH;2 by replacing ; with !
         data_meta_nrows = diablocks_pd.loc[block_id,'data_starts'] - diablocks_pd.loc[block_id,'block_starts']
-        data_meta_series = pd.read_table(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,header=None)[0] #series of metadata
-        if not data_meta_series.str.contains('GHD|MXG;2').any(): #wia files contain these parameters, dia files don't. Replace dia names with wia names (wia files also contain PAR and MXP;2, but they should not be replaced)
+        # series of metadata
+        data_meta_series = pd.read_table(filename,skiprows=diablocks_pd.loc[block_id,'block_starts'],nrows=data_meta_nrows,header=None)[0]
+        # wia files contain these parameters, dia files don't. Replace dia names with
+        # wia names (wia files also contain PAR and MXP;2, but they should not be replaced)
+        if not data_meta_series.str.contains('GHD|MXG;2').any():
             data_meta_series = data_meta_series.str.replace('PAR','GHD').str.replace('MXP;2','MXG;2')
         bool_combinedparname = (data_meta_series.str[3:6]==';1;') | (data_meta_series.str[3:6]==';2;')
         data_meta_series.loc[bool_combinedparname] = data_meta_series.loc[bool_combinedparname].str.slice_replace(3,4,'!')
@@ -1319,7 +1449,11 @@ def get_diablocks(filename):
         if row_TYP=='TN': #bool_startswithmux.any(): #extreme waterlevel timeseries (non-equidistant)
             mincontent = ['MXG;2','LOC','MXH;2','MXE;2','TYD','STA']
             if bool_startswithmux.sum()==0:
-                raise Exception(f'ERROR: block_id={block_id} is of TYP={row_TYP} (non-equidistant, extreme waterlevels), but no MUX is available in metadata header so the file cannot be read:\n{diablocks_pd}')
+                raise Exception(
+                    f'ERROR: block_id={block_id} is of TYP={row_TYP} (non-equidistant, '
+                    'extreme waterlevels), but no MUX is available in metadata header '
+                    'so the file cannot be read:\n{diablocks_pd}'
+                    )
             diablocks_pd.loc[block_id,'groepering'] = data_meta_series.loc[bool_startswithmux].iloc[0].split(';')[1]
         elif row_TYP=='TE': #normal waterlevel timeseries (equidistant)
             mincontent = ['GHD',  'LOC','HDH',  'EHD',  'TYD','STA'] #,WNSCPM,HDH,ANA

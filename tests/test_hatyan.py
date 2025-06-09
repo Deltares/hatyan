@@ -145,6 +145,25 @@ def test_calc_HWLW_ts_with_gap():
 
 
 @pytest.mark.systemtest
+def test_calc_HWLW_unsorted():
+    """
+    testcase that checks if no extreme is computed at the start/end of a gap
+    like was documented in https://github.com/Deltares/hatyan/issues/97
+    """
+    
+    current_station = 'VLISSGN'
+    
+    file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
+    ts_prediction = hatyan.read_dia(filename=file_pred, station=current_station)
+    ts_prediction = ts_prediction.loc[slice("2019-01","2019-01")]
+    ts_prediction = ts_prediction.sort_values("values")
+    
+    with pytest.raises(ValueError) as e:
+        _ = hatyan.calc_HWLW(ts=ts_prediction)
+    assert "timeseries is not monotonic increasing" in str(e.value)
+
+
+@pytest.mark.systemtest
 def test_frommergedcomp_HWLW_toomuch():
     """
     This test produces a very short prediction for DENHDR, based on an imported component list. It then calculates extremes (HW/LW) and numbers them both.
@@ -152,7 +171,6 @@ def test_frommergedcomp_HWLW_toomuch():
     A prominence value of None works for most stations, but fails for DENHDR in this period since a local dip is interpreted as a low water.
     This incorrect LW has a prominence of ~0.03, other peaks in this timeseries have a prominence of >1 and even when lowering M2 to an unrealistic value (0.5*M2) the prominence of peaks is >0.2
     A prominence value of 0.1 makes sure this test succeeds.
-    
     """
     
     #for testing occurance of invalid low water at start of denhelder timeseries
