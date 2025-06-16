@@ -249,6 +249,12 @@ def test_analysis_settings_invalid_values():
     assert str(e.value) == 'invalid return_allperiods=1 type, should be bool'
 
     with pytest.raises(TypeError) as e:
+        _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], return_allperiods=True)
+    assert str(e.value) == (
+        'return_allperiods=True, but analysis_perperiod=False, this is not supported.'
+        )
+
+    with pytest.raises(TypeError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list=["M2"], cs_comps=1)
     assert str(e.value) == "invalid cs_comps type, should be dict"
 

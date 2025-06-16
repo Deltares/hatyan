@@ -67,6 +67,10 @@ class HatyanSettings:
             if not isinstance(return_allperiods,bool):
                 raise TypeError(f'invalid return_allperiods={return_allperiods} type, should be bool')
             self.return_allperiods = return_allperiods
+            if return_allperiods and not analysis_perperiod:
+                raise TypeError(
+                    f"return_allperiods={return_allperiods}, but analysis_perperiod="
+                    f"{analysis_perperiod}, this is not supported.")
         
         if analysis_perperiod is not None:
             if not ((analysis_perperiod is False) or (analysis_perperiod in ['Y','Q','M'])):
