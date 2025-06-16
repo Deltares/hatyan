@@ -199,8 +199,7 @@ def test_frommergedcomp_HWLW_toomuch():
 
 
 @pytest.mark.systemtest
-#@pytest.mark.parametrize("current_station, yr", [pytest.param(x, y, id='%s %d'%(x,y))  for y in range(1999,2022) for x in ['WICK','ABDN','LEITH','WHITBY','IMMHM','CROMR','FELSWE','CADZD','VLISSGN','TERNZN','ROOMPBTN','HARVT10','HOEKVHLD','ROTTDM','DORDT','SCHEVNGN','IJMDBTHVN','PETTZD','DENHDR','DENOVBTN','HARLGN','HOLWD','SCHIERMNOG','LAUWOG','EEMSHVN','DELFZL','CUXHVN']])
-@pytest.mark.parametrize("current_station, yr", [pytest.param(x, y, id='%s_%d'%(x,y)) for y in [2018,2022] for x in ['HOEKVHLD','ROTTDM','DENHDR','LITHDP']])
+@pytest.mark.parametrize("current_station, yr", [pytest.param(x, y, id='%s_%d'%(x,y)) for y in [2018,2022,2026] for x in ['HOEKVHLD','ROTTDM','DENHDR','LITHDP','EURPHVN']])
 def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     """
     This test produces a prediction for an entire year for a specific station, based on an imported component list. It then calculates extremes (HW/LW) and numbers them both. 
@@ -213,70 +212,24 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     current_station = 'HOEKVHLD'
     current_station = 'ROTTDM'
     current_station = 'DENHDR'
-    current_station = 'LITHDP' #still fails, but is accepted
+    current_station = 'LITHDP'
     yr=2000
     yr=2018
     """
     
-    #stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','BRESKS','BROUWHVSGT02','BROUWHVSGT08','CADZD','CROMR','CUXHVN','DELFZL','DENHDR','DENOVBTN','DEVPT','DORDT','DOVR','EEMHVN','EEMSHVN','EURPFM','EURPHVN','FELSWE','FISHGD','GEULHVN','GOIDSOD','GOUDBG','HAGSBNDN','HANSWT','HARLGN','HARMSBG','HARTBG','HARTHVN','HARVT10','HEESBN','HELLVSS','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','IMMHM','KATSBTN','KEIZVR','KINLBVE','KORNWDZBTN','KRAMMSZWT','KRIMPADIJSL','KRIMPADLK','K13APFM','LAUWOG','LEITH','LICHTELGRE','LITHDP','LLANDNO','LOWST','MAASMSMPL','MAASSS','MAESLKRZZDE','MARLGT','MOERDK','NES','NEWHVN','NEWLN','NIEUWSTZL','NORTHSS','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','PARKSS','PETTZD','PORTSMH','RAKND','ROOMPBNN','ROOMPBTN','ROTTDM','ROZBSSNZDE','ROZBSSZZDE','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SCHOONHVN','SHEERNS','SINTANLHVSGR','SPIJKNSE','STAVNSE','STELLDBTN','STORNWY','SUURHBNZDE','TENNSHVN','TERNZN','TERSLNZE','TEXNZE','VLAARDGN','VLAKTVDRN','VLIELHVN','VLISSGN','VURN','WALSODN','WERKDBTN','WESTKPLE','WESTTSLG','WEYMH','WHITBY','WICK','WIERMGDN','YERSKE','ZALTBML','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
-    # stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
-    #stats_anaperyear0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
-    #stats_MSL = ['EURPFM','K13APFM','LICHTELGRE','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
-    
-    #selected_stations = stats_all
-    #selected_stations = ['WICK','ABDN','LEITH','WHITBY','IMMHM','CROMR','FELSWE','CADZD','VLISSGN','TERNZN','ROOMPBTN','HARVT10','HOEKVHLD','ROTTDM','DORDT','SCHEVNGN','IJMDBTHVN','PETTZD','DENHDR','DENOVBTN','HARLGN','HOLWD','SCHIERMNOG','LAUWOG','EEMSHVN','DELFZL','CUXHVN']
-    #selected_stations = ['CROMR','CADZD','HOEKVHLD','DENHDR','CUXHVN']
-    #selected_stations = ['HOEKVHLD','ROTTDM','DENHDR'] #selected stations which resulted in missing HWLW values 
-    #for yr in [2000]: #range(1999,2022):
-    #fig, (ax1) = plt.subplots(1,1,figsize=(15,6))
-    #n_colors = len(selected_stations)
-    #colors = plt.cm.jet(np.linspace(0,1,n_colors))
-    #for i_stat, current_station in enumerate(selected_stations):
-    print('-'*100)
-    print('%-45s = %s'%('station_name',current_station))
-    print('-'*5)
-    
-    #START OF STATION SETTINGS
-    # #xfactor
-    # if current_station in stats_xfac0:
-    #     xfac=False
-    # else:
-    #     xfac=True
-    #analysis_peryear
-    #if current_station in stats_anaperyear0:
-    #    analysis_perperiod=False
-    #else:
-    #    analysis_perperiod='Y'
-    #constituent list
-    #const_list = hatyan.get_const_list_hatyan('year') #94 const
-    #vertical reference
-    #vertref='NAP'
-    #END OF STATION SETTINGS
-    
+    print(current_station)
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
     times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1), "5min")
     
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    # assert COMP_merged.attrs["xfac"] == xfac
     
     #prediction and validation
     ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
-    #ts_validation = hatyan.read_dia(filename=file_data_predvali, station=current_station)
-    #ts_ext_validation = hatyan.read_dia(filename=file_data_predvaliHWLW, station=current_station)
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     
     #calculate tidal wave number
     ts_ext_prediction_HWLWno = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=current_station)
-    #print(ts_ext_prediction_HWLWno)
-    #for irow, pdrow in ts_ext_prediction_HWLWno.iterrows():
-    #    ax1.text(pdrow.index,pdrow['values'],pdrow['HWLWno'], color=colors[i_stat])
-    
-    #ax1.plot(ts_prediction.index, ts_prediction['values'], label=current_station, color=colors[i_stat])
-    #figa, (ax1a) = hatyan.plot_timeseries(ts=ts_prediction, ts_ext=ts_ext_prediction_HWLWno)
-    
-    #str_combination = '%i_%s'%(yr, current_station)
-    #print(str_combination)
     print(current_station, yr)
     print('all HWLW values:')
     print(ts_ext_prediction_HWLWno)
@@ -299,13 +252,6 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     
     assert HW_data_diff1bool.all()
     assert LW_data_diff1bool.all()
-    
-    #ax1.set_xlim(times_ext_pred)
-    #fig.tight_layout()
-    #ax1.legend(loc=2, fontsize=7)#bbox_to_anchor=(1,1))
-    #import matplotlib.dates as mdates
-    #ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d %H:%M"))
-    #fig.savefig('tide_numbering_%i.png'%(yr), dpi=250)
 
 
 @pytest.mark.parametrize("current_station", [pytest.param(x, id=x) for x in ['HOEKVHLD','DENHDR']])
