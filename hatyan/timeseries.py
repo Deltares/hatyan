@@ -128,18 +128,19 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
         data_pd_HWLW.loc[HWid_all,'HWLWcode'] = 11 #all HW
 
     #get HWLW (extremes per tidal period).
-    # LW: most stations work with factor 1.4. 1.5 results in all LW values for
-    # HoekvanHolland for 2000, 1.7 results in all LW values for Rotterdam for 2000
-    # (also for 1999-2002).
+    # LW: most stations work with factor 1.4
+    # 1.5 results in all LW values for HoekvanHolland for 2000 (and for 2018/2022)
+    # 1.7 results in all LW values for Rotterdam for 2000 (and for 2018/2022)
     LWid_main_raw,LWid_main_properties = ssig.find_peaks(
         -data_pd_HWLW['values'].values,
         prominence=(min_prominence,None),
         width=(minwidth_numsteps,None),
         distance=M2period_numsteps/1.7,
         )
-    # HW: most stations work with factor 1.4. 1.5 value results in all HW values for
-    # DenHelder for year 2000 (also for 1999-2002). 1.7 results in all HW values for
-    #LITHDP 2018. 1.9 results in all correct values for LITHDP 2022
+    # HW: most stations work with factor 1.4.
+    # 1.5 results in all HW values for DenHelder for year 2000 (also for 1999-2002)
+    # 1.7 results in all HW values for LITHDP 2018 (but it fails with 1.8)
+    # 1.9 results in all HW values for LITHDP 2022
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(
         data_pd_HWLW['values'].values,
         prominence=(min_prominence,None),

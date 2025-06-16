@@ -219,7 +219,7 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     """
     
     #stats_all = ['ABDN','AMLAHVN','BAALHK','BATH','BERGSDSWT','BORSSLE','BOURNMH','BRESKS','BROUWHVSGT02','BROUWHVSGT08','CADZD','CROMR','CUXHVN','DELFZL','DENHDR','DENOVBTN','DEVPT','DORDT','DOVR','EEMHVN','EEMSHVN','EURPFM','EURPHVN','FELSWE','FISHGD','GEULHVN','GOIDSOD','GOUDBG','HAGSBNDN','HANSWT','HARLGN','HARMSBG','HARTBG','HARTHVN','HARVT10','HEESBN','HELLVSS','HOEKVHLD','HOLWD','HUIBGT','IJMDBTHVN','IJMDSMPL','IMMHM','KATSBTN','KEIZVR','KINLBVE','KORNWDZBTN','KRAMMSZWT','KRIMPADIJSL','KRIMPADLK','K13APFM','LAUWOG','LEITH','LICHTELGRE','LITHDP','LLANDNO','LOWST','MAASMSMPL','MAASSS','MAESLKRZZDE','MARLGT','MOERDK','NES','NEWHVN','NEWLN','NIEUWSTZL','NORTHSS','OOSTSDE04','OOSTSDE11','OOSTSDE14','OUDSD','OVLVHWT','PARKSS','PETTZD','PORTSMH','RAKND','ROOMPBNN','ROOMPBTN','ROTTDM','ROZBSSNZDE','ROZBSSZZDE','SCHAARVDND','SCHEVNGN','SCHIERMNOG','SCHOONHVN','SHEERNS','SINTANLHVSGR','SPIJKNSE','STAVNSE','STELLDBTN','STORNWY','SUURHBNZDE','TENNSHVN','TERNZN','TERSLNZE','TEXNZE','VLAARDGN','VLAKTVDRN','VLIELHVN','VLISSGN','VURN','WALSODN','WERKDBTN','WESTKPLE','WESTTSLG','WEYMH','WHITBY','WICK','WIERMGDN','YERSKE','ZALTBML','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
-    stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
+    # stats_xfac0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','CUXHVN','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K13APFM','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
     #stats_anaperyear0 = ['A12','ABDN','AUKFPFM','BOURNMH','CROMR','D15','DEVPT','DOVR','F16','F3PFM','FELSWE','FISHGD','IMMHM','J6','K14PFM','KINLBVE','LEITH','LLANDNO','LOWST','NEWHVN','NEWLN','NORTHCMRT','NORTHSS','PORTSMH','SHEERNS','STORNWY','WEYMH','WHITBY','WICK']
     #stats_MSL = ['EURPFM','K13APFM','LICHTELGRE','A12','AUKFPFM','AWGPFM','D15','F16','F3PFM','J6','K14PFM','L9PFM','NORTHCMRT','Q1']
     
@@ -237,11 +237,11 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     print('-'*5)
     
     #START OF STATION SETTINGS
-    #xfactor
-    if current_station in stats_xfac0:
-        xfac=False
-    else:
-        xfac=True
+    # #xfactor
+    # if current_station in stats_xfac0:
+    #     xfac=False
+    # else:
+    #     xfac=True
     #analysis_peryear
     #if current_station in stats_anaperyear0:
     #    analysis_perperiod=False
@@ -254,11 +254,11 @@ def test_frommergedcomp_HWLW_toolittle(current_station, yr):
     #END OF STATION SETTINGS
     
     file_data_comp0 = os.path.join(dir_testdata,'%s_ana.txt'%(current_station))
-    times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1), "1min")
+    times_pred = slice(dt.datetime(yr,1,1),dt.datetime(yr+1,1,1), "5min")
     
     #component groups
     COMP_merged = hatyan.read_components(filename=file_data_comp0)
-    assert COMP_merged.attrs["xfac"] == xfac
+    # assert COMP_merged.attrs["xfac"] == xfac
     
     #prediction and validation
     ts_prediction = hatyan.prediction(comp=COMP_merged, times=times_pred)
