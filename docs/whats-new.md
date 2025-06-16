@@ -8,6 +8,7 @@
 ### Fix
 - fixed stdout processing for click 8.2.0 in [#393](https://github.com/Deltares/hatyan/pull/393)
 - support duplicated time indexes in `hatyan.plot_timeseries()` in [#396](https://github.com/Deltares/hatyan/pull/396)
+- fixed LW calculation for EURPHVN by tweaking distance parameter in [#397](https://github.com/Deltares/hatyan/pull/397)
 
 
 ## 2.10.0 (2025-04-09)
