@@ -1,6 +1,6 @@
 # What's new
 
-## UNRELEASED
+## 2.11.0 (2025-06-16)
 
 ### Feat
 - improved error message in case of duplicated timesteps in `hatyan.analysis()` in [#388](https://github.com/Deltares/hatyan/pull/388)
