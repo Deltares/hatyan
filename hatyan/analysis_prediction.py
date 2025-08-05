@@ -137,7 +137,9 @@ def vectoravg(A_all, phi_deg_all):
     phi_rad_mean = np.arctan2(mean_v_sin,mean_v_cos)
     phi_rad_mean[phi_rad_mean<0] = phi_rad_mean[phi_rad_mean<0]+(2*np.pi)
     
-    #if phases of all years are exactly 0, it is the A0 component. Overwrite this A0 with mean amplitude and zero phase if present, otherwise negative values will become positive with 180 phase
+    # if phases of all years are exactly 0, it is the A0 component
+    # Overwrite this A0 with mean amplitude and zero phase if present,
+    # otherwise negative values will become positive with 180 phase
     idx_A0 = np.nonzero((phi_deg_all==0).any(axis=1))[0]
     A_mean[idx_A0] = np.mean(A_all[idx_A0,:])
     phi_rad_mean[idx_A0] = 0
@@ -153,7 +155,7 @@ def analysis(ts, const_list,
              source='schureman',
              cs_comps=None,
              analysis_perperiod=False, return_allperiods=False,
-             max_matrix_condition=12):
+             max_matrix_condition=20):
     """
     Analysis of timeseries.
     Optionally processes a timeseries per year and vector averages the results afterwards.
@@ -176,9 +178,11 @@ def analysis(ts, const_list,
     source : TYPE
         DESCRIPTION. The default is 'schureman'.
     cs_comps : pandas.DataFrame, optional
-        contains the from/derive component lists for components splitting, as well as the amplitude factor and the increase in degrees. Only relevant for analysis. The default is None.
+        contains the from/derive component lists for components splitting, as well as the
+        amplitude factor and the increase in degrees. Only relevant for analysis. The default is None.
     max_matrix_condition: float or int
-        the maximum condition of the xTx matrix. The default is 12.
+        the maximum condition of the xTx matrix. The default is 20 and based on analysis
+        documented in https://github.com/Deltares/hatyan/issues/401.
     analysis_perperiod : False or Y/Q/W, optional
         caution, it tries to analyse each year/quarter/month, but skips if it fails. The default is False.
     return_allperiods : bool, optional
@@ -227,7 +231,9 @@ def analysis(ts, const_list,
         period = hatyan_settings.analysis_perperiod
         logger.info(f'analysis_perperiod={period}, separate periods are automatically determined from timeseries')
         ts_periods_dt_all = ts_pd.index.to_period(period)
-        ts_periods_dt = ts_periods_dt_all.unique() # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+        # TODO: to_period is not limited to Y/Q/M, there are more options that are now blocked:
+        # https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+        ts_periods_dt = ts_periods_dt_all.unique()
         ts_periods_strlist = [str(x) for x in ts_periods_dt]
         
         n_periods = len(ts_periods_dt)
@@ -303,7 +309,9 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     logger.info(f'percentage_nan in values_meas_sel: {percentage_nan:.2f}%')
     
     #get times and time array
-    dood_date_mid = ts_pd.index[[len(ts_pd.index)//2]] #middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan #TODO: this is incorrect in case of e.g. more missings in first half of year than second half
+    # middle of analysis period (2july in case of 1jan-1jan), zoals bij hatyan
+    # TODO: this is incorrect in case of e.g. more missings in first half of year than second half
+    dood_date_mid = ts_pd.index[[len(ts_pd.index)//2]]
     dood_date_start = ts_pd.index[[0]] #first date (for v0, also freq?)
     if hatyan_settings.fu_alltimes:
         dood_date_fu = times_pred_all_pdDTI
@@ -314,13 +322,15 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     
     #get frequency and v0
     t_const_freq_pd, v_0i_rad = get_freqv0_generic(const_list, dood_date_mid, dood_date_start, hatyan_settings.source)
-    omega_i_rads = t_const_freq_pd[['freq']].values.T*(2*np.pi)/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
+    # angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
+    omega_i_rads = t_const_freq_pd[['freq']].values.T*(2*np.pi)/3600
     u_i_rad, f_i = get_uf_generic(const_list, dood_date_fu, hatyan_settings.nodalfactors, hatyan_settings.xfac, hatyan_settings.source)
     v_u = v_0i_rad.values + u_i_rad.values
     
     #check rayleigh frequency after nyquist frequency folding process.
     freq_rem = nyquist_folding(ts_pd,t_const_freq_pd)
-    check_rayleigh(ts_pd,freq_rem) #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
+    #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
+    check_rayleigh(ts_pd,freq_rem)
 
     #### TIMESERIES ANALYSIS
     N = len(const_list)
@@ -343,7 +353,11 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     xTxmat_condition = np.linalg.cond(xTxmat)
     logger.info('condition of xTx matrix: %.2f'%(xTxmat_condition))
     if xTxmat_condition > hatyan_settings.max_matrix_condition:#10:#100: #random treshold
-        raise MatrixConditionTooHigh(f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), check your timeseries length, try different (shorter) component set or componentsplitting.\nAnalysed {Timeseries_Statistics(ts_pd)}')
+        raise MatrixConditionTooHigh(
+            f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), '
+            'check your timeseries length, try different (shorter) component set or '
+            'componentsplitting.\nAnalysed {Timeseries_Statistics(ts_pd)}'
+            )
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
     #solve matrix to get beta_roof_mat (and thus a, b)
@@ -381,8 +395,20 @@ def split_components(comp, dood_date_mid, hatyan_settings):
     const_list_inclcs = sort_const_list(const_list=const_list_inclcs_raw)
 
     #retrieve freq and speed
-    _, cs_v_0i_rad = get_freqv0_generic(const_list=const_list_inclcs, dood_date_mid=dood_date_mid, dood_date_start=dood_date_mid, source=hatyan_settings.source) # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
-    cs_u_i_rad, cs_f_i = get_uf_generic(const_list=const_list_inclcs, dood_date_fu=dood_date_mid, nodalfactors=hatyan_settings.nodalfactors, xfac=hatyan_settings.xfac, source=hatyan_settings.source)
+    # with split_components, v0 is calculated on the same timestep as u and f (middle of original series)
+    _, cs_v_0i_rad = get_freqv0_generic(
+        const_list=const_list_inclcs,
+        dood_date_mid=dood_date_mid,
+        dood_date_start=dood_date_mid,
+        source=hatyan_settings.source,
+        )
+    cs_u_i_rad, cs_f_i = get_uf_generic(
+        const_list=const_list_inclcs,
+        dood_date_fu=dood_date_mid,
+        nodalfactors=hatyan_settings.nodalfactors,
+        xfac=hatyan_settings.xfac,
+        source=hatyan_settings.source,
+        )
     
     comp_inclcs = pd.DataFrame(comp,index=const_list_inclcs,columns=comp.columns)
         
@@ -474,9 +500,12 @@ def prediction_singleperiod(comp:pd.DataFrame, times:pd.DatetimeIndex, hatyan_se
     u_i_rad, f_i = get_uf_generic(const_list, dood_date_fu, hatyan_settings.nodalfactors, hatyan_settings.xfac, hatyan_settings.source)
 
     logger.info('PREDICTION started')
-    omega_i_rads = t_const_speed_all.T/3600 #angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
-    if not isinstance(times,pd.DatetimeIndex): #support for years<1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
-        tdiff = pd.TimedeltaIndex(times-dood_date_start) #pd.TimedeltaIndex is around it to avoid it being an Index in case of outofbounds timesteps (necessary from pandas 2.0.0)
+    # angular frequency, 2pi/T, in rad/s, https://en.wikipedia.org/wiki/Angular_frequency (2*np.pi)/(1/x*3600) = 2*np.pi*x/3600
+    omega_i_rads = t_const_speed_all.T/3600
+    # support for years<1677, have to use Index instead of DatetimeIndex (DatetimeIndex is also Index, so isinstance(times_pred_all_pdDTI,pd.Index) does not work
+    if not isinstance(times,pd.DatetimeIndex):
+        # pd.TimedeltaIndex is around it to avoid it being an Index in case of outofbounds timesteps (necessary from pandas 2.0.0)
+        tdiff = pd.TimedeltaIndex(times-dood_date_start)
     else:
         tdiff = pd.TimedeltaIndex(times-dood_date_start[0]) #pd.TimedeltaIndex is not necessary here, but for conformity with above
     times_from0allpred_s_orig = tdiff.total_seconds().values

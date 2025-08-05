@@ -2,6 +2,9 @@
 
 ## UNRELEASED
 
+### Fix
+- increased default maximum matrix condition to account for nodal variation over time in [#402](https://github.com/Deltares/hatyan/pull/402)
+
 
 ## 2.11.0 (2025-06-16)
 
