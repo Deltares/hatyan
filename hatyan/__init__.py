@@ -5,7 +5,7 @@ Tidal analysis and prediction tool of Rijkswaterstaat
 
 __author__ = """Jelmer Veenstra"""
 __email__ = "jelmer.veenstra@deltares.nl"
-__version__ = "2.12.0"
+__version__ = "2.12.1"
 
 from hatyan.analysis_prediction import *
 from hatyan.astrog import *
