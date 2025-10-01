@@ -4,6 +4,7 @@
 
 ### Fix
 - increased default maximum matrix condition to account for nodal variation over time in [#402](https://github.com/Deltares/hatyan/pull/402)
+- tweaked distance parameter for HWLW computation in [#405](https://github.com/Deltares/hatyan/pull/405)
 
 
 ## 2.11.0 (2025-06-16)
