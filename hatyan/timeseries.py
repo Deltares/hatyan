@@ -136,18 +136,18 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
         -data_pd_HWLW['values'].values,
         prominence=(min_prominence,None),
         width=(minwidth_numsteps,None),
-        distance=M2period_numsteps/1.8,
+        distance=M2period_numsteps/1.85,
         )
     # HW: most stations work with factor 1.4.
     # 1.5 results in all HW values for DenHelder for year 2000 (also for 1999-2002)
     # 1.7 results in all HW values for LITHDP 2018 (but it fails with 1.8)
     # 1.8 results in all HW values for LITHDP 2026
-    # 1.9 results in all HW values for LITHDP 2022
+    # 1.9 results in all HW values for LITHDP 2022 (but too much HW for Dordrecht 2025)
     HWid_main_raw,HWid_main_properties = ssig.find_peaks(
         data_pd_HWLW['values'].values,
         prominence=(min_prominence,None),
         width=(minwidth_numsteps,None),
-        distance=M2period_numsteps/1.9,
+        distance=M2period_numsteps/1.85,
         )
     # remove main extremes within 6 hours of start/end of timeseries, since they are
     # often missed or invalid.

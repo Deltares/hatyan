@@ -164,7 +164,7 @@ def test_calc_HWLW_unsorted():
 
 
 @pytest.mark.systemtest
-def test_frommergedcomp_HWLW_toomuch():
+def test_frommergedcomp_HWLW_toomuch_denhdr():
     """
     This test produces a very short prediction for DENHDR, based on an imported component list. It then calculates extremes (HW/LW) and numbers them both.
     This test is meant to tweak the prominence parameter of scipy.signal.find_peaks() in hatyan.calc_HWLW() and it fails when the prominence is not set or is too small.
@@ -196,6 +196,47 @@ def test_frommergedcomp_HWLW_toomuch():
     assert np.allclose(values_actual, values_expected)
     assert np.allclose(hwlwcodes_actual, hwlwcodes_expected)
     assert np.allclose(hwlwnos_actual, hwlwnos_expected)
+
+
+@pytest.mark.systemtest
+def test_frommergedcomp_HWLW_toomuch_dordrecht():
+    """
+    In FEWS Dordrecht timeseries there was an additional (incorrect) extreme computed.
+    https://github.com/Deltares/hatyan/issues/404
+    This was resolved by tweaking the distance parameter.
+    """
+    values = np.array([0.76, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.74, 0.74, 0.73,
+           0.72, 0.7 , 0.68, 0.64, 0.6 , 0.56, 0.51, 0.45, 0.41, 0.37, 0.32,
+           0.27, 0.23, 0.21, 0.19, 0.18, 0.18, 0.19, 0.19, 0.19, 0.19, 0.19,
+           0.19, 0.19, 0.19, 0.19, 0.19, 0.2 , 0.2 , 0.21, 0.22, 0.22, 0.22,
+           0.22, 0.22, 0.22, 0.21, 0.21, 0.21, 0.2 , 0.2 , 0.19, 0.18, 0.18,
+           0.17, 0.16, 0.15, 0.15, 0.15, 0.15, 0.16, 0.18, 0.22, 0.27, 0.34,
+           0.42, 0.51, 0.6 , 0.67, 0.72, 0.74, 0.75, 0.74, 0.73, 0.72, 0.72,
+           0.72, 0.72, 0.72, 0.72, 0.72, 0.72, 0.72, 0.72, 0.71, 0.7 , 0.69,
+           0.66, 0.64, 0.61, 0.57, 0.53, 0.49, 0.45, 0.42, 0.39, 0.35, 0.31,
+           0.28, 0.26, 0.24, 0.22, 0.22, 0.22, 0.23, 0.25, 0.27, 0.29, 0.3 ,
+           0.32, 0.34, 0.35, 0.35, 0.35, 0.35, 0.35, 0.34, 0.34, 0.34, 0.34,
+           0.34, 0.34, 0.34, 0.33, 0.33, 0.32, 0.31, 0.31, 0.3 , 0.3 , 0.3 ,
+           0.3 , 0.31, 0.32, 0.33, 0.35, 0.37, 0.39, 0.41, 0.46, 0.52, 0.59,
+           0.65, 0.69, 0.71, 0.72, 0.73, 0.73, 0.73, 0.73, 0.73, 0.73, 0.74,
+           0.74, 0.74, 0.74, 0.73, 0.72, 0.71, 0.69, 0.67, 0.64, 0.6 , 0.55,
+           0.51, 0.46, 0.41, 0.37, 0.33, 0.28, 0.24, 0.21, 0.19, 0.18, 0.18,
+           0.19, 0.19, 0.2 , 0.2 , 0.19, 0.19, 0.19, 0.19, 0.2 , 0.2 , 0.2 ,
+           0.21, 0.21, 0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.22, 0.21, 0.21,
+           0.2 , 0.2 , 0.19, 0.19, 0.18, 0.17, 0.16, 0.16, 0.16, 0.16, 0.16,
+           0.18, 0.2 , 0.23, 0.29, 0.35, 0.42, 0.51, 0.6 , 0.67, 0.71, 0.73,
+           0.74, 0.74, 0.73, 0.72, 0.72, 0.72, 0.72, 0.72, 0.72, 0.73, 0.73,
+           0.73, 0.72, 0.72, 0.71, 0.69, 0.68, 0.65, 0.62, 0.59, 0.56, 0.52,
+           0.48, 0.44, 0.41, 0.38, 0.34, 0.31, 0.28, 0.25, 0.23, 0.22, 0.22])
+    times = pd.date_range("2025-08-13T18:00:00","2025-08-15T12:00:00", freq="10min")
+    wl_pd = pd.DataFrame(
+        {'values':values},
+        index=times)
+    
+    # derive extremes
+    wl_pd_ext = hatyan.calc_HWLW(wl_pd)
+    # compute extreme numbering
+    wl_pd_ext = hatyan.calc_HWLWnumbering(wl_pd_ext,station="DORDT")
 
 
 @pytest.mark.systemtest
