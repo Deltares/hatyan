@@ -78,7 +78,6 @@ def test_convert_hwlwstr2num(locations):
     bool_groepering_ext_meas = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
     bool_station = locations.index.isin(["hoekvanholland"])
     
-    bool_groepering_ext = locations["Groepering.Code"].isin(["GETETM2", "GETETMSL2"])
     # filtering locations dataframe on Typering is possible because "Typeringen" was in catalog_filter for ddlpy.locations
     locs_wathte_ext = locations.loc[bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ext & bool_station]
     locs_exttypes_wathte = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_meas & bool_station]
