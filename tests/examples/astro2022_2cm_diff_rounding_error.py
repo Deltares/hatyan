@@ -14,8 +14,6 @@ hatyan.close('all')
 
 # TODO: difference with 2022 astro ts from ddl for 2022/2023, not with 2019.
 # probably due to bug in older version of hatyan that was used for 2022/2023 prediction (2019 was computed with hatyan1)
-print('retrieving DDL catalog')
-locations = ddlpy.locations()
 
 dir_meas = r'p:\archivedprojects\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
 
@@ -42,6 +40,8 @@ for pred_year in year_list:
         
         file_astro = os.path.join(r'c:\Users\veenstra\Downloads',f'astro_{station_wadar}_{pred_year}.pkl')
         if not os.path.exists(file_astro):
+            print('retrieving DDL catalog')
+            locations = ddlpy.locations()
             print(f'retrieving astro data for {station_wadar}')
             bool_station = locations.index.isin([station_wadar])
             bool_procestype = locations['ProcesType'].isin(['astronomisch'])
