@@ -55,7 +55,7 @@ def test_ddlpy_to_hatyan(locations, procestype):
     # check if metadata is complete and correct
     meta_fromts = ts_measwl.attrs
     meta_expected = {
-        # 'procestype': procestype, # TODO: this was not present before
+        'procestype': procestype,
         'grootheid': 'WATHTE',
         'groepering': '',
         'eenheid': 'm',
@@ -99,6 +99,7 @@ def test_convert_hwlwstr2num(locations):
     # check if metadata is complete and correct
     meta_fromts = ts_measwlHWLW.attrs
     meta_expected = {
+        'procestype': 'meting',
         'grootheid': 'WATHTE',
         'groepering': 'GETETM2',
         'eenheid': 'm',
@@ -134,6 +135,7 @@ def test_ddlpy_to_components(tmp_path, locations):
     # check if metadata is complete and correct
     meta_fromts = df_meas.attrs
     meta_expected = {
+        'procestype': 'meting',
         'grootheid': 'WATHTE',
         'groepering': '',
         'eenheid': 'm',

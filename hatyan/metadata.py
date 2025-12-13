@@ -34,7 +34,8 @@ def metadata_from_diablocks(diablocks_pd, block_id):
 
 
 def metadata_from_ddlpy(ddlpy_meas):
-    dict_translate = {'grootheid':'Grootheid.Code',
+    dict_translate = {'procestype':'ProcesType',
+                      'grootheid':'Grootheid.Code',
                       'groepering':'Groepering.Code',
                       'eenheid':'Eenheid.Code',
                       'vertref':'Hoedanigheid.Code',
