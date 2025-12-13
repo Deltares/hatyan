@@ -1,6 +1,7 @@
 # What's new
 
 ## UNRELEASED 
+- updated ddlpy-related functions to new waterwebservices in [#411](https://github.com/Deltares/hatyan/pull/411)
 
 
 ## 2.12.0 (2025-10-01)
