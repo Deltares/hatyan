@@ -71,6 +71,7 @@ def test_convert_hwlwstr2num(locations):
     tstart_dt = "2020-12-19"
     tstop_dt = "2020-12-31"
     
+    bool_procestype = locations['ProcesType'].isin(['meting']) # measured waterlevels (not astro)
     bool_grootheid_meas = locations['Grootheid.Code'].isin(['WATHTE'])
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
     bool_groepering_ext = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
@@ -79,8 +80,8 @@ def test_convert_hwlwstr2num(locations):
     bool_station = locations.index.isin(["hoekvanholland"])
     
     # filtering locations dataframe on Typering is possible because "Typeringen" was in catalog_filter for ddlpy.locations
-    locs_wathte_ext = locations.loc[bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ext & bool_station]
-    locs_exttypes_wathte = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_meas & bool_station]
+    locs_wathte_ext = locations.loc[bool_procestype & bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ext & bool_station]
+    locs_exttypes_wathte = locations.loc[bool_procestype & bool_grootheid_exttypes & bool_groepering_ext_meas & bool_station]
     
     # no support for multiple rows, so pass one at a time
     meas_wathte_ext = ddlpy.measurements(locs_wathte_ext.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
