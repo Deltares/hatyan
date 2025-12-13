@@ -13,7 +13,9 @@ import hatyan
 hatyan.close('all')
 
 # TODO: difference with 2022 astro ts from ddl for 2022/2023, not with 2019.
-# probably due to bug in older version of hatyan2 that was used for 2022/2023 prediction (2019 was computed with hatyan1)
+# probably due to bug in older version of hatyan that was used for 2022/2023 prediction (2019 was computed with hatyan1)
+print('retrieving DDL catalog')
+locations = ddlpy.locations()
 
 dir_meas = r'p:\archivedprojects\11208031-010-kenmerkende-waarden-k\work\measurements_wl_18700101_20220101_dataTKdia'
 
@@ -22,6 +24,12 @@ year_list = [2019, 2023]
 for pred_year in year_list:
 
     for current_station in ['HOEKVHLD']:#,'DORDT']:
+        
+        dict_station_old_new = {
+            "HOEKVHLD":"hoekvanholland",
+            "DORDT":"dordrecht.oudemaas.benedenmerwede",
+            }
+        station_wadar = dict_station_old_new[current_station]
         
         tstart_pred = dt.datetime(pred_year,1,1)
         tstop_pred = dt.datetime(pred_year+1,1,1)
@@ -32,14 +40,14 @@ for pred_year in year_list:
             times_ext_4y = slice(dt.datetime(2015,1,1),dt.datetime(2018,12,31,23,50))
             
         
-        file_astro = os.path.join(r'c:\Users\veenstra\Downloads',f'astro_{current_station}_{pred_year}.pkl')
+        file_astro = os.path.join(r'c:\Users\veenstra\Downloads',f'astro_{station_wadar}_{pred_year}.pkl')
         if not os.path.exists(file_astro):
-            print('retrieving DDL catalog')
-            locations = ddlpy.locations()
-            bool_station = locations.index.isin([current_station])
-            bool_grootheid = locations["Grootheid.Code"].isin(["WATHTBRKD"])
-            bool_groepering = locations["Groepering.Code"].isin(["NVT"])
-            selected = locations.loc[bool_station & bool_grootheid & bool_groepering]
+            print(f'retrieving astro data for {station_wadar}')
+            bool_station = locations.index.isin([station_wadar])
+            bool_procestype = locations['ProcesType'].isin(['astronomisch'])
+            bool_grootheid = locations["Grootheid.Code"].isin(["WATHTE"])
+            bool_groepering = locations["Groepering.Code"].isin([""])
+            selected = locations.loc[bool_procestype & bool_station & bool_grootheid & bool_groepering]
             
             measurements = ddlpy.measurements(selected.iloc[0], start_date=tstart_pred, end_date=tstop_pred)
             
@@ -49,10 +57,11 @@ for pred_year in year_list:
             
             fig,(ax1,ax2) = hatyan.plot_timeseries(ts=ts_astro)
         else:
+            print(f'loading astro data for {station_wadar}')
             ts_astro = pd.read_pickle(file_astro)
 
-        print(f'loading data for {current_station}')
-        file_wl_pkl = os.path.join(dir_meas,f"{current_station}_measwl.pkl")
+        print(f'loading measurement data for {station_wadar}')
+        file_wl_pkl = os.path.join(dir_meas, f"{current_station}_measwl.pkl")
         data_pd_meas_all = pd.read_pickle(file_wl_pkl)
         data_pd_meas_all.index = data_pd_meas_all.index.tz_localize(None)
         data_pd_meas_all_H = data_pd_meas_all.loc[data_pd_meas_all.index.minute==0]
@@ -70,4 +79,4 @@ for pred_year in year_list:
         fig,(ax1,ax2) = hatyan.plot_timeseries(ts=pred,ts_validation=ts_astro)
         ax2.set_ylim(None,0.035)
         ax2.set_xlim(tstart_pred,tstart_pred+dt.timedelta(days=40))
-        fig.savefig(f'roundingdiff_{current_station}_{pred_year}.png')
+        fig.savefig(f'roundingdiff_{station_wadar}_{pred_year}.png')
