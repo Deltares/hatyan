@@ -21,19 +21,25 @@ def locations():
 
 
 @pytest.mark.unittest
-@pytest.mark.parametrize("grootheid", [pytest.param(gr, id=gr) for gr in ['WATHTE','WATHTBRKD']])
-def test_ddlpy_to_hatyan(locations, grootheid):
+@pytest.mark.parametrize("procestype", [pytest.param(gr, id=gr) for gr in ['meting','astronomisch']])
+def test_ddlpy_to_hatyan(locations, procestype):
     # input parameters
     tstart_dt = dt.datetime(2023,12,24)
     tstop_dt = dt.datetime(2024,1,5)
 
-    bool_station = locations.index.isin(['HOEKVHLD'])
+    bool_station = locations.index.isin(['hoekvanholland'])
+    bool_procestype = locations['ProcesType'].isin([procestype])
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
-    bool_grootheid = locations['Grootheid.Code'].isin([grootheid])
-    bool_groepering = locations['Groepering.Code'].isin(['NVT'])
-    locs_wathte = locations.loc[bool_station & bool_grootheid &
-                                bool_groepering & bool_hoedanigheid]
-
+    bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE'])
+    bool_groepering = locations['Groepering.Code'].isin([''])
+    locs_wathte = locations.loc[bool_station &
+                                bool_procestype &
+                                bool_grootheid &
+                                bool_groepering &
+                                bool_hoedanigheid
+                                ]
+    assert len(locs_wathte) == 1
+    
     meas_wathte = ddlpy.measurements(locs_wathte.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
     
     # timeseries
@@ -49,11 +55,12 @@ def test_ddlpy_to_hatyan(locations, grootheid):
     # check if metadata is complete and correct
     meta_fromts = ts_measwl.attrs
     meta_expected = {
-        'grootheid': grootheid,
-        'groepering': 'NVT',
+        'procestype': procestype,
+        'grootheid': 'WATHTE',
+        'groepering': '',
         'eenheid': 'm',
         'vertref': 'NAP',
-        'station': 'HOEKVHLD',
+        'station': 'hoekvanholland',
         'origin': 'ddlpy',
         }
     assert meta_fromts == meta_expected
@@ -64,14 +71,17 @@ def test_convert_hwlwstr2num(locations):
     tstart_dt = "2020-12-19"
     tstop_dt = "2020-12-31"
     
+    bool_procestype = locations['ProcesType'].isin(['meting']) # measured waterlevels (not astro)
     bool_grootheid_meas = locations['Grootheid.Code'].isin(['WATHTE'])
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
     bool_groepering_ext = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
     bool_grootheid_exttypes = locations['Grootheid.Code'].isin(['NVT'])
     bool_groepering_ext_meas = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
-    bool_station = locations.index.isin(["HOEKVHLD"])
-    locs_wathte_ext = locations.loc[bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ext & bool_station]
-    locs_exttypes_wathte = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_meas & bool_station]
+    bool_station = locations.index.isin(["hoekvanholland"])
+    
+    # filtering locations dataframe on Typering is possible because "Typeringen" was in catalog_filter for ddlpy.locations
+    locs_wathte_ext = locations.loc[bool_procestype & bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ext & bool_station]
+    locs_exttypes_wathte = locations.loc[bool_procestype & bool_grootheid_exttypes & bool_groepering_ext_meas & bool_station]
     
     # no support for multiple rows, so pass one at a time
     meas_wathte_ext = ddlpy.measurements(locs_wathte_ext.iloc[0], start_date=tstart_dt, end_date=tstop_dt)
@@ -89,11 +99,12 @@ def test_convert_hwlwstr2num(locations):
     # check if metadata is complete and correct
     meta_fromts = ts_measwlHWLW.attrs
     meta_expected = {
+        'procestype': 'meting',
         'grootheid': 'WATHTE',
         'groepering': 'GETETM2',
         'eenheid': 'm',
         'vertref': 'NAP',
-        'station': 'HOEKVHLD',
+        'station': 'hoekvanholland',
         'origin': 'ddlpy',
         }
     assert meta_fromts == meta_expected
@@ -110,12 +121,13 @@ def test_ddlpy_to_components(tmp_path, locations):
     start_dt  = "2022-01-01 00:00:00 +01:00"
     end_dt  = "2022-03-31 23:50:00 +01:00"
 
+    bool_procestype = locations['ProcesType'].isin(['meting']) # measured waterlevels (not astro)
     bool_grootheid = locations['Grootheid.Code'].isin(['WATHTE']) # measured waterlevels (not astro)
-    bool_groepering = locations['Groepering.Code'].isin(['NVT']) # timeseries (not extremes)
+    bool_groepering = locations['Groepering.Code'].isin(['']) # timeseries (not extremes)
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP']) # vertical reference, only NAP
-    locs_ddl = locations.loc[bool_grootheid & bool_groepering & bool_hoedanigheid]
+    locs_ddl = locations.loc[bool_procestype & bool_grootheid & bool_groepering & bool_hoedanigheid]
 
-    donar_loccode = "VLISSGN"
+    donar_loccode = "vlissingen"
     locs_ddl_one = locs_ddl.loc[donar_loccode]
     ddl_df = ddlpy.measurements(locs_ddl_one, start_date=start_dt, end_date=end_dt)
     df_meas = hatyan.ddlpy_to_hatyan(ddl_df)
@@ -123,11 +135,12 @@ def test_ddlpy_to_components(tmp_path, locations):
     # check if metadata is complete and correct
     meta_fromts = df_meas.attrs
     meta_expected = {
+        'procestype': 'meting',
         'grootheid': 'WATHTE',
-        'groepering': 'NVT',
+        'groepering': '',
         'eenheid': 'm',
         'vertref': 'NAP',
-        'station': 'VLISSGN',
+        'station': 'vlissingen',
         'origin': 'ddlpy'
         }
     assert meta_fromts == meta_expected

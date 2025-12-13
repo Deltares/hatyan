@@ -72,8 +72,8 @@ def ddlpy_to_hatyan_plain(ddlpy_meas, isnumeric=True):
         key_numericvalues = 'Meetwaarde.Waarde_Alfanumeriek'
     
     ts_pd = pd.DataFrame({'values':ddlpy_meas[key_numericvalues],
-                          'qualitycode':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.KwaliteitswaardecodeLijst'],downcast='integer'),
-                          'status':ddlpy_meas['WaarnemingMetadata.StatuswaardeLijst'].str[0],
+                          'qualitycode':pd.to_numeric(ddlpy_meas['WaarnemingMetadata.Kwaliteitswaardecode'],downcast='integer'),
+                          'status':ddlpy_meas['WaarnemingMetadata.Statuswaarde'].str[0],
                           })
     
     return ts_pd

@@ -94,7 +94,7 @@ def calc_HWLW(ts, calc_HWLW345=False, buffer_hr=6):
     ts_steps_sec_most = np.argmax(np.bincount(pd.Series(np.diff(ts.index)).dt.total_seconds().astype(int).values))
     if ts_steps_sec_most > 60:
         logger.warning(
-            'the timestep of the series for which to calculate extremes/HWLW is'
+            'the timestep of the series for which to calculate extremes/HWLW is '
             f'{ts_steps_sec_most/60:.2f} minutes, but 1 minute is recommended',
             )
     elif ts_steps_sec_most == 0:
