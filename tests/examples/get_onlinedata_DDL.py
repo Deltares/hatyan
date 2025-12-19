@@ -9,6 +9,11 @@ import ddlpy # available via pip install rws-ddlpy or at https://github.com/Delt
 import matplotlib.pyplot as plt
 plt.close("all")
 
+# set logging level to INFO to get log messages
+import logging
+logging.basicConfig() # calling basicConfig is essential to set logging level for sub-modules
+logging.getLogger("ddlpy").setLevel(level="INFO")
+
 # input parameters
 # start_date = "2022-12-19 00:00:00 +01:00"
 # end_date = "2022-12-31 00:00:00 +01:00"
@@ -93,12 +98,12 @@ if 1: #for RWS
         locs_astro_ext = locations.loc[bool_procestype_astro & bool_grootheid & bool_hoedanigheid & bool_groepering_ext]
         
         # get types locations (ts and extremes)
-        # we cannot subset locations on Typering in ddlpy (NVT/GETETTPE), so we use a groepering+grootheid combination
         bool_grootheid_exttypes = locations['Grootheid.Code'].isin(['NVT'])
+        bool_typering_exttypes = locations['Typering.Code'].isin(['GETETTPE'])
         bool_groepering_ext_meas = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
         bool_groepering_ext_astro = locations['Groepering.Code'].isin(['GETETBRKD2','GETETBRKDMSL2'])
-        locs_exttypes_meas = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_meas]
-        locs_exttypes_astro = locations.loc[bool_grootheid_exttypes & bool_groepering_ext_astro]
+        locs_exttypes_meas = locations.loc[bool_grootheid_exttypes & bool_typering_exttypes & bool_groepering_ext_meas]
+        locs_exttypes_astro = locations.loc[bool_grootheid_exttypes & bool_typering_exttypes & bool_groepering_ext_astro]
     
     for current_station in ['hoekvanholland']:
         locs_meas_one = locs_meas.loc[locs_meas.index.isin([current_station])]

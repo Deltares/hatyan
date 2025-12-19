@@ -75,11 +75,12 @@ def test_convert_hwlwstr2num(locations):
     bool_grootheid_meas = locations['Grootheid.Code'].isin(['WATHTE'])
     bool_hoedanigheid = locations['Hoedanigheid.Code'].isin(['NAP'])
     bool_groepering_ext = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
+    # Grootheid=NVT and Groepering=GETETM results in Typering=GETETTPE
     bool_grootheid_exttypes = locations['Grootheid.Code'].isin(['NVT'])
     bool_groepering_ext_meas = locations['Groepering.Code'].isin(['GETETM2','GETETMSL2'])
     bool_station = locations.index.isin(["hoekvanholland"])
     
-    # filtering locations dataframe on Typering is possible because "Typeringen" was in catalog_filter for ddlpy.locations
+    # filtering locations dataframe
     locs_wathte_ext = locations.loc[bool_procestype & bool_grootheid_meas & bool_hoedanigheid & bool_groepering_ext & bool_station]
     locs_exttypes_wathte = locations.loc[bool_procestype & bool_grootheid_exttypes & bool_groepering_ext_meas & bool_station]
     
