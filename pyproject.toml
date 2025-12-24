@@ -93,6 +93,7 @@ filterwarnings = [
 	"ignore:'parseString' deprecated - use 'parse_string':DeprecationWarning",
 	"ignore:'resetCache' deprecated - use 'reset_cache':DeprecationWarning",
 	"ignore:'enablePackrat' deprecated - use 'enable_packrat':DeprecationWarning",
+	"ignore:'oneOf' deprecated - use 'one_of':DeprecationWarning",
 	]
 markers = [
 	"unittest: mark a test as unittest. Used for testing single methods",
