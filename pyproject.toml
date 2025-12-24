@@ -88,7 +88,10 @@ addopts = "-v --tb=short --durations=0"
 filterwarnings = [
 	"error",
 	"ignore::UserWarning",
+	# TODO: temporary filter for pyparsing DeprecationWarnings, requiring matplotlib 3.10.7 (Oct 2025)
+	# also resolves the issue so do this in a few months instead (requires dropping Python 3.9 support)
 	"ignore:'parseString' deprecated - use 'parse_string':DeprecationWarning",
+	"ignore:'resetCache' deprecated - use 'reset_cache':DeprecationWarning",
 	]
 markers = [
 	"unittest: mark a test as unittest. Used for testing single methods",
