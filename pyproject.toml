@@ -92,6 +92,7 @@ filterwarnings = [
 	# also resolves the issue so do this in a few months instead (requires dropping Python 3.9 support)
 	"ignore:'parseString' deprecated - use 'parse_string':DeprecationWarning",
 	"ignore:'resetCache' deprecated - use 'reset_cache':DeprecationWarning",
+	"ignore:'enablePackrat' deprecated - use 'enable_packrat':DeprecationWarning",
 	]
 markers = [
 	"unittest: mark a test as unittest. Used for testing single methods",
