@@ -10,7 +10,7 @@ description = "Tidal analysis and prediction tool of Rijkswaterstaat"
 readme = "README.md"
 keywords = ["hatyan", "tidal analysis", "tidal prediction"]
 license = "LGPL-3.0"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
 	#scipy>=1.5.4 env creation succeeded in https://github.com/Deltares/hatyan/issues/71
 	"scipy>=1.5.4",
@@ -40,7 +40,6 @@ classifiers = [
 	"Topic :: Scientific/Engineering :: Information Analysis",
 	"Programming Language :: Python",
 	"Programming Language :: Python :: 3",
-	"Programming Language :: Python :: 3.9",
 	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
 	"Programming Language :: Python :: 3.12",
