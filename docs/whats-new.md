@@ -2,6 +2,9 @@
 
 ## UNRELEASED 
 
+### Feat
+- added support for pandas 3 in [#423](https://github.com/Deltares/hatyan/pull/423)
+
 
 ## 2.13.0 (2025-12-13)
 
