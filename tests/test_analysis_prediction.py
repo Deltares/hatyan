@@ -444,7 +444,7 @@ def test_prediction_perperiod_settings_invalid_timestep():
     with pytest.raises(expected_err) as e:
         hatyan.prediction(comp=comp_all, timestep=60)
     assert str(e.value) == expected_msg
-    
+
     with pytest.raises(TypeError) as e:
         hatyan.prediction(comp=comp_all, timestep=60, times=60)
     assert "prediction() per period, so 'times' argument not allowed" == str(e.value)
