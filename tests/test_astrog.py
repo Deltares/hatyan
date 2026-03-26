@@ -173,7 +173,7 @@ def test_astrog_astrab_outofbounds(caplog):
     # converted exception to warning in https://github.com/Deltares/hatyan/issues/420
     timeInput = dt.datetime(1890,1,1)
     _ = hatyan.astrog.astrab(timeInput,hatyan.astrog.dT(timeInput,dT_fortran=True))
-    assert "equested time out of range (1900-2091)" in caplog.text
+    assert "Requested time(s) outside of historic range (1900-2091)" in caplog.text
     
     
 @pytest.mark.systemtest
