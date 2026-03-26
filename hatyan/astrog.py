@@ -488,7 +488,8 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
     
     if (date<dt.datetime(1900,1,1)).any() or (date>dt.datetime(2091,1,1)).any():
         # converted from Exception to warning in https://github.com/Deltares/hatyan/issues/420
-        logger.warning(f'Requested time out of range (1900-2091): {date}')
+        logger.warning('Requested time out of range (1900-2091), requested range: '
+                       f'{date.min()} to {date.max()}')
 
     # constants - general
     EPOCH  = dt.datetime(1899, 12, 31, 12, 0, 0) # 1900.0 # -12h shift because julian date 0 is at noon?
