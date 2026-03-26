@@ -441,7 +441,8 @@ def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft
         raise ValueError('supplied timeseries contains nan values, use pd.interpolate first (dropping them will result in non-constant timestep which is also not possible for fft)')
     y = ts_residue['values'].values
     N = len(y)
-    T = np.unique((ts_residue.index[1:]-ts_residue.index[:-1])).astype(float)/1e9/3600 #timestep in hours.
+    # timestep in hours
+    T = (ts_residue.index[1:]-ts_residue.index[:-1]).total_seconds().unique()/3600
     if len(T)!=1:
         raise ValueError('timestep of supplied timeseries should be constant for fourier analysis')
     yf = fft(y)
