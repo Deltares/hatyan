@@ -273,7 +273,11 @@ def test_readts_dia_equidistant_multifile_hasfreq():
     assert len(ts_pd) == 35064
     
     # check index dtype
-    assert ts_pd.index.dtype == "datetime64[ns, pytz.FixedOffset(60)]"
+    expected_dtype_list = [
+        "datetime64[ns, pytz.FixedOffset(60)]", # pandas<3
+        "datetime64[us, pytz.FixedOffset(60)]", # pandas>=3
+        ]
+    assert ts_pd.index.dtype in expected_dtype_list
     
     # checks for freq attribute
     assert hasattr(ts_pd.index,'freq')
@@ -295,7 +299,11 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
     assert len(ts_pd) == 35064
 
     # check index dtype
-    assert ts_pd.index.dtype == "datetime64[ns, pytz.FixedOffset(60)]"
+    expected_dtype_list = [
+        "datetime64[ns, pytz.FixedOffset(60)]", # pandas<3
+        "datetime64[us, pytz.FixedOffset(60)]", # pandas>=3
+        ]
+    assert ts_pd.index.dtype in expected_dtype_list
     
     # checks for freq attribute
     assert hasattr(ts_pd.index,'freq')

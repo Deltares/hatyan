@@ -433,10 +433,18 @@ def test_prediction_perperiod_settings_invalid_timestep():
     _, comp_all = hatyan.analysis(ts=ts_measurements_group0, const_list='month', nodalfactors=True, fu_alltimes=False, xfac=True, 
                                           analysis_perperiod="M", return_allperiods=True)
     
-    with pytest.raises(ValueError) as e:
+    from packaging.version import Version
+    from importlib.metadata import version
+    if Version(version("pandas")) >= Version("3.0.0"):
+        expected_err = TypeError
+        expected_msg = "Argument 'freq' has incorrect type (expected str, got int)"
+    else:
+        expected_err = ValueError
+        expected_msg = "Invalid frequency: 60"
+    with pytest.raises(expected_err) as e:
         hatyan.prediction(comp=comp_all, timestep=60)
-    assert str(e.value) == "Invalid frequency: 60"
-
+    assert str(e.value) == expected_msg
+    
     with pytest.raises(TypeError) as e:
         hatyan.prediction(comp=comp_all, timestep=60, times=60)
     assert "prediction() per period, so 'times' argument not allowed" == str(e.value)

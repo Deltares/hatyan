@@ -50,7 +50,7 @@ def test_ddlpy_to_hatyan(locations, procestype):
 
     assert ptypes.is_float_dtype(ts_measwl["values"])
     assert ptypes.is_integer_dtype(ts_measwl["qualitycode"])
-    assert ptypes.is_object_dtype(ts_measwl["status"])
+    assert ptypes.is_string_dtype(ts_measwl["status"])
 
     # check if metadata is complete and correct
     meta_fromts = ts_measwl.attrs

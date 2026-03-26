@@ -76,8 +76,8 @@ def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     #multiply with R1/R2 if applicable and convert entire dataframe to floats
     bool_R1 = foreman_nodal_harmonic['factor'].str.contains('R1')
     bool_R2 = foreman_nodal_harmonic['factor'].str.contains('R2')
-    foreman_nodal_harmonic.loc[bool_R1,'factor'] = foreman_nodal_harmonic.loc[bool_R1,'factor'].str.replace('R1','').astype(float)*R1
-    foreman_nodal_harmonic.loc[bool_R2,'factor'] = foreman_nodal_harmonic.loc[bool_R2,'factor'].str.replace('R2','').astype(float)*R2
+    foreman_nodal_harmonic.loc[bool_R1,'factor'] = (foreman_nodal_harmonic.loc[bool_R1,'factor'].str.replace('R1','').astype(float)*R1).astype(str)
+    foreman_nodal_harmonic.loc[bool_R2,'factor'] = (foreman_nodal_harmonic.loc[bool_R2,'factor'].str.replace('R2','').astype(float)*R2).astype(str)
     foreman_nodal_harmonic = foreman_nodal_harmonic.astype(float)
     foreman_nodal_harmonic.index.name = None
     
@@ -120,7 +120,7 @@ def get_foreman_shallowrelations():
     foreman_shallowrelations_inclplusmult = foreman_shallowrelations.copy()
     foreman_shallowrelations_inclplusmult[['+','*']] = '+','*'
     shallow_eqs_pd_foreman = pd.DataFrame()
-    shallow_eqs_pd_foreman['shallow_eq'] = foreman_shallowrelations_inclplusmult[[2,'*',3,'+',4,'*',5,'+',6,'*',7,'+',8,'*',9]].astype(str).apply(''.join, axis=1).str.replace('+nan*nan','',regex=False)
+    shallow_eqs_pd_foreman['shallow_eq'] = foreman_shallowrelations_inclplusmult[[2,'*',3,'+',4,'*',5,'+',6,'*',7,'+',8,'*',9]].replace({np.nan:""}).astype(str).apply(''.join, axis=1).str.replace('+*','',regex=False)
     shallow_eqs_pd_foreman['shallow_const'] = shallow_eqs_pd_foreman.index
     shallow_eqs_pd_foreman.index = 'comp_'+shallow_eqs_pd_foreman.index.str.replace('(','_',regex=False).str.replace(')','_',regex=False)#brackets are temporarily removed in order to evaluate functions (replaced by underscore to distinguish between similar component names like MKS2 and M(KS)2
 
