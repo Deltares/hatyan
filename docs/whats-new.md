@@ -4,6 +4,7 @@
 
 ### Feat
 - added support for pandas 3 in [#423](https://github.com/Deltares/hatyan/pull/423)
+- support for pre-1900 timestamps in astrog in [426](https://github.com/Deltares/hatyan/pull/426)
 
 
 ## 2.13.0 (2025-12-13)
