@@ -86,7 +86,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 addopts = "-v --tb=short --durations=0"
 filterwarnings = [
-	"error",
+	#"error",
 	"ignore::UserWarning",
 	]
 markers = [

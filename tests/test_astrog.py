@@ -166,6 +166,14 @@ def test_astrog_astrab():
     for parName in parExpect:
         assert len(parOutput[parName]) == 1
         assert abs(parExpect[parName][0]-parOutput[parName][0]) < 10E-9
+
+
+@pytest.mark.systemtest
+def test_astrog_astrab_outofbounds(caplog):
+    # converted exception to warning in https://github.com/Deltares/hatyan/issues/420
+    timeInput = dt.datetime(1890,1,1)
+    _ = hatyan.astrog.astrab(timeInput,hatyan.astrog.dT(timeInput,dT_fortran=True))
+    assert "equested time out of range (1900-2091)" in caplog.text
     
     
 @pytest.mark.systemtest
