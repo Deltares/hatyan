@@ -149,6 +149,8 @@ python = "3.9.*"
 [tool.pixi.feature.py310.dependencies]
 python = "3.10.*"
 
+# HMC cluster is using Python 3.11.7 (email 27 Feb 2025)
+# don't remove py311 support before checking the current version.
 [tool.pixi.feature.py311.dependencies]
 python = "3.11.*"
 
