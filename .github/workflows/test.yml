@@ -19,7 +19,7 @@ jobs:
         python-version: ['py310', 'py312', 'py314']
         os: [ubuntu-latest] #, windows-latest]
 
-    name: py-${{ matrix.python-version }} ${{ matrix.os }}
+    name: ${{ matrix.python-version }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     concurrency:
