@@ -57,6 +57,7 @@ Issues = "https://github.com/deltares/hatyan/issues"
 dev = [
 	"bump2version>=0.5.11",
 	"flake8",
+	"flake8-pyproject", # required to read the config from pyproject.toml
 	"pytest",
 	"pytest-cov",
 	"twine",
@@ -96,4 +97,82 @@ markers = [
 ]
 
 [tool.flake8]
-exclude = "docs"
+exclude = "docs,.pixi"
+# ignore star import (F401+F403).
+# ignore whitespace before ':' (E203)
+# ignore line too long (E501), necessary for docstrings
+#extend-ignore = "F401,F403,E203,E501"
+# TODO: resolve many flake8 errors instead of ignoring them: https://github.com/Deltares/hatyan/issues/433
+extend-ignore = "F401,F403,E203,E501,C901,E111,E124,E127,E128,E131,E201,E202,E221,E222,E225,E228,E231,E251,E261,E262,E265,E266,E301,E302,E303,E402,E713,E721,W291,W292,W293,W391"
+# same maxlinelenght as black.
+max-line-length = 88
+max-complexity = 10
+statistics = "True"
+
+
+## Pixi related entries
+[tool.pixi.workspace]
+channels  = ["conda-forge"]
+platforms = ["linux-64", "win-64"]
+
+[tool.pixi.feature.test.tasks]
+test = { cmd = ["pytest", "--cov=hatyan", "--cov-report=xml", "--cov-report=term"] }
+
+[tool.pixi.feature.docs.tasks]
+docs-build = { cmd = ["sphinx-build", "docs", "docs/_build"] }
+
+# Install your code in editable mode, dependencies here are installed in all environments
+# Takes the dependencies from pyproject.toml, which will be overridden in the features below.
+[tool.pixi.pypi-dependencies]
+hatyan = { path = ".", editable = true }
+
+[tool.pixi.feature.minimal.pypi-dependencies]
+# the versions are a manual copy of [project.dependencies],
+# but with == to test with the lowest versions of direct dependencies
+scipy = "==1.5.4"
+numpy = "==1.24.0"
+matplotlib = "==3.7.0"
+pandas = "==2.1.0"
+netcdf4 = "==1.5.6"
+pyproj = "==3.1.0"
+requests = "==2.28.0"
+xarray = "==2023.4.0"
+rws-ddlpy = "==0.9.3"
+click = "==7.1"
+
+# Define features for different Python versions and Hydromt versions
+[tool.pixi.feature.py39.dependencies]
+python = "3.9.*"
+
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+
+[tool.pixi.feature.py314.dependencies]
+python = "3.14.*"
+
+[tool.pixi.feature.docs.dependencies]
+pandoc = "*"
+
+# Define environments to combine features
+[tool.pixi.environments]
+default = { features = ["py314", "dev", "docs", "examples", "test"]}
+
+dev = { features = ["py314", "dev"]}
+
+py39 = { features = ["py39", "dev", "test"]}
+py310 = { features = ["py310", "dev", "test"]}
+py311 = { features = ["py311", "dev", "test"]}
+py312 = { features = ["py312", "dev", "test"]}
+py313 = { features = ["py313", "dev", "test"]}
+py314 = { features = ["py314", "dev", "test"]}
+
+py39-mindeps = { features = ["py39", "dev", "test", "minimal"]}

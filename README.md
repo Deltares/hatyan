@@ -1,4 +1,4 @@
-[![pytest](https://github.com/Deltares/hatyan/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/pytest.yml)
+[![test](https://github.com/Deltares/hatyan/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Deltares/hatyan/actions/workflows/test.yml)
 [![codecov](https://img.shields.io/codecov/c/github/deltares/hatyan.svg?style=flat-square)](https://app.codecov.io/gh/deltares/hatyan?displayType=list)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Deltares_hatyan&metric=alert_status)](https://sonarcloud.io/dashboard?id=Deltares_hatyan)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Deltares/hatyan/HEAD?urlpath=/tree/docs/notebooks)
