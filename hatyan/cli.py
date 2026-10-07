@@ -116,4 +116,3 @@ def cli(filename, overwrite, interactive_plots, redirect_stdout, loglevel):
         logger.warning(f"close open plots to continue (mpl.backend='{matplotlib.get_backend()}')")
         plt.show()
     os.chdir("..")
-

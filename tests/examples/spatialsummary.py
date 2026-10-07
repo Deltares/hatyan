@@ -9,13 +9,14 @@ it plots the values in colored dots on a map
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-plt.close('all')
 import hatyan
 try:
     import dfm_tools as dfmt # pip install dfm_tools
     add_coastlines = True
 except ModuleNotFoundError:
     add_coastlines = False
+
+plt.close('all')
 
 crs = 28992
 

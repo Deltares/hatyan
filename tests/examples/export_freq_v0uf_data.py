@@ -8,10 +8,10 @@ Created on Wed Mar 10 23:40:17 2021
 import os
 import datetime as dt
 import numpy as np
-import matplotlib.pyplot as plt
-plt.close('all')
 import pandas as pd
 import hatyan
+import matplotlib.pyplot as plt
+plt.close('all')
 
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
@@ -126,12 +126,12 @@ foreman_harmonic_nodal_all_list = foreman_nodal_harmonic.index.unique().tolist()
 foreman_shallowrelations_list = foreman_shallowrelations.index.tolist()
 #foreman_shallow_dependencies_list = list(set(foreman_shallowrelations.loc[:,[3,5,7,9]].values.reshape(580)))
 
-print( '#### FOREMAN FILE TEST, independent of const_list ############' )
+print('#### FOREMAN FILE TEST, independent of const_list ############')
 nodal_nodoodson = [x for x in set(foreman_harmonic_nodal_all_list+list_shallowdependencies.tolist()) if x not in foreman_harmonic_doodson_all_list] # doodson is needed. werkt niet want eerste constituent regel wordt altijd naar doodson geschreven..
-print( 'nodal_nodoodson, ERROR: provide doodson for:', nodal_nodoodson )
+print('nodal_nodoodson, ERROR: provide doodson for:', nodal_nodoodson)
 doodson_nonodal = [x for x in foreman_harmonic_doodson_all_list if x not in foreman_harmonic_nodal_all_list] # ok, f=1, u=0
-print( 'doodson_nonodal, OK: f=1 and u=0 for:       ', doodson_nonodal )
-print( '#### END FOREMAN FILE TEST ###################################' )
+print('doodson_nonodal, OK: f=1 and u=0 for:       ', doodson_nonodal)
+print('#### END FOREMAN FILE TEST ###################################')
 
 pltR_lat_deg = np.arange(-90,90+1,dtype=float) #nan instead of 0, so no division by 0 in R1
 pltR_lat_deg[pltR_lat_deg==0] = np.nan

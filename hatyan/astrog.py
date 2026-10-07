@@ -593,7 +593,7 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
     # Nutation in longitude
     CNULON = -17.248*np.sin(NODMOO)-1.273*np.sin(2.*LABSUN)
     # Nutation in inclination of ecliptic
-    CNUTOB =   9.21 *np.cos(NODMOO)+0.55 *np.cos(2.*LABSUN)
+    CNUTOB = 9.21 *np.cos(NODMOO)+0.55 *np.cos(2.*LABSUN)
 
     # inclination of ecliptic, sine and cosine of inclination
     OBLIQ = OBZERO+TIME*OBINC+np.deg2rad(CNUTOB/3600)
@@ -636,7 +636,8 @@ def astrab(date,dT_fortran=False,lon=5.3876,lat=52.1562):
               0.500 * np.cos(4*TERMAR  - ANS + 5.5317) +
               0.425 * np.cos(3*TERMAR  - ANS + 5.5449) +
               0.419 * np.cos(  TERSAT        + 1.5767) +
-              0.320 * np.cos(  TERSAT  - ANS + 4.5242) )
+              0.320 * np.cos(  TERSAT  - ANS + 4.5242)
+              )
 
     # geometric disturbance by the moon
     GEOM = 6.454*np.sin(ELO)-0.424*np.sin(ELO-ANM)
@@ -781,7 +782,7 @@ def astrac(timeEst,mode,dT_fortran=False,lon=5.3876,lat=52.1562):
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
 
     # constants - iteration targets
-    itertargets_pd = pd.DataFrame({'IPAR':  ['EHMOON']*2 +['ELONG']*4 +          ['ALTMOO']*2 +  ['ALTSUN']*2 +   ['LONSUN']*4 +          ['DPAXDT']*2 ,
+    itertargets_pd = pd.DataFrame({'IPAR': ['EHMOON']*2 + ['ELONG']*4 + ['ALTMOO']*2 + ['ALTSUN']*2 + ['LONSUN']*4 + ['DPAXDT']*2,
                                    'ANGLE':[180,   360,   90,   180,  270,  360, -0.5667,-0.5667,-0.8333,-0.8333, 360,  90,   180,  270,  0,     0],
                                    #'ANGLE': [180,   360,   90,   180,  270,  360, -34/60, -34/60, -50/60, -50/60,  360,  90,   180,  270,  0,     0], #TODO: probably usefull to add more accuracy, but astrac testbank has to be redefined
                                    'CRITER':[1e-3,  1e-3,  1e-4, 1e-4, 1e-4, 1e-4, 2e-4,   2e-4,   2e-4,   2e-4,   1e-5, 1e-5, 1e-5, 1e-5, 2e-3,  2e-3],
@@ -913,9 +914,11 @@ def dT(dateIn,dT_fortran=False):
     elif not isinstance(dateIn, pd.DatetimeIndex):
         raise Exception('Input variable date should be datetime or pd.DateTimeIndex')
     
-    if dT_fortran: # reproduce fortran dT_TT values with latest dT and increment values from fortran code
-        # historical hard-coded values (taken from FORTRAN comments) from Astronomical Almanac - Reduction of time scales (only last ones are used to reproduce fortran code)
-        dT_TTyear     = [ 1980,  1993,  2002,  2012 ] # year of used dT_TTval value
+    if dT_fortran:
+        # reproduce fortran dT_TT values with latest dT and increment values from fortran code
+        # historical hard-coded values (taken from FORTRAN comments) from Astronomical
+        # Almanac - Reduction of time scales (only last ones are used to reproduce fortran code)
+        dT_TTyear     = [1980,  1993,  2002,  2012] # year of used dT_TTval value
         dT_TTval      = [50.97, 59.35, 64.90, 67.184] # difference between TT and UT1 (32.184s + leap seconds)
         dT_TTinc      = [0.998,  0.70,  0.42,  0.676] # yearly increment of dT curve: (dT_last-dT_5yBefore)/5
         
@@ -1072,5 +1075,3 @@ def plot_astrog_diff(pd_python, pd_fortran, typeCol="type", typeUnit='-', typeLa
 
     axs = (ax1,ax2,ax3)
     return fig, axs
-
-

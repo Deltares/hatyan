@@ -36,8 +36,7 @@ for pred_year in year_list:
             times_ext_4y = slice(dt.datetime(2009,1,1),dt.datetime(2012,12,31,23,50))
         elif pred_year in [2021, 2022, 2023]:
             times_ext_4y = slice(dt.datetime(2015,1,1),dt.datetime(2018,12,31,23,50))
-            
-        
+
         file_astro = os.path.join(r'c:\Users\veenstra\Downloads',f'astro_{station_wadar}_{pred_year}.pkl')
         if not os.path.exists(file_astro):
             print('retrieving DDL catalog')

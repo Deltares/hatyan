@@ -118,10 +118,10 @@ def get_doodson_eqvals(dood_date, mode=None):
             dood_T_rad = np.array([np.deg2rad(180 + x.hour*15.0+x.minute*15.0/60) for x in dood_date])
         else:
             dood_T_rad = np.array(np.deg2rad(180 + dood_date.hour*15.0+dood_date.minute*15.0/60).values)
-        dood_S_rad =  (4.7200089 + 8399.7092745*dood_Tj + 0.0000346*dood_Tj**2)
-        dood_H_rad =  (4.8816280 + 628.3319500*dood_Tj  + 0.0000052*dood_Tj**2)
-        dood_P_rad =  (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
-        dood_N_rad =  (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
+        dood_S_rad = (4.7200089 + 8399.7092745*dood_Tj + 0.0000346*dood_Tj**2)
+        dood_H_rad = (4.8816280 + 628.3319500*dood_Tj  + 0.0000052*dood_Tj**2)
+        dood_P_rad = (5.8351526 + 71.0180412*dood_Tj   - 0.0001801*dood_Tj**2)
+        dood_N_rad = (4.5236016 - 33.7571463*dood_Tj   + 0.0000363*dood_Tj**2)
         dood_P1_rad = (4.9082295 + 0.0300053*dood_Tj    + 0.0000079*dood_Tj**2)
         #from SLS table 4.2: pd.DataFrame(dict(const=[218.32,280.47,83.35,125.04,282.94],T=[481267.88,36000.77,4069.01,-1934.14,1.72]),index=['S','H','P','N','P1'])#/180*np.pi
     doodson_pd = pd.DataFrame(np.stack([dood_T_rad, dood_S_rad, dood_H_rad, dood_P_rad, dood_N_rad, dood_P1_rad]),
@@ -153,7 +153,7 @@ def robust_timedelta_sec(dood_date,refdate_dt=None):
     if refdate_dt is None:
         refdate_dt = pd.Timestamp(1900,1,1)
     
-    dood_tstart_sec = ( dood_date-refdate_dt ).total_seconds().values
+    dood_tstart_sec = (dood_date-refdate_dt).total_seconds().values
     return dood_tstart_sec
 
 
@@ -250,8 +250,7 @@ def get_const_list_hatyan(listtype):
     shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
     foreman_const_list_all = pd.Series(foreman_doodson_harmonic.index.append(foreman_shallowrelations.index)).tolist()
 
-    
-    #TODO: add all_foreman list, first optimize it via caching
+    # TODO: add all_foreman list, first optimize it via caching
     const_lists_dict = {'all_schureman':
                             #alle binnen hatyan beschikbare componenten
                             #A0 en 195 componenten (plus added components)

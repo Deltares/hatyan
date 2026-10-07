@@ -66,8 +66,7 @@ for current_station in selected_stations:
                                  'CS_degincrs':[-11,-24,174,1,-24]})
     else:
         cs_comps = None
-    
-    
+
     # file pattern for multiple diafiles. Use ? instead of * to avoid matching of obs19.txt
     file_comp0 = os.path.join(dir_testdata,'predictie2019',f'{current_station}_obs?.txt')
     

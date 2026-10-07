@@ -101,9 +101,8 @@ if 1:
         ax1.set_xlim(times_somedays.start,times_somedays.stop)
         fig.tight_layout()
         fig.savefig(f'dagelijkseongelijkheid_{current_station}')
-        
-        
-        fig,(ax1) = plt.subplots(1,1,figsize=(10,6),sharex=True,sharey=True)
+
+        fig,(ax1) = plt.subplots(1, 1, figsize=(10,6), sharex=True,sharey=True)
         ax1.set_title(f'fullset vs M2 {current_station}')
         ax1.plot(ts_prediction,linewidth=1,label='full set')
         ax1.plot(ts_prediction_M2,linewidth=1,label='M2')
@@ -114,7 +113,7 @@ if 1:
         fig.tight_layout()
         fig.savefig(f'fullset_vs_M2_{current_station}')
         
-        fig,(ax1) = plt.subplots(1,1,figsize=(10,6),sharex=True,sharey=True)
+        fig,(ax1) = plt.subplots(1, 1, figsize=(10,6), sharex=True, sharey=True)
         ax1.set_title(f'fullset vs M2+S2 {current_station}')
         ax1.plot(ts_prediction,linewidth=1,label='full set')
         ax1.plot(ts_prediction_M2+ts_prediction_S2,linewidth=1,label='M2+S2')
@@ -217,8 +216,6 @@ if 0:
     fig.savefig(f'lat_indication_{current_station}')
 
 
-
-
 ########################
 # analysis form long meas, tried to show Nodal cycle >> failed
 if 0:
@@ -256,7 +253,6 @@ if 0:
     min_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).min()
     max_allyears_pred = ts_pred_py['values'].groupby(by=pd.Grouper(freq='Y')).max()
     max_allyears_predrange = ts_pred_range['values'].groupby(by=pd.Grouper(freq='Y')).max()
-    
 
     fig, (ax2) = plt.subplots()
     ax2.plot(max_allyears_predrange-A0_allyears_pred,label='A0_allyears_predrange')
@@ -270,7 +266,6 @@ if 0:
     ax2.set_ylim(-0.2,0.2)
     ax2.legend()
     
-    
     fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_meas, ts_validation=None)
     #ax1.plot(ts_pred_py)
     #ax2.plot(A0_allyears_meas,label='A0_allyears_meas')
@@ -281,9 +276,6 @@ if 0:
     #ax2.plot(max_allyears_pred,label='max_allyears_pred')
     ax2.set_ylim(max_allyears_meas.min()-0.02,max_allyears_meas.max()+0.02)
     ax2.legend()
-
-
-
 
 if 0:
     import matplotlib.dates as mdates
@@ -313,9 +305,6 @@ if 0:
     ax1.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     fig.tight_layout()
     fig.savefig('tides_dutchcoast.png', dpi=250)
-
-
-
 
 if 0:
     import xarray as xr
@@ -364,6 +353,3 @@ if 0:
     ax.set_xlim(dt.datetime(2013,12,4),dt.datetime(2013,12,10))
     fig.tight_layout()
     fig.savefig('TS_model_astro.png', dpi=250)
-
-
-

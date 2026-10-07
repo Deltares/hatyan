@@ -14,6 +14,7 @@ import glob
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 
+
 @pytest.mark.unittest
 def test_command_line_interface(tmp_path):
     """Test the CLI."""

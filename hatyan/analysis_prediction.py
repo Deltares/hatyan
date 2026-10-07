@@ -332,7 +332,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
     #TODO: maybe sometimes valuable to not fold with nyquist (eg with strongly varying time interval), in that case: check_rayleigh(ts_pd,t_const_freq_pd)
     check_rayleigh(ts_pd,freq_rem)
 
-    #### TIMESERIES ANALYSIS
+    # TIMESERIES ANALYSIS
     N = len(const_list)
     m = len(ts_pd_nonan['values'])
     
@@ -623,8 +623,8 @@ def prediction(comp, times=None, timestep=None):
             # https://github.com/pandas-dev/pandas/issues/36575
             times.freq = times.inferred_freq
             logger.warning("provided times are timezone-naive and provided components are "
-                            "timezone-aware. The times are being interpreted as if they would "
-                            f"have the same timezone as the components: {tzone_comp}")
+                           "timezone-aware. The times are being interpreted as if they would "
+                          f"have the same timezone as the components: {tzone_comp}")
         
         ts_prediction = prediction_singleperiod(comp=comp, times=times, hatyan_settings=hatyan_settings)
     

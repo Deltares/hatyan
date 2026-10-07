@@ -6,11 +6,11 @@
 import os
 import datetime as dt
 import pandas as pd
-import matplotlib.pyplot as plt
-plt.close('all')
 from netCDF4 import Dataset, num2date
 import hatyan
 import xarray as xr
+import matplotlib.pyplot as plt
+plt.close('all')
 
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
