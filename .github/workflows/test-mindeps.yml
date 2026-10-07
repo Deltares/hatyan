@@ -43,7 +43,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pixi run --locked -e ${{ matrix.python-version }} test
+          pixi run --locked -e ${{ matrix.python-version }} test -m "not acceptance"
 
       - uses: codecov/codecov-action@v4
         env:

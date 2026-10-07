@@ -89,7 +89,7 @@ addopts = "-v --tb=short --durations=0"
 filterwarnings = [
 	"error",
 	"ignore::UserWarning",
-    # TODO: ignore numpy warning until it is fixed in netcdf4: https://github.com/Unidata/netcdf4-python/issues/1468
+    # TODO: ignore numpy warning after fixing https://github.com/Deltares/hatyan/issues/435
     "ignore:Setting the shape on a NumPy array has been deprecated in NumPy 2.5:DeprecationWarning",
 	]
 markers = [
