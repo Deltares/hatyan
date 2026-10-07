@@ -95,4 +95,3 @@ def convert_exttype_str2num(ts_measwl_ext, ts_measwl_exttype):
     ts_measwl_ext.loc[ts_measwl_exttype['values']=='laagwater 2','HWLWcode'] = 5
     ts_measwl_ext['HWLWcode'] = ts_measwl_ext['HWLWcode'].astype(int)
     return ts_measwl_ext
-

@@ -18,6 +18,7 @@ list_configfiles = glob.glob(os.path.join(dir_tests,'examples','*.py'))
 dir_output_general = os.path.join(dir_tests,'examples_output')
 os.makedirs(dir_output_general, exist_ok=True)
 
+
 @pytest.mark.acceptance
 @pytest.mark.parametrize("file_config", [pytest.param(file_config, id=os.path.basename(file_config).replace('.py','')) for file_config in list_configfiles])
 def test_run_examples(file_config):

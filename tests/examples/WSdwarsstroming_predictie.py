@@ -7,9 +7,9 @@ Created on Thu Dec 24 10:33:54 2020
 import os
 import pandas as pd
 import datetime as dt
+import hatyan
 import matplotlib.pyplot as plt
 plt.close('all')
-import hatyan
 
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 

@@ -87,4 +87,3 @@ def writets_noos(**kwargs):
 
 def write_tsnetcdf(**kwargs):
     raise DeprecationWarning("hatyan.write_tsnetcdf() was deprecated, use hatyan.write_netcdf() instead")
-

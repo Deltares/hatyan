@@ -52,12 +52,12 @@ def test_frommergedcomp():
     ts_prediction_direct_values = ts_prediction_direct['values'].values
     
     # 4. Vefiry final expectations
-    assert type(ts_prediction_direct) == pd.core.frame.DataFrame
+    assert isinstance(ts_prediction_direct, pd.core.frame.DataFrame)
     assert ts_prediction_direct.index.tz==pytz.FixedOffset(60)
     assert ts_prediction_direct.index[0].tz_localize(None) == times_pred.start
     assert ts_prediction_direct.index[-1].tz_localize(None) == times_pred.stop
     assert len(ts_prediction_direct_values) == len(expected_ts_prediction_data_pd_values)
-    assert type(ts_prediction_direct_values) == type(expected_ts_prediction_data_pd_values)
+    assert isinstance(ts_prediction_direct_values, type(expected_ts_prediction_data_pd_values))
     assert (np.abs(ts_prediction_direct_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
 
 
@@ -626,5 +626,3 @@ def test_allfromdia_2008xfac0():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
-
-

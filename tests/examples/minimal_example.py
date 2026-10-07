@@ -4,9 +4,9 @@ for use with test_cli.py, requires files from online source
 
 """
 
+import urllib
 import hatyan
 hatyan.close('all')
-import urllib
 
 dir_testdata = "https://raw.githubusercontent.com/Deltares/hatyan/main/tests/data_unitsystemtests/"
 

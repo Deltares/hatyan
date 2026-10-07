@@ -7,12 +7,13 @@ Created on Wed Dec  1 17:03:52 2021
 
 import ddlpy # available via pip install rws-ddlpy or at https://github.com/Deltares/ddlpy
 import matplotlib.pyplot as plt
-plt.close("all")
 
 # set logging level to INFO to get log messages
 import logging
 logging.basicConfig() # calling basicConfig is essential to set logging level for sub-modules
 logging.getLogger("ddlpy").setLevel(level="INFO")
+
+plt.close("all")
 
 # input parameters
 # start_date = "2022-12-19 00:00:00 +01:00"
@@ -76,7 +77,7 @@ if 1: # for RWS
     os.remove(file_vali)
 
 
-######### online waterlevel data retrieval for one station
+# online waterlevel data retrieval for one station
 if 1: #for RWS
     import hatyan # available via `pip install hatyan` or at https://github.com/Deltares/hatyan
     include_extremes = True
@@ -154,7 +155,7 @@ if 1: #for RWS
         ax2.set_ylim(-0.5,0.5)
 
 
-######### simple waterlevel data retrieval for all waterlevel stations or all stations
+# simple waterlevel data retrieval for all waterlevel stations or all stations
 if 1: #for CMEMS
     
     bool_procestype = locations['ProcesType'].isin(['meting']) # measured waterlevels (not astro)

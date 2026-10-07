@@ -125,8 +125,8 @@ def test_astrog_dT():
     dTExctOut = hatyan.astrog.dT(timeInput,dT_fortran=False)
     
     # 4. Vefication
-    assert type(dTLastOut) == np.ndarray
-    assert type(dTExctOut) == np.ndarray
+    assert isinstance(dTLastOut, np.ndarray)
+    assert isinstance(dTExctOut, np.ndarray)
     assert np.allclose(dTLastExp, dTLastOut)
     assert np.allclose(dTExctExp, dTExctOut)
 
@@ -161,7 +161,7 @@ def test_astrog_astrab():
     parOutput = hatyan.astrog.astrab(timeInput,hatyan.astrog.dT(timeInput,dT_fortran=True))
     
     # 4. Vefication
-    assert type(parOutput) == dict
+    assert isinstance(parOutput, dict)
     assert len(parOutput)  == 18
     for parName in parExpect:
         assert len(parOutput[parName]) == 1
@@ -208,7 +208,7 @@ def test_astrog_astrac():
     # 4. Vefication
     for iMode in range(1,17):
         print(iMode)
-        assert type(timeOutput[iMode-1]) == pd.DatetimeIndex
+        assert isinstance(timeOutput[iMode-1], pd.DatetimeIndex)
         assert abs(timeExpect[iMode-1]-timeOutput[iMode-1]).total_seconds() < 10E-5
 
 
@@ -241,7 +241,7 @@ def test_astrog_culminations():
     assert subset["type_str"].tolist() == expected_type_str
     expected_parallax = np.array([
         0.90436235, 0.90347198, 0.90333631, 0.90397446, 0.90539423,
-           0.90759186, 0.9105516 , 0.91424508, 0.91863045, 0.92365127])
+        0.90759186, 0.9105516 , 0.91424508, 0.91863045, 0.92365127])
     assert np.allclose(subset["parallax"].values, expected_parallax)
     expected_declination = np.array([
         -9.12903352, -6.86053844, -4.53030521, -2.15683332,  0.24204067,

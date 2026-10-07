@@ -12,11 +12,7 @@ import datetime as dt
 file_path = os.path.realpath(__file__)
 
 
-#################################################
-################# FILECONTENTS ##################
-#################################################
-
-
+# file contents
 @functools.lru_cache() #only caching this already makes foreman slightly faster
 def get_foreman_doodson_nodal_harmonic(lat_deg=51.45):
     """
@@ -162,11 +158,7 @@ def get_foreman_doodson_nodal_all_NOTUSED(lat_deg=51.45): #TODO: maybe use this 
     return foreman_doodson_all, foreman_nodal_all
 
 
-#################################################
-#################### FREQ V0 ####################
-#################################################
-
-
+# freq v0
 def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)])):
     """
     Zoekt voor iedere component uit de lijst de v op basis van harmonische doodson getallen en de frequentie rechtstreeks uit de foreman tabel.
@@ -220,10 +212,7 @@ def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900
     return v_0i_rad, t_const_freq
 
 
-#################################################
-################# NODALFACTORS ##################
-#################################################
-
+# nodalfactors
 def get_foreman_nodalfactors(const_list, dood_date):
     """
     Zoekt voor iedere component uit de lijst de u en f (nodal factors) op basis van satellite doodson getallen uit de foreman tabel.
@@ -289,5 +278,3 @@ def get_foreman_nodalfactors(const_list, dood_date):
     f_i_FOR = f_i_FOR_inclshallow.loc[const_list,:]
     u_i_rad_FOR = u_i_rad_FOR_inclshallow.loc[const_list,:]
     return f_i_FOR, u_i_rad_FOR
-
-

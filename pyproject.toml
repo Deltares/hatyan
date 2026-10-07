@@ -99,13 +99,13 @@ markers = [
 ]
 
 [tool.flake8]
-exclude = "docs,.pixi"
+exclude = "docs,.pixi,./tests/examples_output"
 # ignore star import (F401+F403).
 # ignore whitespace before ':' (E203)
 # ignore line too long (E501), necessary for docstrings
 #extend-ignore = "F401,F403,E203,E501"
-# TODO: resolve many flake8 errors instead of ignoring them: https://github.com/Deltares/hatyan/issues/433
-extend-ignore = "F401,F403,E203,E501,C901,E111,E124,E127,E128,E131,E201,E202,E221,E222,E225,E228,E231,E251,E261,E262,E265,E266,E301,E302,E303,E402,E713,E721,W291,W292,W293,W391"
+# TODO: resolve many flake8 errors instead of ignoring them: https://github.com/Deltares/hatyan/issues/403
+extend-ignore = "F401,F403,E203,E501,C901,E127,E128,E201,E221,E225,E228,E231,E261,E262,E265,W291,W293"
 # same maxlinelenght as black.
 max-line-length = 88
 max-complexity = 10

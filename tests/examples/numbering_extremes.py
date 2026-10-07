@@ -10,13 +10,14 @@ import datetime as dt
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-plt.close('all')
 import hatyan
 try:
     import dfm_tools as dfmt # pip install dfm_tools
     add_coastlines = True
 except ModuleNotFoundError:
     add_coastlines = False
+
+plt.close('all')
 
 create_spatialplot = True
 crs = 28992
@@ -90,12 +91,11 @@ for yr_HWLWno in [2000,2010,2021]: #range(1999,2022):
         else:
             xfac=True
         const_list = hatyan.get_const_list_hatyan('year') #94 const
-        
-        
+
         file_data_comp0 = os.path.join(dir_testdata,'predictie2019','%s_ana.txt'%(current_station))
         times_pred = slice(dt.datetime(yr-1,12,31),dt.datetime(yr,1,2,12), "1min")
         file_data_predvali = os.path.join(dir_testdata,'predictie2019','%s_pre.txt'%(current_station))
-    
+
         #component groups
         COMP_merged = hatyan.read_components(filename=file_data_comp0)
         

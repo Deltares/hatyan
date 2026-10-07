@@ -457,7 +457,7 @@ def test_timeseries_fft():
     const_list_foreman = hatyan_freqs_suggestions_foreman.index.unique().tolist()
     
     assert const_list_schureman == ['O1', 'N2', 'M2', 'L2B', 'S2', 'K2', 'M4', 'M6']
-    assert const_list_foreman ==   ['O1', 'N2', 'M2', 'L2', 'S2', 'K2', 'M4', 'M6']
+    assert const_list_foreman == ['O1', 'N2', 'M2', 'L2', 'S2', 'K2', 'M4', 'M6']
 
 
 @pytest.mark.unittest

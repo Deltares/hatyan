@@ -449,7 +449,7 @@ def timeseries_fft(ts_residue, min_prominence=10**3, max_freqdiff=None, plot_fft
     power = np.abs(yf)
     freq = fftfreq(N, T[0])
     peaks, peaks_properties = ssig.find_peaks(power[freq >=0], prominence=min_prominence)
-    peak_freq =  freq[peaks]
+    peak_freq = freq[peaks]
     peak_power = power[peaks]
     
     if plot_fft:
@@ -886,11 +886,11 @@ def write_dia(ts, filename, headerformat='dia'):
 
     """
     if "status" in ts.columns:
-       logger.warning("status column is ignored by hatyan.write_dia(), all "
-                      "status values in diafile will be 'Ongecontroleerd'")
+        logger.warning("status column is ignored by hatyan.write_dia(), all "
+                       "status values in diafile will be 'Ongecontroleerd'")
     if "qualitycode" in ts.columns:
-       logger.warning("qualitycode column is ignored by hatyan.write_dia(), all "
-                      "qualitycode values in diafile will be 0")
+        logger.warning("qualitycode column is ignored by hatyan.write_dia(), all "
+                       "qualitycode values in diafile will be 0")
     
     # optionally convert meters to centimeters
     # before asserting metadata in wns_from_metadata
@@ -1018,7 +1018,7 @@ def get_metadata_pd(ts, headerformat):
                                  'TYP;TE', #Reekstype: equidistant
                                  '[RKS]',
                                  'TYD;%10s;%10s;%i;min'%(tstart_str,tstop_str,timestep_min), #(Begin)datum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;Tijdstapeenheid
-                                  '[TPS]',
+                                 '[TPS]',
                                  'STA;%10s;%10s;O'%(tstart_str,tstop_str), #Statuscode;Begindatum;(Begin)tijdstip;Einddatum;Eindtijdstip;Tijdstap;
                                  '[WRD]'])
     
@@ -1309,16 +1309,18 @@ class Timeseries_Statistics:
         if len(ts)==0:
             self.stats = {'timeseries contents':ts}
         else:
-            self.stats = {'timeseries contents':ts,
-                        'timeseries # unique timesteps': ntimesteps_uniq,
-                        'timeseries dominant timesteps':timestep_min_valcounts_pd.sort_index(ascending=False),
-                        'timeseries validity': timesteps_incr_print,
-                        'timeseries length': ntimes,
-                        'timeseries # nonan': ntimes_nonan,
-                        'timeseries % nonan': ntimes_nonan/ntimes*100,#%.1f %
-                        'timeseries # nan': ntimes-ntimes_nonan,
-                        'timeseries % nan': (ntimes-ntimes_nonan)/ntimes*100, #%.1f %
-                        }
+            self.stats = {
+                'timeseries contents':ts,
+                'timeseries # unique timesteps': ntimesteps_uniq,
+                'timeseries dominant timesteps':timestep_min_valcounts_pd.sort_index(ascending=False),
+                'timeseries validity': timesteps_incr_print,
+                'timeseries length': ntimes,
+                'timeseries # nonan': ntimes_nonan,
+                'timeseries % nonan': ntimes_nonan/ntimes*100, #%.1f %
+                'timeseries # nan': ntimes-ntimes_nonan,
+                'timeseries % nan': (ntimes-ntimes_nonan)/ntimes*100, #%.1f %
+            }
+
     def __str__(self):
         pd_max_rows_backup = pd.options.display.max_rows #backup max_rows default setting (60 or so) and set to 15
         pd.options.display.max_rows = 10
@@ -1330,6 +1332,7 @@ class Timeseries_Statistics:
                 print_statement += f'{key}: {self.stats[key]}\n'
         pd.options.display.max_rows = pd_max_rows_backup #revert max_rows default setting after printing
         return print_statement
+
     def __repr__(self): #avoid printing the class name
         #return dict.__repr__
         return str(self.stats)
@@ -1338,12 +1341,8 @@ class Timeseries_Statistics:
     def keys(self):
         return self.stats.keys()
     """
-        
-    
-    
-###############################
-################# READING FILES
-###############################
+
+# reading files
 
 
 def get_diaxycoords(filename, crs):
@@ -1642,7 +1641,7 @@ def read_dia(filename, station=None, block_ids=None, allow_duplicates=False):
                     station = diablocks_pd.loc[0,'station']
                 else:
                     raise ValueError('If block_ids=None or block_ids="allstation", station argument should be provided. '
-                                      f'Available blocks:\n{diablocks_pd[print_cols]}')
+                                    f'Available blocks:\n{diablocks_pd[print_cols]}')
             bool_station = diablocks_pd['station']==station
             ids_station = diablocks_pd[bool_station].index.tolist()
             if len(ids_station)<1:
@@ -1759,14 +1758,19 @@ def read_noos(filename, datetime_format='%Y%m%d%H%M', na_values=None):
                 startdata = linenum
                 break
         
-    content_pd = pd.read_csv(filename,header=startdata-1, sep="\\s+",names=['times_str','values'],
-                             na_values=na_values, dtype = {'times_str': str, 'values' : 'float'})
-    noos_datetime = pd.to_datetime(content_pd['times_str'],format=datetime_format)
-    data_pd = pd.DataFrame({'values':content_pd['values'].values},index=noos_datetime)
+    content_pd = pd.read_csv(
+        filename,
+        header=startdata-1,
+        sep="\\s+",
+        names=['times_str','values'],
+        na_values=na_values,
+        dtype={'times_str': str, 'values' : 'float'},
+    )
+    noos_datetime = pd.to_datetime(content_pd['times_str'], format=datetime_format)
+    data_pd = pd.DataFrame({'values':content_pd['values'].values}, index=noos_datetime)
     
     # clean noos metadata and add as attrs
     noosheader_dict_clean = {k:v for k,v in noosheader_dict.items() if v!=''}
     data_pd.attrs = noosheader_dict_clean
     
     return data_pd
-

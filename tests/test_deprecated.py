@@ -10,6 +10,7 @@ import hatyan
 
 list_deprecated_funcs = hatyan.deprecated.__all__
 
+
 def test_deprecated_functions():
     for deprecated_func in list_deprecated_funcs:
         with pytest.raises(DeprecationWarning):
