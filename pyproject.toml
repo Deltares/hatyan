@@ -46,6 +46,7 @@ classifiers = [
 	"Programming Language :: Python :: 3.12",
 	"Programming Language :: Python :: 3.13",
 	"Programming Language :: Python :: 3.14",
+	"Programming Language :: Python :: 3.15",
 ]
 
 [project.urls]
@@ -163,6 +164,9 @@ python = "3.13.*"
 [tool.pixi.feature.py314.dependencies]
 python = "3.14.*"
 
+[tool.pixi.feature.py315.dependencies]
+python = "3.15.*"
+
 [tool.pixi.feature.docs.dependencies]
 pandoc = "*"
 
@@ -178,5 +182,6 @@ py311 = { features = ["py311", "dev", "test"]}
 py312 = { features = ["py312", "dev", "test"]}
 py313 = { features = ["py313", "dev", "test"]}
 py314 = { features = ["py314", "dev", "test"]}
+py315 = { features = ["py315", "dev", "test"]}
 
 py39-mindeps = { features = ["py39", "dev", "test", "minimal"]}
