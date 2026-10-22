@@ -10,20 +10,20 @@ description = "Tidal analysis and prediction tool of Rijkswaterstaat"
 readme = "README.md"
 keywords = ["hatyan", "tidal analysis", "tidal prediction"]
 license = "LGPL-3.0"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
-	#scipy>=1.5.4 env creation succeeded in https://github.com/Deltares/hatyan/issues/71
-	"scipy>=1.5.4",
-	#numpy>=1.24.0 is oldest supported version in Q4 2024
-	"numpy>=1.24.0",
+	#scipy>=1.13.0 is the first version to support numpy 2.0
+	"scipy>=1.13.0",
+	#numpy>=2.1 is oldest supported version in Q2 2026
+	"numpy>=2.1",
 	#matplotlib>=3.7.0 contour colorbar on uniform values succeeds
 	"matplotlib>=3.7.0",
 	#pandas>=2.1.0 has persistent max attrs (test_metadata_persistence)
 	"pandas>=2.1.0",
-	#netcdf4>=1.5.6 does not call numpy.bool (avoids AttributeError)
-	"netcdf4>=1.5.6",
-	#pyproj>=3.1.0 is pip installable in py38
-	"pyproj>=3.1.0",
+	#netcdf4>=1.7.5 resolves the numpy 2.5 setting shape warning
+	"netcdf4>=1.7.5",
+	#pyproj>=3.4.0 is the first version to support Python 3.11
+	"pyproj>=3.4.0",
 	#requests>=2.28.0 was tested on hmc
 	"requests>=2.28.0",
 	#xarray>=2023.4.0 does not conflict with pandas<2.0.0 for resampling
@@ -40,8 +40,6 @@ classifiers = [
 	"Topic :: Scientific/Engineering :: Information Analysis",
 	"Programming Language :: Python",
 	"Programming Language :: Python :: 3",
-	"Programming Language :: Python :: 3.9",
-	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
 	"Programming Language :: Python :: 3.12",
 	"Programming Language :: Python :: 3.13",
@@ -90,8 +88,6 @@ addopts = "-v --tb=short --durations=0"
 filterwarnings = [
 	"error",
 	"ignore::UserWarning",
-    # TODO: ignore numpy warning after fixing https://github.com/Deltares/hatyan/issues/435
-    "ignore:Setting the shape on a NumPy array has been deprecated in NumPy 2.5:DeprecationWarning",
 	]
 markers = [
 	"unittest: mark a test as unittest. Used for testing single methods",
@@ -132,24 +128,18 @@ hatyan = { path = ".", editable = true }
 [tool.pixi.feature.minimal.pypi-dependencies]
 # the versions are a manual copy of [project.dependencies],
 # but with == to test with the lowest versions of direct dependencies
-scipy = "==1.5.4"
-numpy = "==1.24.0"
+scipy = "==1.13.0"
+numpy = "==2.1"
 matplotlib = "==3.7.0"
 pandas = "==2.1.0"
-netcdf4 = "==1.5.6"
-pyproj = "==3.1.0"
+netcdf4 = "==1.7.5"
+pyproj = "==3.4.0"
 requests = "==2.28.0"
 xarray = "==2023.4.0"
 rws-ddlpy = "==0.9.3"
 click = "==7.1"
 
 # Define features for different Python versions and Hydromt versions
-[tool.pixi.feature.py39.dependencies]
-python = "3.9.*"
-
-[tool.pixi.feature.py310.dependencies]
-python = "3.10.*"
-
 # HMC cluster is using Python 3.11.7 (email 27 Feb 2025)
 # don't remove py311 support before checking the current version.
 [tool.pixi.feature.py311.dependencies]
@@ -176,12 +166,10 @@ default = { features = ["py314", "dev", "docs", "examples", "test"]}
 
 dev = { features = ["py314", "dev"]}
 
-py39 = { features = ["py39", "dev", "test"]}
-py310 = { features = ["py310", "dev", "test"]}
 py311 = { features = ["py311", "dev", "test"]}
 py312 = { features = ["py312", "dev", "test"]}
 py313 = { features = ["py313", "dev", "test"]}
 py314 = { features = ["py314", "dev", "test"]}
 py315 = { features = ["py315", "dev", "test"]}
 
-py39-mindeps = { features = ["py39", "dev", "test", "minimal"]}
+py311-mindeps = { features = ["py311", "dev", "test", "minimal"]}
