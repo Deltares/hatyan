@@ -7,14 +7,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  sigridci:
+  sigridci-assess:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
       - name: Sigrid request assessment
         uses: Software-Improvement-Group/sigridci@main
         with:
@@ -24,9 +23,16 @@ jobs:
         env:
           SIGRID_CI_TOKEN: "${{ secrets.SIGRID_CI_TOKEN }}"
 
+  sigridci-publish:
+    # not for PRs, so only happens for pushes to the main branch
+    if: ${{ github.event_name != 'pull_request'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - name: Sigrid publish code
-        # not for PRs, so only happens for pushes to the main branch
-        if: ${{ github.event_name != 'pull_request'}}
         uses: Software-Improvement-Group/sigridci@main
         with:
           customer: deltares
