@@ -1,12 +1,13 @@
 name: sigrid-publish
 on:
   push:
-    branches:
-      - "main"
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  sigridci:
+  sigridci-assess:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -18,7 +19,25 @@ jobs:
         with:
           customer: deltares
           system: hatyan
-          publishonly: false
+          publish: false
+          exclude: /tests/
+        env:
+          SIGRID_CI_TOKEN: "${{ secrets.SIGRID_CI_TOKEN }}"
+
+  sigridci-publish:
+    if: ${{ github.event_name != 'pull_request'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Sigrid CI
+        uses: Software-Improvement-Group/sigridci@main
+        with:
+          customer: deltares
+          system: hatyan
+          publish: true
           exclude: /tests/
         env:
           SIGRID_CI_TOKEN: "${{ secrets.SIGRID_CI_TOKEN }}"
