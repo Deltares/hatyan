@@ -28,8 +28,8 @@ dependencies = [
 	"requests>=2.28.0",
 	#xarray>=2023.4.0 does not conflict with pandas<2.0.0 for resampling
 	"xarray>=2023.4.0",
-	#rws-ddlpy>=0.9.3 added caching for ddlpy.locations() including dependency
-	"rws-ddlpy>=0.9.3",
+	#rws-ddlpy>=0.11.0 enforced conversion of strings to char arrays and exposed and updated default catalog filter
+	"rws-ddlpy>=0.11.0",
 	#click>=7.1 is the first version available on github release page
 	"click>=7.1",
 ]
@@ -135,7 +135,7 @@ netcdf4 = "==1.7.5"
 pyproj = "==3.4.0"
 requests = "==2.28.0"
 xarray = "==2023.4.0"
-rws-ddlpy = "==0.9.3"
+rws-ddlpy = "==0.11.0"
 click = "==7.1"
 
 # Define features for different Python versions and Hydromt versions
