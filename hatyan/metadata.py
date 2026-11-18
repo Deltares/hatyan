@@ -29,7 +29,7 @@ def metadata_from_diablocks(diablocks_pd, block_id):
     metadata = {key:diablocks_pd_onerow[key] for key in metadata_keys}
     
     # add origin
-    metadata['origin'] = 'from timeseries dia file'
+    # metadata['origin'] = 'from timeseries dia file'
     return metadata
 
 
@@ -47,7 +47,7 @@ def metadata_from_ddlpy(ddlpy_meas):
         meta_val = meta_values.iloc[0]
         assert (meta_values == meta_val).all()
         metadata[k] = meta_val
-    metadata['origin'] = 'ddlpy'
+    # metadata['origin'] = 'ddlpy'
     return metadata
 
 

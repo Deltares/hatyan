@@ -61,7 +61,7 @@ def test_ddlpy_to_hatyan(locations, procestype):
         'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'hoekvanholland',
-        'origin': 'ddlpy',
+        # 'origin': 'ddlpy',
         }
     assert meta_fromts == meta_expected
 
@@ -106,7 +106,7 @@ def test_convert_hwlwstr2num(locations):
         'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'hoekvanholland',
-        'origin': 'ddlpy',
+        # 'origin': 'ddlpy',
         }
     assert meta_fromts == meta_expected
 
@@ -142,7 +142,7 @@ def test_ddlpy_to_components(tmp_path, locations):
         'eenheid': 'm',
         'vertref': 'NAP',
         'station': 'vlissingen',
-        'origin': 'ddlpy'
+        # 'origin': 'ddlpy'
         }
     assert meta_fromts == meta_expected
     

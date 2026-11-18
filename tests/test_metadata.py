@@ -23,13 +23,15 @@ def test_readts_dia_metadata_multifile():
     ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
     meta_fromts = metadata_from_obj(ts_measurements_group0)
     
-    meta_expected = {'station': 'VLISSGN',
-     'grootheid': 'WATHTE',
-     'eenheid': 'm',
-     'vertref': 'NAP',
-     'TYP': 'TE',
-     'groepering': 'NVT',
-     'origin': 'from timeseries dia file'}
+    meta_expected = {
+        'station': 'VLISSGN',
+        'grootheid': 'WATHTE',
+        'eenheid': 'm',
+        'vertref': 'NAP',
+        'TYP': 'TE',
+        'groepering': 'NVT',
+        # 'origin': 'from timeseries dia file',
+    }
     
     assert meta_fromts == meta_expected
     assert ts_measurements_group0.index.tz == dt.timezone(dt.timedelta(seconds=3600))
@@ -71,7 +73,7 @@ def test_anapred_metadata():
      'vertref': 'NAP',
      'TYP': 'TE',
      'groepering': 'NVT',
-     'origin': 'from timeseries dia file',
+     # 'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,
      'fu_alltimes': True,
@@ -86,6 +88,63 @@ def test_anapred_metadata():
 
     assert pred_xfac0.index.tz == dt.timezone(dt.timedelta(seconds=3600))
     assert pred_xfac1.index.tz == dt.timezone(dt.timedelta(seconds=3600))
+
+
+@pytest.mark.unittest
+def test_merged_metadata():
+    # mainly relevant to check what happens to origin/components_sec since these
+    # end up in the component file at the moment
+    current_station = 'VLISSGN'
+
+    file_ts = os.path.join(dir_testdata, f'{current_station}_obs1.txt')
+    ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station=current_station)
+    comp_from_ana = hatyan.analysis(ts_measurements_group0, const_list='year', xfac=True, fu_alltimes=False)
+
+    file_comp = os.path.join(dir_testdata, f'{current_station}_ana.txt')
+    comp_fromfile = hatyan.read_components(filename=file_comp)
+
+    # TODO: origin was "from timeseries dia file" before which is incorrect since it comes from analysis
+    assert 'origin' not in comp_from_ana.attrs
+    assert comp_fromfile.attrs['origin'] == 'from component file'
+
+
+    comp_merged_comp_comp = hatyan.merge_componentgroups(
+        comp_main=comp_fromfile,
+        comp_sec=comp_fromfile.loc[["SA","SM"]],
+    )
+    assert comp_merged_comp_comp.attrs["origin"] == "from component file"
+    assert comp_merged_comp_comp.attrs['components_sec'] == 'SA, SM imported from component file'
+
+
+    comp_merged_ana_comp = hatyan.merge_componentgroups(
+        comp_main=comp_from_ana,
+        comp_sec=comp_fromfile.loc[["SA","SM"]],
+    )
+    # TODO: origin was "from timeseries dia file" before which is incorrect since it comes from analysis
+    assert 'origin' not in comp_merged_ana_comp.attrs
+    assert comp_merged_ana_comp.attrs['components_sec'] == 'SA, SM imported from component file'
+
+
+    comp_merged_comp_ana = hatyan.merge_componentgroups(
+        comp_main=comp_fromfile,
+        comp_sec=comp_from_ana.loc[["SA","SM"]],
+    )
+    assert comp_merged_comp_ana.attrs["origin"] == "from component file"
+    # TODO: components_sec is incorrect, it was "imported from timeseries dia file"
+    #  which is also incorrect since it comes from analysis
+    assert comp_merged_comp_ana.attrs['components_sec'] == 'SA, SM imported'
+
+
+    comp_merged_ana_ana = hatyan.merge_componentgroups(
+        comp_main=comp_from_ana,
+        comp_sec=comp_from_ana.loc[["SA", "SM"]],
+    )
+
+    # TODO: origin was "from timeseries dia file" before which is incorrect since it comes from analysis
+    assert 'origin' not in comp_merged_ana_ana.attrs
+    # TODO: components_sec is incorrect, it was "imported from timeseries dia file"
+    #  which is also incorrect
+    assert comp_merged_ana_ana.attrs['components_sec'] == 'SA, SM imported'
 
 
 @pytest.mark.unittest
@@ -104,13 +163,15 @@ def test_hwlw_metadata():
     meas_ext_meta = metadata_from_obj(meas_ext)
     pred_ext_meta = metadata_from_obj(pred_ext)
     
-    meas_ext_meta_expected = {'station': 'VLISSGN',
-     'grootheid': 'WATHTE',
-     'eenheid': 'm',
-     'vertref': 'NAP',
-     'TYP': 'TE',
-     'groepering': 'NVT',
-     'origin': 'from timeseries dia file'}
+    meas_ext_meta_expected = {
+        'station': 'VLISSGN',
+        'grootheid': 'WATHTE',
+        'eenheid': 'm',
+        'vertref': 'NAP',
+        'TYP': 'TE',
+        'groepering': 'NVT',
+        # 'origin': 'from timeseries dia file',
+    }
     
     pred_ext_meta_expected = {'station': 'VLISSGN',
      'grootheid': 'WATHTBRKD',
@@ -118,7 +179,7 @@ def test_hwlw_metadata():
      'vertref': 'NAP',
      'TYP': 'TE',
      'groepering': 'NVT',
-     'origin': 'from timeseries dia file',
+     # 'origin': 'from timeseries dia file',
      'nodalfactors': True,
      'xfac': False,
      'fu_alltimes': True,
@@ -140,13 +201,15 @@ def test_readts_dia_metadata_multiblock():
     ts_measurements_group0 = hatyan.read_dia(filename=file_ts, station='HOEKVHLD', block_ids='allstation')
     meta_fromts = metadata_from_obj(ts_measurements_group0)
     
-    meta_expected = {'station': 'HOEKVHLD',
-     'grootheid': 'WATHTE',
-     'eenheid': 'm',
-     'vertref': 'NAP',
-     'TYP': 'TN',
-     'groepering': 'GETETM2',
-     'origin': 'from timeseries dia file'}
+    meta_expected = {
+        'station': 'HOEKVHLD',
+        'grootheid': 'WATHTE',
+        'eenheid': 'm',
+        'vertref': 'NAP',
+        'TYP': 'TN',
+        'groepering': 'GETETM2',
+        # 'origin': 'from timeseries dia file',
+    }
     
     assert meta_fromts == meta_expected
     assert ts_measurements_group0.index.tz == dt.timezone(dt.timedelta(seconds=3600))

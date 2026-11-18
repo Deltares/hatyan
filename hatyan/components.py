@@ -439,11 +439,13 @@ def read_components(filename):
     assert eenheid == 'cm'
     comp_pd['A'] /= 100
     eenheid = 'm'
-    metadata = {'station':station,
-                'grootheid':grootheid, 'eenheid':eenheid,
-                'vertref':vertref,
-                'tstart':tstart, 'tstop':tstop, 'tzone':tzone, 
-                'origin':'from component file'}
+    metadata = {
+        'station':station,
+        'grootheid':grootheid, 'eenheid':eenheid,
+        'vertref':vertref,
+        'tstart':tstart, 'tstop':tstop, 'tzone':tzone,
+        'origin':'from component file',
+    }
     metadata.update(settings_dict)
     comp_pd = metadata_add_to_obj(comp_pd, metadata)
     return comp_pd
