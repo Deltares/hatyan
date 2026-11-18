@@ -9,7 +9,6 @@ import glob
 import numpy as np
 import pandas as pd
 import datetime as dt
-import pytz
 import scipy.signal as ssig
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
@@ -942,9 +941,11 @@ def get_metadata_pd(ts, headerformat):
     
     # check tzone
     tzone = ts.index.tz
-    if tzone not in [pytz.FixedOffset(60), dt.timezone(dt.timedelta(seconds=3600))]:
-        raise ValueError('write_dia() expects tzone pytz.FixedOffset(60) (since tzone '
-                         f'is not defined in dia-header), but {tzone} was provided.')
+    if tzone != dt.timezone(dt.timedelta(seconds=3600)):
+        raise ValueError(
+            'write_dia() expects tzone UTC+01:00 since diafiles do not support '
+            f'tzone metadata, but {tzone} was provided.'
+        )
     
     # check vertref
     if vertref == 'NAP':
@@ -1545,7 +1546,7 @@ def read_dia_nonequidistant(filename, diablocks_pd, block_id):
     
     data_pd = data_pd_HWLW
     data_pd = data_pd.set_index('times')
-    data_pd.index = data_pd.index.tz_localize(pytz.FixedOffset(60))
+    data_pd.index = data_pd.index.tz_localize("UTC+01:00")
     
     # add metadata
     metadata = metadata_from_diablocks(diablocks_pd, block_id)
@@ -1560,7 +1561,7 @@ def read_dia_equidistant(filename, diablocks_pd, block_id):
     datestop = diablocks_pd.loc[block_id,'tstop']
     timestep_min = diablocks_pd.loc[block_id,'timestep_min']
     timestep_unit = diablocks_pd.loc[block_id,'timestep_unit']
-    tzone = pytz.FixedOffset(60)
+    tzone = "UTC+01:00"
     if timestep_unit=='min':
         times_fromfile = pd.date_range(start=datestart,end=datestop,freq='%dmin'%(timestep_min), tz=tzone)
     else:

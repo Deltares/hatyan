@@ -274,8 +274,8 @@ def test_readts_dia_equidistant_multifile_hasfreq():
     
     # check index dtype
     expected_dtype_list = [
-        "datetime64[ns, pytz.FixedOffset(60)]", # pandas<3
-        "datetime64[us, pytz.FixedOffset(60)]", # pandas>=3
+        "datetime64[ns, UTC+01:00]", # pandas<3
+        "datetime64[us, UTC+01:00]", # pandas>=3
         ]
     assert ts_pd.index.dtype in expected_dtype_list
     
@@ -300,8 +300,8 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
 
     # check index dtype
     expected_dtype_list = [
-        "datetime64[ns, pytz.FixedOffset(60)]", # pandas<3
-        "datetime64[us, pytz.FixedOffset(60)]", # pandas>=3
+        "datetime64[ns, UTC+01:00]", # pandas<3
+        "datetime64[us, UTC+01:00]", # pandas>=3
         ]
     assert ts_pd.index.dtype in expected_dtype_list
     
@@ -352,6 +352,22 @@ def test_readwrite_diawia():
         #remove files
         os.remove(file_dia_out)
         os.remove(file_wia_out)
+
+
+@pytest.mark.unittest
+def test_write_dia_incorrect_timezone():
+    current_station = 'HOEKVHLD'
+    file_dia = os.path.join(dir_testdata, 'diawia_%s_astro_extremen.dia' % (current_station))
+    ts_dia = hatyan.read_dia(filename=file_dia, station=current_station)
+
+    # change timezone to enforce error
+    ts_dia = ts_dia.tz_convert("UTC")
+
+    # write to files
+    msg = "write_dia() expects tzone UTC+01:00 since diafiles do not support tzone metadata, but UTC was provided."
+    with pytest.raises(ValueError) as e:
+        hatyan.write_dia(ts=ts_dia, filename="")
+    assert msg in str(e.value)
 
 
 @pytest.mark.unittest

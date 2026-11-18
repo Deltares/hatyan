@@ -8,7 +8,6 @@ Created on Fri Aug 11 14:33:40 2023
 import os
 import pytest
 import pandas as pd
-import pytz
 import datetime as dt
 import numpy as np
 import hatyan
@@ -182,7 +181,7 @@ def test_get_tzone_minutes():
     assert tzone_min == 60
     
     # hatyan dia timeseries
-    tstart = pd.Timestamp("2020-01-01 00:00:00", tz=pytz.FixedOffset(60))
+    tstart = pd.Timestamp("2020-01-01 00:00:00", tz="UTC+01:00")
     tzone_min = _get_tzone_minutes(tstart.tz)
     assert tzone_min == 60
     

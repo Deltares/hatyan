@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import hatyan
-import pytz
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -53,7 +52,7 @@ def test_frommergedcomp():
     
     # 4. Vefiry final expectations
     assert isinstance(ts_prediction_direct, pd.core.frame.DataFrame)
-    assert ts_prediction_direct.index.tz==pytz.FixedOffset(60)
+    assert ts_prediction_direct.index.tz == dt.timezone(dt.timedelta(seconds=3600))
     assert ts_prediction_direct.index[0].tz_localize(None) == times_pred.start
     assert ts_prediction_direct.index[-1].tz_localize(None) == times_pred.stop
     assert len(ts_prediction_direct_values) == len(expected_ts_prediction_data_pd_values)
