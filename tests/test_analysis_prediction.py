@@ -10,7 +10,6 @@ import os
 import numpy as np
 import pandas as pd
 import hatyan
-import pytz
 import datetime as dt
 from hatyan.analysis_prediction import MatrixConditionTooHigh
 
@@ -644,7 +643,7 @@ def test_prediction_perperiod_month():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allmonths["values"].values[:10], expected_allmonths)
     assert len(ts_pred_atonce) == len(ts_pred_allmonths)
-    assert ts_pred_allmonths.index.tz == pytz.FixedOffset(60)
+    assert ts_pred_allmonths.index.tz == dt.timezone(dt.timedelta(seconds=3600))
 
 
 @pytest.mark.unittest
@@ -668,7 +667,7 @@ def test_prediction_perperiod_year():
     assert np.allclose(ts_pred_atonce["values"].values[:10], expected_atonce)
     assert np.allclose(ts_pred_allyears["values"].values[:10], expected_allyears)
     assert len(ts_pred_atonce) == len(ts_pred_allyears)
-    assert ts_pred_allyears.index.tz == pytz.FixedOffset(60)
+    assert ts_pred_allyears.index.tz == dt.timezone(dt.timedelta(seconds=3600))
 
 
 @pytest.mark.unittest

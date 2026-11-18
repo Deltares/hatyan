@@ -6,8 +6,8 @@ Created on Wed Aug  9 21:47:33 2023
 """
 
 import os
+import datetime as dt
 import pytest
-import pytz
 import hatyan
 from hatyan.metadata import metadata_from_obj, metadata_compare, wns_from_metadata
 
@@ -32,7 +32,7 @@ def test_readts_dia_metadata_multifile():
      'origin': 'from timeseries dia file'}
     
     assert meta_fromts == meta_expected
-    assert ts_measurements_group0.index.tz == pytz.FixedOffset(60)
+    assert ts_measurements_group0.index.tz == dt.timezone(dt.timedelta(seconds=3600))
 
 
 @pytest.mark.unittest
@@ -84,8 +84,8 @@ def test_anapred_metadata():
     metadata_compare([meta_fromts_xfac0, meta_expected_xfac0])
     metadata_compare([meta_fromts_xfac1, meta_expected_xfac1])
 
-    assert pred_xfac0.index.tz == pytz.FixedOffset(60)
-    assert pred_xfac1.index.tz == pytz.FixedOffset(60)
+    assert pred_xfac0.index.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert pred_xfac1.index.tz == dt.timezone(dt.timedelta(seconds=3600))
 
 
 @pytest.mark.unittest
@@ -128,10 +128,10 @@ def test_hwlw_metadata():
     metadata_compare([pred_ext_meta, pred_ext_meta_expected])
     metadata_compare([meas_ext_meta, meas_ext_meta_expected])
     
-    assert ts_measurements_group0.index.tz == pytz.FixedOffset(60)
-    assert meas_ext.index.tz == pytz.FixedOffset(60)
-    assert pred.index.tz == pytz.FixedOffset(60)
-    assert pred_ext.index.tz == pytz.FixedOffset(60)
+    assert ts_measurements_group0.index.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert meas_ext.index.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert pred.index.tz == dt.timezone(dt.timedelta(seconds=3600))
+    assert pred_ext.index.tz == dt.timezone(dt.timedelta(seconds=3600))
 
 
 @pytest.mark.unittest
@@ -149,7 +149,7 @@ def test_readts_dia_metadata_multiblock():
      'origin': 'from timeseries dia file'}
     
     assert meta_fromts == meta_expected
-    assert ts_measurements_group0.index.tz == pytz.FixedOffset(60)
+    assert ts_measurements_group0.index.tz == dt.timezone(dt.timedelta(seconds=3600))
 
 
 @pytest.mark.unittest

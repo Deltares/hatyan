@@ -274,8 +274,8 @@ def test_readts_dia_equidistant_multifile_hasfreq():
     
     # check index dtype
     expected_dtype_list = [
-        "datetime64[ns, pytz.FixedOffset(60)]", # pandas<3
-        "datetime64[us, pytz.FixedOffset(60)]", # pandas>=3
+        "datetime64[ns, UTC+01:00]", # pandas<3
+        "datetime64[us, UTC+01:00]", # pandas>=3
         ]
     assert ts_pd.index.dtype in expected_dtype_list
     
@@ -300,8 +300,8 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
 
     # check index dtype
     expected_dtype_list = [
-        "datetime64[ns, pytz.FixedOffset(60)]", # pandas<3
-        "datetime64[us, pytz.FixedOffset(60)]", # pandas>=3
+        "datetime64[ns, UTC+01:00]", # pandas<3
+        "datetime64[us, UTC+01:00]", # pandas>=3
         ]
     assert ts_pd.index.dtype in expected_dtype_list
     

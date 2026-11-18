@@ -8,7 +8,6 @@ from matplotlib.ticker import MaxNLocator
 import datetime as dt
 import numpy as np
 import pandas as pd
-import pytz
 import logging
 
 from hatyan.schureman import get_schureman_freqs #TODO: this is not generic foreman/schureman
@@ -114,8 +113,6 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
 def _get_tzone_minutes(tzone):
     if isinstance(tzone, dt.timezone):
         tzone_min = int(tzone.utcoffset(None).seconds/60)
-    elif isinstance(tzone, pytz._FixedOffset):
-        tzone_min = tzone._minutes
     else:
         raise NotImplementedError(f"tzone of type {type(tzone)} is not yet supported.")
     return tzone_min
@@ -405,7 +402,7 @@ def read_components(filename):
                 dateline = line.split()
                 tstart = pd.Timestamp(dateline[1]+' '+dateline[2])
                 tstop = pd.Timestamp(dateline[3]+' '+dateline[4])
-                tzone = pytz.FixedOffset(int(dateline[5]))
+                tzone = dt.timezone(dt.timedelta(minutes=int(dateline[5])))
                 perd_available = True
             elif line.startswith('MIDD'):
                 A0_cm = float(line.split()[1])
