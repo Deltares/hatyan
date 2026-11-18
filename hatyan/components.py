@@ -112,7 +112,7 @@ def plot_components(comp, comp_allperiods=None, comp_validation=None, sort_freqs
 
 def _get_tzone_minutes(tzone):
     if isinstance(tzone, dt.timezone):
-        tzone_min = int(tzone.utcoffset(None).seconds/60)
+        tzone_min = int(tzone.utcoffset(None).total_seconds()/60)
     else:
         raise NotImplementedError(f"tzone of type {type(tzone)} is not yet supported.")
     return tzone_min
