@@ -942,8 +942,10 @@ def get_metadata_pd(ts, headerformat):
     # check tzone
     tzone = ts.index.tz
     if tzone != dt.timezone(dt.timedelta(seconds=3600)):
-        raise ValueError('write_dia() expects tzone UTC+01:00 (since tzone '
-                         f'is not defined in dia-header), but {tzone} was provided.')
+        raise ValueError(
+            'write_dia() expects tzone UTC+01:00 since diafiles do not support '
+            f'tzone metadata, but {tzone} was provided.'
+        )
     
     # check vertref
     if vertref == 'NAP':

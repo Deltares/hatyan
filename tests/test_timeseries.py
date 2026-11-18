@@ -355,6 +355,22 @@ def test_readwrite_diawia():
 
 
 @pytest.mark.unittest
+def test_write_dia_incorrect_timezone():
+    current_station = 'HOEKVHLD'
+    file_dia = os.path.join(dir_testdata, 'diawia_%s_astro_extremen.dia' % (current_station))
+    ts_dia = hatyan.read_dia(filename=file_dia, station=current_station)
+
+    # change timezone to enforce error
+    ts_dia = ts_dia.tz_convert("UTC")
+
+    # write to files
+    msg = "write_dia() expects tzone UTC+01:00 since diafiles do not support tzone metadata, but UTC was provided."
+    with pytest.raises(ValueError) as e:
+        hatyan.write_dia(ts=ts_dia, filename="")
+    assert msg in str(e.value)
+
+
+@pytest.mark.unittest
 def test_crop_timeseries():
     
     current_station = 'VLISSGN'
