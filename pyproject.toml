@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hatyan"
-version = "2.14.1"
+dynamic = ["version"]
 maintainers = [{ name = "Jelmer Veenstra", email = "jelmer.veenstra@deltares.nl" }]
 description = "Tidal analysis and prediction tool of Rijkswaterstaat"
 readme = "README.md"
@@ -54,7 +54,6 @@ Issues = "https://github.com/deltares/hatyan/issues"
 
 [project.optional-dependencies]
 dev = [
-	"bump2version>=0.5.11",
 	"flake8",
 	"flake8-pyproject", # required to read the config from pyproject.toml
 	"pytest",
@@ -79,6 +78,9 @@ hatyan = "hatyan.cli:cli"
 
 [tool.setuptools.package-data]
 hatyan = ["data/*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "hatyan.__version__"}
 
 [tool.pytest.ini_options]
 console_output_style = "count"
