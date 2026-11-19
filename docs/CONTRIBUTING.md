@@ -67,7 +67,7 @@ pixi run docs-build
 
 - make sure the `main` branch is up to date (check pytest warnings, important issues solved, all pullrequests and branches closed)
 - create and checkout branch for release
-- update the versionnumber in `__init__.py`
+- update the versionnumber in `__init__.py` and `CITATION.cff`
 - update `docs/whats-new.md` with a version+date header for this release (also preserve the UNRELEASED header for future PR's)
 - run local testbank with `pixi run test`
 - local check with: `pixi run python -m build` and `pixi run twine check dist/*` ([does not work on WCF](https://github.com/pypa/setuptools/issues/4133))
