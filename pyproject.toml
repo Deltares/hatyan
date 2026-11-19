@@ -14,8 +14,8 @@ requires-python = ">=3.11"
 dependencies = [
 	#scipy>=1.15.0 is the first version to support numpy 2.3
 	"scipy>=1.15.0",
-	#numpy>=2.3 fixes sigridci assessment (#457), 2.2 will be EOL from end Q4 2026
-	"numpy>=2.3",
+	#numpy>=2.3.0 fixes sigridci assessment (#457), 2.2 will be EOL from end Q4 2026
+	"numpy>=2.3.0",
 	#matplotlib>=3.9.0 supports numpy 2
 	"matplotlib>=3.9.0",
 	#pandas>=2.2.2 supports numpy 2
