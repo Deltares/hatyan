@@ -15,7 +15,7 @@ dependencies = [
 	#scipy>=1.13.0 is the first version to support numpy 2.0
 	"scipy>=1.13.0",
 	#numpy>=2.2 is oldest supported version in Q4 2026, numpy 2.1 has vulnerability issues
-	"numpy>=2.2",
+	"numpy>=2.4.6",
 	#matplotlib>=3.9.0 supports numpy 2
 	"matplotlib>=3.9.0",
 	#pandas>=2.2.2 supports numpy 2
@@ -127,8 +127,8 @@ hatyan = { path = ".", editable = true }
 [tool.pixi.feature.minimal.pypi-dependencies]
 # the versions are a manual copy of [project.dependencies],
 # but with == to test with the lowest versions of direct dependencies
-scipy = "==1.13.0"
-numpy = "==2.2"
+#scipy = "==1.13.0"
+numpy = "==2.4.6"
 matplotlib = "==3.9.0"
 pandas = "==2.2.2"
 netcdf4 = "==1.7.5"
