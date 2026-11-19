@@ -14,7 +14,7 @@ requires-python = ">=3.11"
 dependencies = [
 	#scipy>=1.13.0 is the first version to support numpy 2.0
 	"scipy>=1.13.0",
-	#numpy>=2.2.0 is oldest supported version in Q4 2026, numpy 2.1 has vulnerability issues. Add minor version to please sigridci (#457)
+	#numpy>=2.2.0 is oldest supported version in Q4 2026, numpy 2.1 has vulnerability issues. Add patch version to please sigridci (#457)
 	"numpy>=2.2.0",
 	#matplotlib>=3.9.0 supports numpy 2
 	"matplotlib>=3.9.0",
