@@ -184,6 +184,8 @@ def test_analysis_settings_timeseries_tooshort():
     with pytest.raises(MatrixConditionTooHigh) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list="all_schureman_originalorder")
     assert "condition of xTx matrix is too high" in str(e.value)
+    # also check if TimeseriesStatistics are included
+    assert "timeseries # nonan: 8760" in str(e.value)
 
     with pytest.raises(ValueError) as e:
         _ = hatyan.analysis(ts=ts_pd, const_list="year", analysis_perperiod="M")
@@ -204,6 +206,8 @@ def test_analysis_settings_timeseries_tooshort():
     with pytest.raises(MatrixConditionTooHigh) as e:
         _ = hatyan.analysis(ts=ts_pd_manynans, const_list="year")
     assert "condition of xTx matrix is too high" in str(e.value)
+    # also check if TimeseriesStatistics are included
+    assert "timeseries # nonan: 2" in str(e.value)
 
 
 @pytest.mark.unittest

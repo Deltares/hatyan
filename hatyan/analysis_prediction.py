@@ -356,7 +356,7 @@ def analysis_singleperiod(ts, const_list, hatyan_settings):
         raise MatrixConditionTooHigh(
             f'ERROR: condition of xTx matrix is too high ({xTxmat_condition:.2f}), '
             'check your timeseries length, try different (shorter) component set or '
-            'componentsplitting.\nAnalysed {Timeseries_Statistics(ts_pd)}'
+            f'componentsplitting.\nAnalysed {Timeseries_Statistics(ts_pd)}'
             )
     xTymat = np.dot(xTmat,ts_pd_nonan['values'].values)
     
