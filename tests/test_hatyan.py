@@ -12,6 +12,9 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import hatyan
+from hatyan.schureman import get_schureman_table
+from hatyan.hatyan_core import get_lunarSLSIHO_fromsolar
+
 
 dir_tests = os.path.dirname(__file__) #F9 doesnt work, only F5 (F5 also only method to reload external definition scripts)
 dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
@@ -625,3 +628,10 @@ def test_allfromdia_2008xfac0():
     
     # 4. Vefiry final expectations
     assert (np.abs(ts_prediction_values - expected_ts_prediction_data_pd_values) < 10E-9).all()
+
+
+def test_get_lunarSLSIHO_fromsolar():
+    # purely to check if it works since this test excludes assertions
+    v0uf_allT = get_schureman_table()
+    v0uf_all = v0uf_allT.T
+    get_lunarSLSIHO_fromsolar(v0uf_all)
