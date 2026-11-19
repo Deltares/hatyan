@@ -2,6 +2,11 @@
 
 ## UNRELEASED 
 
+This version supports Python 3.11 and higher.
+
+### Fix
+- included timeseries statistics in error message [#459](https://github.com/Deltares/hatyan/pull/459)
+
 
 ## 2.14.0 (2026-03-26)
 

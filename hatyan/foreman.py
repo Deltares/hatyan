@@ -123,41 +123,6 @@ def get_foreman_shallowrelations():
     return shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies
 
 
-@functools.lru_cache()
-def get_foreman_doodson_nodal_all_NOTUSED(lat_deg=51.45): #TODO: maybe use this definition to replace harmonic/shallow separate part in freq/v0 and uf definitions. Tricky because of factors and mainly M2=3.5*M1 (non-int factor)
-    foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic(lat_deg=lat_deg)
-    
-    #from hatyan.schureman import get_schureman_shallowrelations
-    #shallow_eqs_pd = get_schureman_shallowrelations()
-    #shallow_eqs_pd = shallow_eqs_pd.loc[~shallow_eqs_pd['shallow_eq'].str.contains('M1')] #TODO: two M1 dependent components cannot be included now
-    #shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd['shallow_eq'].iteritems())
-    shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
-    shallow_eqs_pd_str = '\n'.join(f'{key} = {val}' for key, val in shallow_eqs_pd_foreman['shallow_eq'].iteritems()) 
-
-    #TODO: for harmonics, we can work with schureman shallowrelations, but for nodal we need the more tabular foreman layout since we need to append multiple rows of the nodal table (instead of calculating one row)
-    foreman_doodson_all = foreman_doodson_harmonic.T.eval(shallow_eqs_pd_str).T
-    foreman_doodson_all.rename(index=shallow_eqs_pd_foreman['shallow_const'],inplace=True)
-    
-    duplicate_PNP1EDN = pd.Series(index=shallow_eqs_pd_foreman['shallow_const'],dtype=int)
-    foreman_nodal_all = foreman_nodal_harmonic.copy()
-    foreman_nodal_all['fac'] = 1
-    for iC,const in enumerate(foreman_shallowrelations.index):
-        foreman_nodal_oneconst = pd.DataFrame()
-        foreman_shallow_const = foreman_shallowrelations.loc[const].dropna().values
-        list_shallow_facs = foreman_shallow_const[1::2]
-        list_shallow_deps = foreman_shallow_const[2::2]
-        for harm_factor,harm_const in zip(list_shallow_facs,list_shallow_deps):
-            foreman_nodal_depconst = foreman_nodal_harmonic.loc[[harm_const]].copy()
-            foreman_nodal_depconst['fac'] = harm_factor
-            foreman_nodal_depconst['dep'] = harm_const
-            foreman_nodal_oneconst = foreman_nodal_oneconst.append(foreman_nodal_depconst)
-        foreman_nodal_oneconst.index = [const]*len(foreman_nodal_oneconst) #overwrite index values with const name
-        duplicate_PNP1EDN.loc[const] = foreman_nodal_oneconst.loc[:,['P','N','P1','EDN']].duplicated().sum()
-        #foreman_nodal_oneconst = foreman_nodal_oneconst.sort_values('EDN').sort_values('P1').sort_values('N').sort_values('P') #sorting makes duplicates easier to see
-        foreman_nodal_all = foreman_nodal_all.append(foreman_nodal_oneconst)
-    return foreman_doodson_all, foreman_nodal_all
-
-
 # freq v0
 def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)])):
     """
@@ -171,8 +136,6 @@ def get_foreman_v0_freq(const_list, dood_date=pd.DatetimeIndex([dt.datetime(1900
 
     #get freq/v0 for harmonic components
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-    #foreman_doodson_all, foreman_nodal_all = get_foreman_doodson_nodal_all()
-    #foreman_doodson_harmonic, foreman_nodal_harmonic = foreman_doodson_all, foreman_nodal_all #TODO: now for renaming convenience, but fix names
 
     doodson_pd = get_doodson_eqvals(dood_date=pd.DatetimeIndex([dt.datetime(1900,1,1)]), mode='freq') #TODO: get freq on multiple dates?
     multiply_variables = doodson_pd.loc[['T','S','H','P','P1'],:]
@@ -225,8 +188,6 @@ def get_foreman_nodalfactors(const_list, dood_date):
     
     doodson_pd = get_doodson_eqvals(dood_date)
     foreman_doodson_harmonic, foreman_nodal_harmonic = get_foreman_doodson_nodal_harmonic()
-    #foreman_doodson_all, foreman_nodal_all = get_foreman_doodson_nodal_all()
-    #foreman_doodson_harmonic, foreman_nodal_harmonic = foreman_doodson_all, foreman_nodal_all #TODO: now for renaming convenience, but fix names
     shallow_eqs_pd_foreman, foreman_shallowrelations, list_shallowdependencies = get_foreman_shallowrelations()
     
     #extent const_list with missing but required harmonic components
