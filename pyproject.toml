@@ -24,8 +24,8 @@ dependencies = [
 	"netcdf4>=1.7.5",
 	#pyproj>=3.4.0 is the first version to support Python 3.11
 	"pyproj>=3.4.0",
-	#requests>=2.28.0 was tested on hmc
-	"requests>=2.28.0",
+	#requests>=2.33.0 fixed vulnerability issue: https://nvd.nist.gov/vuln/detail/cve-2026-25645
+	"requests>=2.33.0",
 	#xarray>=2023.4.0 does not conflict with pandas<2.0.0 for resampling
 	"xarray>=2023.4.0",
 	#rws-ddlpy>=0.11.0 enforced conversion of strings to char arrays and exposed and updated default catalog filter
@@ -135,7 +135,7 @@ matplotlib = "==3.9.0"
 pandas = "==2.2.2"
 netcdf4 = "==1.7.5"
 pyproj = "==3.4.0"
-requests = "==2.28.0"
+requests = "==2.33.0"
 xarray = "==2023.4.0"
 rws-ddlpy = "==0.11.0"
 click = "==7.1"
