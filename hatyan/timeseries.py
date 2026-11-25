@@ -664,7 +664,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     return fig, ax
 
 
-def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
+def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
     """
     Writes the timeseries to a netCDF file
 
@@ -673,19 +673,15 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     ts : pandas.DataFrame
         The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
         it contains the timeseries.
-    station : str
-        DESCRIPTION.
-    vertref : str
-        DESCRIPTION.
     filename : str
         The filename of the netCDF file that will be written.
     ts_ext : pandas.DataFrame, optional
         The DataFrame should contain a 'values' and 'HWLW_code' column and a
         pd.DatetimeIndex as index, it contains the times, values and codes of the
         timeseries that are extremes. The default is None.
-    tzone_hr : int, optional
-        The timezone (GMT+tzone_hr) that applies to the data. The default is 1 (MET).
-    
+    nosidx : int, optional
+        Wheter to use the HWLW numbering as an index instead of the times. The default is False.
+
     Returns
     -------
     None.
@@ -709,7 +705,7 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False, mode='w'):
     times_all = ts.index
     timeseries = ts['values']
     dt_analysistime = dt.datetime.now()
-    data_nc = Dataset(filename, mode, format="NETCDF3_CLASSIC")
+    data_nc = Dataset(filename, mode="w", format="NETCDF3_CLASSIC")
     attr_dict = {'title': 'tidal prediction for %s to %s'%(times_all[0].strftime('%Y-%m-%d %H:%M:%S'), times_all[-1].strftime('%Y-%m-%d %H:%M:%S')),
                  'institution': 'Rijkswaterstaat',
                  'source': 'hatyan-%s tidal analysis program of Rijkswaterstaat'%(version_no),
