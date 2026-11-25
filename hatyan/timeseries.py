@@ -664,7 +664,7 @@ def plot_HWLW_validatestats(ts_ext, ts_ext_validation):
     return fig, ax
 
 
-def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
+def write_netcdf(ts, filename):
     """
     Writes the timeseries to a netCDF file
 
@@ -672,16 +672,10 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
     ----------
     ts : pandas.DataFrame
         The DataFrame should contain a 'values' column and a pd.DatetimeIndex as index,
-        it contains the timeseries.
-        In case of extremes, the DataFrame should also contain a 'HWLW_code' column.
+        it contains the timeseries. If a HWLWcode column is present in ts, there is a
+        HWLWcode variable written to the netcdf. This also goes for the HWLWno column.
     filename : str
         The filename of the netCDF file that will be written.
-    ts_ext : pandas.DataFrame, optional
-        The DataFrame should contain a 'values' and 'HWLW_code' column and a
-        pd.DatetimeIndex as index, it contains the times, values and codes of the
-        timeseries that are extremes. The default is None.
-    nosidx : int, optional
-        Wheter to use the HWLW numbering as an index instead of the times. The default is False.
 
     Returns
     -------
@@ -696,35 +690,31 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
     metadata_ts = metadata_from_obj(ts)
     station = metadata_ts.pop("station")
     vertref = metadata_ts.pop("vertref")
-    if ts_ext is not None:
-        metadata_ext = metadata_from_obj(ts_ext)
-        station_ext = metadata_ext.pop("station")
-        vertref_ext = metadata_ext.pop("vertref")
-        assert station==station_ext
-        assert vertref==vertref_ext
-    
+
     times_all = ts.index
-    timeseries = ts['values']
     dt_analysistime = dt.datetime.now()
+    t0 = times_all[0].strftime('%Y-%m-%d %H:%M:%S')
+    tend = times_all[-1].strftime('%Y-%m-%d %H:%M:%S')
+    refdate_tz = dt.datetime(1900,1,1,tzinfo=ts.index.tz)
+    time_units = 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z'))
+
     data_nc = Dataset(filename, mode="w", format="NETCDF3_CLASSIC")
-    attr_dict = {'title': 'tidal prediction for %s to %s'%(times_all[0].strftime('%Y-%m-%d %H:%M:%S'), times_all[-1].strftime('%Y-%m-%d %H:%M:%S')),
-                 'institution': 'Rijkswaterstaat',
-                 'source': 'hatyan-%s tidal analysis program of Rijkswaterstaat'%(version_no),
-                 }
+    attr_dict = {
+        'title': f'tidal prediction for {t0} to {tend}',
+        'institution': 'Rijkswaterstaat',
+        'source': f'hatyan-{version_no} tidal analysis program of Rijkswaterstaat',
+        # TODO: maybe convert analysis_time back to variable
+        'analysis_time': dt_analysistime.strftime('%Y-%m-%d %H:%M:%S'),
+    }
     data_nc.setncatts(attr_dict)
 
     statname_len = 64
-
-    # TODO maybe remove stations dimension (and maybe also var)
-    # TODO maybe align with ddlpy
     data_nc.createDimension('statname_len',statname_len)
     data_nc.createDimension('time',len(times_all.tolist()))
-    data_nc.createDimension('analysis_time',1)
+    # data_nc.createDimension('analysis_time',1)
     
-    refdate_tz = dt.datetime(1900,1,1,tzinfo=ts.index.tz)
-    time_units = 'minutes since %s'%(refdate_tz.strftime('%Y-%m-%d %H:%M:%S %z'))
     dict_statattr = {'cf_role': 'timeseries_id'}
-    dict_anatimattr = {'units': time_units, 'standard_name':'forecast_reference_time', 'long_name':'forecast_reference_time'}
+    # dict_anatimattr = {'units': time_units, 'standard_name':'forecast_reference_time', 'long_name':'forecast_reference_time'}
     dict_timattr = {'units': time_units}
     dict_wlattr = {'units':'m', 'vertical_reference': vertref,
                    'standard_name': 'sea_surface_height_above_geopotential_datum',
@@ -738,17 +728,22 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
                    'standard_name': 'sea_surface_height_above_geopotential_datum',
                    'long_name': 'astronomical prediction of low water extremes above reference level',
                    }
-    dict_HWLWnoattr = {'units':'n-th tidal wave since reference wave at Cadzand on 1-1-2000'} #, 'standard_name': '', 'long_name': ''}
+    # TODO: improve attributes for HWLWcode
+    dict_extattr = {'description': 'HWLWcode 1 is HW, HWLWcode 2 is LW',
+                   }
+    dict_HWLWnoattr = {'description':'n-th tidal wave since reference wave at Cadzand on 1-1-2000'}
 
-    nc_newvar = data_nc.createVariable('stations','S1',('statname_len',))
+    nc_newvar = data_nc.createVariable('station','S1',('statname_len',))
     nc_newvar.setncatts(dict_statattr)
-    
-    nc_newvar = data_nc.createVariable('analysis_time','f8',('analysis_time',))
-    nc_newvar.setncatts(dict_anatimattr)
-    data_nc.variables['analysis_time'] = date2num([dt_analysistime], units=data_nc.variables['analysis_time'].units)
+
+    # TODO: uncomment variable. Resulting dataset raises the following error with xr.open_dataset
+    # ValueError: unable to decode time units 'minutes since 1900-01-01 00:00:00 ' with 'the default calendar'.
+    # nc_newvar = data_nc.createVariable('analysis_time','f8',('analysis_time',))
+    # nc_newvar.setncatts(dict_anatimattr)
+    # data_nc.variables['analysis_time'] = date2num([dt_analysistime], units=data_nc.variables['analysis_time'].units)
 
     #append current data to netcdf files
-    data_nc.variables['stations'] = stringtoarr(station, statname_len, dtype='S')
+    data_nc.variables['station'] = stringtoarr(station, statname_len, dtype='S')
     
     #general prediction
     nc_newvar = data_nc.createVariable('time','f8',('time',))
@@ -757,78 +752,21 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
     data_nc.variables['time'][:] = date2num(times_all.tolist(),units=data_nc.variables['time'].units)
     nc_newvar = data_nc.createVariable('waterlevel_astro','f8',('time',))
     nc_newvar.setncatts(dict_wlattr)
-    data_nc.variables['waterlevel_astro'][:] = timeseries
-    
-    if ts_ext is None:
-        logger.info('no HWLW prediction written')
-        data_nc.close()
-        return #this skips the HWLW part of the definition
-    
-    #HWLW prediction
-    if nosidx:
-        #convert index from time to HWLWno
-        data_HWLW_nosidx = ts_ext.copy()
-        data_HWLW_nosidx['times'] = data_HWLW_nosidx.index
-        data_HWLW_nosidx = data_HWLW_nosidx.set_index('HWLWno')
-        HWLWno_all = data_HWLW_nosidx.index.unique()
-        data_HW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==1]
-        data_LW = data_HWLW_nosidx.loc[data_HWLW_nosidx['HWLWcode']==2]
-        bool_HW = HWLWno_all.isin(data_HW.index)
-        bool_LW = HWLWno_all.isin(data_LW.index)
-        
-        #HWLWno
-        data_nc.createDimension('HWLWno',len(HWLWno_all))
-        nc_newvar = data_nc.createVariable('HWLWno','i',('HWLWno',))
+    data_nc.variables['waterlevel_astro'][:] = ts['values']
+
+    if "HWLWcode" in ts.columns:
+        nc_newvar = data_nc.createVariable('HWLWcode', 'int16', ('time',))
+        nc_newvar.setncatts(dict_extattr)
+        # TODO: add attrs to translate and to code the strings
+        data_nc.variables['HWLWcode'][:] = ts['HWLWcode']
+
+    if 'HWLWno' in ts.columns:
+        nc_newvar = data_nc.createVariable('HWLWno', 'int16', ('time',))
         nc_newvar.setncatts(dict_HWLWnoattr)
-        data_nc.variables['HWLWno'][:] = HWLWno_all
-        #HW
-        nc_newvar = data_nc.createVariable('times_astro_HW','f8',('HWLWno',))
-        nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['times_astro_HW'][bool_HW] = date2num(data_HW['times'].tolist(),units=data_nc.variables['times_astro_HW'].units)
-        nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('HWLWno',))
-        nc_newvar.setncatts(dict_HWattr)
-        data_nc.variables['waterlevel_astro_HW'][bool_HW] = data_HW['values']
-        #LW
-        nc_newvar = data_nc.createVariable('times_astro_LW','f8',('HWLWno',))
-        nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['times_astro_LW'][bool_LW] = date2num(data_LW['times'].tolist(),units=data_nc.variables['times_astro_LW'].units)
-        nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('HWLWno',))
-        nc_newvar.setncatts(dict_LWattr)
-        data_nc.variables['waterlevel_astro_LW'][bool_LW] = data_LW['values']
-    
-    else: #use time as index and create array with gaps
-        data_HWLW = ts_ext.copy()
-        data_HWLW = data_HWLW.sort_index(axis=0)
-        data_HW = data_HWLW[data_HWLW['HWLWcode']==1]
-        data_LW = data_HWLW[data_HWLW['HWLWcode']==2]
-        
-        #HW
-        data_nc.createDimension('time_HW',len(data_HW))
-        nc_newvar = data_nc.createVariable('time_HW','f8',('time_HW',))
-        nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['time_HW'][:] = date2num(data_HW.index.tolist(),units=data_nc.variables['time_HW'].units)
-        nc_newvar = data_nc.createVariable('waterlevel_astro_HW','f8',('time_HW',))
-        nc_newvar.setncatts(dict_HWattr)
-        data_nc.variables['waterlevel_astro_HW'][:] = data_HW['values']
-        
-        #LW
-        data_nc.createDimension('time_LW',len(data_LW))
-        nc_newvar = data_nc.createVariable('time_LW','f8',('time_LW',))
-        nc_newvar.setncatts(dict_timattr)
-        data_nc.variables['time_LW'][:] = date2num(data_LW.index.tolist(),units=data_nc.variables['time_LW'].units)
-        nc_newvar = data_nc.createVariable('waterlevel_astro_LW','f8',('time_LW',))
-        nc_newvar.setncatts(dict_LWattr)
-        data_nc.variables['waterlevel_astro_LW'][:] = data_LW['values']
-        
-        #HWLW numbering
-        if 'HWLWno' in ts_ext.columns:
-            nc_newvar = data_nc.createVariable('waterlevel_astro_HW_numbers','i4',('time_HW',))
-            #nc_newvar.setncatts(dict_HWattr)
-            data_nc.variables['waterlevel_astro_HW_numbers'][:] = data_HW['HWLWno']
-            nc_newvar = data_nc.createVariable('waterlevel_astro_LW_numbers','i4',('time_LW',))
-            #nc_newvar.setncatts(dict_LWattr)
-            data_nc.variables['waterlevel_astro_LW_numbers'][:] = data_LW['HWLWno']
-    
+        # TODO: add attrs to translate and to code the strings
+        data_nc.variables['HWLWno'][:] = ts['HWLWno']
+
+    logger.info('writing netcdf finished')
     data_nc.close()
     return
 

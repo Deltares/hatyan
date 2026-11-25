@@ -15,6 +15,8 @@ plt.close('all')
 #dir_testdata = 'P:\\1209447-kpp-hydraulicaprogrammatuur\\hatyan\\hatyan_data_acceptancetests'
 dir_testdata = 'C:\\DATA\\hatyan_data_acceptancetests'
 
+os.chdir(r"c:\DATA\checkouts\hatyan\tests\examples") # TODO: remove this again
+
 analyse_ts_bool = False
 
 station_name = 'HOEKVHLD'
@@ -33,8 +35,9 @@ ts_prediction.attrs["vertref"] = "NAP"
 
 file_comp = os.path.join(dir_testdata,'predictie2019','HOEKVHLD_ana.txt')
 
-file_ncout = '%s_getijnummers_new.nc'%(station_name)
-file_ncout_nosidx = '%s_getijnummers_nosidx.nc'%(station_name)
+file_pngout = f'{station_name}_getijnummers_new.png'
+file_ncout_ts = f'{station_name}_ts.nc'
+file_ncout_nosidx = f'{station_name}_ext.nc'
 
 if analyse_ts_bool:
     # results in weird difference line in timeseries plot
@@ -57,7 +60,7 @@ ts_ext_prediction_nos = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction, stat
 
 fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_prediction_fromcomp, ts_ext=ts_ext_prediction)
 ax2.set_ylim(-0.2,0.2)
-fig.savefig(file_ncout.replace('.nc','.png'))
+fig.savefig(file_pngout)
 
 fig, (ax1,ax2) = plt.subplots(2,1,figsize=(14,5))
 ax1.plot(ts_ext_prediction_nos.index,ts_ext_prediction_nos['HWLWno'],'o')
@@ -65,11 +68,19 @@ ax1.set_ylim(ts_ext_prediction_nos['HWLWno'].min()-100,ts_ext_prediction_nos['HW
 ax1.set_ylabel('tide_number_dummies')
 ax2.plot(ts_ext_prediction_nos.index,ts_ext_prediction_nos['HWLWno'].diff(),'o')
 ax2.set_ylim(-1,2)
-fig.savefig(file_ncout.replace('.nc','_nrs.png'))
+fig.savefig(file_pngout.replace('.png','_nrs.png'))
 
-hatyan.write_netcdf(ts=ts_prediction, filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True)
+hatyan.write_netcdf(ts=ts_prediction, filename=file_ncout_ts)
+hatyan.write_netcdf(ts=ts_ext_prediction_nos, filename=file_ncout_nosidx)
 
-data_ncout = Dataset(file_ncout_nosidx)
-data_ncout.variables['waterlevel_astro_HW']
-data_ncout.variables['HWLWno']
-times_all_out = num2date(data_ncout.variables['time'],units=data_ncout.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
+import xarray as xr
+ts = xr.open_dataset(file_ncout_ts)
+ext = xr.open_dataset(file_ncout_nosidx)
+fig, ax = plt.subplots(figsize=(10,5))
+ts.waterlevel_astro.plot(ax=ax)
+ext.waterlevel_astro.plot.scatter(ax=ax, color="r")
+
+# data_ncout = Dataset(file_ncout_nosidx)
+# data_ncout.variables['waterlevel_astro_HW']
+# data_ncout.variables['HWLWno']
+# times_all_out = num2date(data_ncout.variables['time'],units=data_ncout.variables['time'].units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
