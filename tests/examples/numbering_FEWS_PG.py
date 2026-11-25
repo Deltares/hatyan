@@ -77,8 +77,8 @@ import xarray as xr
 ts = xr.open_dataset(file_ncout_ts)
 ext = xr.open_dataset(file_ncout_nosidx)
 fig, ax = plt.subplots(figsize=(10,5))
-ts.waterlevel_astro.plot(ax=ax)
-ext.waterlevel_astro.plot.scatter(ax=ax, color="r")
+ts.waterlevel.plot(ax=ax)
+ext.waterlevel.plot.scatter(ax=ax, color="r")
 
 # data_ncout = Dataset(file_ncout_nosidx)
 # data_ncout.variables['waterlevel_astro_HW']

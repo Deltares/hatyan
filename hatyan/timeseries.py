@@ -718,15 +718,15 @@ def write_netcdf(ts, filename):
     dict_timattr = {'units': time_units}
     dict_wlattr = {'units':'m', 'vertical_reference': vertref,
                    'standard_name': 'sea_surface_height_above_geopotential_datum',
-                   'long_name': 'astronomical prediction of water level above reference level',
+                   'long_name': 'water level above reference level',
                    }
     dict_HWattr = {'units':'m', 'vertical_reference': vertref,
                    'standard_name': 'sea_surface_height_above_geopotential_datum',
-                   'long_name': 'astronomical prediction of high water extremes above reference level',
+                   'long_name': 'high water extremes above reference level',
                    }
     dict_LWattr = {'units':'m', 'vertical_reference': vertref,
                    'standard_name': 'sea_surface_height_above_geopotential_datum',
-                   'long_name': 'astronomical prediction of low water extremes above reference level',
+                   'long_name': 'low water extremes above reference level',
                    }
     # TODO: improve attributes for HWLWcode
     dict_extattr = {'description': 'HWLWcode 1 is HW, HWLWcode 2 is LW',
@@ -750,9 +750,9 @@ def write_netcdf(ts, filename):
     nc_newvar.setncatts(dict_timattr)
     #set time contents upon creation of variable, is constant over loop
     data_nc.variables['time'][:] = date2num(times_all.tolist(),units=data_nc.variables['time'].units)
-    nc_newvar = data_nc.createVariable('waterlevel_astro','f8',('time',))
+    nc_newvar = data_nc.createVariable('waterlevel','f8',('time',))
     nc_newvar.setncatts(dict_wlattr)
-    data_nc.variables['waterlevel_astro'][:] = ts['values']
+    data_nc.variables['waterlevel'][:] = ts['values']
 
     if "HWLWcode" in ts.columns:
         nc_newvar = data_nc.createVariable('HWLWcode', 'int16', ('time',))

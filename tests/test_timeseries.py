@@ -594,11 +594,11 @@ def test_writenetcdf(tmp_path):
     timevar_dt = num2date(timevar[:],units=timevar.units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
     
     #put netcdf file contents in pandas DataFrame for usage in hatyan
-    ts_pd = pd.DataFrame({'values':data_nc.variables['waterlevel_astro'][:]}, index=timevar_dt)
+    ts_pd = pd.DataFrame({'values':data_nc.variables['waterlevel'][:]}, index=timevar_dt)
     print(ts_pd)
     
     assert list(data_nc.dimensions.keys()) == ['statname_len', 'time', 'analysis_time', 'time_HW', 'time_LW']
-    assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 'time_HW', 'waterlevel_astro_HW', 'time_LW', 'waterlevel_astro_LW']
+    assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel', 'time_HW', 'waterlevel_astro_HW', 'time_LW', 'waterlevel_astro_LW']
     assert timevar_dt[0] == ts_prediction.index[0].tz_convert(None)
     assert timevar_dt[-1] == ts_prediction.index[-1].tz_convert(None)
     assert 'title' in data_nc.__dict__.keys()
@@ -625,11 +625,11 @@ def test_writenetcdf_nosidx(tmp_path):
     timevar_dt = num2date(timevar[:],units=timevar.units, only_use_cftime_datetimes=False, only_use_python_datetimes=True)
     
     #put netcdf file contents in pandas DataFrame for usage in hatyan
-    ts_pd = pd.DataFrame({'values':data_nc.variables['waterlevel_astro']}, index=timevar_dt)
+    ts_pd = pd.DataFrame({'values':data_nc.variables['waterlevel']}, index=timevar_dt)
     print(ts_pd)
     
     assert list(data_nc.dimensions.keys()) == ['statname_len', 'time', 'analysis_time', 'HWLWno']
-    assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel_astro', 
+    assert list(data_nc.variables.keys()) == ['stations', 'analysis_time', 'time', 'waterlevel',
                                               'HWLWno', 'times_astro_HW', 'waterlevel_astro_HW', 'times_astro_LW', 'waterlevel_astro_LW']
     assert timevar_dt[0] == ts_prediction.index[0].tz_convert(None)
     assert timevar_dt[-1] == ts_prediction.index[-1].tz_convert(None)
