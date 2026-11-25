@@ -850,12 +850,15 @@ def get_leapsecondslist_fromurlorfile():
     
     refdate = dt.datetime(1900,1,1)
 
-    url_leap_seconds_list = 'https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list' #previously, https://www.ietf.org/timezones/data/leap-seconds.list was used but this was outdated on 24-01-2022. #TODO: get most up to date source from somewhere.
+    # previously, https://www.ietf.org/timezones/data/leap-seconds.list was used but
+    # this was outdated on 24-01-2022. #TODO: get most up to date source from somewhere
+    url_leap_seconds_list = 'https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list'
     file_leap_seconds_list = os.path.join(os.path.dirname(file_path),'data','leap-seconds.list')
     
-    #retrieve leap-seconds.list via url and write to file in hatyan sourcecode folder. If it fails, an old version of the file is used.
+    # retrieve leap-seconds.list via url and write to file in hatyan sourcecode folder.
+    # If it fails, an old version of the file is used.
     try:
-        resp = requests.get(url_leap_seconds_list)
+        resp = requests.get(url_leap_seconds_list, timeout=60)
         if resp.status_code==404:
             resp.raise_for_status()
         with open(file_leap_seconds_list, 'wb') as f:
