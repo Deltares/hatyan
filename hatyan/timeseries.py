@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 from netCDF4 import Dataset, date2num, stringtoarr
 import logging
-import xarray as xr
 from pyproj import Transformer
 
 from hatyan.foreman import get_foreman_v0_freq
