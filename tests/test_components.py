@@ -19,11 +19,11 @@ dir_testdata = os.path.join(dir_tests,'data_unitsystemtests')
 
 
 @pytest.mark.unittest
-def test_read_write_components():
+def test_read_write_components(tmp_path):
     
     current_station = 'HOEKVHLD'
     file_orig = os.path.join(dir_testdata,f'{current_station}_ana.txt')
-    file_new = 'temp_components.txt'
+    file_new = os.path.join(tmp_path, 'temp_components.txt')
     
     comp_orig = hatyan.read_components(filename=file_orig)
     hatyan.write_components(comp_orig, filename=file_new)
@@ -34,19 +34,18 @@ def test_read_write_components():
     
     assert np.allclose(comp_orig, comp_new)
     assert meta_orig == meta_new
-    os.remove(file_new)
 
 
 @pytest.mark.unittest
-def test_read_write_components_nometadata():
+def test_read_write_components_nometadata(tmp_path):
     """
     Test for component files written with hatyan 2.7.0 or lower,
     these files lack essential metadata for STAT, PERD and CODE lines.
-    This tests tests whether the correct exception is raised.
+    This test tests whether the correct exception is raised.
     """
     
     file_orig = os.path.join(dir_testdata,'DENHDR_ana.txt')
-    file_nometa = "temp_comp_dummymetadata.txt"
+    file_nometa = os.path.join(tmp_path, "temp_comp_dummymetadata.txt")
     with open(file_orig, "r") as f:
         data = f.readlines()
     with open(file_nometa, "w") as f:
@@ -63,8 +62,6 @@ def test_read_write_components_nometadata():
         _ = hatyan.read_components(file_nometa)
     except KeyError as e:
         assert "No STAT/PERD metadata available in component file" in str(e)
-
-    os.remove(file_nometa)
 
 
 @pytest.mark.unittest

@@ -32,9 +32,9 @@ def test_get_diaxycoords():
 
 
 @pytest.mark.unittest
-def test_readwrite_tsdia_rounding():
+def test_readwrite_tsdia_rounding(tmp_path):
     file_pred = os.path.join(dir_testdata, "VLISSGN_pre.txt")
-    file_new = 'temp_dia.txt'
+    file_new = os.path.join(tmp_path, 'temp_dia.txt')
     ts_pred = hatyan.read_dia(file_pred)
     ts_pred.pop('status')
     for diff in [0,0.004, -0.004]:
@@ -44,13 +44,12 @@ def test_readwrite_tsdia_rounding():
         ts_new = hatyan.read_dia(file_new)
         ts_new.pop('status')
         assert np.allclose(ts_pred, ts_new)
-    os.remove(file_new)
 
 
 @pytest.mark.unittest
-def test_readwrite_tsdia_ext_rounding():
+def test_readwrite_tsdia_ext_rounding(tmp_path):
     file_pred = os.path.join(dir_testdata, "VLISSGN_ext.txt")
-    file_new = 'temp_dia_ext.txt'
+    file_new = os.path.join(tmp_path, 'temp_dia_ext.txt')
     ts_pred = hatyan.read_dia(file_pred)
     ts_pred.pop('status')
     for diff in [0, 0.004, -0.004]:
@@ -60,7 +59,6 @@ def test_readwrite_tsdia_ext_rounding():
         ts_new = hatyan.read_dia(file_new)
         ts_new.pop('status')        
         assert np.allclose(ts_pred, ts_new)
-    os.remove(file_new)
 
 
 @pytest.mark.unittest
@@ -313,7 +311,7 @@ def test_readts_dia_equidistant_multifile_glob_hasfreq():
 
 
 @pytest.mark.unittest
-def test_readwrite_diawia():
+def test_readwrite_diawia(tmp_path):
     
     current_station = 'HOEKVHLD'
     
@@ -322,8 +320,9 @@ def test_readwrite_diawia():
     
     for file_dia in [file_dia_wl,file_dia_ext]:
         file_wia = file_dia.replace('.dia','.wia')
-        file_dia_out = file_dia.replace('.dia','_out.dia')
-        file_wia_out = file_dia.replace('.dia','_out.wia')
+        file_dia_tmp = os.path.join(tmp_path, os.path.basename(file_dia))
+        file_dia_out = file_dia_tmp.replace('.dia','_out.dia')
+        file_wia_out = file_dia_tmp.replace('.dia','_out.wia')
         ts_dia = hatyan.read_dia(filename=file_dia, station=current_station)
         ts_wia = hatyan.read_dia(filename=file_wia, station=current_station)
         assert (ts_dia==ts_wia).all().all() #check if wia and dia input is equal
@@ -348,10 +347,6 @@ def test_readwrite_diawia():
         meta_dia_new = metadata_from_obj(ts_dia_new)
         meta_wia_new = metadata_from_obj(ts_wia_new)
         assert (meta_dia == meta_wia == meta_dia_new == meta_wia_new)
-        
-        #remove files
-        os.remove(file_dia_out)
-        os.remove(file_wia_out)
 
 
 @pytest.mark.unittest
@@ -433,7 +428,7 @@ def test_resample_timeseries_duplicatedindex():
 
 
 @pytest.mark.unittest
-def test_write_tsdia_rounding():
+def test_write_tsdia_rounding(tmp_path):
     """
     rounding error occurred in older versions of hatyan2
     Therefore we test whether writing and reading a timeseries results in the same data (accuracy of 1cm)
@@ -450,12 +445,14 @@ def test_write_tsdia_rounding():
     ts_prediction = hatyan.prediction(comp=comp_merged, times=times_pred)
     
     #write to file
-    fname_pred = 'prediction_%s_%s.dia'%(times_pred.step,current_station)
+    fname_pred = os.path.join(
+        tmp_path,
+        'prediction_{times_pred.step}_{current_station}.dia',
+    )
     hatyan.write_dia(ts=ts_prediction, filename=fname_pred)
     
     #read from file
     ts_prediction_fromfile = hatyan.read_dia(filename=fname_pred, station=current_station)
-    os.remove(fname_pred)
     
     # assert max differences
     ts_diff = ts_prediction_fromfile - ts_prediction
@@ -580,7 +577,7 @@ def test_nyquist_folding():
 
 
 @pytest.mark.unittest
-def test_writenetcdf():
+def test_writenetcdf(tmp_path):
     
     current_station = 'VLISSGN'
     
@@ -588,7 +585,7 @@ def test_writenetcdf():
     ts_prediction = hatyan.read_dia(filename=file_pred, station=current_station)
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     
-    file_nc = 'prediction_10m_%s.nc'%(current_station)
+    file_nc = os.path.join(tmp_path, 'prediction_10m_{current_station}.nc')
     hatyan.write_netcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, filename=file_nc)
     
     data_nc = Dataset(file_nc,'r')
@@ -609,12 +606,9 @@ def test_writenetcdf():
     assert 'source' in data_nc.__dict__.keys()
     assert timevar.units == 'minutes since 1900-01-01 00:00:00 +0100'
 
-    data_nc.close()
-    os.remove(file_nc)
-
 
 @pytest.mark.unittest
-def test_writenetcdf_nosidx():
+def test_writenetcdf_nosidx(tmp_path):
     current_station = 'VLISSGN'
     
     file_pred = os.path.join(dir_testdata,f'{current_station}_pre.txt')
@@ -622,7 +616,7 @@ def test_writenetcdf_nosidx():
     ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
     ts_ext_prediction = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction)
     
-    file_nc = 'prediction_10m_%s.nc'%(current_station)
+    file_nc = os.path.join(tmp_path, 'prediction_10m_{current_station}.nc')
     hatyan.write_netcdf(ts=ts_prediction, ts_ext=ts_ext_prediction, filename=file_nc, nosidx=True)
     
     data_nc = Dataset(file_nc,'r')
@@ -643,9 +637,6 @@ def test_writenetcdf_nosidx():
     assert 'institution' in data_nc.__dict__.keys()
     assert 'source' in data_nc.__dict__.keys()
     assert timevar.units == 'minutes since 1900-01-01 00:00:00 +0100'
-
-    data_nc.close()
-    os.remove(file_nc)
 
 
 @pytest.mark.unittest
