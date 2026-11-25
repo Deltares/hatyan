@@ -7,6 +7,9 @@ This version supports Python 3.11 and higher.
 ### Fix
 - included timeseries statistics in error message [#459](https://github.com/Deltares/hatyan/pull/459)
 
+### Removed
+- removed support for multiple stations in `haytan.write_netcdf()` in [#467](https://github.com/Deltares/hatyan/pull/467)
+
 
 ## 2.14.0 (2026-03-26)
 

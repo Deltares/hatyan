@@ -52,7 +52,7 @@ else:
     ts_prediction_fromcomp.index = ts_prediction_fromcomp.index.tz_convert(None)
 
 print(hatyan.Timeseries_Statistics(ts_prediction))
-ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)#, calc_HWLWlocal=True)
+ts_ext_prediction = hatyan.calc_HWLW(ts=ts_prediction)
 ts_ext_prediction_nos = hatyan.calc_HWLWnumbering(ts_ext=ts_ext_prediction, station=station_name)
 
 fig, (ax1,ax2) = hatyan.plot_timeseries(ts=ts_prediction, ts_validation=ts_prediction_fromcomp, ts_ext=ts_ext_prediction)
@@ -68,10 +68,6 @@ ax2.set_ylim(-1,2)
 fig.savefig(file_ncout.replace('.nc','_nrs.png'))
 
 hatyan.write_netcdf(ts=ts_prediction, filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True)
-# add fake extra station to show how this works
-ts_prediction.attrs["station"] = station_name+"_COPY"
-ts_ext_prediction_nos.attrs["station"] = station_name+"_COPY"
-hatyan.write_netcdf(ts=ts_prediction, filename=file_ncout_nosidx, ts_ext=ts_ext_prediction_nos, nosidx=True, mode='a')
 
 data_ncout = Dataset(file_ncout_nosidx)
 data_ncout.variables['waterlevel_astro_HW']
