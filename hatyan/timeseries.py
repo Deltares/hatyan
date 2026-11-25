@@ -713,9 +713,7 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
                  'source': 'hatyan-%s tidal analysis program of Rijkswaterstaat'%(version_no),
                  }
     data_nc.setncatts(attr_dict)
-    
-    ncvarlist = list(data_nc.variables.keys())
-    ncdimlist = list(data_nc.dimensions.keys())
+
     statname_len = 64
 
     # TODO maybe remove stations dimension (and maybe also var)
@@ -748,7 +746,7 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
     
     nc_newvar = data_nc.createVariable('analysis_time','f8',('analysis_time',))
     nc_newvar.setncatts(dict_anatimattr)
-    data_nc.variables['analysis_time'][0] = date2num([dt_analysistime], units=data_nc.variables['analysis_time'].units)
+    data_nc.variables['analysis_time'] = date2num([dt_analysistime], units=data_nc.variables['analysis_time'].units)
 
     #append current data to netcdf files
     data_nc.variables['stations'] = stringtoarr(station, statname_len, dtype='S')
@@ -804,7 +802,6 @@ def write_netcdf(ts, filename, ts_ext=None, nosidx=False):
         data_HWLW = data_HWLW.sort_index(axis=0)
         data_HW = data_HWLW[data_HWLW['HWLWcode']==1]
         data_LW = data_HWLW[data_HWLW['HWLWcode']==2]
-        #create empty variables if not yet present
         
         #HW
         data_nc.createDimension('time_HW',len(data_HW))
